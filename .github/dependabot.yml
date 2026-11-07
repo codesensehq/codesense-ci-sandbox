@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT
+# Until cutover, port Dependabot workflow pin updates back to
+# release/public-files/ so the next export preserves them.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
