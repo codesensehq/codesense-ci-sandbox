@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="vendor/xterm.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-template="workspaces">
+  <header class="top">
+    <h1>{{title}}</h1>
+    <p class="status" id="status" role="status" aria-live="polite">Connecting to the owner's Mac</p>
+    <p class="role" id="role" role="status" hidden></p>
+  </header>
+  <nav id="views" class="views" aria-label="Dashboard views" hidden>
+    <button id="agents-view" type="button" aria-pressed="true">Agents</button>
+    <button id="inbox-view" type="button" aria-pressed="false">Inbox</button>
+  </nav>
+  <main class="split" id="split">
+    <section class="list" id="list" aria-label="Workspaces" aria-busy="true">
+      <div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+    </section>
+    <section class="pane" id="pane" aria-label="Terminal">
+      <p class="pane-empty" id="pane-empty">Pick a session to watch its terminal.</p>
+      <div class="viewer" id="viewer" hidden>
+        <div class="tbar">
+          <button class="icon back" id="back" type="button" aria-label="Back to workspaces">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <div class="who">
+            <p class="who-name"><span class="dot" id="who-dot"></span><span id="who-name"></span></p>
+            <p class="who-meta" id="who-meta"></p>
+          </div>
+          <div class="font" role="group" aria-label="Text size">
+            <button class="icon fit" id="fit" type="button" aria-pressed="true" aria-label="Fit text to width" title="Fit text to width">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>
+            </button>
+            <button class="icon glyph small" id="smaller" type="button" aria-label="Smaller text">A</button>
+            <output id="font-size" title="Text size in pixels">13</output>
+            <button class="icon glyph large" id="larger" type="button" aria-label="Larger text">A</button>
+          </div>
+        </div>
+        <p class="notice" id="notice">View only. Invited viewers see this terminal as it is.</p>
+        <div class="term" id="term"></div>
+      </div>
+    </section>
+  </main>
+  <section id="inbox-panel" class="inbox-panel" aria-label="Team inbox" hidden>
+    <div class="inbox-heading"><h2>Team inbox</h2><button id="new-message" type="button" hidden>New message</button></div>
+    <p id="inbox-status" class="inbox-meta" role="status">Loading messages…</p>
+    <p class="inbox-meta">Shared with invited viewers. Reading here leaves messages unread in CodeSense.</p>
+    <div class="inbox-layout">
+      <div id="messages" class="messages" aria-label="Messages" aria-busy="true"></div>
+      <div class="inbox-detail">
+        <button id="inbox-back" type="button" hidden>Back to messages</button>
+        <section id="thread" class="thread" aria-label="Conversation" hidden></section>
+        <form id="compose" class="compose" hidden>
+          <h2 id="compose-heading">New message</h2>
+          <label for="recipient">To</label>
+          <input id="recipient" list="recipients" autocomplete="off" required aria-describedby="recipient-help">
+          <datalist id="recipients"><option value="human">Your inbox</option></datalist>
+          <p id="recipient-help" class="inbox-meta">Choose a session, use human for your inbox, or role:triage for a team role.</p>
+          <label for="message-text">Message</label>
+          <textarea id="message-text" rows="5" required aria-describedby="message-limit"></textarea>
+          <p id="message-limit" class="inbox-meta">Plain text · 2,000 characters maximum</p>
+          <div class="compose-actions"><button id="send-message" type="button">Send message</button><button id="cancel-message" type="button">Cancel</button></div>
+          <p id="send-status" role="status" class="inbox-meta"></p>
+        </form>
+        <p id="inbox-permission" class="inbox-meta">Only the owner can send messages.</p>
+      </div>
+    </div>
+  </section>
+  <script src="vendor/xterm.js"></script>
+  <script src="cs-live.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

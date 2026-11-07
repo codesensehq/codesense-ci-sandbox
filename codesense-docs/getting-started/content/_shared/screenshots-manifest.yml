@@ -1,0 +1,28 @@
+# Screenshot manifest consumed by `scripts/capture-docs-screenshots.mjs`.
+#
+# Each entry becomes a dark + light capture written to
+# `codesense-docs/getting-started/content/screenshots/<arc>/<slug>-{dark,light}.png`,
+# with a sibling `<slug>.meta.json` carrying the viewport + commit metadata.
+#
+# Shape (schema v1):
+#   slug:    kebab-case id, unique across the manifest.
+#   arc:     single-letter arc id ("A".."N") or "dashboard" for cross-arc shots.
+#   path:    URL path the capture pipe navigates to in the dev build.
+#   waitFor: CSS selector that must be visible before capturing. Required.
+#   actions: optional list of interactions to perform before the capture.
+#   annot:   optional sidecar annotation JSON path (relative to the PNG dir).
+#
+# The capture pipe is Playwright-driven. The actual Playwright MCP
+# wiring lands in a follow-up once MCP approval is complete; this manifest's
+# schema is stable so the pipe can be wired up later without rewriting entries.
+entries:
+  - slug: home-hero
+    arc: dashboard
+    path: /
+    waitFor: "nav.cs-topnav"
+    annot: home-hero.annot.json
+  - slug: create-editable-repo
+    arc: A
+    path: /arc-a-first-touch/create.html
+    waitFor: '[data-page="arc-a-first-touch/create"]'
+    annot: create-editable-repo.annot.json

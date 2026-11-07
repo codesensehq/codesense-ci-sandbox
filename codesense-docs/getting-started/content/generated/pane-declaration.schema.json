@@ -1,0 +1,700 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pane manifest",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "const": 1
+    },
+    "panes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "badge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Architecture: static hidden-delivery opt-in. Policy: absent means paused.",
+            "default": null
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "surface": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "icon": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "defaultChord": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Canonical `CmdOrCtrl+Shift+Alt+Key`. A reserved chord is accepted here and registered unbound by the host, which explains why in Settings.",
+                  "default": null
+                },
+                "scope": {
+                  "type": "string",
+                  "enum": [
+                    "global",
+                    "slot-visible",
+                    "slot-focused"
+                  ]
+                },
+                "humanOnly": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "scope"
+              ]
+            },
+            "default": []
+          },
+          "id": {
+            "type": "string",
+            "description": "Stable key: matches the pane's filename stem."
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pane title (also carried in the HTML's `<title>`; manifest wins when both are set).",
+            "default": null
+          },
+          "html": {
+            "type": "string",
+            "description": "HTML file name inside this `panes/` dir, relative to the manifest. Build-time lint enforces the file exists."
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lucide icon name; overrides the HTML declaration when present.",
+            "default": null
+          },
+          "showsOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Pane-context keys where this pane wants to appear. `\"*\"` = always. The viewer treats an empty list as \"nowhere by default\" (the pane is still placeable manually via View → Panels).",
+            "default": []
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Stack ordering within a `showsOn` bucket; lower = nearer the top.",
+            "default": null
+          },
+          "collapsedByDefault": {
+            "type": "boolean",
+            "description": "Start folded; the user expands when they want it.",
+            "default": false
+          },
+          "reactsTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Informational: `subscribeContext` payload keys the pane watches.",
+            "default": []
+          }
+        },
+        "required": [
+          "id",
+          "html"
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "panes"
+  ],
+  "$defs": {
+    "DashboardDeclaration": {
+      "type": "object",
+      "properties": {
+        "badge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Architecture: static hidden-delivery opt-in. Policy: absent means paused.",
+          "default": null
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "surface": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "icon": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "defaultChord": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Canonical `CmdOrCtrl+Shift+Alt+Key`. A reserved chord is accepted here and registered unbound by the host, which explains why in Settings.",
+                "default": null
+              },
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "global",
+                  "slot-visible",
+                  "slot-focused"
+                ]
+              },
+              "humanOnly": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "scope"
+            ]
+          },
+          "default": []
+        }
+      },
+      "required": []
+    },
+    "DashboardCommand": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "defaultChord": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Canonical `CmdOrCtrl+Shift+Alt+Key`. A reserved chord is accepted here and registered unbound by the host, which explains why in Settings.",
+          "default": null
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "global",
+            "slot-visible",
+            "slot-focused"
+          ]
+        },
+        "humanOnly": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "scope"
+      ]
+    },
+    "CommandScope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "slot-visible",
+        "slot-focused"
+      ]
+    },
+    "PaneManifestEntry": {
+      "type": "object",
+      "properties": {
+        "badge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Architecture: static hidden-delivery opt-in. Policy: absent means paused.",
+          "default": null
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "surface": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "icon": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "defaultChord": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Canonical `CmdOrCtrl+Shift+Alt+Key`. A reserved chord is accepted here and registered unbound by the host, which explains why in Settings.",
+                "default": null
+              },
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "global",
+                  "slot-visible",
+                  "slot-focused"
+                ]
+              },
+              "humanOnly": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "scope"
+            ]
+          },
+          "default": []
+        },
+        "id": {
+          "type": "string",
+          "description": "Stable key: matches the pane's filename stem."
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Pane title (also carried in the HTML's `<title>`; manifest wins when both are set).",
+          "default": null
+        },
+        "html": {
+          "type": "string",
+          "description": "HTML file name inside this `panes/` dir, relative to the manifest. Build-time lint enforces the file exists."
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Lucide icon name; overrides the HTML declaration when present.",
+          "default": null
+        },
+        "showsOn": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Pane-context keys where this pane wants to appear. `\"*\"` = always. The viewer treats an empty list as \"nowhere by default\" (the pane is still placeable manually via View → Panels).",
+          "default": []
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Stack ordering within a `showsOn` bucket; lower = nearer the top.",
+          "default": null
+        },
+        "collapsedByDefault": {
+          "type": "boolean",
+          "description": "Start folded; the user expands when they want it.",
+          "default": false
+        },
+        "reactsTo": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Informational: `subscribeContext` payload keys the pane watches.",
+          "default": []
+        }
+      },
+      "required": [
+        "id",
+        "html"
+      ]
+    },
+    "PaneManifest": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "const": 1
+        },
+        "panes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "badge": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Architecture: static hidden-delivery opt-in. Policy: absent means paused.",
+                "default": null
+              },
+              "slots": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "surface": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "defaultChord": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Canonical `CmdOrCtrl+Shift+Alt+Key`. A reserved chord is accepted here and registered unbound by the host, which explains why in Settings.",
+                      "default": null
+                    },
+                    "scope": {
+                      "type": "string",
+                      "enum": [
+                        "global",
+                        "slot-visible",
+                        "slot-focused"
+                      ]
+                    },
+                    "humanOnly": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label",
+                    "scope"
+                  ]
+                },
+                "default": []
+              },
+              "id": {
+                "type": "string",
+                "description": "Stable key: matches the pane's filename stem."
+              },
+              "title": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Pane title (also carried in the HTML's `<title>`; manifest wins when both are set).",
+                "default": null
+              },
+              "html": {
+                "type": "string",
+                "description": "HTML file name inside this `panes/` dir, relative to the manifest. Build-time lint enforces the file exists."
+              },
+              "icon": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Lucide icon name; overrides the HTML declaration when present.",
+                "default": null
+              },
+              "showsOn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Pane-context keys where this pane wants to appear. `\"*\"` = always. The viewer treats an empty list as \"nowhere by default\" (the pane is still placeable manually via View → Panels).",
+                "default": []
+              },
+              "priority": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Stack ordering within a `showsOn` bucket; lower = nearer the top.",
+                "default": null
+              },
+              "collapsedByDefault": {
+                "type": "boolean",
+                "description": "Start folded; the user expands when they want it.",
+                "default": false
+              },
+              "reactsTo": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Informational: `subscribeContext` payload keys the pane watches.",
+                "default": []
+              }
+            },
+            "required": [
+              "id",
+              "html"
+            ]
+          }
+        }
+      },
+      "required": [
+        "version",
+        "panes"
+      ]
+    }
+  },
+  "sources": {
+    "src-tauri/src/panes/mod.rs": "4c424a762475bb20538f5c5e9c287962361c38e516160f1c2d59a8530cb9f041",
+    "src-tauri/src/panes/manifest.rs": "08c8869011a375d14d866f056d2d4d5ee2c729d5b08ba8c78123021717ef6f36"
+  }
+}

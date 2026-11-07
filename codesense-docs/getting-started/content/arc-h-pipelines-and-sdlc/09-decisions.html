@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 9 · Decisions</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="9"
+    data-page="arc-h-pipelines-and-sdlc/09-decisions"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 9 — Decisions" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>09</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>BUILD</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>09</span> ·
+                  <span data-cs-phase-name>Decisions</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  When a builder hits an ambiguity that can't be resolved from
+                  the spec alone, it escalates to the Resolver inbox.
+                  <code>bmad-loop-resolve</code> is the structured escalation
+                  skill — frozen spec in, decision out, builder resumes.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What decisions phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              The best builder knows when to stop. If Amelia can't decide
+              between two reasonable paths from the spec alone, she stops,
+              escalates, and sleeps. <code>bmad-loop-resolve</code> wraps the
+              escalation: it freezes the current spec state, posts a decision
+              request to the <code>resolver</code> inbox, and resumes the
+              builder when the answer lands.
+            </p>
+            <p>
+              The resolver is often a human. On well-trodden paths, it's an
+              agent (Winston or Mary) running the same skill with a wider
+              context budget.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO-3 permission" id="worked">
+            <h2>Worked example — DEMO-3 PermissionDenied</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — decisions" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in decisions" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml resolver" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml resolver-claim" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <p>
+              Drop this into
+              <code>config/agents/resolver/routines/resolver-claim/routine.yml</code>.
+              A <code>role_pending</code> trigger fires once for each message
+              queued for the <code>resolver</code> role; in <code>fresh</code>
+              mode it starts a new resolver session, which claims the message with
+              <code>claim_role_messages</code>.
+            </p>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — decisions" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  The <code>agent-inbox-console.html</code> dashboard shows the
+                  resolver inbox in the top-right of the window. A badge pulses
+                  when a builder escalates; one click opens the escalation.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  The resolver inbox is per-team, not per-machine. A remote
+                  Amelia and a local Amelia share the same resolver queue, and
+                  your decision lands on both.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — decisions" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Trigger a resolver session against a frozen builder. The skill
+              prints the spec state and asks for your decision.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-loop-resolve"}'
+              label="Resolve a builder escalation"
+              confirm="Run bmad-loop-resolve in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to resolve via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>// From a page (the button above):
+codesense.invoke('runSkill', { skill: 'bmad-loop-resolve' })
+
+// From an agent: answer the builder through its role queue (MCP)
+send_role_message { team: '&lt;team&gt;', role: 'builder', text: 'decision: …' }</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-9">factory playbook · phase 9</a>
+            &nbsp;·&nbsp; Previous: <a href="./08-build.html">← 08 Build</a> ·
+            Next: <a href="./10-review.html">10 Review →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 9 · Decisions</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

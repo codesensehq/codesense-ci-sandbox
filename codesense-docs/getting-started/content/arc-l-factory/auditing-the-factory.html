@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Auditing the factory</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/auditing-the-factory"] figure.hero {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/auditing-the-factory"] .pane-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 20px;
+      }
+      body[data-page="arc-l-factory/auditing-the-factory"] .pane-grid > .cs-docs-card {
+        padding: 16px 18px;
+      }
+      body[data-page="arc-l-factory/auditing-the-factory"] .pane-grid h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/auditing-the-factory">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Auditing the factory" id="hero">
+        <h1>Auditing the factory</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Two dashboards tell you the state of a running factory: <strong>agent-dag</strong> shows
+          who's doing what right now, <strong>pipeline-graph</strong> shows what moved. Everything
+          else — routines-console, agent-inbox-console — is a detail view off those two. Together
+          they are the factory's control surface.
+        </p>
+      </section>
+
+      <section data-search="The two dashboards" id="dashboards">
+        <h2>The two dashboards</h2>
+        <div class="pane-grid">
+          <div class="cs-docs-card">
+            <h3>agent-dag</h3>
+            <p>
+              <strong>Question it answers:</strong> what is every agent doing right now, and is any
+              one of them stuck?
+            </p>
+            <ul>
+              <li>One row per agent session.</li>
+              <li>Columns: agent · Mac · story · worktree · last-check-in · status.</li>
+              <li>
+                Statuses: <strong>running</strong> (green), <strong>stalling</strong> (amber, &gt;
+                10m no write), <strong>escalated</strong> (purple), <strong>failed</strong> (red),
+                <strong>done</strong> (grey).
+              </li>
+              <li>
+                One-click stop — the dashboard calls the page bridge's
+                <code>stopSession</code>. (<code>kill_agent</code> is the sample epic's story, not a
+                shipped tool.)
+              </li>
+            </ul>
+          </div>
+
+          <div class="cs-docs-card">
+            <h3>pipeline-graph</h3>
+            <p>
+              <strong>Question it answers:</strong> which stories moved through which phases, and
+              where are the piles?
+            </p>
+            <ul>
+              <li>One node per story. Edges follow <code>depends_on</code>.</li>
+              <li>Status fill: todo / in-progress / review / done / blocked.</li>
+              <li>
+                Click a story to see its full phase history (claim → build → PR → review → merge).
+              </li>
+              <li>Hover a column to see the active sprint's backlog by phase.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="What good looks like" id="what-good-looks-like">
+        <h2>What good looks like</h2>
+        <ul>
+          <li>
+            <strong>agent-dag:</strong> most sessions green; a steady 1–2 amber in the mix; no red
+            for &gt; 10 minutes; worktree names consistent with story IDs.
+          </li>
+          <li>
+            <strong>pipeline-graph:</strong> stories moving right over time; the "review" column is
+            not an endless pile; blocked stories have an escalation message in the
+            <code>resolver</code> inbox.
+          </li>
+          <li>
+            <strong>Loop sweep output</strong> is a bounded number of carry-forwards per sprint; the
+            ledger isn't growing.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="What trouble looks like" id="trouble">
+        <h2>What trouble looks like</h2>
+        <ul>
+          <li>
+            <strong>agent-dag: every Builder stuck on the same story.</strong> You cloned agents
+            without clearing the inbox — multiple Builders claimed before dedupe caught up. Fix:
+            kill all but one, reset claims, re-wake.
+          </li>
+          <li>
+            <strong>agent-dag: red session, same stack trace, every wake.</strong> A deterministic
+            crash in the skill. Fix: open the session logs, patch the skill, re-wake.
+          </li>
+          <li>
+            <strong>pipeline-graph: review column growing.</strong> Not enough Reviewers. Fix: clone
+            a Reviewer, or temporarily have a Builder run <code>bmad-review</code>.
+          </li>
+          <li>
+            <strong>pipeline-graph: a blocked story with no escalation message.</strong> The agent
+            exited without posting its blocker. Fix: read the session log, post the escalation
+            manually, carry on.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>An agent reads the same state the dashboards draw:</p>
+          <pre><code>list_sessions {}        // every running session, local and remote, with its story and unread mail
+query_context { where: { kinds: ['story'] } }   // story status for the pipeline graph</code></pre>
+          <p>
+            A dashboard stops a session through its page bridge:
+            <code>codesense.invoke('stopSession', { … })</code>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./failure-modes.html">Failure modes →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Auditing</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

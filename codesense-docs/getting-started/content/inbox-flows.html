@@ -1,0 +1,2797 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="shuffle" />
+    <title>CodeSense — Inbox flows</title>
+
+    <!-- Shared chrome: tokens, shell, top-nav, ⌘K palette. Loaded from the
+         bundled _shared/ bundle so this doc renders unchanged under file://,
+         inside the Tauri viewer, and under agent MCP preview. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+
+    <!--
+      inbox-flows.html
+      ─────────────────────────────────────────────────────────────────────
+      One kit, every shape. Four flow glyphs (dispatch / HITL / SDLC /
+      one-shot) built from identical primitives (inbox messages · role
+      queues · routines on inbox_idle), plus a fifth "Build your own"
+      composer card that emits a `routine.yml` + `agent.yaml` set and
+      copies it into the user's editable context repo.
+
+      Diagram asset
+      ─────────────
+      The shipped visuals are inline SVG stand-ins (one per card, one per
+      sheet) that use the same visual grammar as the sketches at
+          ./diagrams/inbox-flows/{dispatch,hitl,sdlc,one-shot}.excalidraw.sketch.md
+
+      The `.excalidraw.png` sidecars + the
+      per-card probe-and-promote flow were removed. `render_canvas` now returns
+      the PNG inline to the agent; shipped docs embed the inline SVG stand-ins
+      and link to the live canvas for the real thing. No PNG per diagram lands
+      in the docs tree.
+
+      Seed-thread integration
+      ───────────────────────
+      Live inbox excerpts in the detail sheet are hand-authored summaries
+      of the seed threads under
+          ./examples/inboxes/{01-triage-dispatch,02-decision-escalation,03-review-feedback,04-ship-confirmation}.yml
+      Agents / viewers that render these pages full-fidelity swap the
+      static ifl-thread markup for a live `agent-inbox-console` iframe
+      pointed at the seed-thread file.
+    -->
+
+    <style>
+      /* ─── Dashboard-local tokens that extend the shared chrome ───────── */
+      :root {
+        /* Role chroma — desaturated on purpose. Overrides the viewer-wide
+           fallback if the real theme doesn't vend `--role-*`. */
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+        --role-custom: var(--cs-muted-fg);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      html[data-theme="light"] {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+
+      /* ─── Hero ─────────────────────────────────────────────────────── */
+      .ifl-hero {
+        padding: var(--cs-docs-space-6, 48px) var(--cs-docs-space-5, 24px)
+          var(--cs-docs-space-5, 24px);
+        max-width: 1240px;
+        margin: 0 auto;
+      }
+      @media (max-width: 760px) {
+        .ifl-hero {
+          padding: var(--cs-docs-space-5, 24px) var(--cs-docs-space-4, 16px)
+            var(--cs-docs-space-4, 16px);
+        }
+      }
+      .ifl-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-muted-fg);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-eyebrow .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cs-accent);
+        display: inline-block;
+      }
+      .ifl-hero h1 {
+        font-size: clamp(1.75rem, 1.1rem + 2vw, 2.6rem);
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 0 0 var(--cs-docs-space-3, 12px);
+        letter-spacing: -0.025em;
+      }
+      .ifl-hero h1 em {
+        font-style: normal;
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+      }
+      .ifl-hero .lede {
+        font-size: clamp(var(--cs-docs-text-md, 15px), 0.9rem + 0.3vw, 18px);
+        color: var(--cs-muted-fg);
+        margin: 0;
+        max-width: 62ch;
+      }
+      .ifl-hero .lede code {
+        font-family: var(--cs-font-mono);
+        font-size: 0.92em;
+        padding: 1px 5px;
+        background: var(--cs-hover);
+        border-radius: 4px;
+        color: var(--cs-fg);
+      }
+      .ifl-hero-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--cs-docs-space-4, 16px);
+        flex-wrap: wrap;
+        margin-top: var(--cs-docs-space-4, 16px);
+      }
+
+      /* Primitives bar — the thesis in a chip row. */
+      .ifl-primitives-bar {
+        display: inline-flex;
+        gap: var(--cs-docs-space-2, 8px);
+        flex-wrap: wrap;
+        padding: var(--cs-docs-space-2, 8px);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius, 10px);
+        background: var(--cs-surface);
+      }
+      .ifl-primitives-bar .lbl {
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-muted-fg);
+        align-self: center;
+        padding: 0 6px 0 4px;
+        font-weight: 600;
+      }
+      .ifl-brick {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        padding: 5px 9px;
+        background: var(--cs-hover);
+        border: 1px solid transparent;
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        color: var(--cs-fg);
+      }
+      .ifl-brick svg {
+        width: 12px;
+        height: 12px;
+        opacity: 0.75;
+      }
+
+      /* Local/Remote toggle. */
+      .ifl-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        padding: 3px;
+        margin: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-full, 999px);
+        background: var(--cs-surface);
+        font-size: var(--cs-docs-text-xs, 12px);
+        font-family: var(--cs-font-mono);
+      }
+      .ifl-toggle label {
+        display: contents;
+      }
+      .ifl-toggle input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .ifl-toggle .opt {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: var(--cs-docs-radius-full, 999px);
+        color: var(--cs-muted-fg);
+        cursor: pointer;
+        transition:
+          color 120ms ease,
+          background 120ms ease;
+      }
+      .ifl-toggle .opt svg {
+        width: 12px;
+        height: 12px;
+      }
+      .ifl-toggle input:checked + .opt {
+        background: var(--cs-accent);
+        color: var(--cs-accent-fg);
+      }
+      .ifl-toggle input:focus-visible + .opt {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+      }
+
+      /* ─── Flow-shapes grid ────────────────────────────────────────── */
+      .ifl-grid-wrap {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 var(--cs-docs-space-5, 24px) var(--cs-docs-space-5, 24px);
+      }
+      @media (max-width: 760px) {
+        .ifl-grid-wrap {
+          padding: 0 var(--cs-docs-space-4, 16px) var(--cs-docs-space-4, 16px);
+        }
+      }
+      .ifl-section-title {
+        display: flex;
+        align-items: baseline;
+        gap: var(--cs-docs-space-3, 12px);
+        margin: var(--cs-docs-space-5, 24px) 0 var(--cs-docs-space-3, 12px);
+      }
+      .ifl-section-title h2 {
+        font-size: clamp(1.25rem, 1rem + 0.6vw, 1.5rem);
+        font-weight: 700;
+        line-height: 1.25;
+        margin: 0;
+        letter-spacing: -0.015em;
+      }
+      .ifl-section-title .hint {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm, 13.5px);
+      }
+      .ifl-grid {
+        display: grid;
+        gap: var(--cs-docs-space-4, 16px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      @media (max-width: 900px) {
+        .ifl-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .ifl-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+        padding: var(--cs-docs-space-4, 16px);
+        transition:
+          transform 160ms ease,
+          border-color 160ms ease,
+          box-shadow 160ms ease;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        min-height: 320px;
+      }
+      .ifl-card:hover {
+        transform: translateY(-1px);
+        border-color: var(--cs-border-strong);
+        box-shadow: var(--cs-docs-shadow-md, 0 8px 20px -8px rgb(0 0 0 / 0.2));
+      }
+      .ifl-card:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+      }
+      .ifl-card-head {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3, 12px);
+        margin-bottom: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-card-idx {
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-faint-fg);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+      }
+      .ifl-card-title {
+        font: 600 clamp(1.05rem, 0.9rem + 0.3vw, 1.2rem) / 1.25 var(--cs-font-sans);
+        letter-spacing: -0.015em;
+        flex: 1;
+        min-width: 0;
+      }
+      .ifl-card-open {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs, 12px);
+        font-family: var(--cs-font-mono);
+        padding: 4px 8px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        background: transparent;
+      }
+      .ifl-card-open svg {
+        width: 11px;
+        height: 11px;
+      }
+      .ifl-card:hover .ifl-card-open {
+        border-color: var(--cs-accent);
+        color: var(--cs-accent);
+      }
+
+      /* Glyph frame — grid dot + fixed 16:9. Hosts the inline SVG stand-in
+         AND the real PNG once rendered. */
+      .ifl-glyph {
+        position: relative;
+        flex: 0 0 auto;
+        margin: 0 0 var(--cs-docs-space-3, 12px);
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        padding: 12px;
+        background: radial-gradient(circle at 1px 1px, var(--cs-border) 1px, transparent 0) 0 0 /
+          18px 18px;
+        background-color: color-mix(in srgb, var(--cs-bg) 60%, var(--cs-surface) 40%);
+        border-radius: var(--cs-docs-radius, 10px);
+        border: 1px dashed var(--cs-border);
+        overflow: hidden;
+      }
+      .ifl-glyph svg.stand-in {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .ifl-caption {
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-docs-space-3, 12px);
+        min-height: 2.5em;
+      }
+      .ifl-caption b {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+
+      /* Role chips. */
+      .ifl-chiprow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: auto;
+      }
+      .ifl-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        padding: 3px 8px;
+        border-radius: var(--cs-docs-radius-full, 999px);
+        background: color-mix(in srgb, var(--role, var(--cs-muted-fg)) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--role, var(--cs-muted-fg)) 36%, transparent);
+        color: color-mix(in srgb, var(--role, var(--cs-fg)) 85%, var(--cs-fg));
+      }
+      .ifl-chip .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--role, var(--cs-muted-fg));
+      }
+      .ifl-chip[data-role="triager"] {
+        --role: var(--role-triager);
+      }
+      .ifl-chip[data-role="builder"] {
+        --role: var(--role-builder);
+      }
+      .ifl-chip[data-role="reviewer"] {
+        --role: var(--role-reviewer);
+      }
+      .ifl-chip[data-role="scout"] {
+        --role: var(--role-scout);
+      }
+      .ifl-chip[data-role="resolver"] {
+        --role: var(--role-resolver);
+      }
+      .ifl-chip[data-role="analyst"] {
+        --role: var(--role-analyst);
+      }
+
+      /* The identical primitives footer per card — this repetition is the
+         whole argument (DIRECTION §8). */
+      .ifl-primitives {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: var(--cs-docs-space-3, 12px);
+        padding-top: var(--cs-docs-space-3, 12px);
+        border-top: 1px dashed var(--cs-border);
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-faint-fg);
+      }
+      .ifl-primitives span + span::before {
+        content: "·";
+        margin: 0 6px;
+        color: var(--cs-faint-fg);
+      }
+
+      /* ─── Stand-in SVG primitives (shared across every glyph) ────── */
+      .stand-in .glyph-node rect,
+      .stand-in .glyph-node circle {
+        fill: var(--cs-surface);
+        stroke: var(--role, var(--cs-muted-fg));
+        stroke-width: 1.5;
+      }
+      .stand-in .glyph-node[data-role="triager"] {
+        --role: var(--role-triager);
+      }
+      .stand-in .glyph-node[data-role="builder"] {
+        --role: var(--role-builder);
+      }
+      .stand-in .glyph-node[data-role="reviewer"] {
+        --role: var(--role-reviewer);
+      }
+      .stand-in .glyph-node[data-role="scout"] {
+        --role: var(--role-scout);
+      }
+      .stand-in .glyph-node[data-role="resolver"] {
+        --role: var(--role-resolver);
+      }
+      .stand-in .glyph-node[data-role="analyst"] {
+        --role: var(--role-analyst);
+      }
+      .stand-in .glyph-node[data-role="human"] {
+        --role: var(--cs-fg);
+      }
+      .stand-in .glyph-node[data-role="ci"] {
+        --role: var(--cs-muted-fg);
+      }
+      .stand-in .glyph-node[data-role="inbox"] {
+        --role: var(--cs-muted-fg);
+      }
+      .stand-in .glyph-node .fill {
+        fill: color-mix(in srgb, var(--role, var(--cs-muted-fg)) 14%, var(--cs-surface));
+      }
+      .stand-in .glyph-node text {
+        font: 600 11px/1 var(--cs-font-mono);
+        fill: var(--cs-fg);
+      }
+      .stand-in .glyph-node .sub {
+        font: 500 9px/1 var(--cs-font-mono);
+        fill: var(--cs-muted-fg);
+      }
+      .stand-in .glyph-edge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.4;
+        fill: none;
+        marker-end: url(#ifl-arrow);
+      }
+      .stand-in .glyph-edge.is-trigger {
+        stroke-dasharray: 3 3;
+        stroke: var(--cs-accent);
+      }
+      .stand-in .glyph-mbadge {
+        font: 600 8px/1 var(--cs-font-mono);
+        fill: var(--cs-muted-fg);
+      }
+      .stand-in .glyph-mdot {
+        fill: var(--cs-muted-fg);
+      }
+      [data-mode="remote"] .stand-in .glyph-mdot.m-remote {
+        fill: var(--role-reviewer);
+      }
+      [data-mode="local"] .stand-in .glyph-mdot.m-local {
+        fill: var(--role-builder);
+      }
+      /* Pulse dot — the role has a pending message in the demo payload. */
+      .stand-in .glyph-pulse {
+        fill: var(--role-resolver);
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .stand-in .glyph-pulse {
+          animation: ifl-pulse 2.4s ease-in-out infinite;
+          transform-origin: center;
+          transform-box: fill-box;
+        }
+      }
+      @keyframes ifl-pulse {
+        0%,
+        100% {
+          opacity: 0.9;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      /* ─── Build-your-own composer ────────────────────────────────── */
+      .ifl-composer-card {
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+        padding: var(--cs-docs-space-4, 16px);
+        margin-top: var(--cs-docs-space-4, 16px);
+      }
+      .ifl-composer-head {
+        display: flex;
+        align-items: baseline;
+        gap: var(--cs-docs-space-3, 12px);
+        flex-wrap: wrap;
+        margin-bottom: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-composer-head h3 {
+        font-size: clamp(1.4rem, 1.1rem + 0.8vw, 1.75rem);
+        font-weight: 700;
+        line-height: 1.15;
+        margin: 0;
+        letter-spacing: -0.025em;
+      }
+      .ifl-composer-head .composer-sub {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        flex: 1;
+        min-width: 0;
+      }
+      .ifl-composer-head .composer-sub code {
+        font-family: var(--cs-font-mono);
+        font-size: 0.9em;
+        padding: 1px 5px;
+        background: var(--cs-hover);
+        border-radius: 4px;
+        color: var(--cs-fg);
+      }
+      .ifl-composer-head .preset {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-muted-fg);
+      }
+      .ifl-composer-head select {
+        font: inherit;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        padding: 6px 10px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        color: var(--cs-fg);
+      }
+
+      .ifl-composer {
+        display: grid;
+        gap: var(--cs-docs-space-3, 12px);
+        grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr);
+      }
+      @media (max-width: 1040px) {
+        .ifl-composer {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .ifl-pane {
+        background: color-mix(in srgb, var(--cs-bg) 55%, var(--cs-surface));
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius, 10px);
+        padding: var(--cs-docs-space-3, 12px);
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-pane h4 {
+        font: 600 var(--cs-docs-text-sm, 13.5px) / 1.2 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+        margin: 0;
+      }
+
+      .ifl-palette-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .ifl-palette-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        color: inherit;
+      }
+      .ifl-palette-item:hover {
+        border-color: color-mix(in srgb, var(--role, var(--cs-accent)) 60%, var(--cs-border));
+        background: color-mix(in srgb, var(--role, var(--cs-accent)) 7%, var(--cs-surface));
+      }
+      .ifl-palette-item:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+      }
+      .ifl-palette-item .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--role, var(--cs-muted-fg));
+      }
+      .ifl-palette-item .kbd {
+        margin-left: auto;
+        font-size: 10px;
+        color: var(--cs-faint-fg);
+      }
+      .ifl-palette-item[data-role="triager"] {
+        --role: var(--role-triager);
+      }
+      .ifl-palette-item[data-role="builder"] {
+        --role: var(--role-builder);
+      }
+      .ifl-palette-item[data-role="reviewer"] {
+        --role: var(--role-reviewer);
+      }
+      .ifl-palette-item[data-role="scout"] {
+        --role: var(--role-scout);
+      }
+      .ifl-palette-item[data-role="resolver"] {
+        --role: var(--role-resolver);
+      }
+      .ifl-palette-item[data-role="analyst"] {
+        --role: var(--role-analyst);
+      }
+      .ifl-palette-item[data-role="custom"] {
+        --role: var(--role-custom);
+        border-style: dashed;
+      }
+
+      .ifl-trigger-well {
+        margin-top: auto;
+        padding: 10px;
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .ifl-trigger-well .lbl {
+        font: 600 12px/1 var(--cs-font-sans);
+        letter-spacing: 0.04em;
+        color: var(--cs-muted-fg);
+      }
+      .ifl-trigger-well label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-fg);
+      }
+      .ifl-trigger-well select,
+      .ifl-trigger-well input[type="text"] {
+        font: inherit;
+        padding: 4px 6px;
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        border: 1px solid var(--cs-border);
+        border-radius: 4px;
+      }
+      .ifl-trigger-well input[type="text"] {
+        margin-left: auto;
+        width: 120px;
+      }
+      .ifl-trigger-well select {
+        margin-left: auto;
+      }
+
+      /* Composer canvas. */
+      .ifl-canvas {
+        position: relative;
+        background: radial-gradient(circle at 1px 1px, var(--cs-border) 1px, transparent 0) 0 0 /
+          18px 18px;
+        background-color: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        min-height: 240px;
+        flex: 1;
+        overflow: hidden;
+      }
+      .ifl-canvas .empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-faint-fg);
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        pointer-events: none;
+        text-align: center;
+        padding: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-canvas .empty.hidden {
+        display: none;
+      }
+      .ifl-cnode {
+        position: absolute;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        background: var(--cs-surface);
+        border: 1.5px solid var(--role, var(--cs-muted-fg));
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        cursor: grab;
+        user-select: none;
+        box-shadow: var(--cs-docs-shadow-sm, 0 1px 2px rgb(0 0 0 / 0.08));
+        transform: translate(-50%, -50%);
+      }
+      .ifl-cnode:active {
+        cursor: grabbing;
+      }
+      .ifl-cnode[data-role="triager"] {
+        --role: var(--role-triager);
+      }
+      .ifl-cnode[data-role="builder"] {
+        --role: var(--role-builder);
+      }
+      .ifl-cnode[data-role="reviewer"] {
+        --role: var(--role-reviewer);
+      }
+      .ifl-cnode[data-role="scout"] {
+        --role: var(--role-scout);
+      }
+      .ifl-cnode[data-role="resolver"] {
+        --role: var(--role-resolver);
+      }
+      .ifl-cnode[data-role="analyst"] {
+        --role: var(--role-analyst);
+      }
+      .ifl-cnode[data-role="custom"] {
+        --role: var(--role-custom);
+        border-style: dashed;
+      }
+      .ifl-cnode .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--role);
+      }
+      .ifl-cnode .x {
+        margin-left: 4px;
+        opacity: 0.5;
+        cursor: pointer;
+        background: none;
+        border: 0;
+        color: inherit;
+        padding: 0 2px;
+      }
+      .ifl-cnode .x:hover {
+        opacity: 1;
+        color: var(--cs-danger);
+      }
+      .ifl-cnode .mb {
+        font-size: 9px;
+        padding: 1px 5px;
+        border-radius: 999px;
+        margin-left: 6px;
+        background: color-mix(in srgb, var(--cs-muted-fg) 14%, transparent);
+        color: var(--cs-muted-fg);
+      }
+
+      /* YAML output pane. */
+      .ifl-yaml-out {
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        line-height: 1.55;
+        color: var(--cs-fg);
+        background: color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface));
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        padding: var(--cs-docs-space-3, 12px);
+        white-space: pre;
+        overflow: auto;
+        min-height: 220px;
+        flex: 1;
+        margin: 0;
+      }
+      .ifl-yaml-out .k {
+        color: var(--role-reviewer);
+      }
+      .ifl-yaml-out .s {
+        color: var(--role-builder);
+      }
+      .ifl-yaml-out .c {
+        color: var(--cs-faint-fg);
+      }
+      .ifl-yaml-out .hl {
+        background: color-mix(in srgb, var(--cs-accent) 18%, transparent);
+        border-radius: 2px;
+      }
+
+      .ifl-copyrow {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .ifl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        font: 500 var(--cs-docs-text-xs, 12px) / 1.3 var(--cs-font-mono);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        cursor: pointer;
+      }
+      .ifl-btn:hover {
+        border-color: var(--cs-border-strong);
+      }
+      .ifl-btn:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+      }
+      .ifl-btn svg {
+        width: 11px;
+        height: 11px;
+      }
+      .ifl-btn.is-primary {
+        background: var(--cs-accent);
+        color: var(--cs-accent-fg);
+        border-color: var(--cs-accent);
+      }
+      .ifl-btn.is-primary:hover {
+        filter: brightness(1.08);
+      }
+
+      /* Primer inline host (hidden until the composer finds no editable repo). */
+      .ifl-primer {
+        margin-top: var(--cs-docs-space-3, 12px);
+      }
+
+      /* ─── Detail sheet ────────────────────────────────────────────── */
+      .ifl-sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: rgb(10 12 18 / 0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+      }
+      .ifl-sheet-backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .ifl-sheet {
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 41;
+        width: min(960px, 100vw);
+        background: var(--cs-surface);
+        border-left: 1px solid var(--cs-border);
+        box-shadow: var(--cs-docs-shadow-lg, 0 24px 48px -16px rgb(0 0 0 / 0.3));
+        transform: translateX(100%);
+        transition: transform 220ms cubic-bezier(0.22, 0.9, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      .ifl-sheet.is-open {
+        transform: translateX(0);
+      }
+      .ifl-sheet-head {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3, 12px);
+        padding: var(--cs-docs-space-3, 12px) var(--cs-docs-space-4, 16px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .ifl-sheet-head .idx {
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-faint-fg);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+      }
+      .ifl-sheet-head h2 {
+        font: 700 clamp(1.2rem, 1rem + 0.5vw, 1.4rem) / 1.25 var(--cs-font-sans);
+        margin: 0;
+        letter-spacing: -0.02em;
+        flex: 1;
+      }
+      .ifl-sheet-head .close {
+        background: none;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        padding: 6px 9px;
+        cursor: pointer;
+        color: var(--cs-fg);
+      }
+      .ifl-sheet-head .close:hover {
+        border-color: var(--cs-border-strong);
+      }
+      .ifl-sheet-body {
+        flex: 1;
+        overflow: auto;
+        padding: var(--cs-docs-space-4, 16px);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--cs-docs-space-4, 16px);
+      }
+      @media (max-width: 900px) {
+        .ifl-sheet-body {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .ifl-sheet-diagram {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-sheet-diagram .image {
+        position: relative;
+        background: radial-gradient(circle at 1px 1px, var(--cs-border) 1px, transparent 0) 0 0 /
+          18px 18px;
+        background-color: color-mix(in srgb, var(--cs-bg) 60%, var(--cs-surface) 40%);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius, 10px);
+        padding: var(--cs-docs-space-3, 12px);
+        aspect-ratio: 16 / 10;
+      }
+      .ifl-sheet-diagram .image svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .ifl-sheet-diagram .link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-muted-fg);
+        text-decoration: none;
+        cursor: pointer;
+        background: none;
+        border: 0;
+        padding: 0;
+        align-self: flex-start;
+      }
+      .ifl-sheet-diagram .link:hover {
+        color: var(--cs-accent);
+        text-decoration: underline;
+      }
+      .ifl-sheet-diagram .link code {
+        font-family: var(--cs-font-mono);
+      }
+
+      .ifl-sheet-right {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-3, 12px);
+      }
+      .ifl-tabs {
+        display: flex;
+        gap: 2px;
+        border-bottom: 1px solid var(--cs-border);
+        margin-bottom: 0;
+        flex-wrap: wrap;
+      }
+      .ifl-tab {
+        padding: 7px 11px;
+        font: 500 var(--cs-docs-text-xs, 12px) / 1 var(--cs-font-mono);
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--cs-muted-fg);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .ifl-tab:hover {
+        color: var(--cs-fg);
+      }
+      .ifl-tab.is-active {
+        color: var(--cs-fg);
+        border-bottom-color: var(--cs-accent);
+      }
+      .ifl-tab:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+      }
+
+      .ifl-snippet {
+        position: relative;
+        background: color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface));
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        line-height: 1.6;
+        padding: var(--cs-docs-space-3, 12px);
+        white-space: pre;
+        overflow: auto;
+        max-height: 340px;
+        margin: 0;
+      }
+      .ifl-snippet .copy {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+      }
+      .ifl-snippet .k {
+        color: var(--role-reviewer);
+      }
+      .ifl-snippet .s {
+        color: var(--role-builder);
+      }
+      .ifl-snippet .c {
+        color: var(--cs-faint-fg);
+      }
+
+      .ifl-embed {
+        margin-top: var(--cs-docs-space-3, 12px);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        padding: var(--cs-docs-space-3, 12px);
+        background: color-mix(in srgb, var(--cs-bg) 55%, var(--cs-surface));
+      }
+      .ifl-embed .hdr {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font: 600 var(--cs-docs-text-xs, 12px) / 1 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .ifl-embed .hdr .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--role-builder);
+      }
+      .ifl-embed .hdr .live::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--role-builder);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-builder) 22%, transparent);
+      }
+      .ifl-embed .hdr .seed {
+        margin-left: auto;
+        color: var(--cs-faint-fg);
+      }
+      .ifl-thread {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+      }
+      .ifl-thread .msg {
+        display: grid;
+        grid-template-columns: 100px 1fr auto;
+        gap: 8px;
+        align-items: baseline;
+        padding: 5px 7px;
+        border-radius: 4px;
+      }
+      .ifl-thread .msg:hover {
+        background: var(--cs-hover);
+      }
+      .ifl-thread .from {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+      .ifl-thread .from[data-role="triager"] {
+        color: var(--role-triager);
+      }
+      .ifl-thread .from[data-role="builder"] {
+        color: var(--role-builder);
+      }
+      .ifl-thread .from[data-role="reviewer"] {
+        color: var(--role-reviewer);
+      }
+      .ifl-thread .from[data-role="scout"] {
+        color: var(--role-scout);
+      }
+      .ifl-thread .from[data-role="resolver"] {
+        color: var(--role-resolver);
+      }
+      .ifl-thread .from[data-role="analyst"] {
+        color: var(--role-analyst);
+      }
+      .ifl-thread .body {
+        color: var(--cs-fg);
+      }
+      .ifl-thread .ts {
+        color: var(--cs-faint-fg);
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      /* Footer. */
+      .ifl-footer {
+        max-width: 1240px;
+        margin: var(--cs-docs-space-6, 48px) auto 0;
+        padding: var(--cs-docs-space-4, 16px) var(--cs-docs-space-5, 24px);
+        border-top: 1px solid var(--cs-border);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-faint-fg);
+      }
+      .ifl-footer a {
+        color: var(--cs-muted-fg);
+        text-decoration: none;
+      }
+      .ifl-footer a:hover {
+        color: var(--cs-accent);
+      }
+
+      /* Toast. */
+      .ifl-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        padding: 10px 14px;
+        background: var(--cs-fg);
+        color: var(--cs-bg);
+        border-radius: var(--cs-docs-radius-sm, 6px);
+        font: 500 var(--cs-docs-text-xs, 12px) / 1 var(--cs-font-mono);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 60;
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+        max-width: 440px;
+      }
+      .ifl-toast.is-open {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* Reduced motion. */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+
+  <body class="cs-page cs-docs" data-page="inbox-flows" data-mode="local">
+    <!-- Shared top-nav mounts here. _shared/nav.js finds this element and
+         fills in brand, crumbs, arcs dropdown, and ⌘K palette. -->
+    <nav class="cs-topnav" data-cs-nav aria-label="Top navigation"></nav>
+
+    <main class="cs-main">
+      <!-- ───────── Hero ───────── -->
+      <section class="ifl-hero" aria-labelledby="hero-title" data-search="hero">
+        <div class="ifl-eyebrow"><span class="dot"></span>Arc F · Inbox flows</div>
+        <h1 id="hero-title">Inbox flows <em>— one kit, every shape.</em></h1>
+        <p class="lede">
+          Triage, workers, reviewers, a one-shot ping — same three bricks each time:
+          <code>inbox messages</code>, <code>role queues</code>,
+          <code>routines on inbox_idle</code>. Pick a shape to inspect it, then wire your own in the
+          composer below.
+        </p>
+
+        <div class="ifl-hero-row">
+          <div class="ifl-primitives-bar" aria-label="The three primitives">
+            <span class="lbl">The kit</span>
+            <span class="ifl-brick">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+              >
+                <path d="M2 4h12v8H2z" />
+                <path d="M2 6l6 4 6-4" />
+              </svg>
+              inbox messages
+            </span>
+            <span class="ifl-brick">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+              >
+                <rect x="2" y="3" width="12" height="2.5" />
+                <rect x="2" y="6.75" width="12" height="2.5" />
+                <rect x="2" y="10.5" width="12" height="2.5" />
+              </svg>
+              role queues
+            </span>
+            <span class="ifl-brick">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+              >
+                <circle cx="8" cy="8" r="5.5" />
+                <path d="M8 5v3l2 1.5" />
+              </svg>
+              routines · <code style="font-family: inherit">inbox_idle</code>
+            </span>
+          </div>
+
+          <fieldset class="ifl-toggle" aria-label="Local or remote distribution">
+            <legend class="sr-only">Local vs Remote distribution</legend>
+            <label>
+              <input type="radio" name="mode" value="local" checked />
+              <span class="opt">
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <rect x="2" y="3" width="12" height="8" rx="1" />
+                  <path d="M5 13h6" />
+                </svg>
+                Local
+              </span>
+            </label>
+            <label>
+              <input type="radio" name="mode" value="remote" />
+              <span class="opt">
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <circle cx="8" cy="8" r="5.5" />
+                  <path d="M2.5 8h11" />
+                  <path d="M8 2.5c2 2 2 9 0 11" />
+                  <path d="M8 2.5c-2 2-2 9 0 11" />
+                </svg>
+                Remote
+              </span>
+            </label>
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- ───────── Flow-shapes grid ───────── -->
+      <div class="ifl-grid-wrap">
+        <div class="ifl-section-title">
+          <h2 id="shapes-title">Four shapes · same kit</h2>
+          <span class="hint">
+            Click a card to inspect its diagram, snippets, and a live inbox excerpt.
+          </span>
+        </div>
+
+        <!-- Shared SVG defs: one <marker> reused by every stand-in. -->
+        <svg aria-hidden="true" style="position: absolute; width: 0; height: 0" focusable="false">
+          <defs>
+            <marker
+              id="ifl-arrow"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+            </marker>
+          </defs>
+        </svg>
+
+        <div class="ifl-grid" role="list" aria-labelledby="shapes-title">
+          <!-- 01 · Dispatch factory ─────────────────────────────────── -->
+          <button
+            class="ifl-card"
+            role="listitem"
+            data-shape="dispatch"
+            aria-haspopup="dialog"
+            data-search="dispatch-factory"
+          >
+            <div class="ifl-card-head">
+              <span class="ifl-card-idx">01</span>
+              <span class="ifl-card-title">Dispatch factory</span>
+              <span class="ifl-card-open">
+                Open
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </span>
+            </div>
+            <div class="ifl-glyph" data-slug="dispatch" aria-hidden="true">
+              <!-- The `<img>` referencing
+                   `./diagrams/inbox-flows/dispatch.excalidraw.png` was removed
+                   with the build-time sidecar. The stand-in SVG is the shipped
+                   visual; click through to the live canvas for the real thing. -->
+              <svg class="stand-in" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
+                <g class="glyph-node" data-role="triager" transform="translate(60 70)">
+                  <rect class="fill" x="0" y="0" width="80" height="30" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">triager</text>
+                  <circle class="glyph-mdot m-local" cx="4" cy="4" r="2.5" />
+                  <circle
+                    class="glyph-mdot m-remote"
+                    cx="4"
+                    cy="4"
+                    r="2.5"
+                    style="opacity: var(--mr, 0)"
+                  />
+                </g>
+                <g class="glyph-node" data-role="builder" transform="translate(200 20)">
+                  <rect class="fill" x="0" y="0" width="80" height="30" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">builder</text>
+                  <circle class="glyph-pulse" cx="74" cy="8" r="2.5" />
+                </g>
+                <g class="glyph-node" data-role="reviewer" transform="translate(200 70)">
+                  <rect class="fill" x="0" y="0" width="80" height="30" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">reviewer</text>
+                </g>
+                <g class="glyph-node" data-role="scout" transform="translate(200 120)">
+                  <rect class="fill" x="0" y="0" width="80" height="30" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">scout</text>
+                </g>
+                <path class="glyph-edge" d="M140 80 C 170 50, 180 40, 200 35" />
+                <path class="glyph-edge" d="M140 85 L 200 85" />
+                <path class="glyph-edge" d="M140 90 C 170 120, 180 125, 200 135" />
+                <path
+                  class="glyph-edge"
+                  d="M240 50 C 260 50, 260 130, 240 130 L 240 130 L 150 130 C 130 130, 130 110, 140 100"
+                />
+                <path class="glyph-edge is-trigger" d="M 30 85 C 10 85, 10 60, 50 70" />
+                <text x="18" y="60" class="glyph-mbadge">inbox_idle</text>
+              </svg>
+            </div>
+            <p class="ifl-caption">
+              <b>Closed loop.</b> A triager routes incoming work to typed worker queues — builder,
+              reviewer, scout — and recycles replies. No humans in the hot path.
+            </p>
+            <div class="ifl-chiprow">
+              <span class="ifl-chip" data-role="triager"><span class="dot"></span>triager</span>
+              <span class="ifl-chip" data-role="builder"><span class="dot"></span>builder ×3</span>
+              <span class="ifl-chip" data-role="reviewer"><span class="dot"></span>reviewer</span>
+              <span class="ifl-chip" data-role="scout"><span class="dot"></span>scout</span>
+            </div>
+            <div class="ifl-primitives">
+              <span>inbox messages</span><span>role queues</span><span>routines · inbox_idle</span>
+            </div>
+          </button>
+
+          <!-- 02 · Human-in-the-loop ────────────────────────────────── -->
+          <button
+            class="ifl-card"
+            role="listitem"
+            data-shape="hitl"
+            aria-haspopup="dialog"
+            data-search="human-in-the-loop"
+          >
+            <div class="ifl-card-head">
+              <span class="ifl-card-idx">02</span>
+              <span class="ifl-card-title">Human-in-the-loop queue</span>
+              <span class="ifl-card-open">
+                Open
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </span>
+            </div>
+            <div class="ifl-glyph" data-slug="hitl" aria-hidden="true">
+              <!-- The `<img>` referencing
+                   `./diagrams/inbox-flows/hitl.excalidraw.png` was removed with
+                   the build-time sidecar. The stand-in SVG is the shipped
+                   visual; click through to the live canvas for the real thing. -->
+              <svg class="stand-in" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
+                <g class="glyph-node" data-role="inbox" transform="translate(30 50)">
+                  <rect class="fill" x="0" y="0" width="60" height="22" rx="3" />
+                  <rect class="fill" x="4" y="26" width="60" height="22" rx="3" />
+                  <rect class="fill" x="8" y="52" width="60" height="22" rx="3" />
+                  <text x="30" y="15" text-anchor="middle" class="sub">incoming</text>
+                </g>
+                <g class="glyph-node" data-role="resolver" transform="translate(130 60)">
+                  <rect class="fill" x="0" y="0" width="100" height="40" rx="20" />
+                  <text x="50" y="18" text-anchor="middle">resolver</text>
+                  <text x="50" y="31" text-anchor="middle" class="sub">(human-held)</text>
+                  <circle class="glyph-pulse" cx="94" cy="8" r="3" />
+                </g>
+                <g class="glyph-node" data-role="builder" transform="translate(260 40)">
+                  <rect class="fill" x="0" y="0" width="50" height="22" rx="3" />
+                  <text x="25" y="15" text-anchor="middle">reply</text>
+                </g>
+                <g class="glyph-node" data-role="scout" transform="translate(260 90)">
+                  <rect class="fill" x="0" y="0" width="50" height="22" rx="3" />
+                  <text x="25" y="15" text-anchor="middle">handoff</text>
+                </g>
+                <path class="glyph-edge" d="M94 76 L 130 80" />
+                <path class="glyph-edge" d="M230 76 L 260 51" />
+                <path class="glyph-edge" d="M230 84 L 260 100" />
+                <path class="glyph-edge is-trigger" d="M180 115 C 180 145, 110 145, 100 125" />
+                <text x="150" y="150" class="glyph-mbadge">inbox_idle · 30m → nudge</text>
+              </svg>
+            </div>
+            <p class="ifl-caption">
+              <b>One pair of hands.</b> Every message funnels through a single role a human holds. A
+              routine nudges when the queue sits idle too long.
+            </p>
+            <div class="ifl-chiprow">
+              <span class="ifl-chip" data-role="resolver"
+                ><span class="dot"></span>resolver · human</span
+              >
+            </div>
+            <div class="ifl-primitives">
+              <span>inbox messages</span><span>role queues</span><span>routines · inbox_idle</span>
+            </div>
+          </button>
+
+          <!-- 03 · SDLC pipeline ───────────────────────────────────── -->
+          <button
+            class="ifl-card"
+            role="listitem"
+            data-shape="sdlc"
+            aria-haspopup="dialog"
+            data-search="sdlc-pipeline"
+          >
+            <div class="ifl-card-head">
+              <span class="ifl-card-idx">03</span>
+              <span class="ifl-card-title">SDLC pipeline</span>
+              <span class="ifl-card-open">
+                Open
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </span>
+            </div>
+            <div class="ifl-glyph" data-slug="sdlc" aria-hidden="true">
+              <!-- The `<img>` referencing
+                   `./diagrams/inbox-flows/sdlc.excalidraw.png` was removed with
+                   the build-time sidecar. The stand-in SVG is the shipped
+                   visual; click through to the live canvas for the real thing. -->
+              <svg class="stand-in" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
+                <g class="glyph-node" data-role="scout" transform="translate(14 65)">
+                  <rect class="fill" width="68" height="28" rx="4" />
+                  <text x="34" y="18" text-anchor="middle">scout</text>
+                </g>
+                <g class="glyph-node" data-role="builder" transform="translate(110 65)">
+                  <rect class="fill" width="68" height="28" rx="4" />
+                  <text x="34" y="18" text-anchor="middle">builder</text>
+                  <circle class="glyph-pulse" cx="62" cy="7" r="2.5" />
+                </g>
+                <g class="glyph-node" data-role="reviewer" transform="translate(206 65)">
+                  <rect class="fill" width="80" height="28" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">reviewer</text>
+                </g>
+                <g class="glyph-node" data-role="resolver" transform="translate(140 125)">
+                  <rect class="fill" width="80" height="28" rx="4" />
+                  <text x="40" y="18" text-anchor="middle">resolver</text>
+                </g>
+                <path class="glyph-edge" d="M82 79 L 110 79" />
+                <path class="glyph-edge" d="M178 79 L 206 79" />
+                <path class="glyph-edge" d="M144 93 C 148 110, 160 118, 170 123" />
+                <path class="glyph-edge" d="M196 123 C 216 118, 240 108, 236 93" />
+                <text x="170" y="110" class="glyph-mbadge" text-anchor="middle">
+                  escalate on ambiguity
+                </text>
+              </svg>
+            </div>
+            <p class="ifl-caption">
+              <b>Linear with a safety hop.</b> Scout → builder → reviewer in sequence; a resolver
+              catches ambiguity and returns a verdict.
+            </p>
+            <div class="ifl-chiprow">
+              <span class="ifl-chip" data-role="scout"><span class="dot"></span>scout</span>
+              <span class="ifl-chip" data-role="builder"><span class="dot"></span>builder</span>
+              <span class="ifl-chip" data-role="reviewer"><span class="dot"></span>reviewer</span>
+              <span class="ifl-chip" data-role="resolver"><span class="dot"></span>resolver</span>
+            </div>
+            <div class="ifl-primitives">
+              <span>inbox messages</span><span>role queues</span><span>routines · inbox_idle</span>
+            </div>
+          </button>
+
+          <!-- 04 · One-shot notify ─────────────────────────────────── -->
+          <button
+            class="ifl-card"
+            role="listitem"
+            data-shape="oneshot"
+            aria-haspopup="dialog"
+            data-search="one-shot-notify"
+          >
+            <div class="ifl-card-head">
+              <span class="ifl-card-idx">04</span>
+              <span class="ifl-card-title">One-shot notify</span>
+              <span class="ifl-card-open">
+                Open
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  aria-hidden="true"
+                >
+                  <path d="M6 3l5 5-5 5" />
+                </svg>
+              </span>
+            </div>
+            <div class="ifl-glyph" data-slug="one-shot" aria-hidden="true">
+              <!-- The `<img>` referencing
+                   `./diagrams/inbox-flows/one-shot.excalidraw.png` was removed
+                   with the build-time sidecar. The stand-in SVG is the shipped
+                   visual; click through to the live canvas for the real thing. -->
+              <svg class="stand-in" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet">
+                <g class="glyph-node" data-role="ci" transform="translate(30 70)">
+                  <circle class="fill" cx="20" cy="20" r="20" />
+                  <text x="20" y="24" text-anchor="middle">CI</text>
+                </g>
+                <g class="glyph-node" data-role="inbox" transform="translate(130 70)">
+                  <rect
+                    class="fill"
+                    x="0"
+                    y="0"
+                    width="60"
+                    height="40"
+                    rx="4"
+                    style="stroke-dasharray: 4 3"
+                  />
+                  <text x="30" y="18" text-anchor="middle">routine</text>
+                  <text x="30" y="31" text-anchor="middle" class="sub">cron · 1m</text>
+                </g>
+                <g class="glyph-node" data-role="human" transform="translate(230 70)">
+                  <rect class="fill" x="0" y="0" width="70" height="40" rx="4" />
+                  <text x="35" y="18" text-anchor="middle">me</text>
+                  <text x="35" y="31" text-anchor="middle" class="sub">(my inbox)</text>
+                  <circle class="glyph-pulse" cx="62" cy="8" r="3" />
+                </g>
+                <path class="glyph-edge" d="M70 90 L 130 90" />
+                <path class="glyph-edge" d="M190 90 L 230 90" />
+                <text x="100" y="80" class="glyph-mbadge" text-anchor="middle">poll</text>
+                <text x="210" y="80" class="glyph-mbadge" text-anchor="middle">ping (once)</text>
+              </svg>
+            </div>
+            <p class="ifl-caption">
+              <b>Smallest possible shape.</b> A routine watches CI and sends one message when green.
+              No queue, no triage, no second actor.
+            </p>
+            <div class="ifl-chiprow">
+              <span class="ifl-chip">
+                <span class="dot" style="background: var(--cs-muted-fg)"></span>
+                no role · just a routine
+              </span>
+            </div>
+            <div class="ifl-primitives">
+              <span>inbox messages</span><span>role queues</span><span>routines · inbox_idle</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- ───────── Composer · Build your own ───────── -->
+        <section
+          class="ifl-composer-card"
+          id="composer"
+          aria-labelledby="composer-title"
+          data-search="build-your-own-composer"
+        >
+          <div class="ifl-composer-head">
+            <h3 id="composer-title">Build your own.</h3>
+            <span class="composer-sub">
+              Compose a shape from the kit — export matching
+              <code>routine.yml</code> + <code>agent.yaml</code>.
+            </span>
+            <span class="preset">
+              <span>Seed with</span>
+              <select id="preset-select" aria-label="Seed the composer with a shape">
+                <option value="blank">— blank —</option>
+                <option value="dispatch">01 · Dispatch factory</option>
+                <option value="hitl">02 · Human-in-the-loop</option>
+                <option value="sdlc">03 · SDLC pipeline</option>
+                <option value="oneshot">04 · One-shot notify</option>
+              </select>
+            </span>
+          </div>
+
+          <div class="ifl-composer">
+            <!-- Palette (click-to-add; keyboard letters on the composer region). -->
+            <aside class="ifl-pane" aria-label="Role palette">
+              <h4>Roles</h4>
+              <div class="ifl-palette-list">
+                <button type="button" class="ifl-palette-item" data-role="triager">
+                  <span class="dot"></span>triager<span class="kbd">T</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="builder">
+                  <span class="dot"></span>builder<span class="kbd">B</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="reviewer">
+                  <span class="dot"></span>reviewer<span class="kbd">R</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="scout">
+                  <span class="dot"></span>scout<span class="kbd">S</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="resolver">
+                  <span class="dot"></span>resolver<span class="kbd">E</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="analyst">
+                  <span class="dot"></span>analyst<span class="kbd">A</span>
+                </button>
+                <button type="button" class="ifl-palette-item" data-role="custom">
+                  <span class="dot"></span>+ custom…
+                </button>
+              </div>
+              <div class="ifl-trigger-well" role="group" aria-label="Trigger">
+                <span class="lbl">Trigger</span>
+                <label>
+                  <input type="radio" name="trig" value="inbox_idle" checked />
+                  inbox_idle
+                  <select id="trig-role" aria-label="Trigger role">
+                    <option>any</option>
+                    <option>triager</option>
+                    <option>builder</option>
+                    <option>reviewer</option>
+                    <option>scout</option>
+                    <option>resolver</option>
+                    <option>analyst</option>
+                  </select>
+                </label>
+                <label>
+                  <input type="radio" name="trig" value="cron" />
+                  cron
+                  <input
+                    type="text"
+                    id="trig-cron"
+                    value="*/1 * * * *"
+                    aria-label="Cron expression"
+                  />
+                </label>
+                <label>
+                  <input type="radio" name="trig" value="manual" />
+                  manual
+                </label>
+              </div>
+            </aside>
+
+            <!-- Canvas. -->
+            <div class="ifl-pane">
+              <h4>Canvas</h4>
+              <div class="ifl-canvas" id="canvas" aria-label="Compose a flow by adding roles">
+                <div class="empty" id="canvas-empty">
+                  Click a role on the left to add it.<br />
+                  Drag to position · click × to remove.
+                </div>
+              </div>
+            </div>
+
+            <!-- YAML output. -->
+            <div class="ifl-pane">
+              <h4>Generated YAML</h4>
+              <pre class="ifl-yaml-out" id="yaml-out" aria-live="polite" aria-atomic="false"></pre>
+              <div class="ifl-copyrow">
+                <button type="button" class="ifl-btn" id="btn-copy">
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    aria-hidden="true"
+                  >
+                    <rect x="4" y="4" width="9" height="9" rx="1" />
+                    <path d="M4 4V3a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1" />
+                  </svg>
+                  Copy YAML
+                </button>
+                <button type="button" class="ifl-btn is-primary" id="btn-copy-repo">
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 2v10" />
+                    <path d="M3 7l5-5 5 5" />
+                    <path d="M3 14h10" />
+                  </svg>
+                  Copy to my context repo
+                </button>
+              </div>
+              <div class="ifl-primer" id="composer-primer" hidden></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ───────── Footer ───────── -->
+      <footer class="ifl-footer">
+        <span>codesense-docs/getting-started/content/inbox-flows.html</span>
+        <span>
+          <a href="./arc-f-inboxes-and-triage/index.html">Arc F · the model →</a>
+          &nbsp;·&nbsp;
+          <a href="./factory-playbook.html">Factory playbook →</a>
+        </span>
+      </footer>
+    </main>
+
+    <!-- ───────── Detail sheet ───────── -->
+    <div class="ifl-sheet-backdrop" id="sheet-backdrop" tabindex="-1"></div>
+    <aside
+      class="ifl-sheet"
+      id="sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheet-title"
+      hidden
+    >
+      <header class="ifl-sheet-head">
+        <span class="idx" id="sheet-idx">01</span>
+        <h2 id="sheet-title">Dispatch factory</h2>
+        <button type="button" class="close" id="sheet-close" aria-label="Close">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            aria-hidden="true"
+          >
+            <path d="M3 3l10 10M13 3L3 13" />
+          </svg>
+        </button>
+      </header>
+      <div class="ifl-sheet-body">
+        <section class="ifl-sheet-diagram" aria-labelledby="sheet-diagram-title">
+          <h3 id="sheet-diagram-title" class="sr-only">Diagram</h3>
+          <div class="image" id="sheet-image"></div>
+          <button type="button" class="link" id="sheet-canvas-link">
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              width="12"
+              height="12"
+              aria-hidden="true"
+            >
+              <path d="M3 3h7v2H5v6h6V8h2v5H3z" />
+              <path d="M11 2h3v3" />
+              <path d="M14 2L9 7" />
+            </svg>
+            Open <code>inbox-flows/<span id="sheet-slug">dispatch</span>.excalidraw</code> in canvas
+          </button>
+        </section>
+        <section class="ifl-sheet-right">
+          <nav class="ifl-tabs" id="sheet-tabs" role="tablist" aria-label="Snippets"></nav>
+          <pre class="ifl-snippet" id="sheet-snippet" role="tabpanel" aria-live="polite"></pre>
+
+          <div class="ifl-embed" aria-label="Live inbox excerpt">
+            <div class="hdr">
+              <span>agent-inbox-console</span>
+              <span class="live">live</span>
+              <span class="seed"
+                >seed thread · <code id="sheet-seed">01-triage-dispatch.yml</code></span
+              >
+            </div>
+            <div class="ifl-thread" id="sheet-thread"></div>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <div class="ifl-toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ─────────────────────────────────────────────────────────────────
+         Behavior. Vanilla; no framework. The bridge calls route through
+         window.codesense.invoke; graceful fallback when run under file://.
+         ───────────────────────────────────────────────────────────────── -->
+    <script>
+      "use strict";
+      (function () {
+        // ---------- Flow-shape data ------------------------------------
+        // Each shape's `seed` points at a real file under
+        // ./examples/inboxes/. The `thread` arrays
+        // are hand-authored summaries of those seed threads for the live
+        // excerpt panel.
+        var SHAPES = {
+          dispatch: {
+            idx: "01",
+            title: "Dispatch factory",
+            slug: "dispatch",
+            seed: "01-triage-dispatch.yml",
+            roles: [
+              { role: "triager", machine: { local: "mac-01", remote: "mac-01" } },
+              { role: "builder", machine: { local: "mac-01", remote: "rig-a" }, count: 3 },
+              { role: "reviewer", machine: { local: "mac-01", remote: "rig-b" } },
+              { role: "scout", machine: { local: "mac-01", remote: "rig-a" } },
+            ],
+            trigger: { kind: "inbox_idle", on: "builder,reviewer,scout" },
+            routine:
+              "# routines/dispatch.yml\n" +
+              "name: dispatch\n" +
+              "on:\n" +
+              "  inbox_idle:\n" +
+              "    role: [triager, builder, reviewer, scout]\n" +
+              "    idle_for: 2m\n" +
+              "run:\n" +
+              "  agent: router\n" +
+              "  skill: triage-dispatch\n" +
+              "  pass: { message: $inbox.head }\n",
+            agents: {
+              triager:
+                "# agents/triager/agent.yaml\n" +
+                "name: triager\n" +
+                "role: triager\n" +
+                "model: haiku\n" +
+                "context:\n" +
+                "  - skill: triage-dispatch\n" +
+                "inbox:\n" +
+                "  claims: [triager]\n" +
+                "  routes:\n" +
+                "    build: builder\n" +
+                "    review: reviewer\n" +
+                "    scout: scout\n",
+              builder:
+                "# agents/builder/agent.yaml\n" +
+                "name: builder\n" +
+                "role: builder\n" +
+                "model: sonnet\n" +
+                "context:\n" +
+                "  - skill: bmad-build\n" +
+                "inbox:\n" +
+                "  claims: [builder]\n" +
+                "  reply_to: triager\n",
+              reviewer:
+                "# agents/reviewer/agent.yaml\n" +
+                "name: reviewer\n" +
+                "role: reviewer\n" +
+                "model: sonnet\n" +
+                "context:\n" +
+                "  - skill: bmad-code-review\n" +
+                "inbox:\n" +
+                "  claims: [reviewer]\n" +
+                "  reply_to: triager\n",
+              scout:
+                "# agents/scout/agent.yaml\n" +
+                "name: scout\n" +
+                "role: scout\n" +
+                "model: haiku\n" +
+                "context:\n" +
+                "  - skill: tech-debt-scout\n" +
+                "inbox:\n" +
+                "  claims: [scout]\n" +
+                "  reply_to: triager\n",
+            },
+            thread: [
+              {
+                from: "human",
+                role: "analyst",
+                body: "add a per-agent kill switch for agent-dag",
+                ts: "09:12",
+              },
+              {
+                from: "analyst",
+                role: "analyst",
+                body: "drafted DEMO-1 · routing to builder",
+                ts: "09:14",
+              },
+              {
+                from: "triager",
+                role: "triager",
+                body: "routing → builder (bmad-build)",
+                ts: "09:14",
+              },
+              {
+                from: "builder",
+                role: "builder",
+                body: "claimed · worktree ready on rig-a",
+                ts: "09:28",
+              },
+              {
+                from: "builder",
+                role: "builder",
+                body: "PR opened · requesting review",
+                ts: "14:41",
+              },
+              {
+                from: "reviewer",
+                role: "reviewer",
+                body: "LGTM with 2 minor comments inline",
+                ts: "14:49",
+              },
+            ],
+          },
+          hitl: {
+            idx: "02",
+            title: "Human-in-the-loop queue",
+            slug: "hitl",
+            seed: "02-decision-escalation.yml",
+            roles: [
+              { role: "resolver", machine: { local: "mac-01", remote: "mac-01" }, holder: "human" },
+            ],
+            trigger: { kind: "inbox_idle", on: "resolver" },
+            routine:
+              "# routines/nudge-resolver.yml\n" +
+              "name: nudge-resolver\n" +
+              "on:\n" +
+              "  inbox_idle:\n" +
+              "    role: resolver\n" +
+              "    idle_for: 30m\n" +
+              "run:\n" +
+              "  agent: nudger\n" +
+              "  skill: notify-human\n" +
+              "  pass:\n" +
+              "    channel: slack\n" +
+              '    message: "{count} items in resolver queue · oldest {oldest_age}"\n',
+            agents: {
+              resolver:
+                "# agents/resolver/agent.yaml\n" +
+                "name: resolver\n" +
+                "role: resolver\n" +
+                "holder: human           # a single human claims this queue\n" +
+                "inbox:\n" +
+                "  claims: [resolver]\n" +
+                "  reply_to: $sender     # replies route back to the asker\n" +
+                "decisions:\n" +
+                "  escalation: owner\n",
+              nudger:
+                "# agents/nudger/agent.yaml\n" +
+                "name: nudger\n" +
+                "role: notify\n" +
+                "model: haiku            # tiny; just composes the ping\n" +
+                "context:\n" +
+                "  - skill: notify-human\n" +
+                "inbox:\n" +
+                "  claims: []\n",
+            },
+            thread: [
+              {
+                from: "builder",
+                role: "builder",
+                body: "escalating DEMO-3 AC-2: PermissionDenied has no admin field",
+                ts: "11:03",
+              },
+              {
+                from: "human",
+                role: "resolver",
+                body: 'interpret as "the human who owns the session" · reuse principal',
+                ts: "11:21",
+              },
+              { from: "builder", role: "builder", body: "ack · adjusting AC-2 copy", ts: "11:24" },
+            ],
+          },
+          sdlc: {
+            idx: "03",
+            title: "SDLC pipeline",
+            slug: "sdlc",
+            seed: "03-review-feedback.yml",
+            roles: [
+              { role: "scout", machine: { local: "mac-01", remote: "rig-a" } },
+              { role: "builder", machine: { local: "mac-01", remote: "rig-a" } },
+              { role: "reviewer", machine: { local: "mac-01", remote: "rig-b" } },
+              { role: "resolver", machine: { local: "mac-01", remote: "mac-01" }, holder: "human" },
+            ],
+            trigger: { kind: "inbox_idle", on: "builder,reviewer" },
+            routine:
+              "# routines/sdlc-advance.yml\n" +
+              "name: sdlc-advance\n" +
+              "on:\n" +
+              "  inbox_idle:\n" +
+              "    role: [scout, builder, reviewer]\n" +
+              "    idle_for: 1m\n" +
+              "run:\n" +
+              "  agent: dispatcher\n" +
+              "  skill: sdlc-advance\n" +
+              "  pass:\n" +
+              "    sequence: [scout, builder, reviewer]\n" +
+              "    escalate_to: resolver\n" +
+              "    on: ambiguity\n",
+            agents: {
+              scout:
+                "# agents/scout/agent.yaml\n" +
+                "name: scout\n" +
+                "role: scout\n" +
+                "context: [skill: tech-debt-scout]\n" +
+                "inbox:\n" +
+                "  claims: [scout]\n" +
+                "  forward_to: builder\n",
+              builder:
+                "# agents/builder/agent.yaml\n" +
+                "name: builder\n" +
+                "role: builder\n" +
+                "context: [skill: bmad-build]\n" +
+                "inbox:\n" +
+                "  claims: [builder]\n" +
+                "  forward_to: reviewer\n" +
+                "  escalate_to: resolver\n",
+              reviewer:
+                "# agents/reviewer/agent.yaml\n" +
+                "name: reviewer\n" +
+                "role: reviewer\n" +
+                "context: [skill: bmad-code-review]\n" +
+                "inbox:\n" +
+                "  claims: [reviewer]\n" +
+                "  reply_to: builder\n",
+              resolver:
+                "# agents/resolver/agent.yaml\n" +
+                "name: resolver\n" +
+                "role: resolver\n" +
+                "holder: human\n" +
+                "inbox:\n" +
+                "  claims: [resolver]\n" +
+                "  reply_to: $sender\n",
+            },
+            thread: [
+              {
+                from: "scout",
+                role: "scout",
+                body: "found: 12 TODO lines in payments/",
+                ts: "08:40",
+              },
+              {
+                from: "builder",
+                role: "builder",
+                body: "picking DEMO-RF-3 off the scout queue",
+                ts: "09:02",
+              },
+              {
+                from: "builder",
+                role: "builder",
+                body: "two reasonable fixes · escalating",
+                ts: "09:14",
+              },
+              {
+                from: "resolver",
+                role: "resolver",
+                body: "go with option B · idempotent + fewer branches",
+                ts: "09:20",
+              },
+              {
+                from: "reviewer",
+                role: "reviewer",
+                body: "approved · merged at abc1234",
+                ts: "09:48",
+              },
+            ],
+          },
+          oneshot: {
+            idx: "04",
+            title: "One-shot notify",
+            slug: "one-shot",
+            seed: "04-ship-confirmation.yml",
+            roles: [],
+            trigger: { kind: "cron", on: "*/1 * * * *" },
+            routine:
+              "# routines/ping-when-green.yml\n" +
+              "name: ping-when-green\n" +
+              "on:\n" +
+              '  cron: "*/1 * * * *"\n' +
+              "run:\n" +
+              "  agent: ci-watch\n" +
+              "  skill: watch-ci\n" +
+              "  pass:\n" +
+              "    pr: $env.PR\n" +
+              "    once: true\n" +
+              "  inbox:\n" +
+              "    to: me\n" +
+              '    subject: "CI green on {pr}"\n',
+            agents: {
+              "ci-watch":
+                "# agents/ci-watch/agent.yaml\n" +
+                "name: ci-watch\n" +
+                "role: notify\n" +
+                "model: haiku\n" +
+                "context:\n" +
+                "  - skill: watch-ci\n" +
+                "inbox:\n" +
+                "  claims: []           # pure sender; no queue\n",
+            },
+            thread: [
+              {
+                from: "ci-watch",
+                role: "builder",
+                body: "watching PR #1947 · last status: yellow",
+                ts: "16:02",
+              },
+              {
+                from: "ci-watch",
+                role: "builder",
+                body: "watching PR #1947 · last status: yellow",
+                ts: "16:04",
+              },
+              {
+                from: "ci-watch",
+                role: "builder",
+                body: "CI green on PR #1947 · stop",
+                ts: "16:11",
+              },
+            ],
+          },
+        };
+
+        // ---------- Helpers ---------------------------------------------
+        function escapeHtml(s) {
+          return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        // Very light YAML colorizer — keys, string values, comments only. Not
+        // a parser; just enough chroma to make the YAML readable at a glance.
+        function yamlize(src) {
+          var out = escapeHtml(src);
+          out = out.replace(/(#.*)$/gm, '<span class="c">$1</span>');
+          out = out.replace(/^(\s*)([A-Za-z_][\w-]*)(:)/gm, function (_, pre, k, c) {
+            return pre + '<span class="k">' + k + "</span>" + c;
+          });
+          out = out.replace(
+            /(:\s)(&quot;[^#\n]*&quot;|[^#\n]+?)(\n|$)/g,
+            function (_, lead, val, tail) {
+              return lead + '<span class="s">' + val + "</span>" + tail;
+            },
+          );
+          return out;
+        }
+
+        function toast(msg) {
+          var t = document.getElementById("toast");
+          t.textContent = msg;
+          t.classList.add("is-open");
+          clearTimeout(toast._tid);
+          toast._tid = setTimeout(function () {
+            t.classList.remove("is-open");
+          }, 2200);
+        }
+
+        // ---------- Local ↔ Remote toggle --------------------------------
+        var modeInputs = document.querySelectorAll('input[name="mode"]');
+        function setMode(m) {
+          document.body.setAttribute("data-mode", m);
+          document.documentElement.style.setProperty("--mr", m === "remote" ? "1" : "0");
+          if (currentShape) renderSheet(currentShape);
+          renderComposer();
+        }
+        modeInputs.forEach(function (r) {
+          r.addEventListener("change", function (e) {
+            setMode(e.target.value);
+          });
+        });
+
+        // ---------- Diagram PNG probe (per card) -----------------------
+        // The per-card probe-and-promote
+        // flow for the `.excalidraw.png` sidecar was removed with the sidecar
+        // itself. `render_canvas` returns the PNG inline to the agent; shipped
+        // docs keep the stand-ins as the visuals.
+
+        // ---------- Sheet open/close ------------------------------------
+        var currentShape = null;
+        var currentTab = null;
+        var sheet = document.getElementById("sheet");
+        var backdrop = document.getElementById("sheet-backdrop");
+        var sheetClose = document.getElementById("sheet-close");
+        var lastFocused = null;
+
+        function openSheet(shape) {
+          if (!SHAPES[shape]) return;
+          lastFocused = document.activeElement;
+          currentShape = shape;
+          currentTab = "routine";
+          renderSheet(shape);
+          sheet.hidden = false;
+          requestAnimationFrame(function () {
+            sheet.classList.add("is-open");
+            backdrop.classList.add("is-open");
+          });
+          sheetClose.focus();
+        }
+        function closeSheet() {
+          sheet.classList.remove("is-open");
+          backdrop.classList.remove("is-open");
+          setTimeout(function () {
+            sheet.hidden = true;
+          }, 220);
+          currentShape = null;
+          if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+        }
+        backdrop.addEventListener("click", closeSheet);
+        sheetClose.addEventListener("click", closeSheet);
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && currentShape) closeSheet();
+        });
+
+        document.querySelectorAll(".ifl-card").forEach(function (c) {
+          c.addEventListener("click", function () {
+            openSheet(c.dataset.shape);
+          });
+        });
+
+        function renderSheet(shape) {
+          var S = SHAPES[shape];
+          document.getElementById("sheet-idx").textContent = S.idx;
+          document.getElementById("sheet-title").textContent = S.title;
+          document.getElementById("sheet-slug").textContent = S.slug;
+          document.getElementById("sheet-seed").textContent = S.seed;
+
+          // Clone the card's glyph (stand-in SVG) into the sheet image.
+          // The real-PNG promotion branch
+          // was removed with the build-time `.excalidraw.png` sidecar — the
+          // stand-in is the shipped visual.
+          var sourceCard = document.querySelector(
+            '.ifl-card[data-shape="' + shape + '"] .ifl-glyph',
+          );
+          var img = document.getElementById("sheet-image");
+          img.innerHTML = "";
+          if (sourceCard) {
+            var sv = sourceCard.querySelector("svg.stand-in");
+            if (sv) {
+              var clone = sv.cloneNode(true);
+              clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
+              img.appendChild(clone);
+            }
+          }
+
+          // Tabs: routine first, then one per agent.
+          var tabs = document.getElementById("sheet-tabs");
+          tabs.innerHTML = "";
+          var tabNames = ["routine"].concat(Object.keys(S.agents || {}));
+          tabNames.forEach(function (t) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "ifl-tab" + (t === currentTab ? " is-active" : "");
+            b.setAttribute("role", "tab");
+            b.setAttribute("aria-selected", t === currentTab ? "true" : "false");
+            b.textContent = t === "routine" ? "routine.yml" : t + "/agent.yaml";
+            b.addEventListener("click", function () {
+              currentTab = t;
+              renderSheet(shape);
+            });
+            tabs.appendChild(b);
+          });
+
+          // Snippet. Append a `# runs on:` comment reflecting the current
+          // mode so the Local⇄Remote toggle visibly morphs each role.
+          var snip = document.getElementById("sheet-snippet");
+          var src = currentTab === "routine" ? S.routine : S.agents[currentTab];
+          var decorated = src;
+          if (currentTab !== "routine") {
+            var roleEntry = (S.roles || []).find(function (r) {
+              return r.role === currentTab;
+            });
+            var mode = document.body.getAttribute("data-mode");
+            if (roleEntry && roleEntry.machine) {
+              decorated += "\n# runs on: " + roleEntry.machine[mode] + "  (" + mode + ")\n";
+            } else {
+              // ci-watch / nudger / etc. — not in roles[]; show mode anyway.
+              decorated +=
+                "\n# runs on: " + (mode === "remote" ? "rig-a" : "mac-01") + "  (" + mode + ")\n";
+            }
+          }
+          snip.innerHTML =
+            '<button type="button" class="ifl-btn copy" data-copy="' +
+            encodeURIComponent(src) +
+            '">' +
+            '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
+            '<rect x="4" y="4" width="9" height="9" rx="1"/>' +
+            '<path d="M4 4V3a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1"/>' +
+            "</svg> copy</button>" +
+            yamlize(decorated);
+          var copyBtn = snip.querySelector(".copy");
+          copyBtn.addEventListener("click", function (e) {
+            var raw = decodeURIComponent(e.currentTarget.dataset.copy);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(raw).then(
+                function () {
+                  toast("Copied to clipboard");
+                },
+                function () {
+                  toast("Copy failed");
+                },
+              );
+            } else {
+              toast("Copy unavailable");
+            }
+          });
+
+          // Thread.
+          var thread = document.getElementById("sheet-thread");
+          thread.innerHTML = "";
+          S.thread.forEach(function (m) {
+            var row = document.createElement("div");
+            row.className = "msg";
+            row.innerHTML =
+              '<span class="from" data-role="' +
+              escapeHtml(m.role) +
+              '">' +
+              escapeHtml(m.from) +
+              "</span>" +
+              '<span class="body">' +
+              escapeHtml(m.body) +
+              "</span>" +
+              '<span class="ts">' +
+              escapeHtml(m.ts) +
+              "</span>";
+            thread.appendChild(row);
+          });
+        }
+
+        // Open the live canvas tab in-app via the bridge; falls back to a
+        // toast when running under file:// or inside an agent preview.
+        document.getElementById("sheet-canvas-link").addEventListener("click", function () {
+          if (!currentShape) return;
+          var slug = SHAPES[currentShape].slug;
+          var cs = window.codesense;
+          var path =
+            "codesense-docs/getting-started/content/diagrams/inbox-flows/" + slug + ".excalidraw";
+          try {
+            if (cs && typeof cs.invoke === "function") {
+              cs.invoke("openFile", { path: path });
+              toast("Opening " + slug + ".excalidraw in canvas…");
+              return;
+            }
+          } catch (_) {
+            /* fall through */
+          }
+          toast("Canvas opens inside CodeSense · " + path);
+        });
+
+        // ---------- Keyboard: 1-4 open cards, L toggles, C focuses composer
+        document.addEventListener("keydown", function (e) {
+          if (e.target.closest("input, textarea, select")) return;
+          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          var map = { 1: "dispatch", 2: "hitl", 3: "sdlc", 4: "oneshot" };
+          if (map[e.key]) {
+            openSheet(map[e.key]);
+            e.preventDefault();
+            return;
+          }
+          var k = e.key.toLowerCase();
+          if (k === "l") {
+            var cur = document.body.getAttribute("data-mode");
+            var next = cur === "local" ? "remote" : "local";
+            var el = document.querySelector('input[name="mode"][value="' + next + '"]');
+            if (el) {
+              el.checked = true;
+              setMode(next);
+            }
+          }
+          if (k === "c") {
+            var comp = document.getElementById("composer");
+            if (comp) comp.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+
+        // ---------- Composer -------------------------------------------
+        var canvas = document.getElementById("canvas");
+        var emptyEl = document.getElementById("canvas-empty");
+        var yamlOut = document.getElementById("yaml-out");
+        var primerHost = document.getElementById("composer-primer");
+
+        /** Each node: { id, role, name, x, y } positions as % of canvas. */
+        var nodes = [];
+        var nextId = 1;
+
+        function randomPos() {
+          var n = nodes.length;
+          return {
+            x: 15 + ((n * 23) % 70),
+            y: 20 + ((n * 17) % 60),
+          };
+        }
+
+        function slugifyName(s) {
+          return String(s || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+        }
+
+        function addRole(role) {
+          var name = role;
+          if (role === "custom") {
+            var input = window.prompt("Custom role name?");
+            if (!input) return;
+            name = slugifyName(input) || "custom";
+          }
+          var pos = randomPos();
+          nodes.push({ id: nextId++, role: role, name: name, x: pos.x, y: pos.y });
+          renderComposer();
+        }
+
+        function removeRole(id) {
+          nodes = nodes.filter(function (n) {
+            return n.id !== id;
+          });
+          renderComposer();
+        }
+
+        document.querySelectorAll(".ifl-palette-item").forEach(function (b) {
+          b.addEventListener("click", function () {
+            addRole(b.dataset.role);
+          });
+        });
+
+        // Keyboard shortcuts for the palette, only when composer is on-screen.
+        document.addEventListener("keydown", function (e) {
+          if (e.target.closest("input, textarea, select, button")) return;
+          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          var km = {
+            t: "triager",
+            b: "builder",
+            r: "reviewer",
+            s: "scout",
+            e: "resolver",
+            a: "analyst",
+          };
+          var k = e.key.toLowerCase();
+          if (!km[k]) return;
+          var comp = document.getElementById("composer").getBoundingClientRect();
+          if (comp.top < window.innerHeight && comp.bottom > 0) {
+            addRole(km[k]);
+          }
+        });
+
+        // Drag-to-position.
+        var drag = null;
+        canvas.addEventListener("mousedown", function (e) {
+          var n = e.target.closest(".ifl-cnode");
+          if (!n || e.target.closest(".x")) return;
+          var rect = canvas.getBoundingClientRect();
+          drag = { id: Number(n.dataset.id), rect: rect };
+          e.preventDefault();
+        });
+        window.addEventListener("mousemove", function (e) {
+          if (!drag) return;
+          var x = ((e.clientX - drag.rect.left) / drag.rect.width) * 100;
+          var y = ((e.clientY - drag.rect.top) / drag.rect.height) * 100;
+          var node = nodes.find(function (n) {
+            return n.id === drag.id;
+          });
+          if (!node) return;
+          node.x = Math.max(5, Math.min(95, x));
+          node.y = Math.max(10, Math.min(90, y));
+          renderComposer();
+        });
+        window.addEventListener("mouseup", function () {
+          drag = null;
+        });
+
+        function renderComposer() {
+          Array.prototype.slice.call(canvas.querySelectorAll(".ifl-cnode")).forEach(function (n) {
+            n.remove();
+          });
+          emptyEl.classList.toggle("hidden", nodes.length > 0);
+          var mode = document.body.getAttribute("data-mode");
+          nodes.forEach(function (node) {
+            var el = document.createElement("div");
+            el.className = "ifl-cnode";
+            el.dataset.id = node.id;
+            el.dataset.role = node.role;
+            el.style.left = node.x + "%";
+            el.style.top = node.y + "%";
+            var mb =
+              mode === "remote"
+                ? node.role === "triager"
+                  ? "mac-01"
+                  : node.role === "reviewer"
+                    ? "rig-b"
+                    : "rig-a"
+                : "mac-01";
+            el.innerHTML =
+              '<span class="dot"></span>' +
+              "<span>" +
+              escapeHtml(node.name) +
+              "</span>" +
+              '<span class="mb">' +
+              escapeHtml(mb) +
+              "</span>" +
+              '<button type="button" class="x" aria-label="Remove ' +
+              escapeHtml(node.name) +
+              '">×</button>';
+            el.querySelector(".x").addEventListener("click", function (e) {
+              e.stopPropagation();
+              removeRole(node.id);
+            });
+            canvas.appendChild(el);
+          });
+          renderYaml();
+        }
+
+        function getTrigger() {
+          var kind = document.querySelector('input[name="trig"]:checked').value;
+          if (kind === "inbox_idle") {
+            return { kind: kind, role: document.getElementById("trig-role").value };
+          }
+          if (kind === "cron") {
+            return { kind: kind, expr: document.getElementById("trig-cron").value };
+          }
+          return { kind: "manual" };
+        }
+
+        document
+          .querySelectorAll('input[name="trig"], #trig-role, #trig-cron')
+          .forEach(function (i) {
+            i.addEventListener("change", renderYaml);
+            if (i.tagName === "INPUT" && i.type === "text") {
+              i.addEventListener("input", renderYaml);
+            }
+          });
+
+        function renderYaml() {
+          var trig = getTrigger();
+          var out = "";
+          out += "# routines/my-flow.yml\n";
+          out += "name: my-flow\n";
+          out += "on:\n";
+          if (trig.kind === "inbox_idle") {
+            out += "  inbox_idle:\n    role: " + trig.role + "\n    idle_for: 2m\n";
+          } else if (trig.kind === "cron") {
+            out += '  cron: "' + trig.expr + '"\n';
+          } else {
+            out += "  manual: true\n";
+          }
+          out += "run:\n";
+          if (nodes.length === 0) {
+            out += "  agent: ci-watch\n  skill: watch-ci\n  pass: { once: true }\n";
+          } else {
+            out += "  agent: " + nodes[0].name + "\n  pass:\n    message: $inbox.head\n";
+          }
+          var mode = document.body.getAttribute("data-mode");
+          nodes.forEach(function (n) {
+            out += "\n---\n\n";
+            out += "# agents/" + n.name + "/agent.yaml\n";
+            out += "name: " + n.name + "\n";
+            out += "role: " + (n.role === "custom" ? n.name : n.role) + "\n";
+            out += "inbox:\n  claims: [" + (n.role === "custom" ? n.name : n.role) + "]\n";
+            var runsOn = mode === "remote" && n.role !== "triager" ? "rig-a" : "mac-01";
+            out += "# runs on: " + runsOn + "\n";
+          });
+          yamlOut.innerHTML = yamlize(out);
+        }
+
+        // ---------- Preset seeding --------------------------------------
+        document.getElementById("preset-select").addEventListener("change", function (e) {
+          nodes = [];
+          var v = e.target.value;
+          if (v && v !== "blank") {
+            var S = SHAPES[v];
+            var positions = [
+              { x: 20, y: 30 },
+              { x: 55, y: 20 },
+              { x: 55, y: 55 },
+              { x: 55, y: 80 },
+              { x: 85, y: 50 },
+              { x: 85, y: 80 },
+            ];
+            S.roles.forEach(function (r, i) {
+              var p = positions[i] || { x: 50, y: 50 };
+              nodes.push({ id: nextId++, role: r.role, name: r.role, x: p.x, y: p.y });
+            });
+            if (S.trigger.kind === "inbox_idle") {
+              document.querySelector('input[name="trig"][value="inbox_idle"]').checked = true;
+              document.getElementById("trig-role").value =
+                (S.trigger.on || "").split(",")[0].trim() || "any";
+            } else if (S.trigger.kind === "cron") {
+              document.querySelector('input[name="trig"][value="cron"]').checked = true;
+              document.getElementById("trig-cron").value = S.trigger.on;
+            } else {
+              document.querySelector('input[name="trig"][value="manual"]').checked = true;
+            }
+          }
+          renderComposer();
+        });
+
+        // ---------- Copy buttons ----------------------------------------
+        document.getElementById("btn-copy").addEventListener("click", function () {
+          var text = yamlOut.textContent;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              function () {
+                toast("YAML copied to clipboard");
+              },
+              function () {
+                toast("Copy failed");
+              },
+            );
+          } else {
+            toast("Copy unavailable");
+          }
+        });
+
+        // "Copy to my context repo" — the Operate pivot (AC-3).
+        //
+        // Flow:
+        //   1. Check for an editable context repo via window.codesense.docs.hasEditableRepo().
+        //   2. If none → mount the create-repo primer inline (create-repo-primer.js).
+        //      On repo creation, retry automatically.
+        //   3. If present → fire the write through the bridge; graceful fallback
+        //      copies the payload to the clipboard when the bridge is absent
+        //      (file:// preview, agent preview, etc.).
+        var copyRepoBtn = document.getElementById("btn-copy-repo");
+        function buildWritePayload() {
+          var trig = getTrigger();
+          var routineBody = yamlOut.textContent.split(/^---\s*$/m)[0] || "";
+          var files = [{ path: "routines/my-flow.yml", content: routineBody }];
+          nodes.forEach(function (n) {
+            var roleName = n.role === "custom" ? n.name : n.role;
+            files.push({
+              path: "agents/" + n.name + "/agent.yaml",
+              content:
+                "name: " +
+                n.name +
+                "\n" +
+                "role: " +
+                roleName +
+                "\n" +
+                "inbox:\n  claims: [" +
+                roleName +
+                "]\n",
+            });
+          });
+          return { kind: "composed-flow", files: files, trigger: trig };
+        }
+
+        function fireWrite() {
+          var payload = buildWritePayload();
+          var cs = window.codesense;
+          try {
+            if (cs && typeof cs.invoke === "function") {
+              var result = cs.invoke("recipes_copy", {
+                source: "inbox-flows/composer",
+                kind: payload.kind,
+                files: payload.files,
+                trigger: payload.trigger,
+              });
+              Promise.resolve(result).then(
+                function () {
+                  toast("Dropped " + payload.files.length + " files into your context repo");
+                },
+                function (err) {
+                  var msg = (err && (err.message || String(err))) || "unknown";
+                  if (/read[- ]?only|refuse/i.test(msg)) {
+                    showPrimerAndRetry();
+                  } else {
+                    fallbackCopy(payload);
+                  }
+                },
+              );
+              return;
+            }
+          } catch (_) {
+            /* fall through */
+          }
+          fallbackCopy(payload);
+        }
+
+        function fallbackCopy(payload) {
+          var blob = JSON.stringify(payload, null, 2);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(blob).then(
+              function () {
+                toast("Bridge unavailable · payload copied to clipboard");
+              },
+              function () {
+                toast("Bridge unavailable · copy failed");
+              },
+            );
+          } else {
+            toast("Bridge unavailable · open inside CodeSense to copy");
+          }
+        }
+
+        function showPrimerAndRetry() {
+          primerHost.hidden = false;
+          var docs = window.codesense && window.codesense.docs;
+          if (docs && typeof docs.mountInlineAffordance === "function") {
+            docs.mountInlineAffordance(primerHost, {
+              onRetry: function () {
+                primerHost.hidden = true;
+                primerHost.innerHTML = "";
+                fireWrite();
+              },
+            });
+          } else {
+            primerHost.innerHTML =
+              '<div class="cs-docs-card" style="padding: 12px; border: 1px solid var(--cs-border); border-radius: 8px;">' +
+              '<p style="margin: 0; color: var(--cs-fg);">' +
+              "You need an editable context repo first. " +
+              '<a href="./arc-a-first-touch/create-a-context-repo.html">How to create one →</a>' +
+              "</p>" +
+              "</div>";
+          }
+        }
+
+        copyRepoBtn.addEventListener("click", function () {
+          copyRepoBtn.setAttribute("aria-busy", "true");
+          var docs = window.codesense && window.codesense.docs;
+          var hasRepo =
+            docs && typeof docs.hasEditableRepo === "function"
+              ? docs.hasEditableRepo()
+              : Promise.resolve(null); // null = unknown, fall through to invoke
+          Promise.resolve(hasRepo)
+            .then(function (ok) {
+              copyRepoBtn.removeAttribute("aria-busy");
+              if (ok === false) {
+                showPrimerAndRetry();
+                return;
+              }
+              fireWrite();
+            })
+            .catch(function () {
+              copyRepoBtn.removeAttribute("aria-busy");
+              fireWrite();
+            });
+        });
+
+        // ---------- First paint ----------------------------------------
+        renderComposer();
+      })();
+    </script>
+  </body>
+</html>

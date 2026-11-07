@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="refresh-cw" />
+    <title>CodeSense — Routines</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      /* ─── Arc-G local tokens — a muted "schedule" palette (teal/amber)
+             distinct from Arc-F role chroma. ─────────────────────────── */
+      :root {
+        --rtn-event: #1f6e8a;
+        --rtn-cron: #a56a16;
+        --rtn-manual: #4a5a74;
+        --rtn-bundle: #6b50e8;
+        --rtn-eachmac: #2a8a5e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --rtn-event: #6cc2d8;
+          --rtn-cron: #e0ac55;
+          --rtn-manual: #8ea3c6;
+          --rtn-bundle: #a898ff;
+          --rtn-eachmac: #4ec28a;
+        }
+      }
+
+      .arcg-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcg-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .arcg-node rect,
+      .arcg-node circle {
+        fill: color-mix(in srgb, var(--rtn-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--rtn-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .arcg-node[data-trigger="event"] {
+        --rtn-color: var(--rtn-event);
+      }
+      .arcg-node[data-trigger="cron"] {
+        --rtn-color: var(--rtn-cron);
+      }
+      .arcg-node[data-trigger="manual"] {
+        --rtn-color: var(--rtn-manual);
+      }
+      .arcg-node[data-trigger="bundle"] {
+        --rtn-color: var(--rtn-bundle);
+      }
+      .arcg-node[data-trigger="eachmac"] {
+        --rtn-color: var(--rtn-eachmac);
+      }
+      .arcg-node text {
+        fill: var(--cs-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .arcg-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 9px;
+      }
+      .arcg-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .arcg-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arcg-toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arcg-toc a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arcg-toc a:hover,
+      .arcg-toc a:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arcg-toc a strong {
+        display: block;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcg-toc a span {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+
+      .arcg-trigger-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--cs-docs-sp-3, 12px);
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arcg-trigger-card {
+        padding: var(--cs-docs-sp-4, 16px);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+      }
+      .arcg-trigger-card h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .arcg-trigger-card h3 .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--rtn-color, var(--cs-muted-fg));
+      }
+      .arcg-trigger-card[data-t="event"] {
+        --rtn-color: var(--rtn-event);
+      }
+      .arcg-trigger-card[data-t="cron"] {
+        --rtn-color: var(--rtn-cron);
+      }
+      .arcg-trigger-card[data-t="manual"] {
+        --rtn-color: var(--rtn-manual);
+      }
+      .arcg-trigger-card[data-t="bundle"] {
+        --rtn-color: var(--rtn-bundle);
+      }
+      .arcg-trigger-card[data-t="eachmac"] {
+        --rtn-color: var(--rtn-eachmac);
+      }
+      .arcg-trigger-card p {
+        margin: 0;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      .arcg-trigger-card code {
+        font-size: 11px;
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-g-routines/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc G — routines, every trigger shape" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="G">Arc G · Routines</span>
+        </p>
+        <h1>Routines.</h1>
+        <figure class="cs-docs-card arcg-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A routine pairs triggers with a task: a schedule, an event (inbox_idle, role_pending, agent_done), or none for manual."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="34" class="arcg-mbadge" style="font-size: 14px">
+              A routine = triggers + a task. A schedule, an event, or none.
+            </text>
+
+            <!-- Triggers column (left) -->
+            <g class="arcg-node" data-trigger="event" transform="translate(32 72)">
+              <rect width="150" height="36" rx="6" />
+              <text x="75" y="16" text-anchor="middle">inbox_idle</text>
+              <text x="75" y="28" text-anchor="middle" class="sub">reactive</text>
+            </g>
+            <g class="arcg-node" data-trigger="cron" transform="translate(32 120)">
+              <rect width="150" height="36" rx="6" />
+              <text x="75" y="16" text-anchor="middle">schedule</text>
+              <text x="75" y="28" text-anchor="middle" class="sub">wall-clock</text>
+            </g>
+            <g class="arcg-node" data-trigger="manual" transform="translate(32 168)">
+              <rect width="150" height="36" rx="6" />
+              <text x="75" y="16" text-anchor="middle">manual</text>
+              <text x="75" y="28" text-anchor="middle" class="sub">routine_run_now</text>
+            </g>
+            <g class="arcg-node" data-trigger="bundle" transform="translate(32 216)">
+              <rect width="150" height="36" rx="6" />
+              <text x="75" y="16" text-anchor="middle">agent_done</text>
+              <text x="75" y="28" text-anchor="middle" class="sub">after another agent</text>
+            </g>
+            <g class="arcg-node" data-trigger="event" transform="translate(32 264)">
+              <rect width="150" height="36" rx="6" />
+              <text x="75" y="16" text-anchor="middle">role_pending</text>
+              <text x="75" y="28" text-anchor="middle" class="sub">mail for a role</text>
+            </g>
+
+            <!-- Routine box (center) -->
+            <g transform="translate(240 150)">
+              <rect
+                width="160"
+                height="80"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 16%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+                style="stroke-dasharray: 4 3"
+              />
+              <text
+                x="80"
+                y="24"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 12px"
+              >
+                routine.yml
+              </text>
+              <text x="80" y="42" text-anchor="middle" class="arcg-mbadge">name · id</text>
+              <text x="80" y="56" text-anchor="middle" class="arcg-mbadge">mode · triggers</text>
+              <text x="80" y="70" text-anchor="middle" class="arcg-mbadge">task · where</text>
+            </g>
+
+            <!-- Task runner (right) -->
+            <g class="arcg-node" data-trigger="event" transform="translate(460 150)">
+              <rect width="150" height="80" rx="10" />
+              <text x="75" y="30" text-anchor="middle">its agent</text>
+              <text x="75" y="48" text-anchor="middle" class="sub">wake: running session</text>
+              <text x="75" y="62" text-anchor="middle" class="sub">start a new: new one</text>
+            </g>
+
+            <!-- Edges from triggers into routine -->
+            <path class="arcg-edge" d="M182 90 C 210 90, 220 160, 240 170" />
+            <path class="arcg-edge" d="M182 138 C 210 138, 220 175, 240 180" />
+            <path class="arcg-edge" d="M182 186 L 240 190" />
+            <path class="arcg-edge" d="M182 234 C 210 234, 220 200, 240 200" />
+            <path class="arcg-edge" d="M182 282 C 210 282, 220 215, 240 210" />
+
+            <!-- Edge routine → session -->
+            <path class="arcg-edge" d="M400 190 L 460 190" />
+            <text x="430" y="180" text-anchor="middle" class="arcg-mbadge">wakes / starts</text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a routine is — a schedule-shape, not a daemon" id="why">
+        <p>
+          A routine is a saved agent's standing task: a tiny bit of YAML, stored under that agent,
+          that pairs a <strong>trigger</strong> with a <strong>task</strong>. The trigger is "when"
+          (a schedule, an idle inbox, mail queued for a role, another agent finishing, a human clicking <em>Run</em>). The
+          <strong>mode</strong> is "how": <strong>wake</strong> types the task into the agent's
+          running session when it is idle (starting one only if none runs), and
+          <strong>start a new</strong> (<code>mode: fresh</code>) starts a new session every time.
+          No daemon, no polling — CodeSense owns the clock. In the app, routines live in the
+          <strong>Agents</strong> tab: each agent's Routines section, and the
+          <strong>Agents | Schedule</strong> view.
+        </p>
+        <p>
+          For "do this later" inside one conversation there is a lighter tool: a
+          <a href="./session-timers.html">session timer</a>, a temporary routine that comes back to
+          that same session and ends with it.
+        </p>
+      </section>
+
+      <section data-search="Cancel one routine run over MCP, stop queued or running work" id="cancel-run">
+        <h2>Cancel one run</h2>
+        <p>
+          An agent calls <code>routine_cancel {runId}</code> to cancel one queued or running run.
+          Read <code>routine_runs</code> first and use the returned <code>run_id</code>:
+        </p>
+        <pre><code>routine_runs {"id":"acme/api/backend/digest","limit":20}
+// Choose a queued or running row and copy its run_id.
+routine_cancel {"runId":"&lt;run_id from routine_runs&gt;"}
+routine_run {"runId":"&lt;the same run_id&gt;"}</code></pre>
+        <p>
+          Success returns <code>{status:"ok", data:{routine_id, routine_name, run_id, phase,
+          created_at, started_at, ended_at, ...}}</code>, the same row shape as
+          <code>routine_run</code>, with RFC3339 times. Cancelling a fresh run stops its agent
+          or command. Cancelling a wake run keeps the session it woke alive; queued wake text
+          is withdrawn from its host first. If the host already delivered it, the response
+          reports that it could not be withdrawn and gives its actual phase. An unreachable
+          host or a remote launch still starting returns an error; the run stays queued.
+        </p>
+        <p>
+          An unknown run, a run outside your visible routines, or an already finished run
+          returns <code>validation</code> with a message; finished runs are unchanged. Shared
+          team runs can be cancelled regardless of who created the routine. MCP identity comes
+          from the verified connection; omit <code>sessionId</code>, or supply only your own.
+          An unbound connection or another caller's id is refused.
+        </p>
+        <p>
+          This cancels one run and leaves future fires enabled. Other queued runs may start
+          when this one ends. To pause future starts, use
+          <code>routine_set_enabled {id, enabled:false}</code>. The pane method
+          <code>codesense.routineCancel({key})</code> is a different operation: it batch-cancels
+          this principal's live structured-result attempts for that routine and returns a
+          count, retaining last-good data. See <a href="./troubleshooting.html">troubleshooting</a>.
+        </p>
+      </section>
+
+      <section data-search="The trigger shapes at a glance" id="triggers-at-a-glance">
+        <h2>Trigger shapes</h2>
+        <p>
+          A trigger is a <code>schedule</code> (a cron and a time zone) or an
+          <code>event</code>. The event kinds are <code>inbox_idle</code>,
+          <code>role_pending</code> and <code>agent_done</code>. No triggers means manual only.
+        </p>
+        <div class="arcg-trigger-grid">
+          <div class="arcg-trigger-card" data-t="event">
+            <h3><span class="dot"></span>inbox_idle</h3>
+            <p>
+              Fires when a session sits idle at its prompt with unread mail. With
+              <code>mode: wake</code> it wakes the routine's own agent. Zero cost when nothing
+              waits; immediate when work lands. The glue of the inbox-driven factory.
+            </p>
+          </div>
+          <div class="arcg-trigger-card" data-t="cron">
+            <h3><span class="dot"></span>schedule</h3>
+            <p>
+              A standard 5-field cron in a time zone (an agent can also pass a preset such as
+              <code>daily 09:00</code> as <code>when</code>). Fires on wall-clock cadence. Great for liveness
+              backstops, synthesis passes, or a nightly sweep.
+            </p>
+          </div>
+          <div class="arcg-trigger-card" data-t="manual">
+            <h3><span class="dot"></span>manual</h3>
+            <p>
+              Fires only when a human clicks <em>Run now</em>, a dashboard's Refresh calls
+              <code>routineRefresh</code>, or an agent calls <code>routine_run_now</code>. The docs'
+              own <code>update-codesense-docs</code> routine is one: the Update button runs it.
+            </p>
+          </div>
+          <div class="arcg-trigger-card" data-t="bundle">
+            <h3><span class="dot"></span>agent_done</h3>
+            <p>
+              Fires when an agent finishes (<code>signal_done</code>), optionally only one agent
+              (<code>from_agent</code>). The routine shows under the agent it runs, with an "after
+              ‹agent›" note.
+            </p>
+          </div>
+          <div class="arcg-trigger-card" data-t="event">
+            <h3><span class="dot"></span>role_pending</h3>
+            <p>
+              Fires once for each message queued for a role inbox. A controller routine uses it
+              to start an agent for the role, which then claims the message. The run gets
+              <code>{{trigger.role}}</code> and <code>{{trigger.message_id}}</code>.
+            </p>
+          </div>
+          <div class="arcg-trigger-card" data-t="eachmac">
+            <h3><span class="dot"></span>each_mac</h3>
+            <p>
+              Not a trigger by itself — a <code>runs_on</code> scope that pairs with any of the
+              above. The routine fires once per trusted Mac on each tick, so remote fleets stay
+              independent.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Pages in this arc" id="toc">
+        <h2>Pages in this arc</h2>
+        <div class="arcg-toc">
+          <a href="./routine-yml.html"
+            ><strong>routine.yml</strong> <span>Every field; link to the schema browser.</span></a
+          >
+          <a href="./triggers.html"
+            ><strong>Triggers</strong>
+            <span>Schedules, metadata, inbox, completion and role events.</span></a
+          >
+          <a href="./trigger-cookbook.html"><strong>Trigger cookbook</strong><span>Six copyable MCP and YAML recipes, with validation.</span></a>
+          <a href="./command-routines.html"><strong>Command routines</strong><span>Argv commands, exit outcomes and a metadata → command → agent chain.</span></a>
+          <a href="./tasks.html"
+            ><strong>Tasks</strong> <span>Task shape, args, exit contract.</span></a
+          >
+          <a href="./storage.html"
+            ><strong>Storage</strong> <span>Routines live under the agent that runs them.</span></a
+          >
+          <a href="./agent-wake.html"
+            ><strong>Agent wake</strong>
+            <span>Wake or start a new: <code>mode</code>, <code>machine</code>, delivery.</span></a
+          >
+          <a href="./session-timers.html"
+            ><strong>Session timers</strong>
+            <span>"Add a routine for your session": <code>schedule_wakeup</code>.</span></a
+          >
+          <a href="./writes-dashboards.html"
+            ><strong>Writes dashboards</strong>
+            <span>Routines → file → reactive dashboard.</span></a
+          >
+          <a href="./remote.html"
+            ><strong>Remote</strong> <span>Running on remote machines; per-Mac switch.</span></a
+          >
+          <a href="./troubleshooting.html"
+            ><strong>Troubleshooting</strong> <span>Stuck runs, missed schedules, debug.</span></a
+          >
+        </div>
+      </section>
+
+      <section data-search="Try this now — open the routines console" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the <strong>routines console</strong> dashboard. It lists every routine the active
+          team is wired to run, their next-fire times, and the last-N runs with status chips.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "routines-console.html"}'
+          label="Open the routines console"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Every routine you can see, or one agent's
+codesense.invoke('routine_list', {})
+codesense.invoke('routine_list', { agent: 'manager' })
+
+// Make one for Barb: wake her running session every weekday at 9
+codesense.invoke('routine_create', {
+  name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: '…',
+})
+
+// Or, for your own session only, a timer
+codesense.invoke('schedule_wakeup', { sessionId, in: '20m', prompt: '…' })
+
+// Fire a routine once by hand
+codesense.invoke('routine_run_now', { id: 'manager-wake' })</code></pre>
+          <p>See <a href="../mcp-explorer.html">mcp-explorer</a> for the full tool catalog.</p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Next:
+        <a href="./routine-yml.html">routine.yml →</a> · Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml</a> ·
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc G · Routines</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

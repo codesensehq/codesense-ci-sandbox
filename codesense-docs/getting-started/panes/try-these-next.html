@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="arrow-right-to-line" />
+    <title>Try these next · CodeSense</title>
+
+    <script>window.__codesenseThemeAware = true;</script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg); color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased; min-height: 100vh;
+      }
+
+      /* Pane shell (shared) */
+      .pane { display: flex; flex-direction: column; max-width: 360px; margin: 0 auto; min-height: 100vh; }
+      .pane__header {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        height: 36px; padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-accent); flex: 0 0 auto; }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title { margin: 0; font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.005em; }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg); width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer; padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-muted-fg); font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono); background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm); color: var(--cs-fg); font-style: normal;
+      }
+      .pane__body { padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3); flex: 1;
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) { .pane__body { transition: none; } }
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+      .pane__label {
+        display: block; font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .pane__ctas { display: flex; flex-wrap: wrap; gap: var(--cs-space-2); padding: 0 var(--cs-space-4) var(--cs-space-4); }
+      .cta {
+        appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px; font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm); border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface); color: var(--cs-fg); text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta--primary { background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent); }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta svg { width: 14px; height: 14px; }
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4); border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono); color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cs-muted-fg); }
+      .pane__prov a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--cs-muted-fg); }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local chrome ---------------- */
+
+      /* Phase breadcrumb: shows where we are in the 14-step SDLC. */
+      .phase-crumb {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 3px 8px;
+        border: 1px solid var(--cs-border);
+        border-radius: 999px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+        background: var(--cs-surface);
+      }
+      .phase-crumb .num {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+      .phase-crumb .arrow { color: var(--cs-muted-fg); }
+
+      /* Numbered next-move list. Each item: number, title, one-line sub, inline link. */
+      .nexts {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--cs-space-3);
+        counter-reset: step;
+      }
+      .next {
+        counter-increment: step;
+        display: grid; grid-template-columns: 22px 1fr;
+        gap: var(--cs-space-3);
+        align-items: start;
+      }
+      .next::before {
+        content: counter(step);
+        font: 500 var(--cs-text-xs)/22px var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        text-align: center;
+        border: 1px solid var(--cs-border);
+        border-radius: 50%;
+        width: 22px; height: 22px;
+      }
+      .next__title {
+        display: block;
+        font: 600 var(--cs-text-sm)/1.3 var(--cs-font-sans);
+        margin: 2px 0 3px;
+        color: var(--cs-fg);
+      }
+      .next__sub {
+        display: block;
+        font: 400 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+        margin: 0 0 6px;
+      }
+      .next__sub code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm);
+        color: var(--cs-fg);
+      }
+      .next__action {
+        appearance: none; background: transparent; border: 0; padding: 0;
+        display: inline-flex; align-items: center; gap: 4px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        color: var(--cs-fg);
+        cursor: pointer;
+      }
+      .next__action svg { width: 11px; height: 11px; }
+      .next__action:hover { text-decoration: underline; text-underline-offset: 2px; }
+      .next__action:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; border-radius: 2px; }
+
+      /* Read-only-on-docs-org inline notice (small, muted). */
+      .readonly-note {
+        display: flex; align-items: center; gap: 6px;
+        margin-top: var(--cs-space-2);
+        padding: 6px 8px;
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        font: 400 var(--cs-text-xs)/1.4 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+      }
+      .readonly-note svg { width: 12px; height: 12px; color: var(--cs-muted-fg); flex-shrink: 0; }
+    </style>
+  </head>
+
+  <body>
+    <aside class="pane" role="complementary" aria-labelledby="pane-title" data-pane-id="try-these-next">
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: arrow-right-to-line -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17 12H3"/><path d="m11 18 6-6-6-6"/><path d="M21 5v14"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Try these next</h2>
+        <span class="spacer"></span>
+        <button class="pane__collapse" type="button" aria-expanded="true"
+                aria-controls="pane-body" title="Collapse (C)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse</span>
+        </button>
+      </header>
+
+      <p class="pane__why" id="pane-why">
+        You're on <strong>Phase 8 — Build</strong>. These are the moves that make
+        sense next.
+      </p>
+
+      <section class="pane__body" id="pane-body" aria-labelledby="pane-title">
+        <!-- Section 1: phase breadcrumb -->
+        <div class="pane__section">
+          <span class="pane__label">SDLC phase</span>
+          <span class="phase-crumb" id="phase-crumb">
+            <span class="num">08</span>
+            <span>Build</span>
+            <span class="arrow">·</span>
+            <span>parallel builders</span>
+          </span>
+        </div>
+
+        <!-- Section 2: three contextual next moves -->
+        <div class="pane__section">
+          <span class="pane__label">Three good moves</span>
+          <ol class="nexts" id="nexts">
+            <li class="next">
+              <div>
+                <span class="next__title">Open a worktree for a ready story</span>
+                <p class="next__sub">
+                  Pick the first story with <code>status: ready</code> and run
+                  <code>openWorkspace</code> on it.
+                </p>
+                <button type="button" class="next__action" data-action='{"kind":"invoke","cmd":"openWorkspace","args":{"storyId":"DEMO-1"}}'>
+                  Try it now
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+            <li class="next">
+              <div>
+                <span class="next__title">Point a routine at <code>inbox_idle</code></span>
+                <p class="next__sub">
+                  So the <code>builder</code> role picks up new work by itself.
+                </p>
+                <button type="button" class="next__action" data-action='{"kind":"open","path":"./arc-g-routines/triggers.html"}'>
+                  Open the recipe
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+            <li class="next">
+              <div>
+                <span class="next__title">Watch the dag live</span>
+                <p class="next__sub">
+                  Open <code>agent-dag.html</code> to see builders fan out in real time.
+                </p>
+                <button type="button" class="next__action" data-action='{"kind":"open","path":"./examples/dashboards/agent-dag.html"}'>
+                  Open dashboard
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+          </ol>
+
+          <div class="readonly-note" id="readonly-note" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>
+              Docs org is read-only — these actions
+              <a href="#" data-nav="start-from-example">copy to your own context repo</a>
+              first.
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="playbook">
+          <!-- route -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+            <circle cx="18" cy="5" r="3"/>
+          </svg>
+          Open the playbook
+        </button>
+        <button type="button" class="cta" data-cta="phase-list">All 14 phases</button>
+      </div>
+
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane</span>
+        <span>·</span>
+        <a href="#" data-nav="factory-playbook">factory-playbook.html</a>
+      </footer>
+    </aside>
+
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const body = pane.querySelector('.pane__body');
+        const why = pane.querySelector('.pane__why');
+        const nextsEl = pane.querySelector('#nexts');
+        const phaseEl = pane.querySelector('#phase-crumb');
+        const roNote = pane.querySelector('#readonly-note');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // 14-phase SDLC → recommended moves. One entry per phase + per surface.
+        const MOVES = {
+          'phase:1-idea': {
+            crumb: ['01', 'Idea', 'brainstorm'],
+            why: `You're on <strong>Phase 1 — Idea</strong>. First moves to shape it.`,
+            moves: [
+              { t: 'Run <code>bmad-brainstorming</code>',   s: 'Ten minutes of structured ideation with the analyst.', a: { kind: 'invoke', cmd: 'runSkill', args: { skill: 'bmad-brainstorming' } } },
+              { t: 'Open the kickoff console',               s: 'See what others are brainstorming now.',               a: { kind: 'open', path: './examples/dashboards/kickoff-console.html' } },
+              { t: 'Draft a product brief when ready',        s: '<code>bmad-product-brief</code> turns it into a doc.', a: { kind: 'invoke', cmd: 'runSkill', args: { skill: 'bmad-product-brief' } } },
+            ],
+          },
+          'phase:5-stories': {
+            crumb: ['05', 'Stories', 'graph it'],
+            why: `You're on <strong>Phase 5 — Stories</strong>. Shape the graph.`,
+            moves: [
+              { t: 'Run <code>bmad-create-epics-and-stories</code>', s: 'Pulls stories from the PRD.', a: { kind: 'invoke', cmd: 'runSkill', args: { skill: 'bmad-create-epics-and-stories' } } },
+              { t: 'Open the story board',                           s: 'See the current epic and its stories.',  a: { kind: 'open', path: './examples/dashboards/story-board.html' } },
+            ],
+          },
+          'phase:8-build': {
+            crumb: ['08', 'Build', 'parallel builders'],
+            why: `You're on <strong>Phase 8 — Build</strong>. These are the moves that make sense next.`,
+            moves: [
+              { t: 'Open a worktree for a ready story',    s: 'Pick the first story with <code>status: ready</code> and run <code>openWorkspace</code> on it.', a: { kind: 'invoke', cmd: 'openWorkspace', args: { storyId: 'DEMO-1' } } },
+              { t: 'Point a routine at <code>inbox_idle</code>', s: 'So the <code>builder</code> role picks up new work by itself.', a: { kind: 'open', path: './arc-g-routines/triggers.html' } },
+              { t: 'Watch the dag live',                   s: 'Open <code>agent-dag.html</code> to see builders fan out in real time.', a: { kind: 'open', path: './examples/dashboards/agent-dag.html' } },
+            ],
+          },
+          'phase:9-decisions': {
+            crumb: ['09', 'Decisions', 'unstick'],
+            why: `You're on <strong>Phase 9 — Decisions</strong>. Clear the resolver queue.`,
+            moves: [
+              { t: 'Open the resolver inbox', s: 'Every escalation lives here, oldest first.', a: { kind: 'open', path: './examples/dashboards/agent-inbox-console.html?role=resolver' } },
+              { t: 'Run <code>bmad-loop-resolve</code>', s: 'Interactive un-stick for the top escalation.', a: { kind: 'invoke', cmd: 'runSkill', args: { skill: 'bmad-loop-resolve' } } },
+              { t: 'Reply with the decision', s: 'Builders resume automatically on reply.', a: { kind: 'focus-composer' } },
+            ],
+          },
+          'phase:10-review': {
+            crumb: ['10', 'Review', 'merge gate'],
+            why: `You're on <strong>Phase 10 — Review</strong>. Clear the review queue.`,
+            moves: [
+              { t: 'Open the reviewer inbox', s: 'Every ready PR, oldest first.', a: { kind: 'open', path: './examples/dashboards/agent-inbox-console.html?role=reviewer' } },
+              { t: 'Run <code>bmad-code-review</code>', s: 'Adversarial code review on the top PR.', a: { kind: 'invoke', cmd: 'runSkill', args: { skill: 'bmad-code-review' } } },
+              { t: 'See the pipeline', s: 'Which stories are blocking others.', a: { kind: 'open', path: './examples/dashboards/pipeline-graph.html' } },
+            ],
+          },
+        };
+
+        function pickKey(ctx) {
+          if (ctx.sdlcPhase) return `phase:${ctx.sdlcPhase}`;
+          // Heuristic: match filename to a phase keyword.
+          const f = ctx.filename || '';
+          if (/kickoff/.test(f))     return 'phase:1-idea';
+          if (/story|epic/.test(f))  return 'phase:5-stories';
+          if (/agent-dag|factory/.test(f))  return 'phase:8-build';
+          if (/resolver|inbox-flows/.test(f)) return 'phase:9-decisions';
+          if (/review|pipeline-graph/.test(f)) return 'phase:10-review';
+          return 'phase:8-build';
+        }
+
+        function renderMoves(entry, ctx) {
+          why.innerHTML = entry.why;
+          const [num, name, hint] = entry.crumb;
+          phaseEl.innerHTML = `
+            <span class="num">${num}</span>
+            <span>${name}</span>
+            <span class="arrow">·</span>
+            <span>${hint}</span>
+          `;
+          nextsEl.innerHTML = entry.moves.map(m => `
+            <li class="next">
+              <div>
+                <span class="next__title">${m.t}</span>
+                <p class="next__sub">${m.s}</p>
+                <button type="button" class="next__action" data-action='${JSON.stringify(m.a).replace(/'/g,"&#39;")}'>
+                  ${m.a.kind === 'invoke' ? 'Try it now' : m.a.kind === 'open' ? 'Open' : 'Go'}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </li>
+          `).join('');
+          nextsEl.querySelectorAll('.next__action').forEach(btn => {
+            btn.addEventListener('click', () => runAction(JSON.parse(btn.dataset.action)));
+          });
+
+          // Toggle the read-only notice if the context says this is the docs org.
+          roNote.hidden = !ctx.isDocsOrg;
+        }
+
+        function runAction(a) {
+          if (a.kind === 'invoke' && window.codesense?.invoke) {
+            // Soft confirmation sheet is the viewer's job; the pane just invokes.
+            window.codesense.invoke(a.cmd, a.args || {});
+          } else if (a.kind === 'open' && window.codesense?.openFile) {
+            window.codesense.openFile({ path: a.path, newTab: true });
+          } else if (a.kind === 'focus-composer') {
+            window.parent?.postMessage({ type: 'codesense:focus-composer' }, '*');
+          }
+        }
+
+        function applyContext(ctx) {
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            const key = pickKey(ctx);
+            const entry = MOVES[key] || MOVES['phase:8-build'];
+            renderMoves(entry, ctx);
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        if (window.codesense?.onSlotContext) {
+          window.CodeSenseDocsPane.onContext(applyContext);
+        } else {
+          applyContext({ surface: 'viewer:html', filename: 'factory-playbook.html', isDocsOrg: true });
+        }
+
+        // CTAs
+        pane.querySelector('[data-cta="playbook"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './factory-playbook.html', newTab: true });
+        });
+        pane.querySelector('[data-cta="phase-list"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './factory-playbook.html#phases', newTab: true });
+        });
+
+        // Collapse
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => setCollapsed(pane.dataset.collapsed !== 'true'));
+        pane.addEventListener('keydown', (e) => {
+          if ((e.key === 'c' || e.key === 'C') && e.target.tagName !== 'INPUT') {
+            setCollapsed(pane.dataset.collapsed !== 'true');
+          }
+        });
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

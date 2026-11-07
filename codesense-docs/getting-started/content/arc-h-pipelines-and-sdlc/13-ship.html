@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 13 · Ship</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="13"
+    data-page="arc-h-pipelines-and-sdlc/13-ship"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 13 — Ship" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>13</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>SHIP</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>13</span> ·
+                  <span data-cs-phase-name>Ship</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  <code>reverse_sync_worktree</code> publishes the workspace's
+                  context edits to team content; an agent you ask then commits and
+                  pushes the context repo. One human-authorized moment, no implicit side effects.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What ship phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              Shipping is a human-authorized moment, not a schedule. The agent
+              previews its context edits with
+              <code>preview_reverse_sync_worktree</code>, publishes them to team
+              content with <code>reverse_sync_worktree</code>, then, when you ask,
+              commits and pushes the context repo with <code>git</code> and
+              reports with <code>report_context_sync</code>.
+            </p>
+            <p>
+              Nothing publishes a workspace's edits on its own. Skip the
+              publish and they stay on that machine.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO ship" id="worked">
+            <h2>Worked example — shipping DEMO-1</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — ship" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in ship" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml ship" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml ship" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — ship" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  The preview lists every file the publish would write, plus
+                  any conflict (a conflict is never written). The agent
+                  publishes only after you say yes, and pushes only after
+                  that.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  A remote workspace publishes the same way:
+                  <code>reverse_sync_worktree</code> writes team content on this
+                  Mac. The push happens where the context repo's clone is,
+                  usually this Mac, so ask an agent here to push.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="How to ship via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>// Preview, then publish the workspace's context edits.
+const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
+codesense.invoke('preview_reverse_sync_worktree', { target })
+codesense.invoke('reverse_sync_worktree', { target })
+// Then run git yourself (commit, push) and report how it went.
+codesense.invoke('report_context_sync', { state: 'ok' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-13">factory playbook · phase 13</a>
+            &nbsp;·&nbsp; Previous: <a href="./12-retro.html">← 12 Retro</a> ·
+            Next: <a href="./14-loop.html">14 Loop →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 13 · Ship</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

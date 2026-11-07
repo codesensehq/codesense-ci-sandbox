@@ -1,0 +1,92 @@
+# Build output
+dist
+build/bin/
+target
+# Retired per-lane target dirs: every dev-profile lane now builds into `target/`.
+# Kept ignored so leftovers in old worktrees stay out of commits.
+target-ci
+target-mcp-reference
+target-doc-contract
+src-tauri/gen
+src-tauri/binaries
+
+# Test artifacts
+test-results/
+playwright-report/
+blob-report/
+coverage/
+# Local test and gate run output.
+artifacts/
+logs/
+!scripts/tests/fixtures/rm4f-valid/logs/
+!scripts/tests/fixtures/rm4f-valid/logs/**
+scripts/**/__pycache__/
+
+# Dependencies
+node_modules
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.cursor
+.idea
+.vscode
+*.swp
+*.swo
+
+# Local tooling
+.playwright-mcp
+tmp
+# CodeGraph builds a per-worktree index here; regenerable, never committed.
+.codegraph/
+
+# Dependency archives (uploaded to GitHub Releases, not committed)
+git-*.tar.gz
+git-*.sha256
+
+# Environment files
+src-tauri/.env
+
+# Codesense managed — start
+# Install/projection content is ignored per-clone via .git/info/exclude
+# (content_engine/git_exclude.rs). These blanket lines additionally guard the
+# install layer (.claude/_bmad/.codesense/...) in fresh clones before the sync
+# engine runs. Projection dests (e.g. _bmad-output/) are covered per-clone by
+# the dir-level exclude entry, so they are intentionally NOT listed here.
+.claude
+# Keep committed project config visible. Only .claude/settings.json is tracked
+# (tracked files aren't ignored regardless; the !-rule documents intent). The
+# .claude/hooks/ un-ignores are inert under the .claude blanket (git won't
+# re-include under an excluded parent; hooks are install-managed and stay
+# ignored) — kept verbatim for intent and if .claude is ever narrowed.
+!.claude/hooks/
+!.claude/hooks/**
+!.claude/settings.json
+.codesense
+_bmad
+myself.md
+version.json
+# Codesense managed — end
+
+# Core layer content (embedded into binary via include_dir!).
+# Must come AFTER the codesense-managed block so this un-ignore wins gitignore precedence.
+!core-content/
+!core-content/**
+
+# The bundled CodeSense docs context repo ships team skills under `.claude/`.
+!codesense-docs/**/.claude/
+# Generated at build time by scripts/build-codesense-docs.mjs (src-tauri/build.rs).
+src-tauri/resources/codesense-docs.tar.gz
+
+tsconfig.node.tsbuildinfo
+
+# Signed release asset fetched by scripts/fetch-git-ai.sh.
+src-tauri/resources/git-ai
+
+# a handbook snapshot refresh stages pages here (removed when it finishes)
+/.handbook-refresh-*/
+
+# pinned secret scanners, installed by the release tooling
+/.cache/scanners/

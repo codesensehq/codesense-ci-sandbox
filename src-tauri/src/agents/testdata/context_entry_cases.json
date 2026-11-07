@@ -1,0 +1,562 @@
+[
+  {
+    "path": "docs",
+    "ok": true
+  },
+  {
+    "path": "./docs/architecture/",
+    "ok": true
+  },
+  {
+    "path": "",
+    "ok": false
+  },
+  {
+    "path": ".",
+    "ok": false
+  },
+  {
+    "path": "/abs",
+    "ok": false
+  },
+  {
+    "path": "a/../b",
+    "ok": false
+  },
+  {
+    "path": "docs/*.md",
+    "ok": false
+  },
+  {
+    "path": "node_modules/x",
+    "ok": false
+  },
+  {
+    "path": "docs/.git/config",
+    "ok": false
+  },
+  {
+    "path": "x/.svn",
+    "ok": false
+  },
+  {
+    "path": ".idea/workspace.xml",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "plans",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "plans/",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "../up",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "x/.hg/y",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".claude/settings.json",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".claude/settings.local.json",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".mcp.json",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".codex/config.toml/inner",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "a/wvbuild-lock",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "a/wv-ci-gate",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".claude/scheduled_tasks.lock",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "a/.idea",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "a/.idea/b",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "notes/.DS_Store",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "keep/.gitkeep",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "edit.swp",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "deps/node_modules/x",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "config/.env",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": ".env.local",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "keys/server.pem",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "home/.npmrc",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "state/weft.sqlite3",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "state/app.db-wal",
+    "ok": false
+  },
+  {
+    "path": "docs",
+    "dest": "keys/id_ed25519.pub",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "state/app.db",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "docs",
+    "ok": true
+  },
+  {
+    "path": "docs",
+    "dest": "a/.DS_Store",
+    "ok": false,
+    "why": "ignore: **/.DS_Store"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.swp",
+    "ok": false,
+    "why": "ignore: **/*.swp"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.git/b",
+    "ok": false,
+    "why": "ignore: **/.git/**"
+  },
+  {
+    "path": "docs",
+    "dest": "a/node_modules/b",
+    "ok": false,
+    "why": "ignore: **/node_modules/**"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.gitkeep",
+    "ok": false,
+    "why": "ignore: **/.gitkeep"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.env",
+    "ok": false,
+    "why": "secret: **/.env"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.env.x",
+    "ok": false,
+    "why": "secret: **/.env.*"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.env",
+    "ok": false,
+    "why": "secret: **/*.env"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.pem",
+    "ok": false,
+    "why": "secret: **/*.pem"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.key",
+    "ok": false,
+    "why": "secret: **/*.key"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.p8",
+    "ok": false,
+    "why": "secret: **/*.p8"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.p12",
+    "ok": false,
+    "why": "secret: **/*.p12"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.pfx",
+    "ok": false,
+    "why": "secret: **/*.pfx"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.ppk",
+    "ok": false,
+    "why": "secret: **/*.ppk"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.jks",
+    "ok": false,
+    "why": "secret: **/*.jks"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.keystore",
+    "ok": false,
+    "why": "secret: **/*.keystore"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.pkcs12",
+    "ok": false,
+    "why": "secret: **/*.pkcs12"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.asc",
+    "ok": false,
+    "why": "secret: **/*.asc"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.gpg",
+    "ok": false,
+    "why": "secret: **/*.gpg"
+  },
+  {
+    "path": "docs",
+    "dest": "a/id_rsa",
+    "ok": false,
+    "why": "secret: **/id_rsa"
+  },
+  {
+    "path": "docs",
+    "dest": "a/id_dsa",
+    "ok": false,
+    "why": "secret: **/id_dsa"
+  },
+  {
+    "path": "docs",
+    "dest": "a/id_ecdsa",
+    "ok": false,
+    "why": "secret: **/id_ecdsa"
+  },
+  {
+    "path": "docs",
+    "dest": "a/id_ed25519",
+    "ok": false,
+    "why": "secret: **/id_ed25519"
+  },
+  {
+    "path": "docs",
+    "dest": "a/credentials",
+    "ok": false,
+    "why": "secret: **/credentials"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.git-credentials",
+    "ok": false,
+    "why": "secret: **/.git-credentials"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.npmrc",
+    "ok": false,
+    "why": "secret: **/.npmrc"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.pypirc",
+    "ok": false,
+    "why": "secret: **/.pypirc"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.netrc",
+    "ok": false,
+    "why": "secret: **/.netrc"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite3",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite3"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite3-wal",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite3-wal"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite3-shm",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite3-shm"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite3-journal",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite3-journal"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite-wal",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite-wal"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite-shm",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite-shm"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.sqlite-journal",
+    "ok": false,
+    "why": "runtime_state: **/*.sqlite-journal"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.db-wal",
+    "ok": false,
+    "why": "runtime_state: **/*.db-wal"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.db-shm",
+    "ok": false,
+    "why": "runtime_state: **/*.db-shm"
+  },
+  {
+    "path": "docs",
+    "dest": "a/x.db-journal",
+    "ok": false,
+    "why": "runtime_state: **/*.db-journal"
+  },
+  {
+    "path": "docs",
+    "dest": ".codex/config.toml",
+    "ok": false,
+    "why": "managed: .codex/config.toml"
+  },
+  {
+    "path": "docs/café",
+    "ok": true,
+    "why": "NFD path is normalized to NFC"
+  },
+  {
+    "path": "docs",
+    "dest": "café/notes",
+    "ok": true,
+    "why": "NFD dest is normalized to NFC"
+  },
+  {
+    "path": "a\\b",
+    "ok": false,
+    "why": "backslash"
+  },
+  {
+    "path": "docs",
+    "dest": "a\\b",
+    "ok": false,
+    "why": "backslash dest"
+  },
+  {
+    "path": "C:/x",
+    "ok": false,
+    "why": "drive letter"
+  },
+  {
+    "path": "docs",
+    "dest": "C:/x",
+    "ok": false,
+    "why": "drive-letter dest"
+  },
+  {
+    "path": "docs/.GIT/config",
+    "ok": false,
+    "why": "VCS in any case"
+  },
+  {
+    "path": "docs",
+    "dest": "x/.GIT",
+    "ok": false,
+    "why": "VCS dest in any case"
+  },
+  {
+    "path": "docs",
+    "dest": "./plans",
+    "ok": true,
+    "why": "./-prefixed dest normalizes"
+  },
+  {
+    "path": "docs",
+    "dest": "./",
+    "ok": false,
+    "why": "dest that is only ./"
+  },
+  {
+    "path": "docs",
+    "dest": "config/.ENV",
+    "ok": false,
+    "why": "secret, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": ".Env.Local",
+    "ok": false,
+    "why": "secret, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "Keys/Server.PEM",
+    "ok": false,
+    "why": "secret, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "home/.NPMRC",
+    "ok": false,
+    "why": "secret, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "a/ID_RSA",
+    "ok": false,
+    "why": "secret, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.GIT/b",
+    "ok": false,
+    "why": "VCS, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "a/.Hg",
+    "ok": false,
+    "why": "VCS, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "deps/NODE_MODULES/x",
+    "ok": false,
+    "why": "ignore, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "notes/.ds_store",
+    "ok": false,
+    "why": "ignore, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "state/Weft.SQLITE3",
+    "ok": false,
+    "why": "runtime state, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "keys/ID_ED25519.PUB",
+    "ok": true,
+    "why": "a public key stays, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "docs/Env.md",
+    "ok": true,
+    "why": "stays included: a name that only looks like .env (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "notes/ENV",
+    "ok": true,
+    "why": "stays included: no leading dot, not a secret (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": ".Claude/Settings.Local.JSON",
+    "ok": false,
+    "why": "managed and junk, any case (SW-XS-12)"
+  },
+  {
+    "path": "docs",
+    "dest": "x/WV-CI-GATE",
+    "ok": false,
+    "why": "junk, any case (SW-XS-12)"
+  }
+]

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="user-check" />
+    <title>CodeSense — Roles: role_save, roles_list and queue configuration</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arcf-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arcf-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arcf-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/roles">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Role configuration and shared or exclusive queue holders" id="hero">
+        <h1>Roles: queue settings and live holders.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Three sessions take turns holding the same role seat; the queue persists across the handoff."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- role seat (center) -->
+            <g class="glyph-node" data-role="triager" transform="translate(240 140)">
+              <rect width="160" height="80" rx="12" />
+              <text x="80" y="36" text-anchor="middle" style="font-size: 15px">role: builder</text>
+              <text x="80" y="56" text-anchor="middle" class="sub">exclusive · one holder</text>
+            </g>
+
+            <!-- queue underneath role -->
+            <g transform="translate(240 240)">
+              <rect
+                width="160"
+                height="30"
+                rx="6"
+                fill="color-mix(in srgb, var(--cs-fg) 6%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="80" y="20" text-anchor="middle" class="glyph-mbadge">
+                queue persists across holders
+              </text>
+            </g>
+
+            <!-- 3 sessions handing off -->
+            <g class="glyph-node" data-role="builder" transform="translate(40 90)">
+              <rect width="110" height="40" rx="6" />
+              <text x="55" y="18" text-anchor="middle">amelia-1</text>
+              <text x="55" y="31" text-anchor="middle" class="sub">session · exited</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(40 170)">
+              <rect width="110" height="40" rx="6" />
+              <text x="55" y="18" text-anchor="middle">amelia-2</text>
+              <text x="55" y="31" text-anchor="middle" class="sub">session · live</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(40 250)">
+              <rect width="110" height="40" rx="6" />
+              <text x="55" y="18" text-anchor="middle">amelia-3</text>
+              <text x="55" y="31" text-anchor="middle" class="sub">session · pending</text>
+            </g>
+
+            <path class="glyph-edge" d="M150 110 L 240 160" />
+            <text x="178" y="128" class="glyph-mbadge">register_role</text>
+            <path class="glyph-edge" d="M150 190 L 240 180" />
+            <text x="178" y="178" class="glyph-mbadge">(current)</text>
+            <path class="glyph-edge" d="M150 270 L 240 200" />
+            <text x="178" y="248" class="glyph-mbadge">waits for release</text>
+
+            <!-- outbound: handoff / release -->
+            <g class="glyph-node" data-role="reviewer" transform="translate(490 170)">
+              <rect width="110" height="40" rx="6" />
+              <text x="55" y="18" text-anchor="middle">next holder</text>
+              <text x="55" y="31" text-anchor="middle" class="sub">on release</text>
+            </g>
+            <path class="glyph-edge" d="M400 190 L 490 190" />
+            <text x="420" y="180" class="glyph-mbadge">release_role</text>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              The seat moves between sessions. The queue stays.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a role is" id="why">
+        <p>
+          A role is a named queue. Registrations are shared by default, so several sessions can claim work from it. When an agent
+          calls <code>register_role {role: "builder", exclusive: true}</code>, it becomes the
+          exclusive builder for the lifetime of that session; another holder's attempt returns
+          <code>alreadyHeld</code> instead of silently clobbering. The queue outlives any particular
+          holder — if you kill the session, the next one that registers picks up exactly where the
+          last one left off, including work that was accepted but not yet acked.
+        </p>
+      </section>
+
+      <section data-search="Four seat moves — register, claim, release, hand off" id="moves">
+        <h2>Four seat moves</h2>
+
+        <div class="arcf-step">
+          <span class="arcf-step__n">1</span>
+          <div>
+            <h3>Register</h3>
+            <p>
+              An agent joins the queue. Use <code>exclusive: true</code> for a single holder,
+              such as a resolver; omit it for a shared worker pool. An exclusive registration returns
+              <code>alreadyHeld</code> if someone else is already there.
+            </p>
+            <pre><code>// MCP tool: register_role
+{"team":{"org":"acme","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}</code></pre>
+          </div>
+        </div>
+
+        <div class="arcf-step">
+          <span class="arcf-step__n">2</span>
+          <div>
+            <h3>Claim</h3>
+            <p>
+              Pull a batch off the role's queue. Each delivery hands back a
+              <code>deliveryId</code> + <code>claimToken</code> you'll need to accept and ack.
+            </p>
+            <pre><code>// MCP tool: claim_role_messages — use instanceId and generation from register_role
+{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1,"limit":10}</code></pre>
+          </div>
+        </div>
+
+        <div class="arcf-step">
+          <span class="arcf-step__n">3</span>
+          <div>
+            <h3>Hand off</h3>
+            <p>
+              You don't literally hand the role to another session; you just reply with
+              <code>replyTo: "role:manager"</code>. The reply lands on the role queue, so whoever's
+              holding it next picks it up. The thread survives the handoff.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcf-step">
+          <span class="arcf-step__n">4</span>
+          <div>
+            <h3>Release</h3>
+            <p>
+              When the human says stop, finish the current delivery, then
+              <code>release_role</code>. Claimed-but-not-accepted work goes back to pending for the
+              next holder. CodeSense also releases automatically when the session ends.
+            </p>
+            <pre><code>// MCP tool: release_role — use instanceId and generation from register_role
+{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="A worked example — the Manager role" id="example">
+        <h2>Worked example — the Manager</h2>
+        <p>
+          The <strong>manager</strong> role is the canonical one. The <code>Manager</code> Agent
+          registers it on launch, drains its queue in a loop, launches workers, and releases it when
+          the human stops it. Here's the <code>agent.yaml</code> that ships in the seed
+          (<code>examples/agents/manager/agent.yaml</code>):
+        </p>
+        <pre><code>id: manager
+name: Manager
+description: Watches the manager role queue, triages incoming work, launches and tracks
+             workers, and reports to you.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/manage-team/
+default_prompt: /manage-team
+revision: 1</code></pre>
+        <p>
+          The matching <code>manager-ensure</code> routine
+          (<code>examples/agents/manager/routines/manager-ensure/routine.yml</code>) makes sure a
+          Manager is on the queue: a <code>mode: wake</code> routine every hour, it wakes the
+          running Manager to check its queue, and starts one when none is running.
+        </p>
+      </section>
+
+      <section data-search="Try this now — see who holds a role" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Look up who's currently holding the <code>manager</code> role in your editable context
+          repo. Read-only call; nothing changes.
+        </p>
+        <cs-try-this
+          verb="roles"
+          args='{"role": "manager"}'
+          label="Who holds the manager role?"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="role_save roles_list role configuration YAML defaultHandler icon" id="configuration">
+        <h2>Roles registry: <code>role_save</code> and <code>roles_list</code></h2>
+        <p>A role has a stable queue id and optional shared display settings. <code>role_save</code>
+          writes <code>&lt;team&gt;/content/roles/&lt;id&gt;.yaml</code>; ids with special characters
+          use percent-encoded filenames. The role id remains the queue address. Any teammate may
+          edit these settings. They change neither queued messages nor existing holders.</p>
+        <pre><code>id: reviewer
+name: Review
+icon: builtin-chess:knight
+defaultHandler: acme/dev/reviewer</code></pre>
+        <p>Call these MCP tools with the shown arguments:</p>
+        <pre><code>// role_save
+{"teamKey":"acme:dev","config":{"id":"reviewer","name":"Review","icon":"builtin-chess:knight","defaultHandler":"acme/dev/reviewer"}}
+
+// roles_list
+{"teamKey":"acme:dev"}</code></pre>
+        <p><code>name</code> must be nonblank. <code>icon</code> is a face reference such as
+          <code>builtin-chess:knight</code>, or null for the default chess piece.
+          <code>defaultHandler</code> is one saved-agent key or null. It records a preferred handler;
+          it does not automatically launch an agent. <code>roles_list</code> returns configured
+          settings, while <code>role_state</code> returns live holders, counts and delivery state.
+          See the <a href="../schema-browser.html#schema/role-yaml">generated role schema</a> and
+          <a href="../generated/schemas/role-yaml.schema.json">JSON Schema</a>.</p>
+      </section>
+      <section data-search="agent role queueRole display role register_role role_state claim_role_messages" id="agent-role">
+        <h2>Choose the queue a session joins</h2>
+        <p>A saved agent's <code>agent.yaml</code> field <code>role: reviewer</code> is its default
+          queue membership. On <code>open_workspace</code>, omitted <code>queueRole</code> inherits
+          that saved default, <code>queueRole: "builder"</code> overrides it, and
+          <code>queueRole: null</code> joins no queue. The launch argument <code>role</code> is a
+          display label; it does not join a queue. On a story launch, a role that names a reviewer also
+          types the launch's task <code>review</code> (see Tasks). Changing role configuration never
+          changes the saved agent's default role.</p>
+        <pre><code>// open_workspace: with acme as the active org, inherit the saved agent's role
+{"target":"team-workspace","team":"dev","name":"review","agent":"reviewer"}
+// Override that membership by adding: "queueRole":"builder"
+// Opt out by adding: "queueRole":null</code></pre>
+        <p>To join or recover a live registration explicitly, use <code>register_role</code> with
+          <code>team: {org:"acme",team:"dev"}</code>, role and your sessionId. Keep its
+          <code>instanceId</code> and <code>generation</code> for <code>claim_role_messages</code>,
+          <code>accept_role_message</code> and <code>ack_role_message</code>.
+          <code>role_state</code> inspects the queue without claiming anything.</p>
+        <p>Send new work with <code>send_role_message</code>, using separate <code>team</code> and
+          <code>role</code> arguments. <code>send_message</code> addresses a running session handle
+          or <code>human</code>. Its <code>replyTo: "role:reviewer"</code> remains valid and routes
+          a later reply to the durable queue. See <a href="./parallel.html">parallel workers</a>,
+          the <a href="../arc-e-agents/agent-design.html">agent design guide</a> and its
+          <a href="../examples/skills/agent-design/SKILL.md">skill</a> for choosing responsibilities.</p>
+      </section>
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Call the named MCP tool with its JSON argument object. Replace the session id with
+            your <code>CODESENSE_TAB_SESSION_ID</code>, and use the returned <code>instanceId</code>
+            and <code>generation</code> in later calls (the values below are illustrative).</p>
+          <pre><code>// MCP tool: role_state — inspect one role
+{"team":{"org":"acme","team":"dev"},"role":"manager"}
+
+// MCP tool: register_role — join the role
+{"team":{"org":"acme","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}
+
+// MCP tool: role_state — inspect all roles
+{"team":{"org":"acme","team":"dev"}}
+
+// MCP tool: release_role — finish this registration
+{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./messages.html">← Messages</a> · Next: <a href="./queues.html">Queues →</a> · Edge
+        cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/register_role">register_role</a> ·
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Roles</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

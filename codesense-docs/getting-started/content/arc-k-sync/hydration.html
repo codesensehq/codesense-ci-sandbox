@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="droplet" />
+    <title>CodeSense — Hydration</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/hydration"] .cs-main {
+        max-width: 920px;
+      }
+      body[data-page="arc-k-sync/hydration"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/hydration"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/hydration"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/hydration"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/hydration"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/hydration"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/hydration"] figure.hero svg {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        height: auto;
+        max-height: 240px;
+      }
+      body[data-page="arc-k-sync/hydration"] figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        text-align: center;
+      }
+      body[data-page="arc-k-sync/hydration"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/hydration"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 760px;
+      }
+      body[data-page="arc-k-sync/hydration"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/hydration"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/hydration"] .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/hydration"] details {
+        max-width: 760px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/hydration"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/hydration"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/hydration"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/hydration"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/hydration">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Hydration context to worktree" id="hero">
+        <h1>Hydration — context into worktree</h1>
+        <p class="lede">
+          Hydration is the direction <strong>in</strong>: team content is copied into a workspace.
+          It happens at two moments only: when an agent starts there (it gets what its Agent
+          definition's <code>context</code> declares), and when an agent calls
+          <code>hydrate_worktree</code> or <code>hydrate_story</code> for more. Nothing copies
+          files into a workspace in the background.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 720 220"
+            role="img"
+            aria-label="Context repo at left; a hydration step in the middle; a narrow worktree on the right receives only the selected docs."
+          >
+            <title>Hydration — selected docs are copied into a worktree</title>
+            <desc>
+              Left: a tall context-repo folder stacked with many documents. Middle: a dashed
+              selector funnel labelled "hydration". Right: a slim worktree with only a few of the
+              documents. An arrow flows left to right.
+            </desc>
+            <style>
+              .hy-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .hy-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .hy-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .hy-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .hy-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .hy-dash {
+                stroke-dasharray: 4 4;
+              }
+              .hy-doc {
+                fill: color-mix(in oklab, var(--cs-accent, #7aa2ff) 20%, transparent);
+                stroke: var(--cs-border, #262c38);
+              }
+              .hy-doc-pick {
+                fill: color-mix(in oklab, var(--cs-accent, #7aa2ff) 55%, transparent);
+              }
+            </style>
+            <defs>
+              <marker
+                id="hy-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Left: context repo column -->
+            <g transform="translate(40 30)">
+              <rect class="hy-surf" width="200" height="160" rx="10" />
+              <text class="hy-mut" x="100" y="18" text-anchor="middle">context repo</text>
+              <g>
+                <rect class="hy-doc hy-doc-pick" x="16" y="30" width="168" height="16" rx="3" />
+                <rect class="hy-doc" x="16" y="52" width="168" height="16" rx="3" />
+                <rect class="hy-doc hy-doc-pick" x="16" y="74" width="168" height="16" rx="3" />
+                <rect class="hy-doc" x="16" y="96" width="168" height="16" rx="3" />
+                <rect class="hy-doc" x="16" y="118" width="168" height="16" rx="3" />
+                <rect class="hy-doc hy-doc-pick" x="16" y="140" width="168" height="12" rx="3" />
+              </g>
+            </g>
+
+            <!-- Middle: selector funnel -->
+            <g transform="translate(280 60)">
+              <path class="hy-ins hy-acc hy-dash" d="M0 0 L140 40 L140 60 L0 100 Z" />
+              <text class="hy-txt" x="70" y="35" text-anchor="middle">hydration</text>
+              <text class="hy-mut" x="70" y="52" text-anchor="middle">launch · or a call</text>
+              <text class="hy-mut" x="70" y="72" text-anchor="middle">one diff · one copy</text>
+            </g>
+
+            <!-- Right: narrow worktree -->
+            <g transform="translate(500 60)">
+              <rect class="hy-ins" width="180" height="100" rx="8" />
+              <text class="hy-mut" x="90" y="18" text-anchor="middle">worktree · DEMO-1</text>
+              <rect class="hy-doc-pick" x="14" y="30" width="152" height="14" rx="3" />
+              <rect class="hy-doc-pick" x="14" y="50" width="152" height="14" rx="3" />
+              <rect class="hy-doc-pick" x="14" y="70" width="152" height="12" rx="3" />
+            </g>
+
+            <path class="hy-acc" d="M248 110 L278 110" marker-end="url(#hy-arrow)" />
+            <path class="hy-acc" d="M422 110 L498 110" marker-end="url(#hy-arrow)" />
+          </svg>
+          <figcaption id="hero-cap">
+            The context repo stays whole · each workspace gets only what its agent declares or asks for
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="What hydration does and does not do" id="what">
+        <h2>What hydration does</h2>
+        <p>
+          A worktree is a focused place to work on one story. It doesn't want every spec, retro and
+          routine your team has written. So a workspace gets only what its agent needs:
+        </p>
+        <ul>
+          <li>
+            <strong>At launch.</strong> The agent's definition declares its
+            <code>context</code> (for example <code>CLAUDE.md</code> and
+            <code>.claude/skills/</code>). CodeSense compares the workspace with that list once and
+            copies what is missing or out of date in one batch.
+          </li>
+          <li>
+            <strong>On request.</strong> An agent calls <code>hydrate_worktree</code> with
+            <code>paths</code> or <code>sets</code>, or <code>hydrate_story</code> with a
+            <code>storyId</code> to bring a story's epic.
+          </li>
+        </ul>
+        <p>
+          Every copy is hidden from git through <code>.git/info/exclude</code> and recorded as
+          managed. A file you edited, or one CodeSense didn't write, is kept and reported, never
+          overwritten. A later change to team content does not reach the workspace until the next
+          launch or the next call.
+        </p>
+        <p>
+          What hydration <em>doesn't</em> do: it never takes the workspace's edits back (that is
+          <a href="./reverse-sync.html">reverse sync</a>), never writes a file the repo tracks, and
+          never removes a file unless the call passes <code>prune: true</code>, and then only
+          unedited copies under that call's paths.
+        </p>
+      </section>
+
+      <section data-search="A worked moment hydrating a story" id="worked">
+        <h2>A worked moment</h2>
+        <p>You asked a Builder to pick up <code>DEMO-1</code>.</p>
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>Worktree created.</strong> CodeSense makes <code>feat/DEMO-1</code> as a git
+            worktree against the source repo. It carries only the source tree.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>Agent starts.</strong> The Builder's definition declares
+            <code>CLAUDE.md</code> and <code>.claude/skills/</code>. CodeSense copies those in, and
+            the agent's startup note says how many files it got and which it kept because you had
+            edited them.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>Agent asks for more.</strong> The Builder needs the epic's spec, so it calls
+            <code>hydrate_story</code> with <code>storyId: "DEMO-1"</code>. The epic dir lands
+            in the worktree.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">4</span>
+          <div>
+            <strong>Team content changes.</strong> A teammate updates the spec. The Builder's copy
+            stays as it is until the Builder calls <code>hydrate_story</code> again.
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Local vs remote hydration" id="local-vs-remote">
+        <h2>Local vs remote</h2>
+        <p>
+          The same calls work for a workspace on a machine: pass
+          <code>target: {kind: "remote", machineId, workspaceHandle}</code>. CodeSense compares in
+          one manifest call and sends the files in one batch. Neither workspace needs to be a clone
+          of the context repo; only the <em>source</em> repo is a clone.
+        </p>
+      </section>
+
+      <section data-search="Hydration via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <pre><code>const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
+
+// Bring named files or folders in.
+codesense.invoke('hydrate_worktree', { target, sets: ['.claude/skills'] })
+
+// Bring a story's epic in.
+codesense.invoke('hydrate_story', { target, storyId: 'DEMO-1' })
+
+// What is here, and where did it come from?
+codesense.invoke('list_hydrated', { target })</code></pre>
+          <p style="margin-top: 8px">
+            To build this into a skill of your own, see
+            <a href="./write-your-own-sync-skill.html">write your own sync skill</a>.
+          </p>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/hydrate_worktree">hydrate_worktree</a>
+        ·
+        <a href="../mcp-explorer.html#tool/hydrate_story">hydrate_story</a>
+        ·
+        <a href="./reverse-sync.html">next: reverse sync →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Hydration</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

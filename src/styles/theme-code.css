@@ -1,0 +1,55 @@
+/* SPDX-License-Identifier: MIT */
+/* Rendered code blocks share the editor and diff's semantic syntax roles. */
+.hljs {
+  color: var(--theme-text-viewer-primary);
+  background: var(--theme-surface-viewer-inset);
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-doctag {
+  color: var(--cs-code-keyword);
+}
+.hljs-string,
+.hljs-attr,
+.hljs-template-tag {
+  color: var(--cs-code-string);
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--cs-code-comment);
+}
+.hljs-number,
+.hljs-literal {
+  color: var(--cs-code-number);
+}
+.hljs-built_in,
+.hljs-type,
+.hljs-class {
+  color: var(--cs-code-type);
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: var(--cs-code-function);
+}
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: var(--cs-code-variable);
+}
+.hljs-symbol,
+.hljs-bullet {
+  color: var(--cs-code-constant);
+}
+.hljs-meta {
+  color: var(--cs-code-meta);
+}
+.hljs-regexp {
+  color: var(--cs-code-regexp);
+}
+.hljs-operator {
+  color: var(--cs-code-operator);
+}
+.hljs-punctuation {
+  color: var(--cs-code-punctuation);
+}

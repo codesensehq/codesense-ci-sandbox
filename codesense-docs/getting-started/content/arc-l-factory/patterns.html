@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Role patterns</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/patterns"] figure.hero {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/patterns"] .role-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card {
+        padding: 18px 20px;
+        border-left: 3px solid var(--role-chroma, var(--cs-border));
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="builder"] {
+        --role-chroma: var(--cs-docs-role-builder);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="scout"] {
+        --role-chroma: var(--cs-docs-role-scout);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="resolver"] {
+        --role-chroma: var(--cs-docs-role-resolver);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="reviewer"] {
+        --role-chroma: var(--cs-docs-role-reviewer);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="triager"] {
+        --role-chroma: var(--cs-docs-role-triager);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card[data-role="analyst"] {
+        --role-chroma: var(--cs-docs-role-triager);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card h3 {
+        margin-top: 0;
+        color: var(--role-chroma);
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        margin: 10px 0 0;
+        font-size: 13px;
+      }
+      body[data-page="arc-l-factory/patterns"] .role-card dt {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/patterns">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Role patterns" id="hero">
+        <h1>Role patterns</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Six roles. Pick the ones your work needs; ignore the rest. A tiny factory might run one
+          Builder. A busy one runs a Triager, three Builders, a Reviewer, a Resolver, and a Scout —
+          each on their own inbox queue, each wakeable by a routine.
+        </p>
+      </section>
+
+      <section data-search="Why roles instead of named agents" id="why">
+        <h2>Why roles instead of named agents</h2>
+        <p>
+          Roles are <em>what the inbox is for</em>, not <em>who's doing it</em>. "Review" is a role;
+          <strong>Winston (reviewer)</strong> is one agent that currently plays it. A role lets you
+          fan work out to N agents without rewriting the dispatcher — any session that joins the
+          <code>reviewer</code> role (<code>register_role</code>) can claim a review message. If one agent dies, another picks
+          it up.
+        </p>
+        <p>
+          Every role lines up with one inbox queue. A routine with a
+          <code>role_pending</code> trigger starts an agent for each message queued for its role;
+          one with <code>inbox_idle</code> wakes a long-running agent that has unread mail. The whole factory is six
+          queues of work and a bunch of agents happily claiming off them.
+        </p>
+      </section>
+
+      <section data-search="The six roles" id="roles">
+        <h2>The six roles</h2>
+        <div class="role-grid">
+          <div class="cs-docs-card role-card" data-role="builder">
+            <h3>Builder</h3>
+            <p>
+              Writes code. Reads a story + its frozen spec, creates a worktree, runs
+              <code>bmad-build</code>, pushes a PR. The workhorse of the factory — you run as many
+              as your inbox has stories.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd><code>bmad-build</code></dd>
+              <dt>Inbox</dt>
+              <dd><code>builder</code></dd>
+              <dt>Trigger</dt>
+              <dd><code>role_pending</code> on <code>builder</code></dd>
+              <dt>Dashboard</dt>
+              <dd><a href="../factory-playbook.html#phase-8">agent-dag</a></dd>
+            </dl>
+          </div>
+
+          <div class="cs-docs-card role-card" data-role="scout">
+            <h3>Scout</h3>
+            <p>
+              Reads the world and writes to context. A Scout reads community issues, release notes,
+              telemetry, failing dogfood runs, or an upstream repo and files findings into the
+              context repo. The eyes of the factory.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd><code>bmad-deep-recon</code>, <code>factory-lookback</code></dd>
+              <dt>Inbox</dt>
+              <dd><code>scout</code></dd>
+              <dt>Trigger</dt>
+              <dd><code>role_pending</code> or a schedule</dd>
+              <dt>Dashboard</dt>
+              <dd><a href="../factory-playbook.html">factory-playbook</a></dd>
+            </dl>
+          </div>
+
+          <div class="cs-docs-card role-card" data-role="resolver">
+            <h3>Resolver</h3>
+            <p>
+              Answers escalations that Builder sessions can't safely resolve alone — a frozen spec
+              contradiction, a missing fixture, a decision only a human can make. A Resolver can be
+              a human or an agent that calls <code>bmad-loop-resolve</code>.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd><code>bmad-loop-resolve</code></dd>
+              <dt>Inbox</dt>
+              <dd><code>resolver</code></dd>
+              <dt>Trigger</dt>
+              <dd><code>role_pending</code> on <code>resolver</code></dd>
+              <dt>Dashboard</dt>
+              <dd>agent-inbox-console</dd>
+            </dl>
+          </div>
+
+          <div class="cs-docs-card role-card" data-role="reviewer">
+            <h3>Reviewer</h3>
+            <p>
+              Reads a PR, runs multi-lens review, posts findings. Gates the merge. A Reviewer is
+              cheap to parallelize — three Reviewers on three Macs clear a backlog in minutes.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd><code>bmad-code-review</code>, <code>bmad-review</code></dd>
+              <dt>Inbox</dt>
+              <dd><code>reviewer</code></dd>
+              <dt>Trigger</dt>
+              <dd><code>role_pending</code> on <code>reviewer</code></dd>
+              <dt>Dashboard</dt>
+              <dd><a href="../factory-playbook.html">pipeline-graph</a></dd>
+            </dl>
+          </div>
+
+          <div class="cs-docs-card role-card" data-role="triager">
+            <h3>Triager</h3>
+            <p>
+              The dispatcher. Reads anything that lands in a generic inbox and routes it to the
+              right role queue. The Triager runs the closed loop — see the
+              <a href="../inbox-flows.html">dispatch flow</a> on the inbox-flows page.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd>custom + <code>bmad-build</code> for routing writes</dd>
+              <dt>Inbox</dt>
+              <dd><code>triager</code></dd>
+              <dt>Trigger</dt>
+              <dd><code>role_pending</code> on <code>triager</code></dd>
+              <dt>Dashboard</dt>
+              <dd>agent-inbox-console</dd>
+            </dl>
+          </div>
+
+          <div class="cs-docs-card role-card" data-role="analyst">
+            <h3>Analyst</h3>
+            <p>
+              Synthesizes. Reads a batch of Scout findings, retrospectives, or sprint output and
+              distills them into a brief, spec, or decision. Where Builder is tactical, Analyst is
+              strategic.
+            </p>
+            <dl>
+              <dt>Skill</dt>
+              <dd>
+                <code>bmad-spec</code>, <code>bmad-forge-idea</code>,
+                <code>bmad-retrospective</code>
+              </dd>
+              <dt>Inbox</dt>
+              <dd><code>analyst</code></dd>
+              <dt>Trigger</dt>
+              <dd>manual or a schedule</dd>
+              <dt>Dashboard</dt>
+              <dd><a href="../factory-playbook.html">factory-playbook</a></dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="How roles compose" id="compose">
+        <h2>How roles compose</h2>
+        <p>
+          A role on its own is a worker. Roles compose through <em>inboxes</em>: the output of one
+          agent is a message to another role's inbox. Builder posts a "review-this" message to
+          <code>reviewer</code>. Reviewer posts a "decide-this" message to <code>resolver</code>.
+          Resolver posts a "rebuild-with-this-decision" message back to <code>builder</code>. The
+          Triager reads the top-level team inbox and routes.
+        </p>
+        <p>
+          Nothing in this graph has a special wire. It's all the same inbox primitive. See the
+          <a href="../inbox-flows.html">four shipped inbox-flow shapes</a> for the dispatch / HITL /
+          SDLC / one-shot patterns that compose into every recipe on the
+          <a href="./composition-recipes.html">composition recipes</a>
+          page.
+        </p>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Each role is just an agent + a routine. Both are authored via MCP:</p>
+          <pre><code>agent_create { id: 'winston-reviewer', name: 'Winston (reviewer)', runtime: 'claude', … }
+// → config/agents/winston-reviewer/agent.yaml
+
+// A scheduled routine: routine_create { agent: 'winston-reviewer', name, task, when: 'hourly' }
+// A role_pending routine is written as a file:
+//   config/agents/winston-reviewer/routines/reviewer-claim/routine.yml</code></pre>
+          <p>CodeSense picks up files you or an agent write on save, no restart.</p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./massively-parallel.html">Massively parallel →</a> · Reference:
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a> ·
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Role patterns</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

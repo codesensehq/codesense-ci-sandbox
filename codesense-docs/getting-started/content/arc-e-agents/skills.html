@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="wrench" />
+    <title>CodeSense — Skills</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arce-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arce-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arce-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arce-cmp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-cmp th,
+      .arce-cmp td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-cmp th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-cmp code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/skills">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Skills — SKILL.md plus everything under its directory, triggered by description or by slash command" id="hero">
+        <h1>A skill is a directory.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label=".claude/skills/triage/ contains SKILL.md plus any helpers. Listed in agent.yaml startup, it loads the whole directory and the SKILL.md description powers auto-trigger."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Left: skill directory shape -->
+            <text x="24" y="36" style="fill: var(--cs-muted-fg); font-size: 13px; font-family: var(--cs-font-ui)">
+              The on-disk shape — one directory
+            </text>
+            <g transform="translate(24 56)">
+              <rect
+                width="240"
+                height="200"
+                rx="10"
+                fill="var(--cs-inset-strong, var(--cs-inset))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="26" style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)">
+                .claude/skills/triage/
+              </text>
+              <text x="30" y="48" style="fill: var(--cs-accent); font-family: var(--cs-font-mono); font-size: 11px">
+                SKILL.md
+              </text>
+              <text x="42" y="64" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                ---
+              </text>
+              <text x="42" y="78" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                name: triage
+              </text>
+              <text x="42" y="92" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                description: Sweep…
+              </text>
+              <text x="42" y="106" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                ---
+              </text>
+              <text x="30" y="130" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                helpers/
+              </text>
+              <text x="42" y="146" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                filter-urgent.md
+              </text>
+              <text x="42" y="160" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                send-digest.md
+              </text>
+              <text x="30" y="182" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                examples/*.md
+              </text>
+            </g>
+
+            <!-- Middle arrow -->
+            <path d="M274 150 L 320 150" stroke="var(--cs-muted-fg)" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />
+            <text x="276" y="140" style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-ui)">
+              listed in startup
+            </text>
+
+            <!-- Right: agent.yaml plus the two trigger shapes -->
+            <g transform="translate(336 56)">
+              <rect
+                width="280"
+                height="90"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                <tspan style="font-family: var(--cs-font-mono)">agent.yaml</tspan>
+              </text>
+              <text x="14" y="42" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                startup:
+              </text>
+              <text x="30" y="58" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                - CLAUDE.md
+              </text>
+              <text x="30" y="74" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                - .claude/skills/triage/
+              </text>
+            </g>
+
+            <g transform="translate(336 160)">
+              <rect
+                width="134"
+                height="110"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                Auto-trigger
+              </text>
+              <text x="14" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                SKILL.md description
+              </text>
+              <text x="14" y="56" style="fill: var(--cs-muted-fg); font-size: 10px">
+                matches intent →
+              </text>
+              <text x="14" y="70" style="fill: var(--cs-fg); font-size: 10px">
+                CLI invokes it.
+              </text>
+              <text x="14" y="94" style="fill: var(--cs-muted-fg); font-size: 10px">
+                No user action.
+              </text>
+            </g>
+
+            <g transform="translate(482 160)">
+              <rect
+                width="134"
+                height="110"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 8%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                User-invocable
+              </text>
+              <text x="14" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                default_prompt or
+              </text>
+              <text x="14" y="56" style="fill: var(--cs-muted-fg); font-size: 10px">
+                a chat message that
+              </text>
+              <text x="14" y="70" style="fill: var(--cs-muted-fg); font-size: 10px">
+                starts with
+                <tspan style="font-family: var(--cs-font-mono); fill: var(--cs-fg)">/triage</tspan>
+              </text>
+              <text x="14" y="94" style="fill: var(--cs-muted-fg); font-size: 10px">
+                invokes it.
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a skill is" id="why">
+        <p>
+          A skill is a <strong>directory</strong> on disk. Its
+          <code>SKILL.md</code> is the entry point; everything else next to it
+          (helpers, examples, more markdown) comes along for the ride. Put it
+          in your team's <code>content/</code> and an agent gets it at launch
+          when its <code>context</code> includes the path. The default
+          <code>context</code> already does: a Claude agent gets all of
+          <code>.claude/skills/</code>, a Codex agent all of
+          <code>.agents/skills/</code>. List the directory in
+          <code>startup:</code> as well when the agent can't work without it.
+          From then on either the CLI picks it up by
+          its <em>description</em> (auto-trigger) or you invoke it by name
+          (<code>/triage</code>). Same file either way.
+        </p>
+      </section>
+
+      <section data-search="Four moves — write SKILL.md, list the directory, invoke by name, let the description auto-trigger" id="moves">
+        <h2>Four moves</h2>
+
+        <div class="arce-step">
+          <span class="arce-step__n">1</span>
+          <div>
+            <h3>Write <code>SKILL.md</code></h3>
+            <p>
+              YAML frontmatter + prose. <code>name</code> is the slash command.
+              <code>description</code> is the trigger line the CLI reads to
+              auto-invoke the skill when the user's intent matches — write it
+              as "<em>Use when the user says …</em>". Keep the body as the
+              step-by-step the agent will follow once it's inside.
+            </p>
+            <pre><code>---
+name: triage
+description: Sweep the inbox and file actionable issues. Use when the user says
+             "triage the inbox", "clear mail", or asks for an inbox digest.
+---
+
+# Triage
+
+You hold the triager seat. Pull a batch…</code></pre>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">2</span>
+          <div>
+            <h3>List the directory in <code>startup:</code></h3>
+            <p>
+              Optional when the default <code>context</code> already carries
+              the folder, but it makes the skill required: a
+              <code>startup</code> entry that can't be found blocks the launch,
+              and it counts toward what the agent <code>provides</code>.
+              Trailing slash, content-relative, no globs. Everything inside
+              comes with it — your <code>helpers/</code>, your
+              <code>examples/</code>, whatever markdown you have for the
+              agent to read mid-run.
+            </p>
+            <pre><code>startup:
+  - CLAUDE.md
+  - .claude/skills/triage/        # claude agents
+  - .agents/skills/triage/        # codex agents (same shape, different root)</code></pre>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">3</span>
+          <div>
+            <h3>Carry prerequisites with <code>requires:</code></h3>
+            <p>
+              A skill's <code>SKILL.md</code> (or any file in
+              <code>startup</code>) can declare paths it needs. Those come
+              along automatically whenever the file does. Content paths only
+              — no globs, no absolute paths.
+            </p>
+            <pre><code>---
+name: triage
+description: …
+requires: [.claude/commands/bmad-help.md, .claude/skills/mcp-primer/]
+---</code></pre>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">4</span>
+          <div>
+            <h3>Invoke it, or let the description do it</h3>
+            <p>
+              Two ways in; same skill:
+            </p>
+            <pre><code># User-invocable — exactly matches the SKILL.md `name`.
+default_prompt: /triage
+
+# Auto-triggered — nothing in agent.yaml needed; the CLI matches the
+# user's chat message against the SKILL.md `description` and invokes it.</code></pre>
+            <p>
+              A prompt starting with <code>/name</code> fails if the agent
+              doesn't carry the skill. <code>agent_preview</code> lists what
+              the agent's <code>startup</code> <code>provides</code> and warns
+              (it never refuses) when the default prompt names something
+              outside it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="User-invocable vs auto-triggered" id="compare">
+        <h2>User-invocable vs auto-triggered</h2>
+        <table class="arce-cmp">
+          <thead>
+            <tr>
+              <th></th>
+              <th>User-invocable</th>
+              <th>Auto-triggered</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>How it fires</td>
+              <td>
+                A prompt (chat, <code>default_prompt</code>, routine task)
+                that starts with <code>/name</code>.
+              </td>
+              <td>
+                The CLI reads the <code>description</code> and matches the
+                user's intent — no explicit command.
+              </td>
+            </tr>
+            <tr>
+              <td>What <code>name</code> is for</td>
+              <td>
+                The slash. Must match the frontmatter <code>name:</code>
+                exactly.
+              </td>
+              <td>
+                Still useful: the agent can refer to the skill by name in its
+                plan.
+              </td>
+            </tr>
+            <tr>
+              <td>What <code>description</code> is for</td>
+              <td>
+                Human-readable; shown in <code>agent_preview</code>'s
+                <code>provides</code>.
+              </td>
+              <td>
+                The whole trigger. Write it so the CLI knows exactly when to
+                reach for it.
+              </td>
+            </tr>
+            <tr>
+              <td>Must the agent carry it?</td>
+              <td>
+                <strong>Yes</strong> — through its <code>context</code> or
+                <code>startup</code>, or <code>/name</code> is
+                "command not found".
+              </td>
+              <td>
+                <strong>Yes</strong> — the CLI only matches against skills the
+                agent carries.
+              </td>
+            </tr>
+            <tr>
+              <td>Good shape</td>
+              <td>
+                "Do this specific thing when asked" — e.g.
+                <code>/triage</code>, <code>/manage-team</code>.
+              </td>
+              <td>
+                "Advisory posture the agent should slip into for a kind of
+                work" — e.g. <code>bmad-build</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Commands vs skills" id="commands">
+        <h2>Commands vs skills</h2>
+        <p>
+          A <strong>command</strong> is a single file —
+          <code>.claude/commands/&lt;name&gt;.md</code>, for Claude only:
+          Codex reads no project command folder. It can
+          only be invoked by <code>/name</code>; it never auto-triggers. Use a
+          command when the prompt body is short and self-contained.
+          Everything bigger — multiple files, examples, a stepped
+          procedure — is a skill.
+        </p>
+        <pre><code>startup:
+  - .claude/commands/bmad-help.md      # file  → command
+  - .claude/skills/bmad-build/         # dir   → skill</code></pre>
+      </section>
+
+      <section data-search="Try this now — preview a skill-heavy agent" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Preview an agent that carries three skills. The preview returns
+          <code>provides</code> — the slash commands the agent would answer
+          to — and <code>manifest.totals</code>, so you can see how big the
+          composition is before you create it.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Example builder", "runtime": "claude", "startup": ["CLAUDE.md", ".claude/skills/bmad-build/", ".claude/skills/bmad-review/"], "defaultPrompt": "/bmad-build"}}'
+          label="Preview a builder with three skills"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// What slash commands would the agent provide?
+codesense.invoke('agent_preview', { startup, runtime })
+// → { manifest: { provides: [{ name: 'bmad-build', from: '.claude/skills/bmad-build/' }, …] } }
+
+// Read a skill's SKILL.md directly to understand its description.
+codesense.invoke('read_rendered_document', { path: '.claude/skills/bmad-build/SKILL.md' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./claude-md-agents-md.html">← CLAUDE.md &amp; AGENTS.md</a> ·
+        Next: <a href="./context-field.html">The context resolver →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml · startup</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Skills</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 5 · Story graph</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="5"
+    data-page="arc-h-pipelines-and-sdlc/05-stories"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 5 — Story graph" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>05</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>PLAN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>05</span> ·
+                  <span data-cs-phase-name>Story graph</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  John slices the design into a DAG of stories, with real
+                  <code>depends_on</code> frontmatter so you can see which
+                  stories can be built at the same time.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What stories phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              A good story graph is the difference between an epic that ships
+              in a week and one that drags for a month. John runs
+              <code>bmad-create-epics-and-stories</code> to slice the design
+              into shippable units and wire their <code>depends_on</code>
+              lists. That skill comes from BMAD, installed in your own repo;
+              CodeSense doesn't ship it.
+            </p>
+            <p>
+              A story is a Markdown file with <code>type: story</code> (or
+              <code>bug</code>, <code>spike</code>) in its frontmatter, or an
+              HTML page with <code>&lt;meta name="cs:type" content="story"&gt;</code>.
+              The fields CodeSense acts on are <code>story_id</code>,
+              <code>status</code>, <code>source_repo</code> (one of the team's
+              configured repos), <code>depends_on</code> (a list of bare story
+              ids) and <code>supporting_docs</code>. Any other key, such as
+              <code>sprint</code> or <code>parent_epic</code>, is kept as
+              metadata you can query with <code>query_context</code>. The
+              summary is the first <code>## Purpose</code> or
+              <code>## Story</code> section. Read the shipped
+              <a href="../examples/sample-epic/DEMO-1-foundation.md">DEMO stories</a>
+              for the shape.
+            </p>
+            <p>
+              Before handing a story on, have the agent call
+              <code>validate_story</code>. It returns findings such as
+              <code>MISSING_SOURCE_REPO</code>, <code>UNPARSEABLE_FRONTMATTER</code>
+              or <code>DUPLICATE_STORY_ID</code>. The same findings show in the
+              metadata band when you open a story, and in the
+              <strong>New story</strong> form as you type.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO stories" id="worked">
+            <h2>Worked example — the DEMO DAG</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — stories" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in story graph" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml John pm" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml story graph" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — story graph" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  John writes the stories under
+                  <code>&lt;team&gt;/content/&lt;epic&gt;/</code> in your context
+                  repo. A folder is an epic when it has a <code>README.md</code>
+                  (or <code>index.md</code>, <code>README.html</code>,
+                  <code>index.html</code>). The <code>story-board.html</code>
+                  dashboard reflects them live via <code>subscribeContext</code>.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Same file layout on the remote repo. The remote's dashboard
+                  reflects remote state; your local story-board shows local
+                  state. The remote agent publishes new stories with
+                  <code>reverse_sync_worktree</code>; that call is the only
+                  bridge.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — stories" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Slice an epic you've been meaning to write. The skill asks for the
+              spec + architecture docs and produces a stories folder.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-create-epics-and-stories"}'
+              label="Draft the story graph"
+              confirm="Run bmad-create-epics-and-stories in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to build stories via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-create-epics-and-stories' })
+// Then check each story the skill wrote.
+codesense.invoke('validate_story', { path: 'content/&lt;epic&gt;/&lt;story&gt;.md' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-5">factory playbook · phase 5</a>
+            &nbsp;·&nbsp; Previous: <a href="./04-ux-design.html">← 04 UX design</a> ·
+            Next: <a href="./06-sprint-plan.html">06 Sprint plan →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 5 · Story graph</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

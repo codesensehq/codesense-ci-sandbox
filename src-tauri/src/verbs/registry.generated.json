@@ -1,0 +1,4348 @@
+[
+  {
+    "name": "agent",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "agent_get",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "agents",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "agent_list",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "analyze",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "archive",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "closeTerminalTab",
+    "class": "manage",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "handle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "closed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "closed"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:stop",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "close_terminal_tab",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "closeWorkspace",
+    "class": "manage",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "discardUnsaved": {
+          "type": "boolean"
+        },
+        "removeWorktree": {
+          "type": "boolean"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:stop",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "close_workspace",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "commands.list",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "binding": {
+            "type": "string"
+          },
+          "dashboard": {
+            "type": "string"
+          },
+          "humanOnly": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "global",
+              "slot-visible",
+              "slot-focused"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "scope",
+          "binding",
+          "dashboard",
+          "active",
+          "humanOnly"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "commands:run",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "command_list",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "commands"
+  },
+  {
+    "name": "commands.register",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "ids"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "active": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "active"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Frame-scoped declaration: the calling dashboard names which of its own declared commands are active",
+    "audited": false,
+    "action": false,
+    "module": "commands"
+  },
+  {
+    "name": "commands.run",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "args": {},
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "requested": {
+          "const": true
+        }
+      },
+      "required": [
+        "requested"
+      ],
+      "type": "object"
+    },
+    "grant": "commands:run",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "command_run",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "commands"
+  },
+  {
+    "name": "context",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "dismiss_agent_mark",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "crashId": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sessionId",
+        "crashId"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "dismiss_agent_mark",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "draft",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "embedMessage",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-minted inline inbox message frame",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "files.create",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "onCollision": {
+          "enum": [
+            "keep-both",
+            "fail"
+          ]
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "onCollision"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "grant": "files:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "create_content_file",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "files"
+  },
+  {
+    "name": "files.delete",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "deletedPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deletedPath"
+      ],
+      "type": "object"
+    },
+    "grant": "files:write",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "delete_content_file",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "files"
+  },
+  {
+    "name": "files.list",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "dir": {
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "team",
+            "private",
+            "story",
+            "agent"
+          ]
+        },
+        "storyId": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "rows": {
+          "items": {
+            "properties": {
+              "gitState": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "inheritedFrom": {
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "dir",
+                  "file",
+                  "story",
+                  "epic"
+                ]
+              },
+              "mtime": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "size": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "path",
+              "name",
+              "kind"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "type": "object"
+    },
+    "grant": "files:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "list_context_content",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": true,
+    "module": "files"
+  },
+  {
+    "name": "files.move",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "fromPath": {
+          "type": "string"
+        },
+        "toPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fromPath",
+        "toPath"
+      ],
+      "type": "object"
+    },
+    "grant": "files:write",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "move_content_file",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "files"
+  },
+  {
+    "name": "files.read",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "maxBytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "bytesUrl": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "size": {
+          "type": "number"
+        },
+        "text": {
+          "type": "string"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "size",
+        "truncated",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "grant": "files:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "read_content_file",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": true,
+    "module": "files"
+  },
+  {
+    "name": "focusOut",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "direction": {
+          "enum": [
+            "forward",
+            "backward"
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "focused": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "focused"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-only frame menus, popovers and focus; requires a rendered frame",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "focusTerminal",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "focused": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "focused"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-only frame menus, popovers and focus; requires a rendered frame",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "getDependencyStatus",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "machines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "getDocDir",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "getEpicHandle",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "getWorkspaceStatus",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "storyId": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "repo:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "gotoAgent",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "preserveFocus": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "agentId"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "humanStatus",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "get_human_status",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "inbox",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "before": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "conversation": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "inbox_list",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "inboxRollup",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:all-teams",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "launchUnder",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "handle": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Opens the native launch sheet; agents launch with open_workspace",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "loadMedia",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "messageId": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "org": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "messageId"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Fetch one inbox image after the user requests it",
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "machines",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "machines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "list_machines",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "markRead",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "markUnread",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "messageIds": {
+          "items": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "org": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "marked": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "marked"
+      ],
+      "type": "object"
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "mark_unread",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "modelRates",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "model_rates",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "moveWorkspace",
+    "class": "prefs",
+    "argsSchema": {
+      "additionalProperties": true,
+      "oneOf": [
+        {
+          "required": [
+            "before"
+          ]
+        },
+        {
+          "required": [
+            "after"
+          ]
+        }
+      ],
+      "properties": {
+        "after": {
+          "type": "string"
+        },
+        "before": {
+          "type": "string"
+        },
+        "teamKey": {
+          "type": "string"
+        },
+        "workspaceId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamKey",
+        "workspaceId"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "moved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "moved"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "reorder_workspace",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "openAgentInbox",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "handle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Reveals the agent and opens its native inbox rail",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "openDiff",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "range": {
+          "additionalProperties": false,
+          "properties": {
+            "end": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "side": {
+              "enum": [
+                "after"
+              ]
+            },
+            "start": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ],
+          "type": "object"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "rev": {
+          "type": "string"
+        },
+        "storyId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repo",
+        "rev",
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "opened"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "fetchCommand": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "const": "commitNotLocal"
+            }
+          },
+          "required": [
+            "status",
+            "reason",
+            "fetchCommand"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "worktreeRemoved",
+                "refused",
+                "unavailable"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "grant": "repo:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Opens a read-only source diff tab in the Mac viewer.",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "openFile",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "newTab": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "preview": {
+          "type": "boolean"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "openLauncher",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "org": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "task"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "opened": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "opened"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Opens a filled native launch sheet; agents launch with open_workspace",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "openMessage",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "openRoutineDraft",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "agent": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "task"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "opened": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "opened"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Opens a filled private routine draft; agents create with routine_create",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "openTab",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "agent": {
+          "type": "boolean"
+        },
+        "workspaceId": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "launch",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "open_terminal_tab",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "openWorkspace",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "headed": {
+          "type": "boolean"
+        },
+        "initialPrompt": {
+          "type": "string"
+        },
+        "sessionMode": {
+          "enum": [
+            "new",
+            "focus"
+          ]
+        },
+        "storyId": {
+          "type": "string"
+        },
+        "target": {
+          "properties": {
+            "kind": {
+              "enum": [
+                "story",
+                "epic",
+                "branch",
+                "dir"
+              ]
+            },
+            "path": {
+              "type": "string"
+            },
+            "storyId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "launch",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "open_workspace",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "page",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "cursor"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host projection subscription, inbox cursor paging or shared slot UI topics",
+    "audited": false,
+    "action": false,
+    "module": "sessions"
+  },
+  {
+    "name": "postMessage",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "team": {
+          "type": "object"
+        },
+        "text": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "send_message",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "prefs",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "queryContext",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "query_context",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "react",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "emoji": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "integer"
+        },
+        "remove": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "react",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "readWorkspace",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "files:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "records.collections",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_collections",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.create",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:write:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_create",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "records.delete",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:write:own",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "records_delete",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "records.history",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_history",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.list",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_list",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.read",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_read",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.readAt",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id",
+        "commit"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_read_at",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.restore",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id",
+        "commit"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:write:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_restore",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "records.search",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "query"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:read:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_search",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "records.setFields",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:write:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_set_fields",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "records.write",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "patch": {
+          "properties": {
+            "find": {
+              "type": "string"
+            },
+            "replace": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "find",
+            "replace"
+          ],
+          "type": "object"
+        },
+        "query": {
+          "type": "string"
+        },
+        "requestId": {
+          "maxLength": 64,
+          "type": "string"
+        },
+        "undo": {
+          "type": "boolean"
+        },
+        "window": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection",
+        "id"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "records:write:own",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "records_write",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "replyAsHuman",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "messageId": {
+          "type": "integer"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": true,
+    "mcpTwin": "reply",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "roles",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "role_state",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "routeToContext",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "routine",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "routine_get",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "routineCancel",
+    "class": "manage",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:manage",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "routineRefresh",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:run",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "routineResult",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "routine_result",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "routineRun",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "routine_run",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "routineRuns",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "routine_runs",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "routineStatus",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "routines",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "routine_list",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "run",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "read_run",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "runEvidence",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "read_run_evidence",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "runPrompt",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "prompt"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:send",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "runSkill",
+    "class": "spawn",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "skill": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "skill"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "launch",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "runWorkProduct",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "read_run_work_product",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "runs",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "routines:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "list_runs",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "sendAsHuman",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "team": {
+          "type": "object"
+        },
+        "text": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": true,
+    "mcpTwin": "send_message",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "sendPrompt",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "handle": {
+          "type": "string"
+        },
+        "submit": {
+          "type": "boolean"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle",
+        "text"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:send",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Agents prompt running agents with send_to_session; this is the person's typed send from a page.",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "sendToSession",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "target": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "text"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:send",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": "send_to_session",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "sendToWorkspaceTab",
+    "class": "send",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "mode": {
+          "enum": [
+            "prompt",
+            "command"
+          ]
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sessionId",
+        "text"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:send",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "processes"
+  },
+  {
+    "name": "sessionRead",
+    "class": "read",
+    "argsSchema": {
+      "$defs": {
+        "Include": {
+          "enum": [
+            "conversation",
+            "turns"
+          ],
+          "type": "string"
+        }
+      },
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "description": "Next turn index from the preceding conversation page.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "include": {
+          "description": "Omit for facts only. `conversation` pages the stored turns in full. `turns` pages them as\nsummaries (index, role, tsMs, text up to 200 chars, toolCalls, toolErrors, model) with no\ntool input or result and no provided skills (a call whose failure is not recorded adds\ntoolErrorsUnknown), and the answer holds only the session's id, cli, branch and timing, its\nstory, the reasons for those and the page. Not both.",
+          "items": {
+            "$ref": "#/$defs/Include"
+          },
+          "type": "array"
+        },
+        "limit": {
+          "description": "Turns to return (1–200). Defaults to 20, or 1 for a jump.",
+          "format": "uint",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "sessionId": {
+          "description": "A CodeSense session id or the CLI's native session id. Names the subject, not the caller.",
+          "type": "string"
+        },
+        "toolUseId": {
+          "description": "Jump to the turn containing this CLI-native tool call id.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "turn": {
+          "description": "Jump to this zero-based turn index; exclusive with cursor and toolUseId.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "sessionId"
+      ],
+      "title": "Params",
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "session_read",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "sessionUsage",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "session_usage",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "sessions",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "list_sessions",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "setField",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        },
+        "path": {
+          "type": "string"
+        },
+        "value": {}
+      },
+      "required": [
+        "path"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "setHumanStatus",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
+    "name": "setModelRate",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "accounts:manage",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "set_model_rate",
+    "presentationOnlyReason": null,
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "setPrefs",
+    "class": "prefs",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "setStatus",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "path": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "status"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "context:write",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": true,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "setUiState",
+    "class": "prefs",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "patch": {
+          "type": "object"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "patch"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-owned shared slot UI state",
+    "audited": false,
+    "action": true,
+    "module": "records"
+  },
+  {
+    "name": "setup",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "repo:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "describe_setup",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "showMenu",
+    "class": "read",
+    "argsSchema": {
+      "$defs": {
+        "menuGlyph": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "stageRail"
+                },
+                "ready": {
+                  "type": "boolean"
+                },
+                "role": {
+                  "enum": [
+                    "not_started",
+                    "active",
+                    "review",
+                    "blocked",
+                    "done"
+                  ]
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "statusMark"
+                },
+                "mark": {
+                  "type": "string"
+                },
+                "size": {
+                  "enum": [
+                    6,
+                    8
+                  ]
+                },
+                "still": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind",
+                "mark"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "fileKind": {
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "fileKindIcon"
+                }
+              },
+              "required": [
+                "kind",
+                "fileKind"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "menuItem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "properties": {
+                "checked": {
+                  "type": "boolean"
+                },
+                "count": {
+                  "type": "number"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "icon": {
+                  "$ref": "#/$defs/menuGlyph"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "radioGroup": {
+                  "type": "string"
+                },
+                "segmented": {
+                  "items": {
+                    "$ref": "#/$defs/menuItem"
+                  },
+                  "type": "array"
+                },
+                "separator": {
+                  "type": "boolean"
+                },
+                "submenu": {
+                  "items": {
+                    "$ref": "#/$defs/menuItem"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "properties": {
+        "anchorId": {
+          "type": "string"
+        },
+        "anchorRect": {
+          "properties": {
+            "height": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "type": "object"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/menuItem"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "row": {
+          "type": "object"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "row",
+            "text",
+            "frame"
+          ]
+        },
+        "text": {
+          "properties": {
+            "editable": {
+              "type": "boolean"
+            },
+            "hasSelection": {
+              "type": "boolean"
+            },
+            "hasText": {
+              "type": "boolean"
+            },
+            "password": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "anchorRect"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "oneOf": [
+        {
+          "properties": {
+            "closed": {
+              "const": true
+            }
+          },
+          "required": [
+            "closed"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "builtin": {
+              "type": "boolean"
+            },
+            "itemId": {
+              "type": "string"
+            },
+            "row": {}
+          },
+          "required": [
+            "itemId",
+            "row"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-only frame menus, popovers and focus; requires a rendered frame",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "showPopover",
+    "class": "read",
+    "argsSchema": {
+      "$defs": {
+        "menuGlyph": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "stageRail"
+                },
+                "ready": {
+                  "type": "boolean"
+                },
+                "role": {
+                  "enum": [
+                    "not_started",
+                    "active",
+                    "review",
+                    "blocked",
+                    "done"
+                  ]
+                }
+              },
+              "required": [
+                "kind"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "kind": {
+                  "const": "statusMark"
+                },
+                "mark": {
+                  "type": "string"
+                },
+                "size": {
+                  "enum": [
+                    6,
+                    8
+                  ]
+                },
+                "still": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "kind",
+                "mark"
+              ],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "fileKind": {
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "fileKindIcon"
+                }
+              },
+              "required": [
+                "kind",
+                "fileKind"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "menuItem": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "properties": {
+                "checked": {
+                  "type": "boolean"
+                },
+                "count": {
+                  "type": "number"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "icon": {
+                  "$ref": "#/$defs/menuGlyph"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "radioGroup": {
+                  "type": "string"
+                },
+                "segmented": {
+                  "items": {
+                    "$ref": "#/$defs/menuItem"
+                  },
+                  "type": "array"
+                },
+                "separator": {
+                  "type": "boolean"
+                },
+                "submenu": {
+                  "items": {
+                    "$ref": "#/$defs/menuItem"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "properties": {
+        "anchorId": {
+          "type": "string"
+        },
+        "anchorRect": {
+          "properties": {
+            "height": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "type": "object"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/menuItem"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "row": {
+          "type": "object"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "row",
+            "text",
+            "frame"
+          ]
+        },
+        "text": {
+          "properties": {
+            "editable": {
+              "type": "boolean"
+            },
+            "hasSelection": {
+              "type": "boolean"
+            },
+            "hasText": {
+              "type": "boolean"
+            },
+            "password": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "kind",
+        "anchorRect"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "closed": {
+          "const": true
+        }
+      },
+      "required": [
+        "closed"
+      ],
+      "type": "object"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host-only frame menus, popovers and focus; requires a rendered frame",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "stopSession",
+    "class": "manage",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "handle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:stop",
+    "inboxTarget": false,
+    "confirmable": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "agent"
+  },
+  {
+    "name": "storyChanges",
+    "class": "read",
+    "argsSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "description": "nextCursor from the previous page with the same story. Stale cursors are refused.\n`pages.<array>.cursor` resumes a truncated array.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "include": {
+          "description": "Opt in to introduced-line attribution for the current commit page (private reads only).",
+          "items": {
+            "enum": [
+              "ranges"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "limit": {
+          "description": "Commit page size (default 100, at most 500). Every array pages by limit; tasks are\noldest first. Totals cover every commit (`files` adds landed-diff paths).",
+          "format": "uint",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "only": {
+          "description": "Return only these arrays (plus `totals`) and compute only what they need: `tasks`,\n`sessions` and `reviews` never read git. Omit for every array. Without a git array\n(`commits`, `prs`, `branches`, `worktrees`, `actual`) `totals.commits`, `files` and `lines`\nare null, with `unavailable.commits`, `files` and `lines` saying why, and a cursor is stale.",
+          "items": {
+            "description": "An array a read can be narrowed to (`only`).",
+            "oneOf": [
+              {
+                "enum": [
+                  "tasks",
+                  "sessions",
+                  "commits",
+                  "prs",
+                  "branches",
+                  "worktrees",
+                  "actual"
+                ],
+                "type": "string"
+              },
+              {
+                "const": "reviews",
+                "description": "The story's complete review-round markers: round, phase, scope, skill, subjectRev,\nhigh, medium, low, dismissed, converged and reportedAt. From the records, no git.",
+                "type": "string"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "storyId": {
+          "description": "Story id, for example DEMO-29. Next: session_read, task_read for one session or task.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "storyId"
+      ],
+      "title": "Params",
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "story_changes",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "storyTotals",
+    "class": "read",
+    "argsSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "storyIds": {
+          "description": "Story ids, for example DEMO-29; 1 to 500.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "storyIds"
+      ],
+      "title": "Params",
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "story_totals",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "subscribe",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "dir": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "sinceRev": {
+          "type": "integer"
+        },
+        "storyId": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "window": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "topic"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host projection subscription, inbox cursor paging or shared slot UI topics",
+    "audited": false,
+    "action": false,
+    "module": "sessions"
+  },
+  {
+    "name": "unsubscribe",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host projection subscription, inbox cursor paging or shared slot UI topics",
+    "audited": false,
+    "action": false,
+    "module": "sessions"
+  },
+  {
+    "name": "updates",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": "list_agent_updates",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "validateYaml",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "context:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": false,
+    "action": false,
+    "module": "records"
+  },
+  {
+    "name": "watchAgentActivity",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "watchAgentInbox",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "watchInbox",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "inbox:read:team",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host presentation or dashboard-local operation",
+    "audited": false,
+    "action": false,
+    "module": "inbox"
+  },
+  {
+    "name": "whyLine",
+    "class": "read",
+    "argsSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "description": "Last line, inclusive; end >= start and end - start <= 2000.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "path": {
+          "description": "Committed file path relative to the repository; no leading dash or NUL.",
+          "type": "string"
+        },
+        "repo": {
+          "description": "Configured source slug; host/owner/repo disambiguates names shared by hosts.",
+          "type": "string"
+        },
+        "rev": {
+          "default": null,
+          "description": "Local commit or ref, honored as given. Omitted: the story's merged SHA, else its branch\nhead, else origin's default branch; never the checkout's HEAD. Never fetched.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "description": "First line, 1-based and inclusive.",
+          "format": "uint32",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "story": {
+          "default": null,
+          "description": "Story id (e.g. DEMO-19) whose history an omitted rev follows.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "repo",
+        "path",
+        "start",
+        "end"
+      ],
+      "title": "Params",
+      "type": "object"
+    },
+    "resultSchema": {
+      "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "why_line",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
+    "name": "worktrees",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "grant": "repo:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": "list_worktrees",
+    "presentationOnlyReason": null,
+    "audited": false,
+    "action": false,
+    "module": "records"
+  }
+]

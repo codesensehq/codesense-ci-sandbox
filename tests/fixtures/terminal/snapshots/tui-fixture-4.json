@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 4,
+ "snapshot": {
+  "cols": 80,
+  "rows": 24,
+  "seq": 1473,
+  "resize_gen": 0,
+  "scrollback": 5000,
+  "vt": "\u001b[1mtui-fixture 80x24 frame 2\u001b[54C\u001b[0m|\r\n--------------------------------------------------------------------------------\r\nscroll 端末 line\r\n漢字 画面 tile offset line\r\nparse margin 端末 alpha scroll offset\r\nindex 端末 width index\r\ncursor scroll region 端末 margin 幅広 line parse\r\ncursor offset frame jolt 端末 画面 delta node\r\n\u001b[6Cregionpha grid line index\r\nscroll parse grid echo\r\n表示 幅広 scroll margin\r\nparse bravo jolt cursor 端末 scroll\r\nregion jolt frame bravo index height frame\r\noffset query cursor tile node 幅広 表示\r\ncursor region region 端末 delta margin 画面 width\r\n漢字 line height query frame\r\ndelta height echo\r\necho line height region width height region\r\ndelta width jolt cursor kernel\r\n端末 line 端末 delta delta\r\nkernel jolt margin jolt height\r\n\r\n--------------------------------------------------------------------------------\r\n[80x24] update 2\u001b[?25l\u001b[24;17H"
+ }
+}

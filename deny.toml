@@ -1,0 +1,87 @@
+# Licence and advisory policy for what the app ships. `cargo deny check licenses` gates the Rust crates against
+# it; scripts/licence-scan.mjs runs that and reads [licenses].allow below as the policy for npm
+# packages and release/third-party.vendored.json too, so the allow list lives only here.
+
+[graph]
+# Every target the app builds for (no `targets` filter). Dev-dependencies do not ship.
+exclude-dev = true
+
+[licenses]
+# Compatible with distributing the app under MIT. Anything else needs an owner decision: an
+# [[licenses.exceptions]] entry here for a crate, scripts/licence-scan.decisions.json for an npm
+# package or a vendored component.
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Zlib",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "CC0-1.0",
+  "0BSD",
+  # MIT-0 (MIT without the attribution condition): global allow, maintainer, 2026-11-04.
+  "MIT-0",
+]
+confidence-threshold = 0.93
+unused-allowed-license = "allow"
+
+[licenses.private]
+# Workspace crates declare `license = "MIT"`; checking them keeps that true.
+ignore = false
+
+# A crate that declares only `license-file` has no SPDX expression to check: state its licence
+# here, with the hash `cargo deny check licenses` prints for the file. No crate in Cargo.lock
+# needs one (every locked crate declares `license`, 2026-11-04). Template:
+#
+# [[licenses.clarify]]
+# crate = "name"
+# expression = "MIT"
+# license-files = [{ path = "LICENSE", hash = 0x00000000 }]
+
+# webpki-roots and webpki-root-certs carry the Mozilla CA bundle under CDLA-Permissive-2.0, which
+# is permissive but not in the allow list above. A per-crate exception keeps the licence out of
+# the global list.
+# CDLA-Permissive-2.0 for these two crates only: accepted, maintainer, 2026-11-04.
+
+[[licenses.exceptions]]
+crate = "webpki-roots"
+allow = ["CDLA-Permissive-2.0"]
+
+[[licenses.exceptions]]
+crate = "webpki-root-certs"
+allow = ["CDLA-Permissive-2.0"]
+
+# Advisories (RustSec), checked by `node scripts/licence-scan.mjs --advisories`, which needs the
+# network to fetch the advisory database, so it is not part of the offline --check the release
+# checks run. Policy, applied by the script to every finding not ignored below:
+# - a vulnerability rated critical or high (CVSS 3.x or 4.0), or not rated at all, fails the run;
+# - an unsound advisory counts as high and fails the run;
+# - medium and low vulnerabilities, unmaintained crates, notices and yanked versions are listed as
+#   findings for the go/no-go review and do not fail it.
+# cargo deny's own exit status is not the gate (version 2 makes every advisory an error).
+[advisories]
+version = 2
+# Every crate, not only workspace members: the script refuses any other scope.
+unsound = "all"
+unmaintained = "all"
+yanked = "warn"
+# Each ignore is a table with a reason: why the crate is not affected or what replaces it, who
+# decided and when. A bare id has no reason and the script refuses it. cargo deny matches `id`
+# against the RustSec id only, not an alias (CVE or GHSA). `crate` ignores a yanked version. An
+# ignored advisory is listed as addressed. Template:
+#
+# ignore = [
+#   { id = "RUSTSEC-0000-0000", reason = "only reachable through X, which the app never calls; maintainer, 2026-11-05" },
+#   { crate = "name@1.2.3", reason = "yanked for a docs typo; maintainer, 2026-11-05" },
+# ]
+ignore = [
+  # Not scoped with [graph] targets: the remote session server ships for *-linux-musl, and the
+  # workspace graph for those targets still resolves glib through tauri, so only an
+  # aarch64-apple-darwin filter would drop it, and that filter would also stop checking the
+  # session server's crates.
+  { id = "RUSTSEC-2024-0429", reason = "glib (GTK) is Linux-only via tauri/tray-icon; absent from the shipped aarch64-apple-darwin graph (cargo tree --target aarch64-apple-darwin -i glib: empty); it reaches only the desktop crate through tauri -> tray-icon -> libappindicator, not the shipped linux-musl session server (cargo tree -p codesense-session-server -i glib, --target x86_64-unknown-linux-musl and aarch64-unknown-linux-musl: empty); maintainer, 2026-11-05" },
+]

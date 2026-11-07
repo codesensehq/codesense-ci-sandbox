@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="network" />
+    <title>CodeSense — Architecture</title>
+
+    <!-- Shared chrome: tokens, shell, top-nav, ⌘K palette. Loaded from the
+         bundled _shared/ bundle so this doc renders unchanged under file://,
+         inside the Tauri viewer, and under agent MCP preview. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+
+    <!--
+      architecture.html
+      ─────────────────────────────────────────────────────────────────────
+      One picture of how CodeSense is wired. Click a shape to open its
+      detail panel: role, MCP tools, arcs, "open live canvas".
+
+      Diagram asset
+      ─────────────
+      The shipped visual is the inline SVG stand-in (<svg class="stand-in">
+      below) in the exact 1600×1000 coordinate space of the Excalidraw sketch
+      (./diagrams/architecture.excalidraw.sketch.md). The hitmap uses the same
+      coords, so clickable regions line up with the live canvas when a reader
+      clicks through.
+
+      The `.excalidraw.png` sidecar + the
+      probe-and-promote flow were removed. `render_canvas` now returns the PNG
+      inline to the agent; shipped docs embed the inline SVG stand-in as the
+      hero visual and link to the live canvas for the real thing.
+    -->
+
+    <style>
+      /* ─── Dashboard-local tokens that extend the shared chrome ────── */
+      :root {
+        --arc-signal: color-mix(in oklab, var(--cs-accent, #7aa2ff) 90%, white);
+        --arc-agent: #f6b454;
+        --arc-repo: #b48bff;
+        --arc-remote: #4fd4bb;
+        --cs-arch-panel-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.55);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --arc-signal: #0866a8;
+          --arc-agent: #a8640c;
+          --arc-repo: #6a3fcf;
+          --arc-remote: #0d7a66;
+          --cs-arch-panel-shadow: 0 24px 48px -16px rgb(16 24 40 / 0.18);
+        }
+      }
+      html[data-theme="light"] {
+        --arc-signal: #0866a8;
+        --arc-agent: #a8640c;
+        --arc-repo: #6a3fcf;
+        --arc-remote: #0d7a66;
+        --cs-arch-panel-shadow: 0 24px 48px -16px rgb(16 24 40 / 0.18);
+      }
+
+      /* The architecture page runs edge-to-edge inside the chrome: let the
+         shared main widen so the 1600×1000 canvas has room to breathe. */
+      .cs-main.cs-main--arch {
+        max-width: 1600px;
+        padding-top: var(--cs-docs-space-5);
+      }
+
+      /* ─── Hero header: title / caption / Local|Remote segmented ──── */
+      .arch-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: var(--cs-docs-space-5);
+        align-items: end;
+        margin-bottom: var(--cs-docs-space-5);
+      }
+      @media (max-width: 640px) {
+        .arch-head { grid-template-columns: 1fr; }
+      }
+      .arch-head h1 {
+        margin: 0 0 var(--cs-docs-space-2) 0;
+        font-size: var(--cs-docs-text-2xl, 32px);
+        line-height: 1.15;
+        font-weight: 650;
+        letter-spacing: -0.015em;
+      }
+      .arch-head .sub {
+        color: var(--cs-muted-fg);
+        max-width: 60ch;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arch-head .sub strong { color: var(--cs-fg); font-weight: 600; }
+
+      /* Segmented variant control */
+      .seg {
+        display: inline-flex;
+        padding: 3px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-full);
+        align-self: end;
+      }
+      .seg button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--cs-muted-fg);
+        padding: 7px 14px;
+        font: inherit;
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        cursor: pointer;
+        border-radius: var(--cs-docs-radius-full);
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--cs-fg);
+        color: var(--cs-bg);
+      }
+      .seg button:not([aria-pressed="true"]):hover { color: var(--cs-fg); }
+      .seg .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--arc-signal); }
+      .seg button[data-variant="remote"] .dot { background: var(--arc-remote); }
+
+      /* ─── Shell: diagram (2fr) + detail panel (1fr) ──────────────── */
+      .shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+        gap: var(--cs-docs-space-5);
+        align-items: start;
+      }
+      @media (max-width: 1100px) { .shell { grid-template-columns: 1fr; } }
+
+      .diagram {
+        position: relative;
+        background: var(--cs-surface-raised);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        padding: var(--cs-docs-space-4);
+        isolation: isolate;
+      }
+      .diagram .frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1600 / 1000;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: hidden;
+      }
+      .diagram svg {
+        position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+      }
+      .diagram svg.hitmap { pointer-events: none; }
+      .diagram svg.hitmap [data-shape] { pointer-events: auto; cursor: pointer; }
+
+      /* Hitmap: subtle until the user walks it with Tab. */
+      .hitmap [data-shape] rect {
+        fill: transparent;
+        stroke: transparent;
+        stroke-width: 2;
+        rx: 10;
+        transition: stroke 160ms ease, fill 160ms ease;
+      }
+      .diagram:focus-within .hitmap [data-shape] rect {
+        stroke: color-mix(in srgb, var(--arc-signal) 22%, transparent);
+        stroke-dasharray: 4 6;
+      }
+      .hitmap [data-shape]:hover rect {
+        stroke: color-mix(in srgb, var(--arc-signal) 70%, transparent);
+        stroke-dasharray: 0;
+        fill: color-mix(in srgb, var(--arc-signal) 7%, transparent);
+      }
+      .hitmap [data-shape][aria-selected="true"] rect {
+        stroke: var(--arc-signal);
+        stroke-dasharray: 0;
+        fill: color-mix(in srgb, var(--arc-signal) 10%, transparent);
+      }
+      .hitmap [data-shape][data-family="agent"]:hover rect,
+      .hitmap [data-shape][data-family="agent"][aria-selected="true"] rect {
+        stroke: var(--arc-agent); fill: color-mix(in srgb, var(--arc-agent) 10%, transparent);
+      }
+      .hitmap [data-shape][data-family="repo"]:hover rect,
+      .hitmap [data-shape][data-family="repo"][aria-selected="true"] rect {
+        stroke: var(--arc-repo); fill: color-mix(in srgb, var(--arc-repo) 10%, transparent);
+      }
+      .hitmap [data-shape][data-family="remote"]:hover rect,
+      .hitmap [data-shape][data-family="remote"][aria-selected="true"] rect {
+        stroke: var(--arc-remote); fill: color-mix(in srgb, var(--arc-remote) 10%, transparent);
+      }
+
+      /* Authored motion — one moment: the active-flow dashed march. */
+      @media (prefers-reduced-motion: no-preference) {
+        .stand-in .edge.is-active { stroke-dasharray: 8 6; animation: cs-arch-march 6s linear infinite; }
+        @keyframes cs-arch-march { to { stroke-dashoffset: -140; } }
+      }
+
+      /* Diagram footer legend + quick-jump pills */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--cs-docs-space-4);
+        padding: var(--cs-docs-space-3) 2px 0 2px;
+        font-size: var(--cs-docs-text-xs, 12px);
+        color: var(--cs-muted-fg);
+      }
+      .legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+      .legend .sw::before {
+        content: ""; width: 14px; height: 3px; border-radius: 2px;
+        background: var(--sw, var(--arc-signal));
+      }
+      .legend .sw.agent::before { background: var(--arc-agent); }
+      .legend .sw.repo::before  { background: var(--arc-repo);  }
+      .legend .sw.remote::before{ background: var(--arc-remote); }
+      body[data-variant="local"] .legend .sw.remote { display: none; }
+      .legend .toc { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+      .legend .toc button {
+        appearance: none;
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+        color: var(--cs-muted-fg);
+        padding: 3px 10px;
+        border-radius: var(--cs-docs-radius-full);
+        font: inherit;
+        font-size: var(--cs-docs-text-xs, 12px);
+        cursor: pointer;
+      }
+      .legend .toc button:hover {
+        color: var(--cs-fg);
+        border-color: color-mix(in srgb, var(--arc-signal) 50%, var(--cs-border));
+      }
+      .kb-hint { font-size: var(--cs-docs-text-xs, 12px); color: var(--cs-muted-fg); }
+      .kb-hint kbd {
+        display: inline-grid; place-items: center;
+        min-width: 20px; height: 20px; padding: 0 5px;
+        border: 1px solid var(--cs-border); border-bottom-width: 2px;
+        border-radius: 4px;
+        background: var(--cs-inset);
+        color: var(--cs-fg);
+        font: 600 11px/1 var(--cs-font-mono, ui-monospace, monospace);
+      }
+
+      /* ─── Detail panel ───────────────────────────────────────────── */
+      .panel {
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        padding: var(--cs-docs-space-5);
+        box-shadow: var(--cs-arch-panel-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-5);
+        min-height: 480px;
+        position: sticky;
+        top: var(--cs-docs-space-5);
+      }
+      @media (max-width: 1100px) { .panel { position: static; min-height: 0; } }
+
+      .panel header {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        column-gap: var(--cs-docs-space-3);
+        row-gap: 2px;
+        align-items: center;
+      }
+      .panel .icon {
+        width: 44px; height: 44px;
+        display: inline-grid; place-items: center;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--panel-tint, var(--arc-signal)) 14%, transparent);
+        color: var(--panel-tint, var(--arc-signal));
+        grid-row: 1 / span 2;
+      }
+      .panel .icon svg { width: 22px; height: 22px; }
+      .panel h2 { margin: 0; font-size: var(--cs-docs-text-lg, 18px); font-weight: 650; letter-spacing: -0.01em; }
+      .panel .role { font-size: var(--cs-docs-text-sm, 13.5px); color: var(--cs-muted-fg); margin: 0; }
+      .panel .description { margin: 0; font-size: var(--cs-docs-text-md, 15px); max-width: 60ch; }
+      .panel .section-label {
+        font-size: 11px;
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-docs-space-2) 0;
+      }
+      .panel .tools { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+      .panel .tools li {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: baseline;
+        gap: var(--cs-docs-space-3);
+        padding: 6px 0;
+        border-bottom: 1px dashed color-mix(in srgb, var(--cs-border) 70%, transparent);
+      }
+      .panel .tools li:last-child { border-bottom: 0; }
+      .panel .tools code {
+        font: 500 13px/1.3 var(--cs-font-mono, ui-monospace, monospace);
+        color: var(--cs-fg);
+      }
+      .panel .tools .what { font-size: var(--cs-docs-text-xs, 12px); color: var(--cs-muted-fg); text-align: right; }
+
+      .panel .arcs { display: flex; flex-wrap: wrap; gap: 6px; }
+      .panel .arcs a {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 10px;
+        border-radius: var(--cs-docs-radius-full);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-inset);
+        color: var(--cs-fg);
+        font-size: var(--cs-docs-text-xs, 12px);
+        text-decoration: none;
+      }
+      .panel .arcs a:hover { border-color: var(--arc-signal); color: var(--arc-signal); }
+      .panel .arcs .k { font-weight: 650; color: var(--cs-muted-fg); }
+
+      .panel .actions { display: flex; flex-wrap: wrap; gap: var(--cs-docs-space-2); }
+      .btn {
+        appearance: none;
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 8px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        font: inherit;
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn:hover { border-color: var(--arc-signal); color: var(--arc-signal); }
+      .btn.primary {
+        background: var(--cs-fg); color: var(--cs-bg); border-color: var(--cs-fg);
+      }
+      .btn.primary:hover { background: var(--arc-signal); border-color: var(--arc-signal); color: var(--cs-bg); }
+      .btn .shortcut {
+        font-size: 11px; opacity: 0.6; margin-left: 4px;
+        font-family: var(--cs-font-mono, ui-monospace, monospace);
+      }
+
+      /* Empty-state: not a blank card — a picker. */
+      .panel.is-empty header .icon {
+        background: color-mix(in srgb, var(--cs-muted-fg) 14%, transparent);
+        color: var(--cs-muted-fg);
+      }
+      .panel.is-empty .section-tools,
+      .panel.is-empty .section-arcs,
+      .panel.is-empty .section-actions { display: none; }
+      .panel .section-shapes { display: none; }
+      .panel.is-empty .section-shapes { display: block; }
+      .shape-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .shape-list button {
+        appearance: none;
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        align-items: center;
+        column-gap: 10px;
+        padding: 8px 10px;
+        border: 1px solid transparent;
+        border-radius: var(--cs-docs-radius-sm);
+        background: transparent;
+        color: var(--cs-fg);
+        font: inherit;
+        font-size: var(--cs-docs-text-sm, 13.5px);
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
+      }
+      .shape-list button:hover {
+        background: var(--cs-inset);
+        border-color: color-mix(in srgb, var(--arc-signal) 32%, var(--cs-border));
+      }
+      .shape-list .ic {
+        width: 28px; height: 28px;
+        display: inline-grid; place-items: center;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--list-tint, var(--arc-signal)) 14%, transparent);
+        color: var(--list-tint, var(--arc-signal));
+      }
+      .shape-list .ic svg { width: 15px; height: 15px; }
+      .shape-list .lab { font-weight: 600; letter-spacing: -0.005em; }
+      .shape-list .lab small {
+        display: block; font-weight: 400; color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs, 12px); margin-top: 1px;
+      }
+      .shape-list .kb { color: var(--cs-muted-fg); font-size: 11px; }
+
+      /* ─── Stand-in SVG (hero diagram until real PNG lands) ────────── */
+      .stand-in .frame-rect { fill: var(--cs-surface-raised); stroke: var(--cs-border); stroke-width: 1.5; }
+      .stand-in .frame-rect.dashed { stroke-dasharray: 6 6; }
+      .stand-in .frame-rect.repos  { stroke: color-mix(in srgb, var(--arc-repo)  60%, var(--cs-border)); }
+      .stand-in .frame-rect.async  { stroke: color-mix(in srgb, var(--arc-agent) 60%, var(--cs-border)); }
+      .stand-in .frame-rect.remote { stroke: var(--arc-remote); stroke-dasharray: 8 6; }
+
+      .stand-in .shape      { fill: var(--cs-surface); stroke-width: 1.5; rx: 10; }
+      .stand-in .shape.sig  { stroke: var(--arc-signal); }
+      .stand-in .shape.ag   { stroke: var(--arc-agent); }
+      .stand-in .shape.repo { stroke: var(--arc-repo); }
+      .stand-in .shape.remote { stroke: var(--arc-remote); stroke-dasharray: 6 6; }
+      .stand-in .shape.nested { stroke-width: 1; }
+
+      .stand-in .lbl        { fill: var(--cs-fg); font: 650 20px/1 var(--cs-font-sans, ui-sans-serif, system-ui, sans-serif); }
+      .stand-in .cap        { fill: var(--cs-muted-fg); font: 400 14px/1.3 var(--cs-font-sans, ui-sans-serif, system-ui, sans-serif); }
+      .stand-in .frame-lbl  { fill: var(--cs-muted-fg); font: 650 13px/1 var(--cs-font-sans, ui-sans-serif, system-ui, sans-serif); letter-spacing: 0.08em; text-transform: uppercase; }
+
+      .stand-in .edge       { fill: none; stroke-width: 1.5; marker-end: url(#arch-arrow); }
+      .stand-in .edge.sig   { stroke: color-mix(in srgb, var(--arc-signal) 75%, transparent); }
+      .stand-in .edge.ag    { stroke: color-mix(in srgb, var(--arc-agent)  75%, transparent); }
+      .stand-in .edge.repo  { stroke: color-mix(in srgb, var(--arc-repo)   75%, transparent); }
+      .stand-in .edge.remote{ stroke: var(--arc-remote); stroke-dasharray: 6 5; }
+      .stand-in .edge-lbl   { fill: var(--cs-muted-fg); font: 500 12px/1 var(--cs-font-sans, ui-sans-serif, system-ui, sans-serif); }
+
+      .stand-in .ssh-boundary { stroke: var(--arc-remote); stroke-width: 1.5; stroke-dasharray: 2 4; }
+
+      /* Variant swap: show one group of shapes, hide the other. */
+      body[data-variant="local"]  .stand-in .v-remote,
+      body[data-variant="local"]  .hitmap   .v-remote { display: none; }
+      body[data-variant="remote"] .stand-in .v-local,
+      body[data-variant="remote"] .hitmap   .v-local { display: none; }
+
+      /* Footnote band under the shell. */
+      .arch-foot {
+        display: flex; justify-content: space-between; gap: var(--cs-docs-space-4);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs, 12px);
+        padding-top: var(--cs-docs-space-3);
+        margin-top: var(--cs-docs-space-5);
+        border-top: 1px solid var(--cs-border);
+      }
+      .arch-foot a { color: inherit; }
+      .arch-foot a:hover { color: var(--arc-signal); }
+      .arch-foot code { font-family: var(--cs-font-mono, ui-monospace, monospace); }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="architecture" data-variant="local">
+    <!-- Shared top-nav. nav.js renders arcs dropdown + ⌘K palette here. -->
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <!-- Icon library — kept outside the stand-in so the icons survive when
+         the real PNG replaces it (the panel header + shape-list still use
+         them to tint and label the detail card). -->
+    <svg aria-hidden="true" width="0" height="0" style="position: absolute">
+      <defs>
+        <symbol id="i-monitor" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></g></symbol>
+        <symbol id="i-server" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></g></symbol>
+        <symbol id="i-bot" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M8 13h.01M16 13h.01M9 17h6"/></g></symbol>
+        <symbol id="i-plug" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><path d="M9 7l-3 3 8 8 3-3zM10 4l3 3M4 10l3 3M19 15l1 1-4 4-1-1M13 20l-3 3"/></g></symbol>
+        <symbol id="i-term" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h5"/></g></symbol>
+        <symbol id="i-dash" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></g></symbol>
+        <symbol id="i-branch" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 8v8M18 8v2a4 4 0 0 1-4 4H8"/></g></symbol>
+        <symbol id="i-trees" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><path d="M8 20v-3M8 17l-4-5h3l-3-4h3l-3-4h8l-3 4h3l-3 4h3zM17 20v-3M17 17l-3-4h2l-2-3h2l-2-3h6l-2 3h2l-2 3h2z"/></g></symbol>
+        <symbol id="i-folder-git" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="10" cy="14" r="1.6"/><circle cx="16" cy="14" r="1.6"/><path d="M11.6 14h2.8"/></g></symbol>
+        <symbol id="i-inbox" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><path d="M3 13l3-8h12l3 8v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2h5L16 13h5"/></g></symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l3 2"/></g></symbol>
+        <symbol id="i-cloud" viewBox="0 0 24 24"><g style="stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;"><path d="M7 18a5 5 0 0 1 .5-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/></g></symbol>
+      </defs>
+    </svg>
+
+    <main class="cs-main cs-main--arch">
+      <section data-hero data-search="Architecture — one picture of how CodeSense is wired" id="hero">
+        <header class="arch-head">
+          <div>
+            <h1>Architecture</h1>
+            <p class="sub">
+              One picture of how CodeSense is wired. The <strong>Tauri webview</strong>
+              calls the app's backend, the <strong>host-agent</strong>, through Tauri
+              commands; it owns your files, routines, and inboxes, and a
+              <strong>local HTTP server</strong> serves the HTML docs and dashboards.
+              Agents reach the same backend through the <strong>CodeSense MCP</strong>.
+              Click any shape to open its detail.
+            </p>
+          </div>
+          <div class="seg" role="group" aria-label="Variant">
+            <button type="button" data-variant="local" aria-pressed="true">
+              <span class="dot" aria-hidden="true"></span>Local
+            </button>
+            <button type="button" data-variant="remote" aria-pressed="false">
+              <span class="dot" aria-hidden="true"></span>Local + Remote
+            </button>
+          </div>
+        </header>
+
+        <div class="shell">
+          <!-- ──────────────── Diagram (hero visual) ──────────────── -->
+          <figure class="diagram" aria-label="CodeSense architecture diagram">
+            <div class="frame">
+              <!--
+                Stand-in SVG — identical 1600×1000 coordinate system to the
+                Excalidraw sketch in ./diagrams/architecture.excalidraw.sketch.md,
+                so the hitmap below lines up with the live canvas when a reader
+                clicks through. The build-time `.excalidraw.png` sidecar was
+                removed —
+                `render_canvas` returns the PNG inline to the agent, no PNG
+                lands in the docs tree.
+              -->
+              <svg class="stand-in" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <defs>
+                  <marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+                  </marker>
+                </defs>
+
+                <!-- ─── Local variant ─── -->
+                <g class="v-local">
+                  <!-- Frames -->
+                  <rect class="frame-rect" x="40" y="60" width="940" height="900" rx="14"/>
+                  <text class="frame-lbl" x="60" y="86">This Mac</text>
+
+                  <rect class="frame-rect repos dashed" x="1020" y="60" width="540" height="460" rx="14"/>
+                  <text class="frame-lbl" x="1040" y="86">Context repo + worktree</text>
+
+                  <rect class="frame-rect async dashed" x="1020" y="560" width="540" height="400" rx="14"/>
+                  <text class="frame-lbl" x="1040" y="586">Async spine</text>
+
+                  <!-- webview (holds dashboards + agent-cli) -->
+                  <rect class="shape sig" x="80" y="120" width="420" height="240"/>
+                  <use href="#i-monitor" x="96" y="134" width="22" height="22" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="124" y="151">Tauri webview</text>
+                  <text class="cap" x="96" y="172">React viewer · panes · tabs</text>
+
+                  <rect class="shape nested" x="100" y="200" width="180" height="140" style="stroke: var(--cs-border)"/>
+                  <use href="#i-dash" x="114" y="214" width="18" height="18" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="138" y="228" style="font-size:14px">Dashboards</text>
+                  <text class="cap" x="114" y="246" style="font-size:11.5px">HTML docs — this page</text>
+                  <text class="cap" x="114" y="262" style="font-size:11.5px">talks to window.codesense</text>
+
+                  <rect class="shape nested" x="300" y="200" width="180" height="140" style="stroke: var(--arc-agent)"/>
+                  <use href="#i-term" x="314" y="214" width="18" height="18" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="338" y="228" style="font-size:14px">Agent CLI</text>
+                  <text class="cap" x="314" y="246" style="font-size:11.5px">Claude Code · Codex</text>
+                  <text class="cap" x="314" y="262" style="font-size:11.5px">runs in a terminal tab</text>
+
+                  <!-- http-server -->
+                  <rect class="shape sig" x="540" y="120" width="240" height="240"/>
+                  <use href="#i-server" x="556" y="134" width="22" height="22" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="584" y="151">Local HTTP server</text>
+                  <text class="cap" x="556" y="172">Axum</text>
+                  <text class="cap" x="556" y="190">localhost:&lt;port&gt;</text>
+                  <text class="cap" x="556" y="208">injects window.codesense</text>
+                  <text class="cap" x="556" y="330" style="font-style:italic">serves /kit + docs</text>
+
+                  <!-- host-agent -->
+                  <rect class="shape ag" x="80" y="420" width="700" height="160"/>
+                  <use href="#i-bot" x="96" y="438" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="124" y="455">Host-agent</text>
+                  <text class="cap" x="96" y="478">The app's Rust backend · Tauri commands, MCP, context IO, routines.</text>
+                  <text class="cap" x="96" y="498">Only runs on the Mac you run CodeSense on.</text>
+                  <text class="cap" x="96" y="542" style="font-style:italic">the one place writes to disk originate</text>
+
+                  <!-- mcp -->
+                  <rect class="shape ag" x="300" y="640" width="480" height="100" style="stroke-width: 2"/>
+                  <use href="#i-plug" x="316" y="658" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="344" y="675">CodeSense MCP</text>
+                  <text class="cap" x="316" y="695">The agent bridge · every tool</text>
+                  <text class="cap" x="316" y="713">every UI action also lives here (MCP-complete invariant)</text>
+
+                  <text class="cap" x="80" y="800" style="font-size:12px; opacity:.8">
+                    Local machine · macOS filesystem · ~/.codesense/… + bound user repos
+                  </text>
+
+                  <!-- Repos cluster -->
+                  <rect class="shape repo" x="1040" y="100" width="500" height="140"/>
+                  <use href="#i-branch" x="1056" y="118" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="1084" y="135">Context repo</text>
+                  <text class="cap" x="1056" y="158">git-backed org · teams · content · config</text>
+                  <text class="cap" x="1056" y="178">the shared truth · parent-team inheritance</text>
+                  <text class="cap" x="1056" y="214" style="font-style:italic">read-only on the docs org</text>
+
+                  <rect class="shape repo" x="1040" y="270" width="500" height="110"/>
+                  <use href="#i-trees" x="1056" y="286" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="1084" y="303">Worktree</text>
+                  <text class="cap" x="1056" y="326">per-story · created on open</text>
+                  <text class="cap" x="1056" y="344">context copied in at launch or on request</text>
+
+                  <rect class="shape repo" x="1040" y="400" width="500" height="100" style="stroke-dasharray: 6 6"/>
+                  <use href="#i-folder-git" x="1056" y="416" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="1084" y="433">Bound source repo</text>
+                  <text class="cap" x="1056" y="456">the code being worked on · lives inside the worktree</text>
+
+                  <!-- Async cluster -->
+                  <rect class="shape ag" x="1040" y="600" width="500" height="150"/>
+                  <use href="#i-inbox" x="1056" y="618" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="1084" y="635">Inbox</text>
+                  <text class="cap" x="1056" y="658">per-team threads · messages · role queues</text>
+                  <text class="cap" x="1056" y="676">builder / resolver / reviewer / analyst / …</text>
+                  <text class="cap" x="1056" y="720" style="font-style:italic">the async spine of the factory</text>
+
+                  <rect class="shape ag" x="1040" y="770" width="500" height="170"/>
+                  <use href="#i-clock" x="1056" y="788" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="1084" y="805">Routine engine</text>
+                  <text class="cap" x="1056" y="828">triggers:  each_mac  ·  inbox_idle  ·  cron  ·  manual</text>
+                  <text class="cap" x="1056" y="848">wakes agents, posts messages, moves pipeline status</text>
+                  <text class="cap" x="1056" y="900" style="font-style:italic">routine-owned storage</text>
+
+                  <!-- Edges -->
+                  <path class="edge sig is-active" d="M 500 240 H 540"/>
+                  <text class="edge-lbl" x="508" y="232">fetch · subscribe</text>
+
+                  <path class="edge sig" d="M 660 360 V 420"/>
+                  <text class="edge-lbl" x="668" y="390">ipc</text>
+
+                  <path class="edge ag is-active" d="M 390 340 V 640"/>
+                  <text class="edge-lbl" x="398" y="500">tool call</text>
+
+                  <path class="edge ag" d="M 780 690 H 820 V 500 H 780"/>
+                  <text class="edge-lbl" x="826" y="594">dispatch</text>
+
+                  <path class="edge repo" d="M 780 460 H 900 V 170 H 1040"/>
+                  <text class="edge-lbl" x="906" y="320">read / write</text>
+
+                  <path class="edge repo" d="M 780 500 H 940 V 325 H 1040"/>
+                  <text class="edge-lbl" x="946" y="420">create · hydrate</text>
+
+                  <path class="edge repo" d="M 1540 325 H 1560 V 450 H 1540"/>
+                  <text class="edge-lbl" x="1472" y="398">mounts</text>
+
+                  <path class="edge ag" d="M 780 540 H 960 V 675 H 1040"/>
+                  <text class="edge-lbl" x="966" y="614">post · read</text>
+
+                  <path class="edge ag" d="M 1040 855 H 920 V 560 H 780"/>
+                  <text class="edge-lbl" x="928" y="720">fires</text>
+
+                  <path class="edge ag" d="M 1290 750 V 770" style="stroke-dasharray: 3 4"/>
+                  <text class="edge-lbl" x="1298" y="765">inbox_idle</text>
+                </g>
+
+                <!-- ─── Remote variant ─── -->
+                <g class="v-remote">
+                  <rect class="frame-rect" x="20" y="60" width="720" height="900" rx="14"/>
+                  <text class="frame-lbl" x="40" y="86">This Mac</text>
+
+                  <rect class="frame-rect repos dashed" x="760" y="60" width="340" height="460" rx="14"/>
+                  <text class="frame-lbl" x="780" y="86">Shared git truth</text>
+
+                  <rect class="frame-rect async dashed" x="760" y="560" width="340" height="400" rx="14"/>
+                  <text class="frame-lbl" x="780" y="586">Async spine</text>
+
+                  <rect class="frame-rect remote" x="1120" y="60" width="460" height="900" rx="14"/>
+                  <text class="frame-lbl" x="1140" y="86" style="fill: var(--arc-remote)">Remote machine · private account</text>
+
+                  <!-- SSH boundary -->
+                  <line class="ssh-boundary" x1="1110" y1="100" x2="1110" y2="920"/>
+                  <rect x="1092" y="470" width="36" height="72" rx="18" fill="var(--cs-bg)" stroke="var(--arc-remote)" stroke-width="1.2"/>
+                  <use href="#i-cloud" x="1095" y="479" width="30" height="30" style="color: var(--arc-remote)"/>
+                  <text class="frame-lbl" x="1097" y="528" style="fill: var(--arc-remote); font-size: 11px; letter-spacing: 0.14em">SSH</text>
+
+                  <!-- Local shapes (repositioned) -->
+                  <rect class="shape sig" x="40" y="120" width="320" height="240"/>
+                  <use href="#i-monitor" x="56" y="134" width="22" height="22" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="84" y="151" style="font-size:17px">Tauri webview</text>
+                  <text class="cap" x="56" y="172">React viewer</text>
+
+                  <rect class="shape nested" x="56" y="200" width="140" height="140" style="stroke: var(--cs-border)"/>
+                  <use href="#i-dash" x="68" y="212" width="16" height="16" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="88" y="224" style="font-size:13px">Dashboards</text>
+                  <text class="cap" x="68" y="244" style="font-size:11px">this page</text>
+
+                  <rect class="shape nested" x="212" y="200" width="140" height="140" style="stroke: var(--arc-agent)"/>
+                  <use href="#i-term" x="224" y="212" width="16" height="16" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="244" y="224" style="font-size:13px">Agent CLI</text>
+                  <text class="cap" x="224" y="244" style="font-size:11px">local terminal</text>
+
+                  <rect class="shape sig" x="380" y="120" width="240" height="240"/>
+                  <use href="#i-server" x="396" y="134" width="22" height="22" style="color: var(--arc-signal)"/>
+                  <text class="lbl" x="424" y="151" style="font-size:17px">HTTP server</text>
+                  <text class="cap" x="396" y="172">Axum · localhost</text>
+
+                  <rect class="shape ag" x="40" y="420" width="580" height="160"/>
+                  <use href="#i-bot" x="56" y="438" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="84" y="455">Host-agent (local)</text>
+                  <text class="cap" x="56" y="478">app backend · terminals in the terminal server</text>
+
+                  <rect class="shape ag" x="220" y="640" width="400" height="100" style="stroke-width: 2"/>
+                  <use href="#i-plug" x="236" y="658" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="264" y="675">CodeSense MCP</text>
+                  <text class="cap" x="236" y="695">every tool</text>
+
+                  <!-- Shared git + async -->
+                  <rect class="shape repo" x="780" y="100" width="300" height="140"/>
+                  <use href="#i-branch" x="796" y="118" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="824" y="135">Context repo</text>
+                  <text class="cap" x="796" y="158">one source of truth</text>
+                  <text class="cap" x="796" y="176">synced to each machine</text>
+
+                  <rect class="shape repo" x="780" y="270" width="300" height="110"/>
+                  <use href="#i-trees" x="796" y="286" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="824" y="303">Worktree (local)</text>
+                  <text class="cap" x="796" y="326">per-story</text>
+
+                  <rect class="shape repo" x="780" y="400" width="300" height="100" style="stroke-dasharray: 6 6"/>
+                  <use href="#i-folder-git" x="796" y="416" width="22" height="22" style="color: var(--arc-repo)"/>
+                  <text class="lbl" x="824" y="433">Source repo (local)</text>
+
+                  <rect class="shape ag" x="780" y="600" width="300" height="150"/>
+                  <use href="#i-inbox" x="796" y="618" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="824" y="635">Inbox</text>
+                  <text class="cap" x="796" y="658">role queues · reached from both machines</text>
+
+                  <rect class="shape ag" x="780" y="770" width="300" height="170"/>
+                  <use href="#i-clock" x="796" y="788" width="22" height="22" style="color: var(--arc-agent)"/>
+                  <text class="lbl" x="824" y="805">Routine engine</text>
+                  <text class="cap" x="796" y="828">each_mac fires on every participating machine</text>
+
+                  <!-- Remote mirror -->
+                  <rect class="shape remote" x="1140" y="120" width="420" height="240"/>
+                  <use href="#i-term" x="1156" y="134" width="22" height="22" style="color: var(--arc-remote)"/>
+                  <text class="lbl" x="1184" y="151" style="fill: var(--arc-remote)">Remote agent CLI</text>
+                  <text class="cap" x="1156" y="172">launched via remote tab</text>
+                  <text class="cap" x="1156" y="192">session survives relaunch</text>
+
+                  <rect class="shape remote" x="1140" y="420" width="420" height="160"/>
+                  <use href="#i-bot" x="1156" y="438" width="22" height="22" style="color: var(--arc-remote)"/>
+                  <text class="lbl" x="1184" y="455" style="fill: var(--arc-remote)">Host-agent (remote)</text>
+                  <text class="cap" x="1156" y="478">terminal server · owns remote terminals</text>
+                  <text class="cap" x="1156" y="498">reaches shared git over ssh</text>
+
+                  <rect class="shape remote" x="1140" y="640" width="420" height="100" style="stroke-width:2"/>
+                  <use href="#i-plug" x="1156" y="658" width="22" height="22" style="color: var(--arc-remote)"/>
+                  <text class="lbl" x="1184" y="675" style="fill: var(--arc-remote)">CodeSense MCP (remote)</text>
+                  <text class="cap" x="1156" y="695">same tools, remote-dispatched</text>
+
+                  <rect class="shape remote" x="1140" y="770" width="420" height="170"/>
+                  <use href="#i-trees" x="1156" y="788" width="22" height="22" style="color: var(--arc-remote)"/>
+                  <text class="lbl" x="1184" y="805" style="fill: var(--arc-remote)">Worktree + source (remote)</text>
+                  <text class="cap" x="1156" y="828">same worktree rules on the remote fs</text>
+
+                  <!-- Edges -->
+                  <path class="edge sig is-active" d="M 360 240 H 380"/>
+                  <path class="edge sig" d="M 500 360 V 420"/>
+                  <path class="edge ag is-active" d="M 282 340 V 640"/>
+                  <path class="edge ag" d="M 620 690 H 660 V 500 H 620"/>
+
+                  <path class="edge repo" d="M 620 460 H 700 V 170 H 780"/>
+                  <path class="edge repo" d="M 620 500 H 720 V 325 H 780"/>
+                  <path class="edge ag"   d="M 620 540 H 730 V 675 H 780"/>
+                  <path class="edge ag"   d="M 780 855 H 740 V 560 H 620"/>
+
+                  <path class="edge ag is-active" d="M 1350 360 V 640"/>
+                  <path class="edge ag" d="M 1560 690 H 1570 V 500 H 1560"/>
+                  <path class="edge remote" d="M 1140 460 H 1080 V 170 H 1080"/>
+                  <path class="edge remote" d="M 1140 500 H 1080 V 325 H 1080"/>
+                  <path class="edge remote" d="M 1140 540 H 1080 V 675 H 1080"/>
+                  <path class="edge remote" d="M 1140 820 H 1080 V 855 H 1080"/>
+
+                  <path class="edge remote" d="M 620 450 H 1140"/>
+                  <rect x="770" y="432" width="140" height="20" rx="4" fill="var(--cs-bg)"/>
+                  <text class="edge-lbl" x="780" y="446" style="fill: var(--arc-remote); font-weight: 600">over ssh</text>
+                </g>
+              </svg>
+
+              <!-- Hitmap — same 1600×1000 viewBox as the stand-in / real PNG.
+                   The shape ids match the sketch in architecture.excalidraw.sketch.md
+                   so clicks keep working after the real PNG lands. -->
+              <svg class="hitmap" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet"
+                   aria-label="Interactive diagram hitmap" role="group">
+                <g class="v-local">
+                  <g data-shape="webview"       data-family="signal" tabindex="0" role="button" aria-label="Tauri webview"><rect x="80"   y="120" width="420" height="240"/></g>
+                  <g data-shape="dashboards"    data-family="signal" tabindex="0" role="button" aria-label="Dashboards"><rect x="100"  y="200" width="180" height="140"/></g>
+                  <g data-shape="agent-cli"     data-family="agent"  tabindex="0" role="button" aria-label="Agent CLI"><rect x="300"  y="200" width="180" height="140"/></g>
+                  <g data-shape="http-server"   data-family="signal" tabindex="0" role="button" aria-label="Local HTTP server"><rect x="540"  y="120" width="240" height="240"/></g>
+                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="Host-agent"><rect x="80"   y="420" width="700" height="160"/></g>
+                  <g data-shape="mcp"           data-family="agent"  tabindex="0" role="button" aria-label="CodeSense MCP"><rect x="300"  y="640" width="480" height="100"/></g>
+                  <g data-shape="context-repo"  data-family="repo"   tabindex="0" role="button" aria-label="Context repo"><rect x="1040" y="100" width="500" height="140"/></g>
+                  <g data-shape="worktree"      data-family="repo"   tabindex="0" role="button" aria-label="Worktree"><rect x="1040" y="270" width="500" height="110"/></g>
+                  <g data-shape="source-repo"   data-family="repo"   tabindex="0" role="button" aria-label="Bound source repo"><rect x="1040" y="400" width="500" height="100"/></g>
+                  <g data-shape="inbox"         data-family="agent"  tabindex="0" role="button" aria-label="Inbox"><rect x="1040" y="600" width="500" height="150"/></g>
+                  <g data-shape="routines"      data-family="agent"  tabindex="0" role="button" aria-label="Routine engine"><rect x="1040" y="770" width="500" height="170"/></g>
+                  <g data-shape="machine-local" data-family="signal" tabindex="0" role="button" aria-label="Local machine · this Mac"><rect x="40"   y="60"  width="940" height="900"/></g>
+                </g>
+                <g class="v-remote">
+                  <g data-shape="webview"       data-family="signal" tabindex="0" role="button" aria-label="Tauri webview"><rect x="40"   y="120" width="320" height="240"/></g>
+                  <g data-shape="dashboards"    data-family="signal" tabindex="0" role="button" aria-label="Dashboards"><rect x="56"   y="200" width="140" height="140"/></g>
+                  <g data-shape="agent-cli"     data-family="agent"  tabindex="0" role="button" aria-label="Agent CLI"><rect x="212"  y="200" width="140" height="140"/></g>
+                  <g data-shape="http-server"   data-family="signal" tabindex="0" role="button" aria-label="Local HTTP server"><rect x="380"  y="120" width="240" height="240"/></g>
+                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="Host-agent (local)"><rect x="40"   y="420" width="580" height="160"/></g>
+                  <g data-shape="mcp"           data-family="agent"  tabindex="0" role="button" aria-label="CodeSense MCP"><rect x="220"  y="640" width="400" height="100"/></g>
+                  <g data-shape="context-repo"  data-family="repo"   tabindex="0" role="button" aria-label="Context repo (shared)"><rect x="780"  y="100" width="300" height="140"/></g>
+                  <g data-shape="worktree"      data-family="repo"   tabindex="0" role="button" aria-label="Worktree (local)"><rect x="780"  y="270" width="300" height="110"/></g>
+                  <g data-shape="source-repo"   data-family="repo"   tabindex="0" role="button" aria-label="Source repo (local)"><rect x="780"  y="400" width="300" height="100"/></g>
+                  <g data-shape="inbox"         data-family="agent"  tabindex="0" role="button" aria-label="Inbox"><rect x="780"  y="600" width="300" height="150"/></g>
+                  <g data-shape="routines"      data-family="agent"  tabindex="0" role="button" aria-label="Routine engine"><rect x="780"  y="770" width="300" height="170"/></g>
+                  <g data-shape="machine-local" data-family="signal" tabindex="0" role="button" aria-label="Local machine"><rect x="20"   y="60"  width="720" height="900"/></g>
+
+                  <g data-shape="machine-remote"    data-family="remote" tabindex="0" role="button" aria-label="Remote machine · private account"><rect x="1120" y="60"  width="460" height="900"/></g>
+                  <g data-shape="agent-cli-remote"  data-family="remote" tabindex="0" role="button" aria-label="Remote agent CLI"><rect x="1140" y="120" width="420" height="240"/></g>
+                  <g data-shape="host-agent-remote" data-family="remote" tabindex="0" role="button" aria-label="Host-agent (remote)"><rect x="1140" y="420" width="420" height="160"/></g>
+                  <g data-shape="mcp-remote"        data-family="remote" tabindex="0" role="button" aria-label="CodeSense MCP (remote)"><rect x="1140" y="640" width="420" height="100"/></g>
+                  <g data-shape="worktree-remote"   data-family="remote" tabindex="0" role="button" aria-label="Worktree + source (remote)"><rect x="1140" y="770" width="420" height="170"/></g>
+                  <g data-shape="ssh"               data-family="remote" tabindex="0" role="button" aria-label="SSH boundary"><rect x="1095" y="100" width="30"  height="820"/></g>
+                </g>
+              </svg>
+            </div>
+
+            <figcaption class="legend">
+              <span class="sw">data · view flow</span>
+              <span class="sw agent">agent · MCP</span>
+              <span class="sw repo">git-backed</span>
+              <span class="sw remote">replicated behind SSH</span>
+              <span class="kb-hint"><kbd>Tab</kbd> through shapes · <kbd>Enter</kbd> opens detail</span>
+              <div class="toc" aria-label="Quick jump">
+                <button type="button" data-jump="webview">webview</button>
+                <button type="button" data-jump="http-server">http</button>
+                <button type="button" data-jump="host-agent">host-agent</button>
+                <button type="button" data-jump="mcp">MCP</button>
+                <button type="button" data-jump="context-repo">context</button>
+                <button type="button" data-jump="worktree">worktree</button>
+                <button type="button" data-jump="inbox">inbox</button>
+                <button type="button" data-jump="routines">routines</button>
+              </div>
+            </figcaption>
+          </figure>
+
+          <!-- ──────────────── Detail panel ──────────────── -->
+          <aside class="panel is-empty" id="panel" aria-live="polite">
+            <header>
+              <span class="icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                  <g style="stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 8v4M12 16h.01"/>
+                  </g>
+                </svg>
+              </span>
+              <h2 id="p-title">Click a shape</h2>
+              <p class="role" id="p-role">to see what it is, what MCP tools touch it, and which arc covers it in depth.</p>
+            </header>
+            <p class="description" id="p-desc">
+              The diagram is one picture. The panel is where every surface earns its own paragraph.
+              Press <kbd>Tab</kbd> on the diagram to walk the shapes in reading order.
+            </p>
+
+            <section class="section-shapes">
+              <h3 class="section-label">The 12 surfaces</h3>
+              <ul class="shape-list" id="p-shape-list"></ul>
+            </section>
+
+            <section class="section-tools">
+              <h3 class="section-label">MCP tools</h3>
+              <ul class="tools" id="p-tools"></ul>
+            </section>
+
+            <section class="section-arcs">
+              <h3 class="section-label">Covered in</h3>
+              <div class="arcs" id="p-arcs"></div>
+            </section>
+
+            <section class="section-actions">
+              <h3 class="section-label">Live canvas</h3>
+              <div class="actions">
+                <button class="btn primary" id="p-open" type="button">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g style="stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;"><path d="M14 4h6v6M20 4L10 14M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></g></svg>
+                  Open live canvas
+                  <span class="shortcut">⌘⏎</span>
+                </button>
+                <button class="btn" id="p-copy-id" type="button">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g style="stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;"><rect x="9" y="9" width="12" height="12" rx="2"/><rect x="3" y="3" width="12" height="12" rx="2"/></g></svg>
+                  Copy shape id
+                </button>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        <footer class="arch-foot">
+          <span>Architecture · one source canvas, two variants.</span>
+          <span>Diagram authored via <code>apply_canvas</code> · rendered via <code>render_canvas</code></span>
+        </footer>
+      </section>
+    </main>
+
+    <!-- Shared footer legend/provenance band. -->
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Architecture</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+
+    <!-- ─── Shape detail dataset ─── -->
+    <script type="application/json" id="shape-data">
+    {
+      "webview": {
+        "icon": "monitor",
+        "tint": "signal",
+        "title": "Tauri webview",
+        "role": "The visible app — React viewer, panes, tabs.",
+        "description": "The Tauri window hosting the React viewer. Panes, tabs, the file tree, Excalidraw canvases, HTML dashboards, and the embedded terminal all render here. The webview is your cockpit: it never writes to disk itself. Every write goes through a Tauri command to the app's backend.",
+        "tools": [
+          { "name": "get_viewer_state", "what": "read open tabs, panes and layout" },
+          { "name": "set_viewer_state", "what": "switch the shown file or tab" },
+          { "name": "pane_write",       "what": "create or replace a right pane" },
+          { "name": "pane_open",        "what": "show a right pane" }
+        ],
+        "arcs": [ ["A", "First touch"], ["I", "Dashboards & primitives"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "dashboards": {
+        "icon": "dash",
+        "tint": "signal",
+        "title": "Dashboards",
+        "role": "HTML docs rendered inside the webview.",
+        "description": "Every shipped HTML doc — this architecture page included — renders through the html-viewer with the LIVE sandbox. Dashboards talk to the app via window.codesense (invoke, kit) and subscribe to live context. They are your own files and run with the app's page APIs; each call is limited by the dashboard's grants and write budget.",
+        "tools": [
+          { "name": "queryContext",           "what": "scoped context query" },
+          { "name": "setStatus",              "what": "act: move a story's status" },
+          { "name": "openWorkspace",          "what": "act: open a workspace" },
+          { "name": "validate_live_data_doc", "what": "check a page before saving it" }
+        ],
+        "arcs": [ ["I", "Dashboards & primitives"], ["J", "MCP full reference"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "http-server": {
+        "icon": "server",
+        "tint": "signal",
+        "title": "Local HTTP server",
+        "role": "Axum, bound to localhost:<port>.",
+        "description": "An Axum server bound to a loopback port on your Mac. It serves every HTML doc, the shared kit, the generated reference JSON, and the dashboard routes. It is also where window.codesense is injected into each doc, giving dashboards an origin-matched bridge to the app without extensions.",
+        "tools": [
+          { "name": "get_http_api_port", "what": "the loopback port it bound" }
+        ],
+        "arcs": [ ["I", "Dashboards & primitives"], ["A", "First touch"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "host-agent": {
+        "icon": "bot",
+        "tint": "agent",
+        "title": "Host-agent",
+        "role": "The app's backend — the only place writes originate.",
+        "description": "The CodeSense app's own backend on this Mac: the Rust side of the Tauri app. Its Tauri commands do the work behind the UI: context-repo reads and writes, worktrees, inboxes, routines and pipeline status. Every MCP tool call runs here too. Terminals are kept by a separate process, the terminal server (codesense-session-server), so a terminal and the agent in it keep running when the app quits. A remote machine runs only a terminal server, not a second app backend.",
+        "tools": [
+          { "name": "terminal_open_tab",      "what": "start a terminal" },
+          { "name": "read_file",              "what": "read a context-repo file" },
+          { "name": "write_content_file",     "what": "write a context-repo file" },
+          { "name": "open_workspace",         "what": "create a story's worktree on first open" },
+          { "name": "update_pipeline_status", "what": "move pipeline status" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"], ["K", "Sync & agent-driven git"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "mcp": {
+        "icon": "plug",
+        "tint": "agent",
+        "title": "CodeSense MCP",
+        "role": "The agent bridge — one invariant.",
+        "description": "Every UI action in CodeSense also exists as an MCP tool. Agents never need to see the UI. The MCP server runs in the app backend on this Mac, on a Unix socket (~/.codesense/mcp.sock). An agent CLI reaches it through codesense-bridge, a small stdio relay. Progressive discovery via codesense_overview → codesense_search_tools → codesense_get_tool_schema keeps the surface navigable despite its size.",
+        "tools": [
+          { "name": "codesense_overview",        "what": "entry point" },
+          { "name": "codesense_search_tools",    "what": "find a tool by concept" },
+          { "name": "codesense_get_tool_schema", "what": "live schema for a tool" },
+          { "name": "apply_canvas",              "what": "author Excalidraw" },
+          { "name": "render_canvas",             "what": "render PNG sidecar" }
+        ],
+        "arcs": [ ["J", "MCP full reference"], ["M", "UI ↔ MCP crossref"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "agent-cli": {
+        "icon": "term",
+        "tint": "agent",
+        "title": "Agent CLI",
+        "role": "Claude Code · Codex · OpenCode · any MCP-aware agent.",
+        "description": "Any MCP-aware agent CLI, running inside a terminal tab in the webview. The agent reaches CodeSense through the MCP (not the UI). Claude Code and Codex run equally well in a local tab or a remote tab over SSH; OpenCode runs in local tabs only. CodeSense is agent-agnostic: local models, local agents, and premier cloud agents are all valid participants.",
+        "tools": [
+          { "name": "open_workspace",  "what": "launch an agent in a story workspace" },
+          { "name": "list_sessions",   "what": "enumerate running agents" },
+          { "name": "send_to_session", "what": "prompt a running agent" }
+        ],
+        "arcs": [ ["E", "Agents"], ["F", "Inbox flows"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "context-repo": {
+        "icon": "branch",
+        "tint": "repo",
+        "title": "Context repo",
+        "role": "Git-backed org — the shared truth.",
+        "description": "A git-backed repository that holds the org's teams, content, and config. Agents publish workspace edits here with reverse_sync_worktree, and an agent you ask commits and pushes them with git; CodeSense never pushes. Parent-team inheritance scales the same model from a single user to a larger organization. The docs org is a read-only context repo bundled on first launch; your own context repo is editable.",
+        "tools": [
+          { "name": "list_orgs_teams",      "what": "enumerate orgs and teams" },
+          { "name": "context_repo_status",  "what": "branch, ahead/behind and changes" },
+          { "name": "context_repo_history", "what": "what changed, by whom" }
+        ],
+        "arcs": [ ["B", "The model"], ["K", "Sync & agent-driven git"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "worktree": {
+        "icon": "trees",
+        "tint": "repo",
+        "title": "Worktree",
+        "role": "Per-story git worktree, created on open.",
+        "description": "When you open an epic or a story, CodeSense creates a dedicated git worktree for it. Context reaches it only when an agent launches there (the files its definition's context declares, copied in with a git exclude) or when an agent calls hydrate_worktree or hydrate_story; nothing syncs in between. The worktree includes the bound source repo as a sub-mount. Parallel worktrees are the mechanism that makes massively-parallel agent builds safe.",
+        "tools": [
+          { "name": "open_workspace",        "what": "create the worktree on first open" },
+          { "name": "list_worktrees",        "what": "enumerate managed worktrees" },
+          { "name": "hydrate_story",         "what": "copy a story's epic in, on request" },
+          { "name": "reverse_sync_worktree", "what": "publish an edit back, after a preview" }
+        ],
+        "arcs": [ ["C", "Workspaces & worktrees"], ["H", "The factory"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "source-repo": {
+        "icon": "folder-git",
+        "tint": "repo",
+        "title": "Bound source repo",
+        "role": "The code being worked on.",
+        "description": "The actual source repository your team ships from (acme/codesense in the demo). It is mounted inside each worktree, so edits touch the source repo without disturbing anyone else's parallel work. CodeSense supports multiple git forge providers through its own provider interface — the UI is honest about which providers are current.",
+        "tools": [
+          { "name": "list_source_repos",         "what": "repos the team works in" },
+          { "name": "read_epic_repos",           "what": "repos an epic workspace assembles" },
+          { "name": "source_worktree_changeset", "what": "worktree diff vs base" }
+        ],
+        "arcs": [ ["C", "Workspaces & worktrees"], ["H", "The factory"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "inbox": {
+        "icon": "inbox",
+        "tint": "agent",
+        "title": "Inbox",
+        "role": "Per-team threads + messages + role queues.",
+        "description": "The async spine of the factory. Threads carry messages with role labels (builder, resolver, reviewer, analyst, …). Any participant — human or agent — can post or read. Inboxes are the thing routines watch: an inbox_idle trigger fires a worker when a role queue has pending work and nobody is on it.",
+        "tools": [
+          { "name": "inbox_list",          "what": "list messages without marking them read" },
+          { "name": "send_message",        "what": "message an agent or the human" },
+          { "name": "claim_role_messages", "what": "take messages off a role queue" },
+          { "name": "read_messages",       "what": "drain your unread mail" }
+        ],
+        "arcs": [ ["F", "Inbox flows"], ["H", "The factory"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "routines": {
+        "icon": "clock",
+        "tint": "agent",
+        "title": "Routine engine",
+        "role": "each_mac · inbox_idle · cron · manual.",
+        "description": "A scheduler that fires routines on four trigger shapes. each_mac runs on every participating machine. inbox_idle fires when a role queue has work and no worker. cron runs on a wall-clock schedule. manual runs on button or MCP call. Routines own their own storage, can wake agents, post messages, and write dashboards.",
+        "tools": [
+          { "name": "routine_list",    "what": "enumerate routines you can see" },
+          { "name": "routine_run_now", "what": "fire a routine by hand" },
+          { "name": "routine_runs",    "what": "run history, newest first" },
+          { "name": "routine_result",  "what": "the last published result" }
+        ],
+        "arcs": [ ["G", "Routines"], ["H", "The factory"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "machine-local": {
+        "icon": "monitor",
+        "tint": "signal",
+        "title": "Local machine · this Mac",
+        "role": "The frame around everything you run locally.",
+        "description": "Your Mac: the machine that runs the CodeSense app (its backend and the webview) and the terminal server that keeps your local terminals. All ten surfaces inside this frame live on your local filesystem. Only this Mac runs the app; a remote machine runs only a terminal server. Gaps between local and remote are always called out explicitly.",
+        "tools": [
+          { "name": "who_am_i",       "what": "your handle, tab and machine" },
+          { "name": "list_machines",  "what": "This Mac first, then other machines" },
+          { "name": "describe_setup", "what": "local orgs, teams and repos" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"] ],
+        "canvasPath": "./diagrams/architecture.excalidraw"
+      },
+      "machine-remote": {
+        "icon": "cloud",
+        "tint": "remote",
+        "title": "Remote machine · private account",
+        "role": "A second machine, behind SSH.",
+        "description": "A second machine, reached over SSH under a private account you own. It does not run the CodeSense app. It runs the terminal server (codesense-session-server) and codesense-bridge, which the desktop app installs and reaches over SSH. Terminals, agents and workspaces there are driven from this Mac through that connection, and remote agents' MCP calls travel back over it.",
+        "tools": [
+          { "name": "save_machine",    "what": "add a remote machine" },
+          { "name": "connect_machine", "what": "connect a saved machine" },
+          { "name": "open_remote_tab", "what": "remote terminal tab" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"], ["H", "The factory"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      },
+      "ssh": {
+        "icon": "cloud",
+        "tint": "remote",
+        "title": "SSH boundary",
+        "role": "The one edge that leaves this Mac.",
+        "description": "Remote machines connect over your account's existing sshd. CodeSense does not open its own network listener on the remote; it rides on SSH. Trust is ordinary SSH trust: host keys you confirm, your own keys, your existing config and bastions.",
+        "tools": [
+          { "name": "list_ssh_sources",        "what": "hosts from your SSH config" },
+          { "name": "test_machine_connection", "what": "check reachability and host key" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      },
+      "agent-cli-remote": {
+        "icon": "term",
+        "tint": "remote",
+        "title": "Remote agent CLI",
+        "role": "Claude Code or Codex, launched over SSH.",
+        "description": "Claude Code or Codex running in a remote tab. The remote tab survives app relaunch: the terminal server on the remote machine owns the terminal, not the local webview. The agent calls CodeSense through codesense-bridge on that machine, which relays to the MCP server on this Mac, so it sees the same tools as a local agent.",
+        "tools": [
+          { "name": "open_remote_tab",         "what": "launch on remote" },
+          { "name": "start_remote_agent_task", "what": "run a Claude or Codex task there" },
+          { "name": "list_sessions",           "what": "agents on every machine" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"], ["E", "Agents"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      },
+      "host-agent-remote": {
+        "icon": "bot",
+        "tint": "remote",
+        "title": "Host-agent (remote)",
+        "role": "The terminal server, remote side.",
+        "description": "On a remote machine there is no second app backend. The terminal server (codesense-session-server) owns the remote terminals and the agents in them, and the desktop app reaches it over SSH (codesense-session-server attach --stdio). codesense-bridge beside it carries remote agents' MCP calls back to this Mac. Context-repo IO and routine scheduling stay in the desktop app.",
+        "tools": [
+          { "name": "install_terminal_server",         "what": "install the terminal server there" },
+          { "name": "restart_machine_terminal_server", "what": "restart it (ends its sessions)" },
+          { "name": "connect_machine",                 "what": "connect and report setup status" }
+        ],
+        "arcs": [ ["D", "Terminals & machines"], ["K", "Sync & agent-driven git"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      },
+      "mcp-remote": {
+        "icon": "plug",
+        "tint": "remote",
+        "title": "CodeSense MCP (remote)",
+        "role": "Same tools, relayed to this Mac.",
+        "description": "There is no second MCP server. On a remote machine, codesense-bridge relays an agent's MCP calls over the SSH connection to the server on this Mac, so the tools and schemas are the same. It is off for each machine until you turn it on (set_machine_remote_mcp_control); a remote caller cannot turn it on.",
+        "tools": [
+          { "name": "codesense_overview",             "what": "entry point (remote)" },
+          { "name": "codesense_search_tools",         "what": "tool search (remote)" },
+          { "name": "set_machine_remote_mcp_control", "what": "let a machine's agents use CodeSense" }
+        ],
+        "arcs": [ ["J", "MCP full reference"], ["D", "Terminals & machines"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      },
+      "worktree-remote": {
+        "icon": "trees",
+        "tint": "remote",
+        "title": "Worktree + source (remote)",
+        "role": "Same worktree rules, remote filesystem.",
+        "description": "A worktree + bound source repo on the remote filesystem. It is created and hydrated by the same rules as the local side: context arrives at an agent's launch or when an agent asks, never in the background. The desktop app prepares it over SSH, and the webview reads its state through the same connection.",
+        "tools": [
+          { "name": "prepare_remote_workspace", "what": "create the workspace on the remote" },
+          { "name": "hydrate_worktree",         "what": "copy context in, on request" }
+        ],
+        "arcs": [ ["C", "Workspaces & worktrees"], ["K", "Sync & agent-driven git"] ],
+        "canvasPath": "./diagrams/architecture-remote.excalidraw"
+      }
+    }
+    </script>
+
+    <script>
+      /* =============================================================
+       * Click-to-detail, variant swap, deep-link, keyboard flow
+       *
+       * No external imports — this script is self-contained so the
+       * doc renders identically under file://, inside the viewer, and
+       * for an agent previewing through the MCP.
+       * ============================================================= */
+      (function () {
+        "use strict";
+
+        var SHAPES = JSON.parse(document.getElementById("shape-data").textContent);
+        var panel = document.getElementById("panel");
+        var diagram = document.querySelector(".diagram");
+
+        var el = {
+          title: document.getElementById("p-title"),
+          role:  document.getElementById("p-role"),
+          desc:  document.getElementById("p-desc"),
+          tools: document.getElementById("p-tools"),
+          arcs:  document.getElementById("p-arcs"),
+          open:  document.getElementById("p-open"),
+          copy:  document.getElementById("p-copy-id"),
+          shapeList: document.getElementById("p-shape-list"),
+        };
+
+        var ICONS = {
+          monitor: "i-monitor", server: "i-server", bot: "i-bot", plug: "i-plug",
+          term: "i-term", dash: "i-dash", branch: "i-branch", trees: "i-trees",
+          "folder-git": "i-folder-git", inbox: "i-inbox", clock: "i-clock", cloud: "i-cloud"
+        };
+        var TINT = {
+          signal: "var(--arc-signal)", agent: "var(--arc-agent)",
+          repo: "var(--arc-repo)",     remote: "var(--arc-remote)"
+        };
+
+        // Reading-order lists for the empty-state picker.
+        var SURFACE_ORDER = [
+          "webview", "dashboards", "http-server", "host-agent",
+          "mcp", "agent-cli", "context-repo", "worktree",
+          "source-repo", "inbox", "routines", "machine-local"
+        ];
+        var SURFACE_ORDER_REMOTE = [
+          "machine-remote", "ssh", "agent-cli-remote", "host-agent-remote",
+          "mcp-remote", "worktree-remote"
+        ];
+
+        function esc(s) { return typeof CSS !== "undefined" && CSS.escape ? CSS.escape(s) : s; }
+
+        function renderShapeList() {
+          var variant = document.body.getAttribute("data-variant");
+          var ids = variant === "remote"
+            ? SURFACE_ORDER.concat(SURFACE_ORDER_REMOTE)
+            : SURFACE_ORDER;
+          el.shapeList.innerHTML = ids.map(function (id) {
+            var spec = SHAPES[id];
+            if (!spec) return "";
+            var iconId = ICONS[spec.icon] || "i-plug";
+            var tint = TINT[spec.tint] || "var(--arc-signal)";
+            return (
+              '<li>' +
+                '<button type="button" data-pick="' + id + '" style="--list-tint:' + tint + '">' +
+                  '<span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#' + iconId + '"/></svg></span>' +
+                  '<span class="lab">' + spec.title + '<small>' + spec.role + '</small></span>' +
+                  '<span class="kb">#' + id + '</span>' +
+                '</button>' +
+              '</li>'
+            );
+          }).join("");
+          Array.prototype.forEach.call(el.shapeList.querySelectorAll("[data-pick]"), function (b) {
+            b.addEventListener("click", function () { selectShape(b.dataset.pick); });
+          });
+        }
+
+        function selectShape(id, opts) {
+          opts = opts || {};
+          var pushHash = opts.pushHash !== false;
+          var spec = SHAPES[id];
+          if (!spec) return;
+
+          Array.prototype.forEach.call(
+            document.querySelectorAll(".hitmap [aria-selected='true']"),
+            function (n) { n.setAttribute("aria-selected", "false"); }
+          );
+
+          var variant = document.body.getAttribute("data-variant");
+          var hit = document.querySelector(".hitmap .v-" + variant + " [data-shape=\"" + esc(id) + "\"]");
+          if (hit) {
+            hit.setAttribute("aria-selected", "true");
+            hit.focus({ preventScroll: true });
+          }
+
+          panel.classList.remove("is-empty");
+
+          var iconId = ICONS[spec.icon] || "i-plug";
+          panel.style.setProperty("--panel-tint", TINT[spec.tint] || "var(--arc-signal)");
+          var headerIcon = panel.querySelector("header .icon");
+          headerIcon.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><use href="#' + iconId + '"/></svg>';
+
+          el.title.textContent = spec.title;
+          el.role.textContent  = spec.role;
+          el.desc.textContent  = spec.description;
+
+          el.tools.innerHTML = (spec.tools || []).map(function (t) {
+            return '<li><code>' + t.name + '</code><span class="what">' + t.what + '</span></li>';
+          }).join("");
+
+          el.arcs.innerHTML = (spec.arcs || []).map(function (a) {
+            return '<a href="#arc-' + a[0] + '"><span class="k">Arc ' + a[0] + '</span> · ' + a[1] + '</a>';
+          }).join("");
+
+          el.open.onclick = function () {
+            var path = spec.canvasPath;
+            if (window.codesense && typeof window.codesense.invoke === "function") {
+              window.codesense.invoke("openWorkspace", { path: path });
+            } else {
+              // Fallback preview — surface the intended bridge call so the
+              // doc previews cleanly outside the viewer.
+              if (typeof console !== "undefined") console.log("[architecture] openWorkspace", { path: path, shape: id });
+              el.open.animate(
+                [ { transform: "translateY(0)" }, { transform: "translateY(-2px)" }, { transform: "translateY(0)" } ],
+                { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" }
+              );
+            }
+          };
+
+          el.copy.onclick = function () {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText("#" + id);
+            }
+            flashCopied(el.copy);
+          };
+
+          if (pushHash) history.replaceState(null, "", "#" + id);
+        }
+
+        function flashCopied(btn) {
+          var original = btn.innerHTML;
+          btn.innerHTML =
+            '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">' +
+              '<g style="stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;">' +
+                '<path d="M5 12l5 5L20 7"/>' +
+              '</g>' +
+            '</svg> Copied';
+          setTimeout(function () { btn.innerHTML = original; }, 1200);
+        }
+
+        function clearSelection() {
+          panel.classList.add("is-empty");
+          panel.style.removeProperty("--panel-tint");
+          Array.prototype.forEach.call(
+            document.querySelectorAll(".hitmap [aria-selected='true']"),
+            function (n) { n.setAttribute("aria-selected", "false"); }
+          );
+          el.title.textContent = "Click a shape";
+          el.role.textContent  = "to see what it is, what MCP tools touch it, and which arc covers it in depth.";
+          el.desc.textContent  = "The diagram is one picture. The panel is where every surface earns its own paragraph. Press Tab on the diagram to walk the shapes in reading order.";
+          var headerIcon = panel.querySelector("header .icon");
+          headerIcon.innerHTML =
+            '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">' +
+              '<g style="stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;">' +
+                '<circle cx="12" cy="12" r="9"/>' +
+                '<path d="M12 8v4M12 16h.01"/>' +
+              '</g>' +
+            '</svg>';
+          renderShapeList();
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+
+        // Hitmap clicks (event delegation on both variant groups).
+        Array.prototype.forEach.call(document.querySelectorAll(".hitmap"), function (svg) {
+          svg.addEventListener("click", function (e) {
+            var g = e.target.closest("[data-shape]");
+            if (!g) return;
+            selectShape(g.dataset.shape);
+          });
+          svg.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            var g = e.target.closest("[data-shape]");
+            if (!g) return;
+            e.preventDefault();
+            selectShape(g.dataset.shape);
+          });
+        });
+
+        // Variant toggle.
+        var segButtons = document.querySelectorAll(".seg button");
+        Array.prototype.forEach.call(segButtons, function (btn) {
+          btn.addEventListener("click", function () {
+            var variant = btn.dataset.variant;
+            Array.prototype.forEach.call(segButtons, function (b) {
+              b.setAttribute("aria-pressed", String(b === btn));
+            });
+            document.body.setAttribute("data-variant", variant);
+
+            // The `<img data-canvas>`
+            // real-PNG preview was removed with the build-time sidecar; the
+            // inline SVG stand-in is the shipped hero. No img swap needed.
+
+            // Re-select the current shape if it still exists on this variant.
+            var current = location.hash.slice(1);
+            if (current && SHAPES[current]) {
+              var stillVisible = document.querySelector(".hitmap .v-" + variant + " [data-shape=\"" + esc(current) + "\"]");
+              if (stillVisible) {
+                selectShape(current, { pushHash: false });
+                return;
+              }
+            }
+            clearSelection();
+            renderShapeList();
+          });
+        });
+
+        // Quick-jump pills under the diagram.
+        Array.prototype.forEach.call(document.querySelectorAll("[data-jump]"), function (btn) {
+          btn.addEventListener("click", function () { selectShape(btn.dataset.jump); });
+        });
+
+        // ⌘⏎ opens the live canvas when a shape is selected; Esc clears.
+        document.addEventListener("keydown", function (e) {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !panel.classList.contains("is-empty")) {
+            e.preventDefault();
+            el.open.click();
+          }
+          if (e.key === "Escape" && !panel.classList.contains("is-empty")) {
+            clearSelection();
+          }
+        });
+
+        // First paint: the shape-list picker in the empty state.
+        renderShapeList();
+
+        // Deep-link on load. Remote-only ids flip to the remote variant first.
+        var initial = location.hash.slice(1);
+        if (initial && SHAPES[initial]) {
+          var remoteOnly = [
+            "machine-remote", "agent-cli-remote", "host-agent-remote",
+            "mcp-remote", "worktree-remote", "ssh"
+          ];
+          if (remoteOnly.indexOf(initial) !== -1) {
+            var remoteBtn = document.querySelector('.seg button[data-variant="remote"]');
+            if (remoteBtn) remoteBtn.click();
+          }
+          selectShape(initial, { pushHash: false });
+        }
+
+        // The probe-and-promote flow for
+        // the `.excalidraw.png` sidecar was removed with the sidecar itself.
+        // `render_canvas` returns the PNG inline to the agent; shipped docs
+        // keep the stand-in as the hero.
+      })();
+    </script>
+  </body>
+</html>

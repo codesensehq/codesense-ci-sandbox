@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "53d8569e7db3706a814f1fa6d6e779f2b22d0333",
+    "dirty": true
+  },
+  "path_in_vcs": "packages/tauri-plugin-webdriver"
+}

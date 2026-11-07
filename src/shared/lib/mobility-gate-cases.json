@@ -1,0 +1,133 @@
+{
+  "about": "One table of gate ladders the UI (move-gate-ladder.ts / remove-gate.ts) and the MCP tools (context_mobility.rs) must both produce, step for step. Each case lists every gate that applies, in order; crossOrg stops the ladder. The sole-copy warning belongs to Remove only: a move lands the item somewhere, so nothing is lost.",
+  "cases": [
+    {
+      "name": "share a private item with a team of the same org (nothing is lost: no sole-copy step)",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "team:acme/ctx:default",
+      "collision": false,
+      "steps": ["privacy"]
+    },
+    {
+      "name": "share a private item with a team that already has one",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "team:acme/ctx:default",
+      "collision": true,
+      "steps": ["privacy", "collision"]
+    },
+    {
+      "name": "share an all-orgs item with a team",
+      "op": "move",
+      "from": "all-orgs",
+      "to": "team:acme/ctx:default",
+      "collision": false,
+      "steps": ["privacy"]
+    },
+    {
+      "name": "a private item cannot be shared with another org's team",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "team:acme/other:default",
+      "collision": true,
+      "steps": ["crossOrg"]
+    },
+    {
+      "name": "copy a private item to another org's Private",
+      "op": "copy",
+      "from": "personal:acme/ctx",
+      "to": "personal:acme/other",
+      "collision": false,
+      "steps": []
+    },
+    {
+      "name": "copy a private item to another org that already has one",
+      "op": "copy",
+      "from": "personal:acme/ctx",
+      "to": "personal:acme/other",
+      "collision": true,
+      "steps": ["collision"]
+    },
+    {
+      "name": "moving a private item to another org stays an explicit org switch",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "personal:acme/other",
+      "collision": false,
+      "steps": ["crossOrg"]
+    },
+    {
+      "name": "use a private item in all orgs (it stays in Private)",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "all-orgs",
+      "collision": false,
+      "steps": []
+    },
+    {
+      "name": "use a private item in all orgs when one is already there",
+      "op": "move",
+      "from": "personal:acme/ctx",
+      "to": "all-orgs",
+      "collision": true,
+      "steps": ["collision"]
+    },
+    {
+      "name": "only this org (back from all orgs)",
+      "op": "move",
+      "from": "all-orgs",
+      "to": "personal:acme/ctx",
+      "collision": false,
+      "steps": []
+    },
+    {
+      "name": "copy a private item into a team keeps the original",
+      "op": "copy",
+      "from": "personal:acme/ctx",
+      "to": "team:acme/ctx:default",
+      "collision": false,
+      "steps": ["privacy"]
+    },
+    {
+      "name": "a team file moved into Private needs no gate",
+      "op": "move",
+      "from": "team:acme/ctx:default",
+      "to": "personal:acme/ctx",
+      "collision": false,
+      "steps": []
+    },
+    {
+      "name": "team to another org's team",
+      "op": "move",
+      "from": "team:acme/ctx:default",
+      "to": "team:acme/other:default",
+      "collision": false,
+      "steps": ["crossOrg"]
+    },
+    {
+      "name": "remove a private item",
+      "op": "remove",
+      "from": "personal:acme/ctx",
+      "to": null,
+      "collision": false,
+      "steps": ["soleCopy"]
+    },
+    {
+      "name": "remove an all-orgs item",
+      "op": "remove",
+      "from": "all-orgs",
+      "to": null,
+      "collision": false,
+      "steps": ["soleCopy"]
+    },
+    {
+      "name": "remove a team file",
+      "op": "remove",
+      "from": "team:acme/ctx:default",
+      "to": null,
+      "collision": false,
+      "steps": []
+    }
+  ]
+}

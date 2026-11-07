@@ -1,0 +1,37 @@
+{
+  "phase": 6,
+  "name": "Sprint plan",
+  "group": "Plan",
+  "describedBy": "./phases.yml#phase-6",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "planning", "title": "Per-agent kill switch"},
+      {"id": "DEMO-1", "kind": "story", "status": "todo", "title": "Host kill ladder + MCP wrapper", "points": 3, "sprint": "FAKE-S1"},
+      {"id": "DEMO-2", "kind": "story", "status": "todo", "title": "DAG node kill button + confirmation modal", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-3", "kind": "story", "status": "todo", "title": "Public MCP tool: kill_agent", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-4", "kind": "story", "status": "todo", "title": "Remember a killed agent across relaunches", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-5", "kind": "story", "status": "todo", "title": "DAG transitions through 'stopping' without a reload", "points": 3, "sprint": "FAKE-S1"}
+    ],
+    "edges": [
+      {"from": "DEMO-1", "to": "DEMO-2"},
+      {"from": "DEMO-1", "to": "DEMO-3"},
+      {"from": "DEMO-1", "to": "DEMO-4"},
+      {"from": "DEMO-1", "to": "DEMO-5"}
+    ]
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-6-john", "agent": "john-pm", "status": "running", "startedAt": "2026-10-02T17:00:00Z", "endedAt": null, "story": null}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch"],
+    "focus": null
+  },
+  "sprint": {
+    "active": "FAKE-S1",
+    "committed_points": 12,
+    "stories": ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"]
+  },
+  "note": "Phase 6 — sprint FAKE-S1 opens with 12 points committed. All stories todo. Dashboards light up: sprint-analysis has an active sprint, story-board shows a full todo column."
+}

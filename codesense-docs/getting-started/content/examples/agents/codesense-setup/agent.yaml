@@ -1,0 +1,10 @@
+id: codesense-setup
+name: CodeSense setup
+description: Sets up CodeSense with you. Workspace, teams, source repos, agents and routines.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/codesense-setup/
+default_prompt: /codesense-setup
+revision: 1

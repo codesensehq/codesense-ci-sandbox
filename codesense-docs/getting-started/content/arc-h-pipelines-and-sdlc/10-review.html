@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 10 · Review</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="10"
+    data-page="arc-h-pipelines-and-sdlc/10-review"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 10 — Review" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>10</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>VERIFY</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>10</span> ·
+                  <span data-cs-phase-name>Review</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Winston (or Mary) picks up a merge-ready PR off the
+                  <code>reviewer</code> inbox and runs a multi-lens review —
+                  structural, adversarial, edge-case, verification-gap.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What review phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              Review's job is to catch what the build phase couldn't: structural
+              drift from the spec, edge cases the ATDD red test missed,
+              reductions in test coverage, verification gaps. CodeSense ships
+              two skills — <code>bmad-code-review</code> for parallel adversarial
+              lenses, <code>bmad-review</code> for multi-lens prose/spec review.
+            </p>
+            <p>
+              A reviewer who gets stuck in nits is itself a signal — the retro
+              phase will flag it and the loop sweep will adjust.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO-2 review" id="worked">
+            <h2>Worked example — DEMO-2 PR review</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — review" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in review" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml Winston reviewer" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml reviewer-claim" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <p>
+              Drop this into
+              <code>config/agents/winston-reviewer/routines/reviewer-claim/routine.yml</code>.
+              A <code>role_pending</code> trigger fires once for each message
+              queued for the <code>reviewer</code> role; in <code>fresh</code>
+              mode it starts a new reviewer session, which claims the message with
+              <code>claim_role_messages</code>.
+            </p>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — review" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Winston runs against your local worktree. He reads diffs via
+                  <code>git</code> + <code>query_context</code>, writes the
+                  review into the <code>reviewer</code> inbox thread, and posts
+                  a structured per-finding message to the author.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Same shape; the reviewer runs where the PR branch lives.
+                  To share the review log, the reviewer publishes it with
+                  <code>reverse_sync_worktree</code>; the other side pulls it
+                  with <code>hydrate_worktree</code>.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — review" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Review the open branch in your repo. The skill chooses lenses
+              appropriate to the diff — pure refactors get a structural pass,
+              greenfield features get the full multi-lens stack.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-code-review"}'
+              label="Review the current branch"
+              confirm="Run bmad-code-review in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to review via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>// From a page (the button above):
+codesense.invoke('runSkill', { skill: 'bmad-code-review' })
+codesense.invoke('runSkill', { skill: 'bmad-review' })
+
+// From an agent: send a finding to the builder role (MCP)
+send_role_message { team: '&lt;team&gt;', role: 'builder', text: 'review finding: …' }</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-10">factory playbook · phase 10</a>
+            &nbsp;·&nbsp; Previous: <a href="./09-decisions.html">← 09 Decisions</a> ·
+            Next: <a href="./11-qa.html">11 QA →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 10 · Review</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+# Thread 3 of 4 — Review feedback (reviewer → builder)
+#
+# Reviewer (Winston) opens DEMO-2's PR and surfaces two findings: a focus-trap
+# issue in the confirmation modal and a missing reduced-motion branch. Replies as a
+# single structured message with per-finding links. The builder (Amelia) acks and
+# posts a fix plan.
+#
+# Read-only on the docs org.
+
+thread_id: fake-thread-review-feedback
+title: "Review DEMO-2: 2 findings"
+subject_story: DEMO-2
+flow: review-feedback
+roles: [reviewer, builder]
+status: in-progress
+created_at: "2026-10-04T15:40:00Z"
+
+messages:
+  - message_id: fake-review-feedback-001
+    from: agent:winston-reviewer
+    to: role:builder
+    sent_at: "2026-10-04T15:40:00Z"
+    content_type: markdown
+    body: |
+      Review of DEMO-2 (DAG kill button + confirmation modal). Two findings:
+
+      1. **Focus trap**: Esc closes the modal but focus falls to document.body, not
+         back to the kill button. Breaks keyboard flow.
+      2. **Reduced motion**: AC-5 claims accessible, but there is no
+         `prefers-reduced-motion` branch in the spinner. Add a static label when
+         reduced motion is on.
+
+      Not blocking merge, but please land both before shipping. Marking status
+      `review` → stays until resolved.
+    on_click:
+      type: open-file
+      path: content/examples/sample-epic/DEMO-2-ui-toggle.md
+
+  - message_id: fake-review-feedback-002
+    from: agent:amelia-builder
+    to: agent:winston-reviewer
+    sent_at: "2026-10-04T15:58:00Z"
+    content_type: markdown
+    body: |
+      Thanks. Fix plan:
+
+      - Finding 1: restore focus in the modal's `onDismiss` handler (3 LoC).
+      - Finding 2: wrap the spinner in a `useReducedMotion()` check and render a
+        plain `Stopping…` label when true.
+
+      Pushing in a follow-up commit on the same branch; will re-ping.
+    on_click:
+      type: show-message

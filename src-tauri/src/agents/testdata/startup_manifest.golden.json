@@ -1,0 +1,155 @@
+{
+  "agent": {
+    "key": "acme/api/backend/triage",
+    "revision": 3,
+    "definition_hash": "blake3:88f245f6d1034bdd842f2f9be878b33cd6dedf50cfca12709c0c8d8a1ea27c6f"
+  },
+  "runtime": "claude",
+  "entries": [
+    {
+      "path": ".claude/skills/bmad-build",
+      "origin": {
+        "kind": "declared"
+      },
+      "layer": {
+        "kind": "team",
+        "org": "acme/api",
+        "team": "backend"
+      },
+      "entry_hash": "blake3:ed61f0164124e1baeb1e6bf723a0829a7aae7ed7be0f95328002bf7dc8a58f70",
+      "files": [
+        {
+          "logical": ".claude/skills/bmad-build/SKILL.md",
+          "destination": ".claude/skills/bmad-build/SKILL.md",
+          "hash": "blake3:8503158a1588cf4fb531616435d32ce6d45b1a1e71d63f637bf9471aa0d14c35",
+          "bytes": 7,
+          "mode": 420
+        },
+        {
+          "logical": ".claude/skills/bmad-build/steps/one.md",
+          "destination": ".claude/skills/bmad-build/steps/one.md",
+          "hash": "blake3:2190439b63ddf1c546e67d0fcd41d976510c91d0481617489b6782324558bccf",
+          "bytes": 8,
+          "mode": 420
+        }
+      ]
+    },
+    {
+      "path": ".claude/skills/review",
+      "origin": {
+        "kind": "dependency",
+        "of": ".claude/skills/bmad-build"
+      },
+      "layer": {
+        "kind": "team",
+        "org": "acme/api",
+        "team": "platform"
+      },
+      "entry_hash": "blake3:028c808b381725dc82b78dc647f44ea86807aaf5348112982c029c01e6fbc09e",
+      "files": [
+        {
+          "logical": ".claude/skills/review/SKILL.md",
+          "destination": ".claude/skills/review/SKILL.md",
+          "hash": "blake3:7b5940367cddebbe9d9bb8c86eb538bb0087679ad549e7b31252ab65abb15667",
+          "bytes": 8,
+          "mode": 420
+        }
+      ]
+    },
+    {
+      "path": "notes/mine.md",
+      "origin": {
+        "kind": "declared"
+      },
+      "layer": {
+        "kind": "personal",
+        "account": "1",
+        "org": "acme/api"
+      },
+      "entry_hash": "blake3:dd47d90767fcb3ec93e7fc10398f61c7aea28c689dd33a273ae049035a7f20eb",
+      "files": [
+        {
+          "logical": "notes/mine.md",
+          "destination": "notes/mine.md",
+          "hash": "blake3:eb3c4771aa8569b685dfdc9abd26efa43b2f0f0686e3fe3d8ea40475c14f3f5b",
+          "bytes": 4,
+          "mode": 420
+        }
+      ]
+    },
+    {
+      "path": ".claude/hooks/codesense-notify.sh",
+      "origin": {
+        "kind": "required"
+      },
+      "layer": {
+        "kind": "team",
+        "org": "acme/api",
+        "team": "backend"
+      },
+      "entry_hash": "blake3:a9144030047eeff28097e7086cc5441b0ded0993a80d07f1c515b006afbcb047",
+      "files": [
+        {
+          "logical": ".claude/hooks/codesense-notify.sh",
+          "destination": ".claude/hooks/codesense-notify.sh",
+          "hash": "blake3:bc1f407a11c9377c8b9b13f956b279c8462775105eb958fc9ae3c40de87cc96e",
+          "bytes": 10,
+          "mode": 493
+        }
+      ]
+    }
+  ],
+  "essentials": [
+    {
+      "id": "codesense-bridge",
+      "reason": "CodeSense MCP bridge"
+    }
+  ],
+  "generated": [
+    {
+      "id": "claude-permissions",
+      "target": "launch_settings",
+      "content": {
+        "allow": [
+          "Bash(npm test)",
+          "mcp__codesense__*"
+        ],
+        "defaultMode": "acceptEdits",
+        "deny": [
+          "Bash(git push --force:*)"
+        ]
+      },
+      "hash": "blake3:cf6a7dff127604d75a08b46505f28f4f7a317c10d7c8059406d79497e5f91414",
+      "required": [
+        "mcp__codesense__*"
+      ]
+    },
+    {
+      "id": "codex-permissions",
+      "target": "launch_settings",
+      "content": {
+        "approval_policy": "never",
+        "sandbox_mode": "workspace-write"
+      },
+      "hash": "blake3:8a85e7faeed8c17296ff4753fd15cb6c83747c8ad791cef4de5e7855d363674d",
+      "required": []
+    }
+  ],
+  "totals": {
+    "files": 5,
+    "bytes": 37
+  },
+  "errors": [
+    {
+      "path": "docs/gone.md",
+      "code": "missing",
+      "message": "docs/gone.md exists in no layer"
+    },
+    {
+      "path": null,
+      "code": "invalid",
+      "message": "MCP server \"jira\" is not in this team's MCP config"
+    }
+  ],
+  "manifest_hash": "blake3:608c3e0da0a277f3bd4573dbfcdd3a8b01f445ffcb2becd28dabf4ed5efb3dcc"
+}

@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="cs:type" content="content" /><meta name="codesense:icon" content="file-code" />
+<title>CodeSense — routine.yml — every model field</title><link rel="stylesheet" href="../_shared/cs-docs.css" />
+<script src="../_shared/nav.js" defer></script>
+<style>.fields-table {width:100%;border-collapse:collapse;font-size:13px}.fields-table td,.fields-table th {padding:10px;border-bottom:1px solid var(--cs-border);text-align:left;vertical-align:top} pre {overflow:auto}</style>
+</head><body class="cs-page cs-docs" data-page="arc-g-routines/routine-yml"><nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+<main class="cs-main"><section data-hero data-search="routine.yml — every model field" id="hero"><p><span class="cs-docs-chip">Arc G · Routines</span></p><h1>routine.yml — every model field</h1></section>
+
+<section data-search="routine.yml JSON Schema serde field reference" id="schema">
+<p>A routine saves either an agent task or an argv command. An agent routine lives at <code>config/agents/&lt;agent-id&gt;/routines/&lt;id&gt;/routine.yml</code>; the path supplies its agent. Command routines live under <code>config/agents/_command/routines/&lt;id&gt;/routine.yml</code>.</p>
+<p>The table below is generated from <code>RoutineDef</code> and its nested serde models. Open the <a href="../generated/schemas/routine-yml.schema.json">standalone JSON Schema</a> or <a href="../schema-browser.html#schema/routine-yml">schema browser</a>. The schema describes accepted wire shapes; save-time validation also checks schedules, agents, placement, limits and combinations. Flattened fields are preserved. Some are supported runner extensions, including <code>policy.max_wait</code>; other unknown fields have no guaranteed behavior.</p>
+<p>Also available: <a href="../generated/schemas/agent-yaml.schema.json">Agent schema</a> and <a href="../generated/schemas/role-yaml.schema.json">role configuration schema</a>.</p>
+</section>
+<section data-search="agent command routine required fields defaults lifecycle placement" id="authoring">
+<h2>Author a definition</h2><p>Give every routine a unique team-wide <code>id</code>, nonblank <code>name</code> and <code>owner</code>, <code>where.kind</code> and <code>policy.max_runtime</code> (1m–24h). Start <code>revision</code> at 1; saves increment it. A field default in the wire schema does not imply the resulting definition passes semantic validation.</p>
+<ul><li><code>action: agent</code> is the default. Give it a nonblank <code>task</code>. Usually omit <code>agent</code> because its directory supplies it. Legacy and unassigned files can carry a bare or scoped agent reference.</li>
+<li><code>mode: wake</code> delivers into a matching idle saved agent's session and starts one only if none matches. On this Mac, the session must carry <a href="#workspace-context">this routine's launch identity</a>. <code>fresh</code> starts a new session. A blank mode is resolved at fire time; read <code>effective_mode</code> in the tool reply. Built-in starters are fresh only. Bypass agents need <code>allowWake: true</code>.</li>
+<li><code>action: command</code> needs <code>command</code> as argv, and no agent, task or mode. Commands run on this Mac, without a model. See <a href="./command-routines.html">command routines</a>.</li>
+<li><code>where.kind</code> is <code>team_workspace</code> or <code>repo:owner/repo</code>. <code>where.machine</code> is local, any, or a machine id for agent routines. <code>runs_on</code> defaults to one_mac; each_mac is a per-Mac opt-in recipe. Metadata triggers refuse each_mac.</li>
+<li><code>triggers</code> contains singleton <code>schedule</code> or <code>event</code> maps. Empty means manual. <code>after: {routine: review-command, on: succeeded}</code> adds a same-space dependency; <code>finished</code> continues after <code>succeeded</code>, <code>failed</code>, <code>timed_out</code>, <code>needs_you</code> or <code>ended</code>; <code>cancelled</code> does not fire a chain. See the <a href="./trigger-cookbook.html">six trigger recipes</a>.</li>
+<li><code>policy.overlap</code> is coalesce, skip or queue (MCP command creation defaults to queue). <code>policy.missed</code> is skip or run_once. <code>policy.visible</code> opens a fresh agent in a tab; wakes are visible.</li>
+<li><code>policy.max_wakes</code>, <code>max_wakes_per_day</code> and <code>min_gap</code> limit deliveries into live sessions. Positive counts only; min_gap is 1m–7d. Reaching the total pauses the routine; daily limits recover automatically. Fresh runs ignore wake limits with a warning.</li>
+<li><code>policy.max_wait</code> is a supported wake-runner extension stored in the policy’s extra fields. It bounds how long a wake waits for an idle session: 30 minutes by default; use a positive duration such as <code>30m</code> or <code>2h</code>.</li>
+<li><code>variables</code> declares typed defaults (<code>text</code>, <code>number</code>, <code>boolean</code>); defaults are required for scheduled tasks. Scalar defaults accept strings, numbers and booleans and are retained as text. Use <code>{{name}}</code> in a task.</li>
+<li><code>result_schema</code> is a bounded inline JSON Schema for a structured private dashboard result. It is not a command exit-code schema. Use <code>routine_publish_result</code> in an agent run; dashboards can read the cached result.</li></ul>
+<p><code>armed_host</code>, <code>armed_machine</code>, <code>arm_epoch</code> and <code>handover_from</code> track placement and disarm acknowledgements. Use <code>routine_arm_on</code> to move placement safely rather than editing those fields. <code>archived_at</code>, <code>archived_with_agent</code> and <code>migrated</code> record lifecycle/history. Keep them intact when editing.</p>
+<p>Enabled state is a local Mac switch, outside <code>routine.yml</code> and git: saving or syncing a definition does not enable it on a teammate’s Mac. Use <code>routine_set_enabled</code> for pause/resume. Preserve placement when patching an MCP-created draft. A hand-installed <code>one_mac</code> definition without <code>armed_host</code> needs <code>routine_arm_on {id, machine:"this_mac"}</code> before enabling.</p>
+</section>
+<section data-search="role_pending role filter wildcard events MCP YAML" id="event-filters"><h2>Role queue filters</h2>
+<p>Use <code>{kind:"role_pending"}</code> when a dispatcher needs every role queue in reach. Use <code>{kind:"role_pending",role:"reviewer"}</code> when this routine should run only for reviewer mail.</p>
+<pre><code class="language-yaml">triggers:
+  - event:
+      kind: role_pending
+      role: reviewer</code></pre>
+<p>Omit <code>role</code> for the wildcard. A team routine reaches only its team; a private routine reaches teams in its org. Empty or whitespace-only role values fail validation, and <code>role</code> is valid only on <code>role_pending</code>. Role names need no registry entry. <code>agent_done</code> alone accepts <code>from_agent</code> (id or full key, no existence check). MCP uses the same spelling inside <code>events</code>. Updating with null or omitted events preserves; [] clears these three event kinds; a nonempty list replaces them and keeps schedules/metadata triggers. Only creation supports <code>dryRun</code>, which reports resolved <code>triggers</code> and writes no definition.</p></section>
+<section data-search="all RoutineDef fields nested metadata conditions wake limits" id="fields"><h2>Generated fields</h2>
+<p>Nested rows show their full wire paths. A nested field marked optional may still be required inside an optional parent object; the JSON Schema records those conditional requirements exactly.</p>
+<table class="fields-table"><thead><tr><th>Field</th><th>Wire type</th><th>Presence</th><th>Description</th></tr></thead><tbody>
+<!-- model-fields:start -->
+<tr><td><code>action</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>after</code></td><td>object | null</td><td>optional</td><td></td></tr>
+<tr><td><code>after.on</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>after.routine</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>agent</code></td><td>string</td><td>optional</td><td>The agent that runs the task; see [`AgentRef`]. A routine stored under
+its agent (`config/agents/&lt;agent&gt;/routines/&lt;id&gt;/`) does not write it: the
+path names the agent and every read fills it in (`layout`). Only a
+legacy `config/routines/&lt;id&gt;/` file or an `_unassigned` one carries it.</td></tr>
+<tr><td><code>archived_at</code></td><td>string | null</td><td>optional</td><td></td></tr>
+<tr><td><code>archived_with_agent</code></td><td>boolean</td><td>optional</td><td>Archived because its agent was archived: restoring the agent offers to
+restore exactly these (`lifecycle`).</td></tr>
+<tr><td><code>arm_epoch</code></td><td>integer</td><td>optional</td><td>Bumped on every move of the routine between a desktop and a
+machine. A machine refuses an arm or disarm older than the epoch it
+holds, so a stale definition can never re-arm it there.</td></tr>
+<tr><td><code>armed_host</code></td><td>string</td><td>optional</td><td>The local host id of the one Mac that arms this routine, so it fires
+once however many machines have it. Placement, not permission: anyone
+may move it. Unset only in a definition written outside CodeSense; see
+`host::is_armed_here`.</td></tr>
+<tr><td><code>armed_machine</code></td><td>string | null</td><td>optional</td><td>The team-shared id of the machine whose session server arms this
+routine: it fires there on the machine's own clock, with or
+without a desktop. `armed_host` then names the Mac that manages the
+arm (pushes it, and records its runs); no Mac fires it itself. Old
+clients carry it as an unknown key.</td></tr>
+<tr><td><code>command</code></td><td>array</td><td>optional</td><td></td></tr>
+<tr><td><code>command[]</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>handover_from</code></td><td>object | null</td><td>optional</td><td>The machine this routine moved off and the epoch of that
+move, until that machine acknowledged it stopped firing it. No Mac
+fires the routine meanwhile (it may still fire there), whichever Mac
+reads this; the Mac that manages it clears it once acknowledged.</td></tr>
+<tr><td><code>handover_from.epoch</code></td><td>integer</td><td>optional</td><td></td></tr>
+<tr><td><code>handover_from.machine</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>id</code></td><td>string</td><td>required</td><td></td></tr>
+<tr><td><code>migrated</code></td><td>object | null</td><td>optional</td><td>Where a migrated routine came from (`migrate`).</td></tr>
+<tr><td><code>migrated.from</code></td><td>string</td><td>optional</td><td>The legacy dir relative to the space's `config/`: `routines/&lt;id&gt;`.
+The legacy content last brought forward (the 3-way merge base for an
+older client's edits) is kept beside the routine, in
+`migrate::BASE_FILE`, so mirroring it never rewrites this file.</td></tr>
+<tr><td><code>migrated.note</code></td><td>string | null</td><td>optional</td><td>Shown with the routine: why it was renamed on the way (an id clash).</td></tr>
+<tr><td><code>migrated.revision</code></td><td>integer | null</td><td>optional</td><td>The revision the move wrote: the editor says why the routine
+starts a new session only until a later revision is saved.</td></tr>
+<tr><td><code>mode</code></td><td>string</td><td>optional</td><td>What a fire does: `fresh` starts a new instance of the agent, `wake`
+delivers the task into a live one (starting one only when
+none is running). Blank when the author picked none: the default is worked out
+at fire time (`service::effective_mode`); migration writes `fresh`.
+Kept as a string so an unknown value is a
+typed [`ValidationError`]; see [`RoutineDef::mode`].</td></tr>
+<tr><td><code>name</code></td><td>string</td><td>required</td><td></td></tr>
+<tr><td><code>owner</code></td><td>string</td><td>optional</td><td>The principal who created this routine, for display and attribution.
+It grants nothing: anyone who can see a routine can change it.</td></tr>
+<tr><td><code>policy</code></td><td>object</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.budget_usd</code></td><td>object | null</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.budget_usd.per_day</code></td><td>number | null</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.budget_usd.per_week</code></td><td>number | null</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.max_runtime</code></td><td>string | null</td><td>optional</td><td>Required. `30m` / `2h`, between one minute and a day. Optional on the wire
+only so a missing value is a typed validation error.</td></tr>
+<tr><td><code>policy.max_wakes</code></td><td>integer | null</td><td>optional</td><td>Optional, set by the routine's author (usually an
+agent): how many deliveries its wakes may make in all. Reached, the
+routine pauses itself with one inbox note; resuming starts a new count.</td></tr>
+<tr><td><code>policy.max_wakes_per_day</code></td><td>integer | null</td><td>optional</td><td>Deliveries in any rolling 24 h. Over it a fire is
+`undelivered(limit_reached)`; it resumes on its own.</td></tr>
+<tr><td><code>policy.min_gap</code></td><td>string | null</td><td>optional</td><td>The least time between two wakes of this routine, into any session (`30m`,
+`2h`, `1d`; at most `7d`), for wakes that start heavy work. A fire
+inside it is coalesced or skipped per `overlap`.</td></tr>
+<tr><td><code>policy.missed</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.overlap</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>policy.visible</code></td><td>boolean</td><td>optional</td><td></td></tr>
+<tr><td><code>result_schema</code></td><td>any</td><td>optional</td><td>Optional bounded inline JSON Schema for a private dashboard snapshot.</td></tr>
+<tr><td><code>revision</code></td><td>integer</td><td>optional</td><td></td></tr>
+<tr><td><code>runs_on</code></td><td>string</td><td>optional</td><td>How a team routine runs: `one_mac` (the default, also when empty) runs
+it once for the team on the `armed_host` Mac; `each_mac` runs it on
+every Mac whose user turned it on there, each with its own runs. Kept
+as a string so an unknown value is a typed [`ValidationError`]; see
+[`RoutineDef::runs_on`].</td></tr>
+<tr><td><code>task</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers</code></td><td>array</td><td>optional</td><td>Empty means manual-only.</td></tr>
+<tr><td><code>triggers[]</code></td><td>object</td><td>optional</td><td>One trigger. On the wire it is a single-key map: `- schedule: {…}` or
+`- event: {…}`.</td></tr>
+<tr><td><code>triggers[].schedule</code></td><td>object</td><td>optional</td><td>A wall-clock schedule: a 5-field cron in an IANA zone (see
+[`super::schedule`]). A missing `tz` is filled with this machine's zone at
+save and persisted, so it never changes with where the app later runs.</td></tr>
+<tr><td><code>triggers[].schedule.cron</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].schedule.tz</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event</code></td><td>object</td><td>optional</td><td>An event trigger: `agent_done` (an agent finished), `inbox_idle` (an agent sits
+idle at its prompt with unread inbox mail) or `role_pending` (a message is queued
+for a role inbox in reach of the routine).</td></tr>
+<tr><td><code>triggers[].event.from_agent</code></td><td>string | null</td><td>optional</td><td>`agent_done` only: only an agent this names finishing fires it; read like
+[`RoutineDef::agent`].</td></tr>
+<tr><td><code>triggers[].event.kind</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata</code></td><td>object | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.list</code></td><td>boolean</td><td>optional</td><td>An authoring hint for list wording; matching always uses the query engine.</td></tr>
+<tr><td><code>triggers[].event.metadata.previous</code></td><td>object | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.previous.key</code></td><td>string</td><td>optional</td><td>Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,
+`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).
+Matching ignores case, `-`/`_` and camelCase vs snake_case.</td></tr>
+<tr><td><code>triggers[].event.metadata.previous.max</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.previous.min</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.previous.op</code></td><td>string</td><td>optional</td><td>A filter operator.</td></tr>
+<tr><td><code>triggers[].event.metadata.previous.value</code></td><td>any</td><td>optional</td><td>The operand for `eq`/`in`/`not`/`contains`/`prefix`. `&quot;@me&quot;` stands for the
+signed-in user.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection</code></td><td>object</td><td>optional</td><td>The query. See the module docs for an example.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.cursor</code></td><td>string | null</td><td>optional</td><td>The `nextCursor` of a previous page.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters</code></td><td>array</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[]</code></td><td>object</td><td>optional</td><td>One filter clause. Clauses on the same key OR together; different keys AND.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[].key</code></td><td>string</td><td>optional</td><td>Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,
+`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).
+Matching ignores case, `-`/`_` and camelCase vs snake_case.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[].max</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[].min</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[].op</code></td><td>string</td><td>optional</td><td>A filter operator.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.filters[].value</code></td><td>any</td><td>optional</td><td>The operand for `eq`/`in`/`not`/`contains`/`prefix`. `&quot;@me&quot;` stands for the
+signed-in user.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.groupBy</code></td><td>string | null</td><td>optional</td><td>Count matches per value of this key (every item of a list counts).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.limit</code></td><td>integer | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.match</code></td><td>object</td><td>optional</td><td>Shorthand: `{ &quot;status&quot;: [&quot;todo&quot;, &quot;review&quot;], &quot;team&quot;: &quot;default&quot; }` — a
+scalar is `eq`, an array is `in`.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships</code></td><td>object | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.backlinkedBy</code></td><td>string | null</td><td>optional</td><td>This lists the file in its `supporting_docs`.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.dependedOnBy</code></td><td>string | null</td><td>optional</td><td>This depends on the file (the file is a dependency of it).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.dependsOn</code></td><td>string | null</td><td>optional</td><td>The file `depends_on` this.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.hasDeps</code></td><td>boolean | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.hasSupportingDoc</code></td><td>string | null</td><td>optional</td><td>The file lists this in `supporting_docs`.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.isBacklinked</code></td><td>boolean | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.relationships.parentEpic</code></td><td>string | null</td><td>optional</td><td>The file's parent epic (`parent_epic`/`epic` frontmatter, or a folder on its path).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.select</code></td><td>array | null</td><td>optional</td><td>Frontmatter keys to return (plus the built-in row fields). Include
+`&quot;relationships&quot;` to also get relationship refs. Omitted: everything.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.select[]</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort</code></td><td>array</td><td>optional</td><td>Sort keys, applied in order; ties fall back to path. Default: path.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[]</code></td><td>string | object</td><td>optional</td><td>One sort key: `&quot;status&quot;`, `&quot;-mtime&quot;` (descending), or the object form.
+`order` ranks values explicitly (e.g. a team's own status order); values
+not listed sort after the listed ones. It also orders `groupBy` buckets
+when the group key is sorted on.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[].dir</code></td><td>string</td><td>optional</td><td>Sort direction.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[].key</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[].missing</code></td><td>string</td><td>optional</td><td>Where files without a value for the sort key go. Default: last.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[].order</code></td><td>array | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.sort[].order[]</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.text</code></td><td>string | null</td><td>optional</td><td>Token-aware title, heading and body match (bounded scan).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where</code></td><td>object</td><td>optional</td><td>Where to look. Every dimension narrows; omitted means unconstrained.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.kinds</code></td><td>array | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.kinds[]</code></td><td>string</td><td>optional</td><td>What a file is, by the existing classification rules (frontmatter `type`,
+file extension, location).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.layers</code></td><td>array | null</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.layers[]</code></td><td>string</td><td>optional</td><td>Which layer of the context footprint a file lives in.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.orgs</code></td><td>string | array</td><td>optional</td><td>Orgs to search. Default: every synced org. All-orgs content matches any org.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.orgs[]</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.pathGlob</code></td><td>string | null</td><td>optional</td><td>A glob over the path relative to the content root (e.g. `**/DEMO-*.md`).</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.pathPrefix</code></td><td>string | null</td><td>optional</td><td>An absolute path prefix, or a prefix of the path relative to the content root.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.sameOrgAs</code></td><td>string | null</td><td>optional</td><td>Limit to the org of the content root this absolute path (a file or a
+folder) sits under — a UI default, e.g. a `csquery` block searching its
+own org. Fails closed: a path under no org's root (all-orgs content, or
+outside the footprint) leaves only all-orgs content.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.sameRootAs</code></td><td>string | null</td><td>optional</td><td>Limit to the one content root (a team's context repo, a private space, or
+all-orgs content) this absolute path sits under — e.g. a team board
+listing its own team's stories. Nothing matches when the path is under no root.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.teams</code></td><td>array | null</td><td>optional</td><td>Team names. Private and all-orgs files have no team, so naming teams excludes them.</td></tr>
+<tr><td><code>triggers[].event.metadata.selection.where.teams[]</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.target</code></td><td>object</td><td>optional</td><td>One filter clause. Clauses on the same key OR together; different keys AND.</td></tr>
+<tr><td><code>triggers[].event.metadata.target.key</code></td><td>string</td><td>optional</td><td>Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,
+`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).
+Matching ignores case, `-`/`_` and camelCase vs snake_case.</td></tr>
+<tr><td><code>triggers[].event.metadata.target.max</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.target.min</code></td><td>any</td><td>optional</td><td></td></tr>
+<tr><td><code>triggers[].event.metadata.target.op</code></td><td>string</td><td>optional</td><td>A filter operator.</td></tr>
+<tr><td><code>triggers[].event.metadata.target.value</code></td><td>any</td><td>optional</td><td>The operand for `eq`/`in`/`not`/`contains`/`prefix`. `&quot;@me&quot;` stands for the
+signed-in user.</td></tr>
+<tr><td><code>triggers[].event.role</code></td><td>string | null</td><td>optional</td><td>`role_pending` only: watch this queue; omit to watch every queue in reach.</td></tr>
+<tr><td><code>variables</code></td><td>object</td><td>optional</td><td></td></tr>
+<tr><td><code>variables.*</code></td><td>object</td><td>optional</td><td>A declared task variable. `default` is required when any trigger is a
+schedule, because nobody is there to supply a value.</td></tr>
+<tr><td><code>variables.*.default</code></td><td>string | number | boolean | null</td><td>optional</td><td></td></tr>
+<tr><td><code>variables.*.type</code></td><td>string</td><td>optional</td><td></td></tr>
+<tr><td><code>where</code></td><td>object</td><td>required</td><td>Where the run happens. `kind` is `team_workspace` or `repo:&lt;owner&gt;/&lt;repo&gt;`.</td></tr>
+<tr><td><code>where.kind</code></td><td>string</td><td>required</td><td></td></tr>
+<tr><td><code>where.machine</code></td><td>string | null</td><td>optional</td><td>Which machine runs it: `local`, `any` or a team-shared machine id;
+absent means local.</td></tr>
+<!-- model-fields:end -->
+</tbody></table></section>
+<section data-search="routine_create dryRun validation read result" id="validation"><h2>Validate before enabling</h2>
+<p><code>routine_create {..., dryRun:true}</code> runs the real create validation without saving. Read the envelope <code>status</code>; only <code>ok</code> is success. Then read <code>data.warnings</code>, <code>effective_mode</code>, <code>next_fires</code> and the selected agent. Create with <code>enabled:false</code> until ready. Read the saved definition with <code>routine_get</code>; use <code>routine_update</code> with its latest <code>baseRevision</code>.</p>
+<p>The schema browser’s <code>validateYaml</code> page bridge is currently unavailable; its local shape check does not establish semantic validity. Use <code>routine_create</code> with <code>events</code> and <code>dryRun:true</code> for shared event validation; see the <a href="./trigger-cookbook.html#events">cookbook</a>.</p></section>
+<p><a href="./index.html">← Routines overview</a> · <a href="./routine-yml.html">Field reference</a> · <a href="./trigger-cookbook.html">Trigger cookbook</a> · <a href="./command-routines.html">Command routines</a></p>
+      <section id="spend-cap" data-search="policy budget_usd per_day per_week budget_reached">
+        <h2>Policy: spend cap</h2>
+        <p>A <code>fresh</code> agent routine may set <code>policy.budget_usd</code>, for example
+          <code>{per_day: 10, per_week: 40}</code>. Both fields are optional positive finite USD.
+          Its runs aggregate by routine handle across sessions and machines, and also count toward
+          the agent's own cap. Either scope can refuse a fire with <code>budget_reached</code>.</p>
+        <p>A <code>wake</code> routine must cap its agent instead. Command routines cannot have a cap.
+          Capped routines cannot be armed on a machine, and machine-armed routines cannot add a cap.
+          Read <a href="../arc-e-agents/spend-caps.html">Spend caps</a> before changing a limit.</p>
+      </section>
+      <section data-search="Fresh team workspace context and scratch files" id="workspace-context">
+        <h2>Context in a fresh team run</h2>
+        <p>
+          On this Mac, an agent routine targeting <code>team_workspace</code> starts in its own
+          scratch directory for that routine and saved agent, outside shared team content. Before
+          each new session, CodeSense clears that pair's scratch files and prepares the saved agent's
+          current <code>context</code>
+          and <code>startup</code>, including merge-marked workspace files such as team hooks in
+          <code>.claude/settings.json</code>. Both visible and headless sessions receive these files.
+          Save outputs you need to keep through the appropriate content or Notes tools; files left
+          in the routine's working directory are temporary. Reassigning a routine to a different
+          saved agent selects a different directory, preserving the previous agent's live files.
+          Old per-agent directories remain; they are not automatically removed on reassignment.
+        </p>
+        <pre><code># In the saved agent's agent.yaml:
+context:
+  - path: skills/evaluate
+    dest: .claude/skills/evaluate
+
+# In its routine.yml:
+mode: fresh
+task: Run /evaluate, save the result, then call signal_done.
+where:
+  kind: team_workspace</code></pre>
+        <p>
+          Preview with <code>agent_preview {agent: "org/repo/team/agent", teamWorkspace: true}</code>:
+          its <code>context.files</code> destinations are the context paths prepared in the run's cwd.
+          Changes to skills or the agent's context apply on the next spawn, without restarting the app.
+          Projected files are never written into shared team content.
+        </p>
+        <p>
+          <code>each_mac</code> prepares the directory on each firing Mac; <code>one_mac</code>
+          prepares it only on the armed host. Explicit remote-machine launches continue using their
+          prepared remote repo workspace. On this Mac, a wake delivers only to a live session tagged
+          at launch with that routine's identity. It never adopts another routine's session or an
+          untagged agent started from the Agents tab, even when the agent and cwd match; it launches
+          its own session instead. Remote wakes retain their existing per-agent/workspace matching
+          and admission for now. Delivery leaves the live session's files untouched; an absent agent
+          gets the waking routine's prepared directory before launch. A later fresh spawn for the
+          same routine and saved agent clears that pair's scratch files. Overlap policies are <code>coalesce</code>,
+          <code>skip</code> and <code>queue</code>. Command routines
+          retain their existing target directory.
+        </p>
+      </section>
+          <!--tool-reference-->
+      <section id="tool-reference" data-search="Tool reference">
+        <h2>Tool reference</h2>
+        <p>Reference for the routine tools that read a routine, run-side tools used from inside a routine run, move where a routine fires, and the session wakeup timers. Where a tool takes <code>sessionId</code>, identity comes from the verified MCP connection; a supplied <code>sessionId</code> must name the caller itself, and an unbound caller is refused.</p>
+        <p id="read"><strong>Reading routines and results</strong></p>
+        <h3 id="tool-routine_get"><code>routine_get</code></h3>
+        <p>Reads one routine in full. <code>id</code> comes from <code>routine_list</code>; optional <code>agent</code> refuses (<code>validation</code>) unless the routine belongs to that agent. Returns <code>{status:&quot;ok&quot;, data:{id, scope, agent_key, mode, effective_mode, owner, enabled, revision, schedule_in_words, routine, runs}}</code> with this Mac's last 5 runs, plus <code>budgetUsd</code>, <code>budgetPending</code> and <code>spend</code> (<code>ok</code>, <code>warn</code>, <code>reached</code> or <code>unpriced</code>). A routine with <code>content_stale</code> was armed on a machine and not refreshed since its agent changed.</p>
+        <pre data-tool-example="routine_get"><code>{
+  &quot;tool&quot;: &quot;routine_get&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_result"><code>routine_result</code></h3>
+        <p>Reads the last successful private structured result and the latest attempt for a routine. It is a cached read: it never launches an agent, and it reports <code>schema_compatible</code> and the success timestamp explicitly. Returns the snapshot, <code>latest_attempt</code> status, revision and <code>schema_compatible</code>.</p>
+        <pre data-tool-example="routine_result"><code>{
+  &quot;tool&quot;: &quot;routine_result&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_delete"><code>routine_delete</code></h3>
+        <p>Archives any routine you can see: it stops firing and leaves <code>routine_list</code>, and its run history stays readable. Any visible routine is yours to change, a teammate's included; the change is a local edit to the context repo, and sharing it is a git push your agent makes. Notifies no one. Returns <code>{status:&quot;ok&quot;, data:{id, archived:true, revision}}</code>.</p>
+        <pre data-tool-example="routine_delete"><code>{
+  &quot;tool&quot;: &quot;routine_delete&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;
+  }
+}</code></pre>
+        <p id="in-run"><strong>Inside a routine run</strong></p>
+        <h3 id="tool-routine_context"><code>routine_context</code></h3>
+        <p>When a routine launched you, tells you what you are running and why. <code>sessionId</code> is required and answers for the routine run that session is running; optional <code>runId</code> selects the run named in a wake header. Returns <code>data:{run_id, routine_id, routine_name, revision, routine, source, scheduled_at, fired_at, variables, trigger_payload, last_run_summary, last_run_id, agent, content_dir}</code>, or <code>validation</code> (&quot;not a routine run&quot;). <code>trigger_payload</code> carries the document change and <code>coalesced_payloads</code> every merged change; wake text stays static, so call this to read changes.</p>
+        <pre data-tool-example="routine_context"><code>{
+  &quot;tool&quot;: &quot;routine_context&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_done"><code>routine_done</code></h3>
+        <p>Finishes one routine run with your verdict without ending your session; use it when a routine woke you inside a session that keeps working (<code>signal_done</code> ends the session's whole task). Required: <code>sessionId</code> (checked against the terminal you call from), <code>runId</code> (from <code>routine_context</code> or the run line in your task) and <code>outcome</code> (<code>success</code>, <code>failed</code> or <code>needs-attention</code>). Optional <code>summary</code>; a successful run's summary becomes the next run's <code>{{last_run_summary}}</code>. Other runs your session holds are untouched. Returns <code>data:{run_id, routine_id, phase}</code>.</p>
+        <pre data-tool-example="routine_done"><code>{
+  &quot;tool&quot;: &quot;routine_done&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;runId&quot;: &quot;&lt;run_id from routine_context&gt;&quot;,
+    &quot;outcome&quot;: &quot;success&quot;,
+    &quot;summary&quot;: &quot;Checked 3 reviewers&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_publish_result"><code>routine_publish_result</code></h3>
+        <p>Publishes a structured routine result candidate: your JSON <code>payload</code>. The recorded running session chooses the run and the pinned schema; no <code>runId</code> is accepted. Call <code>signal_done</code> with success afterwards to promote the private snapshot. Returns <code>{published:true}</code>; a failed status is an MCP error.</p>
+        <pre data-tool-example="routine_publish_result"><code>{
+  &quot;tool&quot;: &quot;routine_publish_result&quot;,
+  &quot;arguments&quot;: {
+    &quot;payload&quot;: {
+      &quot;open&quot;: 3,
+      &quot;closed&quot;: 12
+    }
+  }
+}</code></pre>
+        <p id="machine"><strong>Where a routine fires</strong></p>
+        <h3 id="tool-routine_arm_on"><code>routine_arm_on</code></h3>
+        <p>Moves where a routine fires: <code>machine: &quot;this_mac&quot;</code> or a machine id from <code>list_machines</code>, whose terminal server then fires it on its own clock, in the routine's zone, whether or not any Mac is open. This Mac manages it: it prepares the agent there now and on every edit, pushes the definition on reconnect and records the runs. A routine armed on a machine runs on its schedule only (no <code>agent_done</code>, <code>inbox_idle</code> or <code>role_pending</code> triggers), once for the team. Each move is a new revision under a new arm epoch, and moving it off a machine waits for that machine to acknowledge (<code>handover_pending</code>). It counts against the 25 enabled-routine cap. Returns <code>data:{id, armed_machine, arm_epoch, revision, handover_pending, machine_warning?}</code>.</p>
+        <pre data-tool-example="routine_arm_on"><code>{
+  &quot;tool&quot;: &quot;routine_arm_on&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;,
+    &quot;machine&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_refresh_on_machine"><code>routine_refresh_on_machine</code></h3>
+        <p>Prepares a machine-armed routine from what it and its agent are now, and pushes it there. The machine workspace is prepared only when you arm, edit, resume or restore the routine, or call this: later changes to the agent's files or team content do not reach the machine on their own. <code>routine_list</code> and <code>routine_get</code> show <code>content_stale</code> until this is called. The machine must be connected and this Mac must manage the routine. Returns <code>data:{id, machine, content_stale:false}</code>, or <code>validation</code> with why it could not.</p>
+        <pre data-tool-example="routine_refresh_on_machine"><code>{
+  &quot;tool&quot;: &quot;routine_refresh_on_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-routine_handover_release"><code>routine_handover_release</code></h3>
+        <p>Stops waiting for a machine that is gone to confirm it stopped firing a routine moved off it. Until a machine confirms, nothing else fires the routine, so a move never doubles a fire. Required: <code>id</code>, <code>machine</code> (the one it waits on, as <code>routine_get</code> shows) and <code>machineGone: true</code>, confirming the machine is gone: one that still runs may fire the routine once more. Returns <code>data:{id, machine, machine_warning?}</code>.</p>
+        <pre data-tool-example="routine_handover_release"><code>{
+  &quot;tool&quot;: &quot;routine_handover_release&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from routine_list&gt;&quot;,
+    &quot;machine&quot;: &quot;&lt;machineId from routine_get&gt;&quot;,
+    &quot;machineGone&quot;: true
+  }
+}</code></pre>
+        <p id="wakeups"><strong>Session wakeups</strong></p>
+        <p>Timers on your own session, held by the terminal server that runs it (<code>schedule_wakeup</code> sets them).</p>
+        <h3 id="tool-list_wakeups"><code>list_wakeups</code></h3>
+        <p>Lists the active timers on your own session, soonest first: <code>{timers:[{timerId, name, prompt, nextAt, every?, until?, count?, remaining?, fires, createdBy, machineId, sessionId}]}</code>. <code>sessionId</code> is required and must be your own; another session's id is refused. On a machine whose desktop is away, the machine answers.</p>
+        <pre data-tool-example="list_wakeups"><code>{
+  &quot;tool&quot;: &quot;list_wakeups&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-cancel_wakeup"><code>cancel_wakeup</code></h3>
+        <p>Stops one timer on your own session; a fire it already queued is dropped and nothing is typed. Required: <code>sessionId</code> (your own) and <code>timerId</code> (from <code>schedule_wakeup</code> or <code>list_wakeups</code>). Returns <code>{cancelled}</code>, false when your session has no such active timer.</p>
+        <pre data-tool-example="cancel_wakeup"><code>{
+  &quot;tool&quot;: &quot;cancel_wakeup&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;timerId&quot;: &quot;&lt;timerId from list_wakeups&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <!--/tool-reference-->
+    </main><footer class="cs-footer"><div class="cs-footer__inner"><span>CodeSense docs · Routines</span></div></footer></body></html>

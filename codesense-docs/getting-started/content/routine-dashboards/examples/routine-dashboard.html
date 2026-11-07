@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Agent routine dashboard</title>
+<style>body{font:16px system-ui;max-width:50rem;margin:3rem auto;padding:1rem}button{margin-right:.5rem}pre{white-space:pre-wrap}#status{margin:1rem 0}</style></head>
+<body><h1>Agent routine dashboard</h1><label>Routine key <input id="key" size="55" placeholder="owner/repository/team/routine-id"></label>
+<p><button id="load">Load cached data</button><button id="refresh">Refresh</button><button id="cancel">Cancel refresh</button></p>
+<p id="admission" role="status"></p>
+<p id="status" role="status">Enter the routine key returned by routine_create.</p><p id="updated">Never updated</p><pre id="data"></pre>
+<script>
+const key = document.getElementById('key');
+const status = document.getElementById('status');
+const updated = document.getElementById('updated');
+const data = document.getElementById('data');
+const admission = document.getElementById('admission');
+key.value = new URLSearchParams(location.search).get('routine') || '';
+let sequence = 0;
+let selection = 0;
+function reset() {
+  ++sequence;
+  ++selection;
+  data.textContent = '';
+  updated.textContent = 'Never updated';
+  admission.textContent = '';
+  status.textContent = key.value.trim() ? 'Load cached data or refresh this routine.' : 'Enter a routine key.';
+}
+key.addEventListener('input', reset);
+async function read() {
+  const selectedKey = key.value.trim();
+  const ticket = ++sequence;
+  if (!selectedKey) { reset(); return; }
+  try {
+    const result = await codesense.routineResult({key:selectedKey});
+    if (ticket !== sequence || selectedKey !== key.value.trim()) return;
+    const attempt = result.latest_attempt;
+    const collecting = result.active_attempt !== null;
+    status.textContent = collecting ? 'Collecting…' : attempt && attempt.phase !== 'succeeded' ? `Latest attempt: ${attempt.phase} (${attempt.reason || 'see routine history'})` : result.snapshot ? 'Cached result' : 'No result yet';
+    if (result.snapshot && !result.schema_compatible) status.textContent += ' — schema changed; refresh required';
+    updated.textContent = result.snapshot ? `Last successful update: ${new Date(result.snapshot.succeeded_at).toLocaleString()} · result revision ${result.snapshot.revision} · current revision ${result.revision}` : 'Never updated';
+    data.textContent = result.snapshot ? JSON.stringify(result.snapshot.payload,null,2) : '';
+  } catch (error) { if (ticket === sequence) status.textContent = `Error: ${error.message}`; }
+}
+document.getElementById('load').onclick = read;
+async function act(method) {
+  const selectedKey = key.value.trim();
+  const ticket = selection;
+  if (!selectedKey) { reset(); return; }
+  try {
+    const reply = await codesense[method]({key:selectedKey}); // api-skew-ok: method is routineRefresh or routineCancel, both in 0.0.25
+    if (ticket !== selection || selectedKey !== key.value.trim()) return;
+    admission.textContent = method === 'routineRefresh' ? `Refresh: ${reply.outcome}${reply.reason ? ` (${reply.reason})` : ''}` : `Cancelled ${reply} run(s)`;
+    await read();
+  } catch (error) {
+    if (ticket === selection && selectedKey === key.value.trim()) status.textContent = `Action failed: ${error.message}`;
+  }
+}
+document.getElementById('refresh').onclick = () => act('routineRefresh');
+document.getElementById('cancel').onclick = () => act('routineCancel');
+const off = codesense.onRoutineResult(read);
+window.addEventListener('pagehide', off, {once:true});
+void read(); // Cached read only, never launches.
+</script></body></html>

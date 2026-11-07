@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Connect a context repo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Minimal arc-A content shell — kept per-page until a second arc needs
+         the same patterns (the shared layer stays tight). */
+      .cs-docs-arcA {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA ol,
+      .cs-docs-arcA ul {
+        padding-left: 1.1em;
+      }
+      .cs-docs-arcA li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__hero {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        padding: var(--cs-docs-space-5);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__placeholder {
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        text-align: center;
+        padding: 20px;
+      }
+      .cs-docs-arcA__hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      .cs-docs-arcA__step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .cs-docs-arcA__step:first-of-type {
+        border-top: 0;
+      }
+      .cs-docs-arcA__step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .cs-docs-arcA__step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .cs-docs-arcA__step p {
+        margin: 0 0 10px;
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      details.cs-docs-arcA__mcp {
+        margin-top: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+      .cs-docs-arcA__note {
+        padding: 12px 14px;
+        margin: 16px 0 0;
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+        border-radius: var(--cs-docs-radius);
+        background: color-mix(in oklab, var(--cs-accent) 8%, var(--cs-surface));
+        color: var(--cs-fg);
+        font-size: var(--cs-docs-text-sm);
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/connect-a-context-repo">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Connect a context repo you already have" id="hero">
+        <h1>Connect a context repo</h1>
+        <p class="lede">
+          Your team already has a context repo, or you made one on another Mac. Clone it with git,
+          then point CodeSense at the folder. CodeSense records where it is, switches to it and
+          starts watching its files. It doesn't move, copy or clone anything, and it won't commit, push
+          or merge there: you or your agents do.
+        </p>
+      </section>
+
+      <!-- =============== What & why =============== -->
+      <section data-search="Why connect vs create a context repo" id="why">
+        <h2>When to pick this path</h2>
+        <p>Connect when any of these is true:</p>
+        <ul>
+          <li>Someone on your team already shares a context repo over git.</li>
+          <li>You copied the CodeSense example into your own repo and pushed it.</li>
+          <li>You moved a context repo to a new Mac and want CodeSense to see it.</li>
+        </ul>
+        <p>
+          If none of these apply, <a href="./create-a-context-repo.html">create a context repo</a>
+          instead.
+        </p>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="Steps to connect an existing context repo" id="steps">
+        <h2>Connect it in three steps</h2>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">1</span>
+          <div>
+            <h3>Clone it, then open the menu</h3>
+            <p>
+              Clone the repo with git, or ask your agent to. Then open the context repo menu: the
+              <code>context repo / team</code> name at the top left, or
+              <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">G</span>.
+              Choose <strong>Connect a context repo…</strong>. A folder picker opens.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">2</span>
+          <div>
+            <h3>Pick the clone's top folder</h3>
+            <p>
+              Pick the folder you cloned: the one with <code>.git/</code> and <code>org.yml</code>
+              at its top. CodeSense asks <strong>Connect {name}?</strong> and says it will read and
+              write files there. Choose <strong>Connect</strong>, or
+              <strong>Choose another folder</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">3</span>
+          <div>
+            <h3>CodeSense switches to it</h3>
+            <p>
+              CodeSense records the folder in <code>~/.codesense/users/&lt;you&gt;/context-attachments.yml</code>
+              and opens it. The menu lists it next to the CodeSense Docs, and from now on
+              CodeSense opens the context repo you used last.
+            </p>
+          </div>
+        </div>
+
+        <p class="cs-docs-arcA__note">
+          <strong>Not a context repo?</strong> A folder that isn't a git checkout's top folder, or
+          has no valid <code>org.yml</code>, is refused: "This folder isn't a CodeSense context
+          repo. Pick the folder you cloned, or create a new one." If another connected repo already
+          uses the same id, the error says which <code>org.yml</code> to edit.
+        </p>
+        <p>
+          <strong>Moved it?</strong> A connected repo that's gone from its folder shows as missing.
+          Locate the folder if you moved it, or disconnect it. Disconnecting only forgets the
+          folder; every file stays.
+        </p>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to connect a context repo via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            A local agent can connect a clone, list what's connected and switch team without the
+            UI:
+          </p>
+          <pre><code>attach_context_repository({ clonePath: "/Users/you/code/acme-context" })
+list_context_attachments({})
+list_orgs_teams()
+set_active_team({ org: "acme-billing", team: "billing" })
+detach_context_repository({ orgSlug: "acme-billing" })  // forgets it; files stay</code></pre>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml schema</a>
+        ·
+        <a href="../mcp-explorer.html#tool/attach_context_repository">attach_context_repository</a>
+        ·
+        <a href="./files-on-disk.html">files on disk</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · Connect</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

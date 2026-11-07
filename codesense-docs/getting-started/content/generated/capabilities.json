@@ -1,0 +1,783 @@
+{
+  "count": 30,
+  "capabilities": [
+    {
+      "name": "sessions:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "agent",
+        "agents",
+        "commands.register",
+        "dismiss_agent_mark",
+        "focusOut",
+        "focusTerminal",
+        "gotoAgent",
+        "launchUnder",
+        "modelRates",
+        "moveWorkspace",
+        "openLauncher",
+        "openRoutineDraft",
+        "page",
+        "prefs",
+        "sessionRead",
+        "sessionUsage",
+        "sessions",
+        "setPrefs",
+        "setUiState",
+        "showMenu",
+        "showPopover",
+        "storyChanges",
+        "storyTotals",
+        "subscribe",
+        "unsubscribe",
+        "whyLine"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "sessions:send",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "runPrompt",
+        "sendPrompt",
+        "sendToSession",
+        "sendToWorkspaceTab"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "sessions:stop",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "closeTerminalTab",
+        "closeWorkspace",
+        "stopSession"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "launch",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "openTab",
+        "openWorkspace",
+        "runSkill"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "inbox:read:own",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "inbox:read:team",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "embedMessage",
+        "humanStatus",
+        "inbox",
+        "openAgentInbox",
+        "openMessage",
+        "page",
+        "roles",
+        "subscribe",
+        "unsubscribe",
+        "updates",
+        "watchAgentActivity",
+        "watchAgentInbox",
+        "watchInbox"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "page",
+          "topic": "inbox",
+          "callerScope": "team",
+          "capability": "inbox:read:team"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "inbox",
+          "callerScope": "team",
+          "capability": "inbox:read:team"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "inbox",
+          "callerScope": "team",
+          "capability": "inbox:read:team"
+        }
+      ]
+    },
+    {
+      "name": "inbox:read:all-teams",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [
+        "inboxRollup",
+        "page",
+        "subscribe",
+        "unsubscribe"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "page",
+          "topic": "inbox",
+          "callerScope": "other",
+          "capability": "inbox:read:all-teams"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "inbox",
+          "callerScope": "other",
+          "capability": "inbox:read:all-teams"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "inbox",
+          "callerScope": "other",
+          "capability": "inbox:read:all-teams"
+        }
+      ]
+    },
+    {
+      "name": "inbox:write",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "archive",
+        "loadMedia",
+        "markRead",
+        "markUnread",
+        "postMessage",
+        "react",
+        "replyAsHuman",
+        "sendAsHuman",
+        "setHumanStatus"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "records:read:own",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [
+        "page",
+        "records.collections",
+        "records.history",
+        "records.list",
+        "records.read",
+        "records.readAt",
+        "records.search",
+        "subscribe",
+        "unsubscribe"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "page",
+          "topic": "records",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.collections",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.history",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.list",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.read",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.readAt",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "records.search",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "records",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "records",
+          "collectionScope": "private",
+          "capability": "records:read:own"
+        }
+      ]
+    },
+    {
+      "name": "records:write:own",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [
+        "records.create",
+        "records.delete",
+        "records.restore",
+        "records.setFields",
+        "records.write"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "records.create",
+          "collectionScope": "private",
+          "capability": "records:write:own"
+        },
+        {
+          "verb": "records.delete",
+          "collectionScope": "private",
+          "capability": "records:write:own"
+        },
+        {
+          "verb": "records.restore",
+          "collectionScope": "private",
+          "capability": "records:write:own"
+        },
+        {
+          "verb": "records.setFields",
+          "collectionScope": "private",
+          "capability": "records:write:own"
+        },
+        {
+          "verb": "records.write",
+          "collectionScope": "private",
+          "capability": "records:write:own"
+        }
+      ]
+    },
+    {
+      "name": "records:read:team",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "page",
+        "records.collections",
+        "records.history",
+        "records.list",
+        "records.read",
+        "records.readAt",
+        "records.search",
+        "subscribe",
+        "unsubscribe"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "page",
+          "topic": "records",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "page",
+          "topic": "records",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.collections",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.collections",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.history",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.history",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.list",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.list",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.read",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.read",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.readAt",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.readAt",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.search",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "records.search",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "records",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "records",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "records",
+          "collectionScope": "team",
+          "capability": "records:read:team"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "records",
+          "collectionScope": "story",
+          "capability": "records:read:team"
+        }
+      ]
+    },
+    {
+      "name": "records:write:team",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "records.create",
+        "records.delete",
+        "records.restore",
+        "records.setFields",
+        "records.write"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "records.create",
+          "collectionScope": "team",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.create",
+          "collectionScope": "story",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.delete",
+          "collectionScope": "team",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.delete",
+          "collectionScope": "story",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.restore",
+          "collectionScope": "team",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.restore",
+          "collectionScope": "story",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.setFields",
+          "collectionScope": "team",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.setFields",
+          "collectionScope": "story",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.write",
+          "collectionScope": "team",
+          "capability": "records:write:team"
+        },
+        {
+          "verb": "records.write",
+          "collectionScope": "story",
+          "capability": "records:write:team"
+        }
+      ]
+    },
+    {
+      "name": "context:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "analyze",
+        "context",
+        "getDocDir",
+        "getEpicHandle",
+        "openFile",
+        "queryContext",
+        "validateYaml"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "context:write",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "draft",
+        "routeToContext",
+        "setField",
+        "setStatus"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "files:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "files.list",
+        "files.read",
+        "page",
+        "readWorkspace",
+        "subscribe",
+        "unsubscribe"
+      ],
+      "conditionalVerbs": [
+        {
+          "verb": "page",
+          "topic": "files",
+          "capability": "files:read"
+        },
+        {
+          "verb": "subscribe",
+          "topic": "files",
+          "capability": "files:read"
+        },
+        {
+          "verb": "unsubscribe",
+          "topic": "files",
+          "capability": "files:read"
+        }
+      ]
+    },
+    {
+      "name": "files:write",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "files.create",
+        "files.delete",
+        "files.move"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "routines:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "routine",
+        "routineResult",
+        "routineRun",
+        "routineRuns",
+        "routineStatus",
+        "routines",
+        "run",
+        "runEvidence",
+        "runWorkProduct",
+        "runs"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "routines:run",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "routineRefresh"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "routines:manage",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [
+        "routineCancel"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "repo:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "getWorkspaceStatus",
+        "openDiff",
+        "setup",
+        "worktrees"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "repo:write",
+      "teamSafe": true,
+      "messageSafe": false,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "machines:read",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "getDependencyStatus",
+        "machines"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "machines:manage",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "accounts:manage",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [
+        "setModelRate"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "dashboards:install:private",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "dashboards:publish:team",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "terminal:view",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "terminal:control",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "commands:run",
+      "teamSafe": true,
+      "messageSafe": true,
+      "verbs": [
+        "commands.list",
+        "commands.run"
+      ],
+      "conditionalVerbs": []
+    },
+    {
+      "name": "admin",
+      "teamSafe": false,
+      "messageSafe": false,
+      "verbs": [],
+      "conditionalVerbs": []
+    }
+  ],
+  "teamExcluded": [
+    "inbox:read:all-teams",
+    "records:read:own",
+    "records:write:own",
+    "accounts:manage",
+    "admin",
+    "machines:manage",
+    "dashboards:install:private",
+    "terminal:control"
+  ],
+  "messageExcluded": [
+    "records:write:team",
+    "sessions:send",
+    "sessions:stop",
+    "launch",
+    "routines:run",
+    "routines:manage",
+    "files:write",
+    "repo:write",
+    "context:write"
+  ],
+  "slotCeilings": {
+    "right-pane": [
+      "sessions:read",
+      "sessions:send",
+      "sessions:stop",
+      "launch",
+      "inbox:read:own",
+      "inbox:read:team",
+      "inbox:read:all-teams",
+      "inbox:write",
+      "records:read:own",
+      "records:write:own",
+      "records:read:team",
+      "records:write:team",
+      "context:read",
+      "context:write",
+      "files:read",
+      "files:write",
+      "routines:read",
+      "routines:run",
+      "routines:manage",
+      "repo:read",
+      "repo:write",
+      "machines:read",
+      "machines:manage",
+      "accounts:manage",
+      "dashboards:install:private",
+      "dashboards:publish:team",
+      "terminal:view",
+      "terminal:control",
+      "commands:run",
+      "admin"
+    ],
+    "dock": [
+      "sessions:read",
+      "sessions:send",
+      "sessions:stop",
+      "launch",
+      "inbox:read:own",
+      "inbox:read:team",
+      "inbox:write",
+      "records:read:team",
+      "records:write:team",
+      "context:read",
+      "context:write",
+      "files:read",
+      "files:write",
+      "routines:read",
+      "routines:run",
+      "routines:manage",
+      "repo:read",
+      "repo:write",
+      "machines:read",
+      "dashboards:publish:team",
+      "terminal:view",
+      "commands:run"
+    ],
+    "file-nav": [
+      "sessions:read",
+      "sessions:send",
+      "sessions:stop",
+      "launch",
+      "inbox:read:own",
+      "inbox:read:team",
+      "inbox:read:all-teams",
+      "inbox:write",
+      "records:read:own",
+      "records:write:own",
+      "records:read:team",
+      "records:write:team",
+      "context:read",
+      "context:write",
+      "files:read",
+      "files:write",
+      "routines:read",
+      "routines:run",
+      "routines:manage",
+      "repo:read",
+      "repo:write",
+      "machines:read",
+      "machines:manage",
+      "accounts:manage",
+      "dashboards:install:private",
+      "dashboards:publish:team",
+      "terminal:view",
+      "terminal:control",
+      "commands:run",
+      "admin"
+    ]
+  },
+  "privateRecords": {
+    "capabilities": [
+      "records:read:own",
+      "records:write:own"
+    ],
+    "excludedSlots": [
+      "centre",
+      "dock",
+      "message"
+    ],
+    "excludedScopes": [
+      "team",
+      "message"
+    ]
+  },
+  "policySource": {
+    "scopeAllows": "\n    known(capability)\n        && (!matches!(scope, \"team\" | \"message\") || !TEAM_EXCLUDED.contains(&capability))\n        && (scope != \"message\" || !MESSAGE_EXCLUDED.contains(&capability))\n",
+    "slotAllows": "\n    known(capability)\n        && (slot != \"dock\" || scope_allows(\"team\", capability))\n        && records_allows(slot, \"private\", capability)\n",
+    "recordsAllows": "\n    !matches!(capability, \"records:read:own\" | \"records:write:own\")\n        || (!matches!(slot, \"centre\" | \"dock\" | \"message\") && !matches!(scope, \"team\" | \"message\"))\n"
+  },
+  "sources": {
+    "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
+    "src-tauri/src/verbs/registry.generated.json": "5dbd84256de4d213a93eb8afd3e955063a24d4b13d33316b27b9b60491f6f3a9",
+    "src-tauri/src/verbs/registry.rs": "3e6945361b475ab01ebda7df4e029dacc86a4a51c0c56a2141249a5b4ab81317",
+    "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
+    "src-tauri/src/records/schema.rs": "24edc3966808bf25b3744c733aeb3ba731aba84bb5bf802fb8b9e491ab0d06c7"
+  }
+}

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Local ⇄ Remote parity matrix</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Parity-matrix table: layered on the shared docs tokens. */
+      .parity-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: var(--cs-docs-space-4);
+        font-size: var(--cs-docs-text-sm);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      .parity-table thead th {
+        text-align: left;
+        padding: var(--cs-docs-space-3) var(--cs-docs-space-4);
+        background: color-mix(in oklab, var(--cs-bg) 70%, var(--cs-surface));
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .parity-table tbody td {
+        padding: var(--cs-docs-space-3) var(--cs-docs-space-4);
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 60%, transparent);
+        vertical-align: top;
+      }
+      .parity-table tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .parity-table tbody tr:hover td {
+        background: color-mix(in oklab, var(--cs-bg) 60%, transparent);
+      }
+      .parity-table col.workflow {
+        width: 20%;
+      }
+      .parity-table col.local,
+      .parity-table col.remote {
+        width: 11%;
+      }
+      .parity-table col.notes {
+        width: 58%;
+      }
+      .parity-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: var(--cs-docs-text-xs);
+        white-space: nowrap;
+      }
+      .parity-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cs-docs-space-3);
+        align-items: center;
+        margin-top: var(--cs-docs-space-3);
+      }
+      .parity-notes {
+        color: var(--cs-fg);
+        line-height: 1.5;
+      }
+      .parity-notes code {
+        font-size: var(--cs-docs-text-xs);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/parity-matrix">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Local vs remote parity matrix — every workflow" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Parity matrix</span>
+        </p>
+        <h1>Local ⇄ Remote — the whole truth, one page</h1>
+      </section>
+
+      <section data-search="How to read the matrix" id="legend">
+        <p>
+          The one page where we tell the whole truth about what works, what has a caveat,
+          and what doesn't yet. Every workflow in CodeSense is listed; both machine
+          sides get a cell; the rightmost column names the caveat or gap and the
+          workaround if we have one. If a cell changes, this page is where it changes
+          first.
+        </p>
+        <div class="parity-legend">
+          <span class="cs-docs-chip cs-docs-chip--ok">✓ parity</span>
+          <span class="cs-docs-chip cs-docs-chip--warn">⚠ caveat</span>
+          <span class="cs-docs-chip cs-docs-chip--danger">✕ gap</span>
+          <span style="color: var(--cs-muted-fg); font-size: var(--cs-docs-text-xs)">
+            Caveats are documented differences you can live with; gaps are things
+            CodeSense doesn't yet do remotely at all.
+          </span>
+        </div>
+      </section>
+
+      <section data-search="Parity matrix — every workflow, local vs remote" id="matrix">
+        <h2>The matrix</h2>
+        <table class="parity-table">
+          <colgroup>
+            <col class="workflow" />
+            <col class="local" />
+            <col class="remote" />
+            <col class="notes" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Workflow</th>
+              <th>Local</th>
+              <th>Remote</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Open terminal</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                <code>open_terminal_tab</code> for local, <code>open_remote_tab</code>
+                for remote. Same args, same handle shape, same scrollback contract.
+                First remote open per account spins up the terminal server if it
+                isn't there yet.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Run an agent CLI (<code>claude</code>, <code>codex</code>)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Launch is identical (<code>launch: 'claude'</code>). Caveat: each
+                person signs in to the agent CLI on each machine; CodeSense never
+                copies agent sign-ins across machines. On the remote, the first
+                <code>--dangerously-skip-permissions</code> may show the agent's
+                one-time confirmation (answer it via <code>run_in_terminal_tab</code>).
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Run OpenCode (<code>opencode</code>)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--danger">✕</span></span></td>
+              <td class="parity-notes">
+                OpenCode runs on your Mac only, typed or launched as
+                <code>builtin/opencode</code>. Remote tabs and remote agent launches
+                run a shell, Claude Code or Codex. Workaround: run OpenCode on this Mac.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Launch a saved agent (foreground / background)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                <code>launch: { agentKey }</code> works on either side. Caveat:
+                remote launches require <code>preparedWorkspaceHandle</code> from a
+                verified hydration (not just a path), and the account's runtime +
+                sign-in must be present. The terminal server pins its identity;
+                <code>permissionMode: 'bypass'</code> needs an up-to-date server.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Hydrate a worktree</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                Hydration runs on whichever machine the workspace targets, and only
+                when an agent launches or asks. The first remote open performs the git
+                clone/fetch on the remote; later opens reuse that worktree. Same frontmatter;
+                same <code>depends_on</code>; same handle contract.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Open workspace</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                <code>open_workspace</code> picks the machine when the workspace is
+                remote; the resulting workspace handle addresses tabs and files the
+                same way local workspaces do.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Run a routine</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Routines execute in whichever account owns the triggering workspace.
+                Caveat: cron-style schedules depend on the owner being online — your
+                Mac for local-owned routines, the remote account's terminal server
+                for remote-owned ones. If you want "always on", own the routine on
+                the always-on machine.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Serve a dashboard (HTML viewer)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                The viewer renders in the CodeSense window on your Mac regardless of
+                where the context lives. For a remote-owned context repo, dashboard
+                HTML is streamed through the terminal-server bridge; the viewer's
+                <code>http://localhost:{port}</code> origin and
+                <code>window.codesense.*</code> contract are unchanged.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Write to context (edit a file)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Editor saves (⌘S) are immediate on both sides. Caveat: optimistic-lock
+                conflicts are reported loudly, and remote source refresh runs on a
+                5–10 s poll by default (15–25 s for the changeset view). Enable
+                <code>git config core.fsmonitor true</code> on the remote to tighten.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Push the context repo</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                CodeSense never pushes. An agent you ask runs <code>git</code> where the
+                context repo's clone is, with the credentials already on that machine,
+                and reports with <code>report_context_sync</code>. A remote workspace
+                sends its edits back with <code>reverse_sync_worktree</code> first.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Pull the context repo</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                Same shape as push: an agent runs it. A conflict opens a card on the
+                status button of the Mac that holds the clone, whichever side caused it.
+              </td>
+            </tr>
+            <tr>
+              <td><strong><code>inbox_idle</code> wake</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td class="parity-notes">
+                The idle detector runs where the inbox lives. Remote inboxes wake
+                their owning account's agents via the terminal server, so an agent
+                you left running on the build box is prodded exactly the way a local
+                one would be.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Routine schedule (cron-shaped triggers)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Scheduled triggers fire in the terminal server's wall clock on the
+                owning side. Caveat: if the Mac is asleep for a local-scheduled
+                routine, that fire is skipped (standard Mac behavior). Remote
+                schedules on an always-on box don't skip. Workaround: own
+                "must-fire" schedules on the always-on machine.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>File watching (fsevents / fsmonitor)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Local uses native fsevents (instant). Remote uses a 5 s poll
+                (<code>&lt;5K files</code>) or 10 s poll (monorepo); tightenable by
+                turning on <code>git fsmonitor</code> on the remote. Deliberate
+                design — not a bug — but it's a caveat.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Keychain / passphrase storage</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
+              <td class="parity-notes">
+                Your Mac's keychain holds the handles CodeSense uses to unlock keys.
+                The remote account uses whatever credential store is native there
+                (<code>gnome-keyring</code> / <code>libsecret</code> / none).
+                Agent-CLI logins live separately per account.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Host-agent (process broker)</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--danger">✕</span></span></td>
+              <td class="parity-notes">
+                <strong>By design.</strong> The host-agent runs exactly once, on the
+                Mac you run CodeSense on. Remote machines use the
+                terminal server for the equivalent brokering. No workaround needed
+                because every workflow the host-agent fronts has a terminal-server
+                equivalent — this gap is where parity is defined, not broken.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>System notifications / Finder reveal</strong></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
+              <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--danger">✕</span></span></td>
+              <td class="parity-notes">
+                macOS-only affordances. On the remote, "reveal in Finder" is
+                replaced with "open path in a terminal tab" + the Open-With list on
+                the viewer side. Not planned to backfill.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Try this now — list sessions across machines" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List every agent session across every machine so you can see parity in
+          action: local and remote sessions side by side with the same shape (a session
+          on a disconnected machine reads <code>offline</code>).
+        </p>
+        <cs-try-this
+          verb="sessions"
+          args="{}"
+          label="List sessions across all machines"
+          confirm=""
+        ></cs-try-this>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./terminal-tabs.html">← Terminal tabs</a> ·
+        <a href="./troubleshooting.html">Troubleshooting →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Parity matrix</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

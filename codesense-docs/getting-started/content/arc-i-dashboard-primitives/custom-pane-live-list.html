@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Add a custom pane with a live list and a command</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/custom-pane-live-list">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Add a custom pane with a live list and a command">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Add a custom pane with a live list and a command</h1>
+        <p class="lede">
+          Five steps from a single HTML file to a visible, verifiable pane. Start with the golden
+          live sessions example; no source checkout or bundler is needed.
+        </p>
+      </section>
+      <section id="write" data-search="1. Write the HTML">
+        <h2>1. Write the HTML</h2>
+        <p>
+          Read or copy
+          <a href="../examples/dashboards/live-list-with-command.html"
+            >live-list-with-command.html</a
+          >
+          from the docs team's <code>content/examples/dashboards/</code>. It subscribes to live
+          sessions, exposes a running-only filter command and uses native agent row menus. It
+          handles initial/empty/error states, narrow slot context, focus/Escape and flush. Keep its
+          declarations and handlers before <code>ready()</code>.
+        </p>
+        <p>
+          Adjust it using the generated SDK, declarations, capabilities, slots, LiveHub and token
+          references below. Call
+          <code
+            >validate_live_data_doc {content: "…", path:"panes/live-list-with-command.html"}</code
+          >
+          and resolve blocking findings.
+        </p>
+      </section>
+      <section id="stable-rows" data-search="Stable virtualList rows layoutKey update live fields">
+        <h2>Keep live rows stable</h2>
+        <p>
+          Load <code>/kit/v1/virtual-list.js</code> after the kit. Each row needs a stable
+          <code>id</code>. Split its layout payload from live fields: <code>layoutKey(row)</code>
+          returns a string or number describing the markup, while <code>update(element, row, index)</code>
+          patches every reused row on each paint. Initialize the same fields in <code>render</code>.
+          Heartbeats, counts and status changes then keep hover, focus and selection on the same node.
+        </p>
+        <pre><code>&lt;div id="sessions" style="height:240px;overflow:auto"&gt;&lt;/div&gt;
+&lt;script src="/kit/v1/kit.js"&gt;&lt;/script&gt;
+&lt;script src="/kit/v1/virtual-list.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const kit = codesense.kit;
+  function patch(el, row, index) {
+    el.querySelector(".name").textContent = row.displayName || row.id;
+    el.querySelector(".status").textContent = row.effectiveStatus || row.state;
+    el.dataset.index = String(index);
+  }
+  const list = kit.virtualList({
+    container: document.getElementById("sessions"),
+    rows: [], rowHeight: 28,
+    layoutKey: row =&gt; row.id,
+    render(row, index) {
+      const el = document.createElement("button");
+      el.append(kit.h("span", {class: "name"}), " · ", kit.h("span", {class: "status"}));
+      patch(el, row, index);
+      return el;
+    },
+    update: patch
+  });
+  codesense.subscribe("sessions", {onChange: snapshot =&gt; list.setRows(snapshot.snapshot)});
+  codesense.ready();
+&lt;/script&gt;</code></pre>
+        <p>
+          This layout always has the same two spans, so its stable id is sufficient. If your markup
+          changes, return <code>JSON.stringify([row.id, row.kind, row.hasActions])</code> instead.
+          The kit compares the returned value as a string and rebuilds only that row when it changes.
+          <code>update</code> receives the current index after an insert or remove; indexes never
+          determine row versions. Tree ARIA attributes and roving tab stops are refreshed each paint.
+          Omit <code>layoutKey</code> to rebuild on any row payload change (the default).
+        </p>
+        <p>
+          The same options work with <code>topic: "sessions"</code> instead of local <code>rows</code>;
+          the kit requests the visible hub window. For an unwindowed list,
+          <code>kit.keyed(container, items, {key, render, version, update})</code> patches same-key,
+          same-version nodes with <code>update(element, item)</code>; changed versions call
+          <code>render</code>. Keep event handlers reading the current patched row when their
+          behavior depends on live fields.
+        </p>
+      </section>
+      <section id="save" data-search="2. Save with pane_write">
+        <h2>2. Save with pane_write</h2>
+        <pre><code>pane_write {org:&quot;your-org/repo&quot;, team:&quot;your-team&quot;, scope:&quot;team&quot;,
+  id:&quot;live-list-with-command&quot;, html:&quot;…the complete golden HTML…&quot;}</code></pre>
+        <p>
+          Use your actual org/team values. A private variant uses <code>scope:"personal"</code> with
+          <code>org</code> and no team. This writes the pane file and returns its absolute path; use
+          that path instead of guessing a backing directory.
+        </p>
+      </section>
+      <section id="open" data-search="3. Open with pane_open">
+        <h2>3. Open with pane_open</h2>
+        <pre><code>pane_open {org:&quot;your-org/repo&quot;, team:&quot;your-team&quot;, id:&quot;live-list-with-command&quot;}
+pane_list {org:&quot;your-org/repo&quot;, team:&quot;your-team&quot;}</code></pre>
+        <p>
+          Check that <code>placed</code> is true. If it is false, follow the returned reason and
+          switch to a team that shows the pane. Pick its current absolute <code>path</code> from
+          <code>pane_list</code>. The open tool reveals a right pane; dock replacement selection is
+          in Settings.
+        </p>
+      </section>
+      <section id="verify" data-search="4. Verify visible behavior">
+        <h2>4. Verify visible behavior</h2>
+        <pre><code>read_rendered_document {path:&quot;&lt;absolute pane_list path&gt;&quot;, format:&quot;text&quot;}
+command_list {}
+command_run {id:&quot;&lt;the returned dashboard/command id for toggle-filter&gt;&quot;}
+read_rendered_document {path:&quot;&lt;the same absolute pane path&gt;&quot;, format:&quot;text&quot;}</code></pre>
+        <p>
+          The first capture should show “All sessions”; after running the command it should show
+          “Running only” and the changed row count/list. This feedback works even when the team has
+          no sessions. Commands are delivered after readiness. Allow capture after the command has
+          rendered; if necessary take another point-in-time read. A refusal explains whether to
+          open/show the pane or fix its fallback. Wait beyond the 30-second startup deadline and
+          capture again to check it stays live.
+        </p>
+        <p>
+          Also try the visible filter button, its configured chord and an agent row's native menu.
+          Those human interactions need a real-app walk; report them as unproven until performed.
+          See <a href="./testing-and-conformance.html">proof boundaries</a>.
+        </p>
+      </section>
+      <section id="share" data-search="5. Share the file">
+        <h2>5. Share the file</h2>
+        <p>
+          A team pane is a file in the context repository. Review the diff, then share through
+          whatever git sync workflow you and the user choose. CodeSense provides git state and sync
+          tools; the agent decides when to commit and push. Private panes remain in the person's
+          space unless deliberately copied to a team. Keep the validation and visible before/after
+          evidence with your handoff.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

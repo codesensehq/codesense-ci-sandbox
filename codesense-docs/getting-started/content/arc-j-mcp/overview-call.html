@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="compass" />
+    <title>CodeSense — codesense_overview</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/overview-call"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-j-mcp/overview-call"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/overview-call"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      pre code {
+        font-family: var(--cs-font-mono);
+      }
+      .arcj-shape {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 13.5px;
+      }
+      .arcj-shape th,
+      .arcj-shape td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arcj-shape th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .arcj-shape td:first-child {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        white-space: nowrap;
+        width: 180px;
+      }
+      .arcj-shape td code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/overview-call">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="codesense_overview — the universal first call that answers most agent questions on its own"
+        id="hero"
+      >
+        <h1>Start every session here.</h1>
+        <p class="lede">
+          <code>codesense_overview</code> is the one call every agent should make first. One
+          request, no arguments, nothing writes. The reply names every org, team, source repo,
+          machine, open session, routine, and the active one of each. Most tasks are answered from
+          this reply alone.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A single call on the left expands into a block of structured context on the right: orgs, teams, machines, source repos, sessions, routines, inboxes."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-ov"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Left: call -->
+            <g transform="translate(30 140)">
+              <rect
+                width="200"
+                height="80"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-accent) 14%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="100"
+                y="30"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                codesense_overview
+              </text>
+              <text
+                x="100"
+                y="54"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                {}
+              </text>
+              <text
+                x="100"
+                y="70"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                read-only, no args
+              </text>
+            </g>
+
+            <path
+              d="M234 180 L 290 180"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.5"
+              fill="none"
+              marker-end="url(#arcj-arrow-ov)"
+            />
+
+            <!-- Right: reply body -->
+            <g transform="translate(300 30)">
+              <rect
+                width="310"
+                height="300"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                reply (abridged)
+              </text>
+              <text
+                x="14"
+                y="46"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                user: you@example.com
+              </text>
+              <text
+                x="14"
+                y="66"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                machine: dev-mbp
+              </text>
+              <text
+                x="14"
+                y="90"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                orgs:
+              </text>
+              <text
+                x="26"
+                y="106"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                acme · codesense-docs
+              </text>
+              <text
+                x="14"
+                y="128"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                teams[active]:
+              </text>
+              <text
+                x="26"
+                y="144"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                acme / default
+              </text>
+              <text
+                x="14"
+                y="166"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                source_repos:
+              </text>
+              <text
+                x="26"
+                y="182"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                acme/codesense (bound)
+              </text>
+              <text
+                x="14"
+                y="204"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                sessions:
+              </text>
+              <text
+                x="26"
+                y="220"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                3 open · 2 headless · 1 tab
+              </text>
+              <text
+                x="14"
+                y="242"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                routines:
+              </text>
+              <text
+                x="26"
+                y="258"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                6 defined · 2 running
+              </text>
+              <text
+                x="14"
+                y="280"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                inboxes:
+              </text>
+              <text
+                x="26"
+                y="296"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                builder:7 reviewer:1 resolver:0
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What codesense_overview is for" id="why">
+        <h2>Why it's the universal starting point</h2>
+        <p>
+          Every other CodeSense tool is parameterised by things like
+          <em>org</em>, <em>team</em>, <em>source repo path</em>, <em>session id</em>.
+          <code>codesense_overview</code> is the one call that tells the agent all of those at once,
+          in one shot. Skip it and the agent has to probe — <code>list_orgs_teams</code>,
+          <code>describe_setup</code>, <code>list_sessions</code>, <code>routine_list</code> — four
+          calls to get what overview returns in one.
+        </p>
+        <p>
+          It's in <code>tools/list</code> like every tool, and the server's instructions name it
+          first, so an agent knows to start there.
+        </p>
+      </section>
+
+      <section data-search="The reply shape — what fields overview returns" id="shape">
+        <h2>What the reply says</h2>
+        <table class="arcj-shape">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>What it is</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>user</td>
+              <td>
+                The user handle this process is running as. Useful for self-referential queries ("my
+                teams", "my inboxes").
+              </td>
+            </tr>
+            <tr>
+              <td>machine</td>
+              <td>
+                The machine CodeSense is on — the name you'll see in a remote-session row elsewhere.
+              </td>
+            </tr>
+            <tr>
+              <td>orgs</td>
+              <td>
+                Every org the user has synced to this Mac. Each has a
+                <code>handle</code> and a list of teams.
+              </td>
+            </tr>
+            <tr>
+              <td>teams</td>
+              <td>
+                Every team across all orgs. <code>active</code> flags the one dashboards and new
+                sessions default to.
+              </td>
+            </tr>
+            <tr>
+              <td>source_repos</td>
+              <td>
+                Each team's source repos — remote key, bound local path if any, whether a worktree
+                is open.
+              </td>
+            </tr>
+            <tr>
+              <td>sessions</td>
+              <td>
+                Open agent sessions — tab or headless, foreground or background, with unread counts.
+              </td>
+            </tr>
+            <tr>
+              <td>routines</td>
+              <td>Routines the team has, which are armed, which fired recently.</td>
+            </tr>
+            <tr>
+              <td>inboxes</td>
+              <td>
+                Role queue depths at a glance — <code>builder: 7</code>, <code>reviewer: 1</code>, …
+              </td>
+            </tr>
+            <tr>
+              <td>remote_machines</td>
+              <td>Remote Macs this account can reach — hostname, last-seen, account.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Fields the user doesn't have anything in come back empty — the shape is stable, you don't
+          branch on presence.
+        </p>
+      </section>
+
+      <section data-search="A reply, hand-shortened" id="example">
+        <h2>A reply, hand-shortened</h2>
+        <pre><code>{
+  "user": "you@example.com",
+  "machine": "dev-mbp",
+  "orgs": [
+    { "handle": "acme", "teams": ["default", "docs"] },
+    { "handle": "codesense-docs", "teams": ["getting-started"] }
+  ],
+  "teams": {
+    "active": { "org": "acme", "team": "default" },
+    "all": [
+      { "org": "acme",           "team": "default",         "role": "member" },
+      { "org": "acme",           "team": "docs",            "role": "member" },
+      { "org": "codesense-docs", "team": "getting-started", "role": "read-only" }
+    ]
+  },
+  "source_repos": [
+    { "team": "default", "owner": "acme", "repo": "codesense",
+      "localPath": "/Users/dev/code/codesense", "worktreeOpen": true }
+  ],
+  "sessions": [
+    { "id": "s-01", "runtime": "claude", "launch": "foreground", "unread": 0 },
+    { "id": "s-02", "runtime": "claude", "launch": "headless",   "unread": 3 }
+  ],
+  "routines": [
+    { "name": "builder-wake",  "armed": true,  "lastFired": "2026-10-05T11:22Z" },
+    { "name": "reviewer-wake", "armed": true,  "lastFired": null }
+  ],
+  "inboxes":  { "builder": 7, "reviewer": 1, "resolver": 0, "analyst": 2 }
+}</code></pre>
+      </section>
+
+      <section data-search="When overview is enough and when it isn't" id="when-enough">
+        <h2>When overview is enough on its own</h2>
+        <ul>
+          <li>
+            <strong>Any read of structure.</strong> "Which teams does this user have?" — right
+            there.
+          </li>
+          <li>
+            <strong>Routing a message.</strong> You know the role queues exist and have depth;
+            <code>send_message</code> takes it from there.
+          </li>
+          <li><strong>Picking the active team.</strong> It's named — no second call to confirm.</li>
+        </ul>
+        <p>
+          When <strong>not</strong> enough: you need per-item detail — every story in the pipeline,
+          every message in an inbox, every field of one agent. Then search for the right verb
+          (<code>query_context</code>, <code>inbox_list</code>, <code>agent_get</code>) and call it.
+        </p>
+      </section>
+
+      <section data-search="Try this now — run overview against the live app" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Run the real call. Read-only; nothing writes. The reply is big — the "Try this" sheet
+          shows the headings and lets you expand each.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_overview", "args": {}}'
+          label="Run codesense_overview"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// The one call every agent should make first.
+codesense.invoke('codesense_overview', {})
+
+// Everything else branches off the reply:
+const { teams, source_repos, sessions, inboxes } = overview
+
+// Example: route a message to the busiest role.
+const busiest = Object.entries(inboxes)
+  .sort(([, a], [, b]) =&gt; b - a)[0][0]
+codesense.invoke('send_message', { to: `role:${busiest}`, body: '…' })</code></pre>
+          <p>
+            Deep-link into the explorer:
+            <a href="../mcp-explorer.html#tool/codesense_overview"
+              >mcp-explorer#tool/codesense_overview</a
+            >.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./progressive-discovery.html">Progressive discovery</a> · Next:
+        <a href="./finding-a-tool.html">codesense_search_tools</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · codesense_overview</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

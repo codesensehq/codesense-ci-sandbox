@@ -1,0 +1,555 @@
+# Canonical 14-phase CodeSense SDLC. factory-playbook.html and the arc-H content pages
+# render from it. Build-time check validates both
+# consumers reference the same keys. Schema: ./schemas/factory-phase.schema.json.
+#
+# `workedExample` ties each row to the real sample epic so the dashboard
+# demonstrates every phase against the same shipping artifact.
+
+phases:
+  - phase: 1
+    group: Plan
+    name: Idea
+    agent:
+      name: Mary
+      role: analyst
+      icon: compass
+    skill: bmad-forge-idea
+    mcpTools:
+      - query_context
+    inboxRole: analyst
+    trigger: manual
+    dashboard: kickoff-console.html
+    agentYaml: |
+      id: mary-analyst
+      name: Mary (analyst)
+      runtime: claude
+      description: Turns a rough idea into a sharp problem statement.
+      startup:
+        - .claude/skills/bmad-brainstorming/
+        - .claude/skills/bmad-forge-idea/
+      default_prompt: /bmad-forge-idea
+      revision: 1
+    routineYml: |
+      # n/a — ideation is manual, not scheduled.
+    whatGoesWrong: |
+      Jumping to a solution before the problem is sharp. If the agent writes a
+      SPEC in this phase it is proof the brainstorm was skipped. Escalation: a
+      quick impeccable-shaped critique that reframes the problem.
+    workedExample: |
+      Mary read a human's inbox note ("one-click kill from the DAG please") and
+      produced DEMO as a 5-story epic — the smallest shipping shape that
+      proves the primitive end to end.
+
+  - phase: 2
+    group: Plan
+    name: Spec
+    agent:
+      name: Mary
+      role: analyst
+      icon: file-text
+    skill: bmad-spec
+    mcpTools:
+      - query_context
+    inboxRole: analyst
+    trigger: manual
+    dashboard: pipeline-graph.html
+    agentYaml: |
+      id: mary-analyst
+      name: Mary (analyst)
+      runtime: claude
+      description: Distills an idea into a spec.
+      startup:
+        - .claude/skills/bmad-spec/
+      default_prompt: /bmad-spec
+      revision: 1
+    routineYml: |
+      # n/a — spec distillation is interactive.
+    whatGoesWrong: |
+      A spec that captures the solution instead of the invariants. The next
+      agent (architect) spots this when it tries to project the spec into a
+      design. Escalation: run bmad-review on the spec with the structure lens.
+    workedExample: |
+      Spec kernel: "a running agent must be killable from the DAG in ≤ 1 click,
+      with graceful then forced shutdown, remembered across relaunch, and shown
+      live on the DAG without reload."
+
+  - phase: 3
+    group: Design
+    name: Architecture
+    agent:
+      name: Winston
+      role: architect
+      icon: layers
+    skill: bmad-architecture
+    mcpTools:
+      - apply_canvas
+      - render_canvas
+    inboxRole: architect
+    trigger: manual
+    dashboard: architecture.html
+    agentYaml: |
+      id: winston-architect
+      name: Winston (architect)
+      runtime: claude
+      description: Projects a spec into an architecture spine.
+      startup:
+        - .claude/skills/bmad-architecture/
+      default_prompt: /bmad-architecture
+      revision: 1
+    routineYml: |
+      # n/a — architecture is produced on demand.
+    whatGoesWrong: |
+      An architecture that lists every file instead of the invariants that
+      survive refactors. Fix: strip to the spine. Escalation: pair with Mary
+      on the invariant extraction.
+    workedExample: |
+      Winston drew the kill-ladder as a sequence diagram (SIGTERM → wait →
+      SIGKILL) and the per-machine kill_hold flag — DEMO's ARCHITECTURE
+      is three bullet points plus one excalidraw.
+
+  - phase: 4
+    group: Design
+    name: UX design
+    agent:
+      name: Sally
+      role: designer
+      icon: palette
+    skill: impeccable
+    mcpTools:
+      - apply_canvas
+      - render_canvas
+    inboxRole: designer
+    trigger: manual
+    dashboard: design-canvas
+    agentYaml: |
+      id: sally-ux
+      name: Sally (ux)
+      runtime: claude
+      description: Designs and critiques the UI.
+      startup:
+        - .claude/skills/impeccable/
+      revision: 1
+    routineYml: |
+      # n/a — UX runs interactively.
+    whatGoesWrong: |
+      Shipping designs with no reduced-motion branch, or without touch-target
+      sizing. CodeSense agents call this out automatically. Escalation: re-run
+      impeccable with its accessibility audit.
+    workedExample: |
+      Sally produced the kill-button mock + the confirmation modal spec — the
+      "Kill agent {id}?" copy and the reduced-motion plain-text fallback both
+      came out of this phase.
+
+  - phase: 5
+    group: Plan
+    name: Story graph
+    agent:
+      name: John
+      role: pm
+      icon: list-tree
+    skill: bmad-create-epics-and-stories
+    mcpTools:
+      - get_story_format
+      - validate_story
+      - query_context
+    inboxRole: pm
+    trigger: manual
+    dashboard: story-board.html
+    agentYaml: |
+      id: john-pm
+      name: John (pm)
+      runtime: claude
+      description: Slices a design into stories with depends_on wiring.
+      startup:
+        - planning/
+      revision: 1
+    routineYml: |
+      # n/a — stories are authored on demand.
+    whatGoesWrong: |
+      A fan-out of parallel stories that all touch the same file (merge pain)
+      or a long chain with no genuine parallelism (slow). Read the depends_on
+      graph before the sprint starts, and run validate_story on every story so
+      a missing source_repo or an unresolvable depends_on id shows up early.
+    workedExample: |
+      John wrote DEMO-1..5 as "one root, four parallel siblings."
+      DEMO-1 has no dependencies; the four siblings each depend only on it
+      and do not touch the same files, so they can be built in parallel
+      worktrees.
+
+  - phase: 6
+    group: Plan
+    name: Sprint plan
+    agent:
+      name: John
+      role: pm
+      icon: calendar
+    skill: bmad-sprint-planning
+    mcpTools:
+      - query_context
+    inboxRole: pm
+    trigger: manual
+    dashboard: sprint-analysis.html
+    agentYaml: |
+      id: john-pm
+      name: John (pm)
+      runtime: claude
+      description: Plans the sprint from the story graph.
+      startup:
+        - .claude/skills/bmad-sprint-planning/
+      default_prompt: /bmad-sprint-planning
+      revision: 1
+    routineYml: |
+      # n/a — sprint planning is interactive.
+    whatGoesWrong: |
+      A sprint committed to more points than the team's rolling velocity. The
+      dashboard shows carried-over points from the prior sprint; a sprint plan
+      that ignores them underdelivers predictably.
+    workedExample: |
+      Sprint FAKE-S1 committed 12 points across 5 stories, with DEMO-1 (3
+      points) marked done ahead of time and DEMO-5 (3 points) flagged
+      blocked up front. Delivered 3; carrying 9 forward if the blocker lands.
+
+  - phase: 7
+    group: Design
+    name: ATDD (optional)
+    agent:
+      name: Murat
+      role: tea
+      icon: shield-check
+    skill: bmad-testarch-atdd
+    mcpTools:
+      - query_context
+    inboxRole: tea
+    trigger: manual
+    dashboard: pipeline-graph.html
+    agentYaml: |
+      id: murat-tea
+      name: Murat (tea)
+      runtime: claude
+      description: Writes red-phase acceptance tests before the build.
+      startup:
+        - .claude/skills/bmad-testarch-atdd/
+      default_prompt: /bmad-testarch-atdd
+      revision: 1
+    routineYml: |
+      # n/a — acceptance tests are authored up front, before any build worker claims the story.
+    whatGoesWrong: |
+      Red-phase tests that assert implementation details, not behaviour. The
+      build phase then rewrites them. Escalation: red-phase review with
+      bmad-review (verification-gap lens).
+    workedExample: |
+      Murat produced a Playwright-shaped red test for DEMO-2: "click a
+      running node's kill button, assert the modal, confirm, assert the node
+      shows stopping." Red before DEMO-1 even landed.
+
+  - phase: 8
+    group: Build
+    name: Build (parallel)
+    agent:
+      name: Amelia
+      role: builder
+      icon: hammer
+    skill: bmad-build
+    mcpTools:
+      - query_context
+      - register_role
+      - claim_role_messages
+      - apply_canvas
+    inboxRole: builder
+    trigger: role_pending
+    dashboard: agent-dag.html
+    agentYaml: |
+      id: amelia-builder
+      name: Amelia (builder)
+      runtime: claude
+      description: Builds one story in its own worktree and opens a PR.
+      startup:
+        - .claude/skills/bmad-build/
+      launch: foreground
+      revision: 1
+    routineYml: |
+      # config/agents/amelia-builder/routines/builder-claim/routine.yml
+      id: builder-claim
+      name: Start a builder
+      owner: codesense
+      mode: fresh
+      task: |
+        A message is waiting in the builder role's queue
+        (message {{trigger.message_id}}). Join the role with register_role,
+        claim the message with claim_role_messages and build the story it names with /bmad-build.
+      where:
+        kind: team_workspace
+        machine: local
+      triggers:
+        - event:
+            kind: role_pending
+      policy:
+        max_runtime: 30m
+      runs_on: each_mac
+      revision: 1
+    whatGoesWrong: |
+      Two builders claim the same story (dedupe gap) or a builder worktree
+      pollutes another's. CodeSense's inbox role claim-and-ack serializes;
+      per-story worktree isolates. Escalation: the sprint analyst audits the
+      agent-dag for overlap and reclaims abandoned work.
+    workedExample: |
+      Amelia claimed DEMO-2 and DEMO-3 in parallel worktrees, finished
+      DEMO-1 solo on day two. DEMO-5 she scaffolded then marked blocked
+      on the UX decision from phase 4.
+
+  - phase: 9
+    group: Build
+    name: Decisions
+    agent:
+      name: Resolver
+      role: resolver
+      icon: scale
+    skill: bmad-loop-resolve
+    mcpTools:
+      - query_context
+      - register_role
+      - claim_role_messages
+    inboxRole: resolver
+    trigger: role_pending
+    dashboard: agent-inbox-console.html
+    agentYaml: |
+      id: resolver
+      name: Resolver
+      runtime: claude
+      description: Settles escalations against the frozen spec.
+      startup:
+        - .claude/skills/bmad-loop-resolve/
+      launch: foreground
+      revision: 1
+    routineYml: |
+      # config/agents/resolver/routines/resolver-claim/routine.yml
+      id: resolver-claim
+      name: Start the resolver
+      owner: codesense
+      mode: fresh
+      task: |
+        A message is waiting in the resolver role's queue
+        (message {{trigger.message_id}}). Join the role with register_role,
+        claim the message with claim_role_messages and work it with /bmad-loop-resolve.
+      where:
+        kind: team_workspace
+        machine: local
+      triggers:
+        - event:
+            kind: role_pending
+      policy:
+        max_runtime: 30m
+      runs_on: each_mac
+      revision: 1
+    whatGoesWrong: |
+      The resolver answers without reading the spec, and a wrong answer
+      compounds. Mitigation: bmad-loop-resolve forces the resolver to echo
+      back the frozen spec before deciding.
+    workedExample: |
+      Amelia escalated DEMO-3's PermissionDenied semantics. The human
+      resolver said "the session owner's principal is the admin check" — no
+      new agent.yaml field — and Amelia resumed in minutes, not days.
+
+  - phase: 10
+    group: Verify
+    name: Review
+    agent:
+      name: Winston
+      role: reviewer
+      icon: eye
+    skill: bmad-code-review
+    mcpTools:
+      - query_context
+      - register_role
+      - claim_role_messages
+    inboxRole: reviewer
+    trigger: role_pending
+    dashboard: pipeline-graph.html
+    agentYaml: |
+      id: winston-reviewer
+      name: Winston (reviewer)
+      runtime: claude
+      description: Reviews PRs with the multi-lens review.
+      startup:
+        - .claude/skills/bmad-code-review/
+        - .claude/skills/bmad-review/
+      launch: foreground
+      revision: 1
+    routineYml: |
+      # config/agents/winston-reviewer/routines/reviewer-claim/routine.yml
+      id: reviewer-claim
+      name: Start a reviewer
+      owner: codesense
+      mode: fresh
+      task: |
+        A message is waiting in the reviewer role's queue
+        (message {{trigger.message_id}}). Join the role with register_role,
+        claim the message with claim_role_messages and review the PR it names with /bmad-code-review.
+      where:
+        kind: team_workspace
+        machine: local
+      triggers:
+        - event:
+            kind: role_pending
+      policy:
+        max_runtime: 30m
+      runs_on: each_mac
+      revision: 1
+    whatGoesWrong: |
+      Nitpick-only reviews that drag through revision cycles. The multi-lens
+      review (bmad-review) forces the structural lens up front; a reviewer
+      stuck in nits is flagged by the retrospective.
+    workedExample: |
+      Winston reviewed DEMO-2's PR and surfaced two findings (focus trap +
+      reduced-motion). Posted as a structured review message with per-finding
+      file links — Amelia replied with a fix plan in 18 minutes.
+
+  - phase: 11
+    group: Verify
+    name: QA
+    agent:
+      name: Murat
+      role: qa
+      icon: flask
+    skill: bmad-qa-generate-e2e-tests
+    mcpTools:
+      - query_context
+    inboxRole: qa
+    trigger: manual
+    dashboard: sprint-analysis.html
+    agentYaml: |
+      id: murat-qa
+      name: Murat (qa)
+      runtime: claude
+      description: Generates end-to-end tests for a release candidate.
+      startup:
+        - .claude/skills/bmad-qa-generate-e2e-tests/
+        - .claude/skills/bmad-testarch-nfr/
+      revision: 1
+    routineYml: |
+      # n/a — QA is run against a release candidate, not every commit.
+    whatGoesWrong: |
+      End-to-end tests that assume the current data shape and break on seed
+      data changes. Fix: tests must query real primitives (query_context), not
+      hard-code story ids.
+    workedExample: |
+      Murat generated 4 Playwright tests for DEMO-1..3 (not 4 or 5 — those
+      were still in flight). Each test loads the sample-source-repo seeded
+      state, triggers the kill, asserts the DAG transition.
+
+  - phase: 12
+    group: Verify
+    name: Retro
+    agent:
+      name: Mary
+      role: analyst
+      icon: rotate-cw
+    skill: bmad-retrospective
+    mcpTools:
+      - query_context
+    inboxRole: analyst
+    trigger: manual
+    dashboard: pipeline-graph.html
+    agentYaml: |
+      id: mary-analyst
+      name: Mary (analyst)
+      runtime: claude
+      description: Runs the retrospective.
+      startup:
+        - .claude/skills/bmad-retrospective/
+      default_prompt: /bmad-retrospective
+      revision: 1
+    routineYml: |
+      # n/a — retros are deliberate, not scheduled.
+    whatGoesWrong: |
+      A retro that generates feel-good bullets, no owned actions. Mitigation:
+      bmad-retrospective requires every finding to carry an owner and a due
+      date, or the finding is sent back.
+    workedExample: |
+      Mary ran the retro after DEMO-1 shipped (parallel to the rest). One
+      finding: the kill ladder's grace period default was wrong (3 s was too
+      short for Node agents mid-await). Owner: Amelia, due: DEMO-4.
+
+  - phase: 13
+    group: Ship
+    name: Ship
+    agent:
+      name: Amelia
+      role: builder
+      icon: ship
+    skill: bmad-build
+    mcpTools:
+      - preview_reverse_sync_worktree
+      - reverse_sync_worktree
+    inboxRole: builder
+    trigger: manual
+    dashboard: release-doc
+    agentYaml: |
+      id: amelia-builder
+      name: Amelia (builder)
+      runtime: claude
+      description: Builds one story in its own worktree and opens a PR.
+      startup:
+        - .claude/skills/bmad-build/
+      revision: 1
+    routineYml: |
+      # n/a — shipping is a human-authorized moment, not a schedule.
+    whatGoesWrong: |
+      A ship that never publishes the workspace's context edits. Nothing
+      publishes them on its own, so they stay on the author's machine until
+      an agent calls preview_reverse_sync_worktree, then reverse_sync_worktree.
+    workedExample: |
+      Amelia previewed DEMO-1's workspace edits with
+      preview_reverse_sync_worktree, published them with reverse_sync_worktree,
+      then asked an agent to commit and push the context repo — the retro
+      note from phase 12 went out in the same push.
+
+  - phase: 14
+    group: Loop
+    name: Loop
+    agent:
+      name: Any
+      role: resolver
+      icon: refresh-cw
+    skill: bmad-loop-sweep
+    mcpTools:
+      - query_context
+      - signal_done
+    inboxRole: resolver
+    trigger: schedule
+    dashboard: routines-console.html
+    agentYaml: |
+      id: loop-sweeper
+      name: Loop sweeper
+      runtime: claude
+      description: Triages the deferred-work ledger.
+      startup:
+        - .claude/skills/bmad-loop-sweep/
+      launch: headless
+      revision: 1
+    routineYml: |
+      # config/agents/loop-sweeper/routines/loop-sweep/routine.yml
+      id: loop-sweep
+      name: Sweep the deferred-work ledger
+      owner: codesense
+      mode: fresh
+      task: |
+        Run /bmad-loop-sweep over the deferred-work ledger, then call
+        signal_done with the partition counts.
+      where:
+        kind: team_workspace
+      triggers:
+        - schedule:
+            cron: "0 */6 * * *"
+            tz: UTC
+      policy:
+        max_runtime: 30m
+      revision: 1
+    whatGoesWrong: |
+      A loop that never terminates — "did everything, nothing to carry" is a
+      valid output. If a sweep always finds work, the planning phase is
+      underweighted. Escalation: a retro into phase 6 cadence.
+    workedExample: |
+      The loop sweep after sprint FAKE-S1 flagged DEMO-5 for the next sprint
+      with the UX decision as its only blocker — carried forward as a new
+      row in sprint FAKE-S2's draft.

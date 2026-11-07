@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Local-only factory</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/local-only"] figure.hero,
+      body[data-page="arc-l-factory/local-only"] figure.diag {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/local-only"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+      }
+      /* Factory hero inline-SVG stand-in — mirrors
+         diagrams/factory/local-only.excalidraw.sketch.md coord space (1280x720).
+         Swapped for the rendered PNG once render_canvas lands. */
+      .fac-hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 980px;
+        margin: 16px auto 8px;
+      }
+      .fac-hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .fac-hero-fig .mac {
+        fill: var(--cs-inset);
+        stroke: var(--cs-muted-fg);
+        stroke-width: 2;
+      }
+      .fac-hero-fig .chip {
+        fill: var(--cs-surface);
+        stroke-width: 1.6;
+      }
+      .fac-hero-fig .r-triager { stroke: #6ea8f0; }
+      .fac-hero-fig .r-builder { stroke: #4ec28a; }
+      .fac-hero-fig .r-reviewer { stroke: #a898ff; }
+      .fac-hero-fig .r-scout { stroke: #e0ac55; }
+      .fac-hero-fig .r-resolver { stroke: #f0a93b; }
+      .fac-hero-fig .wt {
+        fill: var(--cs-surface);
+        stroke: var(--cs-border-strong, var(--cs-border));
+        stroke-width: 1;
+      }
+      .fac-hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .mono {
+        fill: var(--cs-muted-fg);
+        font: 11px var(--cs-font-mono, ui-monospace), monospace;
+      }
+      .fac-hero-fig .title {
+        fill: var(--cs-fg);
+        font: 600 18px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .edge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.4;
+        fill: none;
+      }
+      .fac-hero-fig .trigger {
+        stroke: #6ea8f0;
+        stroke-width: 1.4;
+        stroke-dasharray: 3 3;
+        fill: none;
+      }
+      .fac-hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 980px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/local-only">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Local-only factory — all on one Mac" id="hero">
+        <h1>Local-only · all on one Mac</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          No network. No remote accounts. Just your Mac, N worktrees, and N agents happily working
+          the same context repo. The simplest factory that ships, and the one you'll start with.
+          When battery and fans aren't a concern — plugged in, on your desk — this shape beats
+          anything fancier.
+        </p>
+        <figure class="fac-hero-fig" aria-labelledby="fac-local-cap">
+          <svg
+            viewBox="0 0 1280 720"
+            role="img"
+            aria-label="One MacBook frame holding seven agent chips — a triager fans out to three builders, a reviewer, a resolver, and a scout. Three worktree glyphs sit below the builders; a reply loop arcs back to the triager."
+          >
+            <title>Local-only factory · all on one Mac</title>
+
+            <!-- Mac frame -->
+            <rect class="mac" x="80" y="80" width="1120" height="560" rx="18" />
+            <text class="title" x="104" y="112">MacBook — dev@local</text>
+            <text class="mut" x="104" y="134">N worktrees + N agents, no network</text>
+            <circle cx="1185" cy="95" r="5" fill="#4ec28a" />
+
+            <!-- Trigger: dashed inbox_idle arrows coming in from left margin -->
+            <path class="trigger" d="M 100 220 Q 130 220 160 220" />
+            <polygon fill="#6ea8f0" points="160,220 150,215 150,225" />
+            <text class="mut" x="100" y="208">inbox_idle</text>
+
+            <path class="trigger" d="M 100 235 Q 300 235 480 185" />
+            <polygon fill="#6ea8f0" points="480,185 468,183 471,194" />
+
+            <path class="trigger" d="M 720 100 Q 760 160 800 220" />
+            <polygon fill="#6ea8f0" points="800,220 790,208 798,205" />
+            <text class="mut" x="720" y="90">inbox_idle</text>
+
+            <!-- Triager -->
+            <rect class="chip r-triager" x="160" y="180" width="220" height="80" rx="10" />
+            <circle cx="170" cy="190" r="4" fill="#4ec28a" />
+            <text class="lbl" x="270" y="214" text-anchor="middle">triager</text>
+            <text class="mut" x="270" y="236" text-anchor="middle">routes inbox mail</text>
+
+            <!-- Builders -->
+            <rect class="chip r-builder" x="480" y="150" width="220" height="70" rx="10" />
+            <circle cx="490" cy="160" r="4" fill="#4ec28a" />
+            <text class="lbl" x="590" y="190" text-anchor="middle">builder</text>
+
+            <rect class="chip r-builder" x="480" y="240" width="220" height="70" rx="10" />
+            <circle cx="490" cy="250" r="4" fill="#4ec28a" />
+            <text class="lbl" x="590" y="280" text-anchor="middle">builder</text>
+
+            <rect class="chip r-builder" x="480" y="330" width="220" height="70" rx="10" />
+            <circle cx="490" cy="340" r="4" fill="#4ec28a" />
+            <text class="lbl" x="590" y="370" text-anchor="middle">builder</text>
+
+            <!-- Reviewer / Resolver / Scout -->
+            <rect class="chip r-reviewer" x="800" y="200" width="220" height="70" rx="10" />
+            <circle cx="810" cy="210" r="4" fill="#4ec28a" />
+            <text class="lbl" x="910" y="240" text-anchor="middle">reviewer</text>
+
+            <rect class="chip r-resolver" x="800" y="300" width="220" height="70" rx="10" />
+            <circle cx="810" cy="310" r="4" fill="#4ec28a" />
+            <text class="lbl" x="910" y="340" text-anchor="middle">resolver</text>
+
+            <rect class="chip r-scout" x="800" y="400" width="220" height="70" rx="10" />
+            <circle cx="810" cy="410" r="4" fill="#4ec28a" />
+            <text class="lbl" x="910" y="440" text-anchor="middle">scout</text>
+
+            <!-- Edges: triager → builders -->
+            <path class="edge" d="M 380 210 Q 430 185 480 185" />
+            <polygon fill="var(--cs-muted-fg)" points="480,185 468,180 471,190" />
+            <path class="edge" d="M 380 220 L 480 275" />
+            <polygon fill="var(--cs-muted-fg)" points="480,275 468,268 466,280" />
+            <path class="edge" d="M 380 240 Q 430 310 480 365" />
+            <polygon fill="var(--cs-muted-fg)" points="480,365 468,360 468,372" />
+
+            <!-- Edges: triager → reviewer/resolver/scout -->
+            <path class="edge" d="M 380 215 Q 600 170 800 235" />
+            <polygon fill="var(--cs-muted-fg)" points="800,235 788,230 790,242" />
+            <path class="edge" d="M 380 230 Q 580 290 800 335" />
+            <polygon fill="var(--cs-muted-fg)" points="800,335 788,330 790,342" />
+            <path class="edge" d="M 380 245 Q 580 370 800 435" />
+            <polygon fill="var(--cs-muted-fg)" points="800,435 788,430 790,442" />
+
+            <!-- Worktree row (under builders) -->
+            <rect class="wt" x="480" y="440" width="60" height="60" rx="6" />
+            <text class="mono" x="510" y="518" text-anchor="middle">wt-fake-1</text>
+            <rect class="wt" x="560" y="440" width="60" height="60" rx="6" />
+            <text class="mono" x="590" y="518" text-anchor="middle">wt-fake-2</text>
+            <rect class="wt" x="640" y="440" width="60" height="60" rx="6" />
+            <text class="mono" x="670" y="518" text-anchor="middle">wt-fake-3</text>
+
+            <!-- Reply-queue loop back -->
+            <path class="edge" d="M 1020 435 Q 1140 540 500 540 Q 180 540 160 260 L 190 220" />
+            <polygon fill="var(--cs-muted-fg)" points="190,220 180,230 194,232" />
+            <text class="mut" x="700" y="534" text-anchor="middle">reply queue</text>
+
+            <!-- Legend / primitives footer -->
+            <g transform="translate(100, 600)">
+              <circle cx="0" cy="0" r="4" fill="#4ec28a" />
+              <text class="mut" x="12" y="4">= this Mac</text>
+              <text class="mut" x="110" y="4">
+                primitives · worktrees · inbox roles · routines · inbox_idle
+              </text>
+            </g>
+          </svg>
+        </figure>
+        <p class="fac-hero-cap" id="fac-local-cap">
+          This is the shape; the live
+          <code>factory/local-only.excalidraw</code> canvas has the editable
+          version — click the diagram to open it.
+        </p>
+      </section>
+
+      <section data-search="When to use local-only" id="why">
+        <h2>When to use local-only</h2>
+        <ul>
+          <li><strong>You're on your main dev Mac</strong> and plugged in.</li>
+          <li>You want the lowest latency: inbox → agent wake is &lt; 1s.</li>
+          <li>You haven't set up a private-account on any remote Mac yet.</li>
+          <li>You want to try a factory shape before deciding whether to invest in remote.</li>
+        </ul>
+        <p>
+          Switch to <a href="./solo-with-remote.html">solo + remote</a> the night you want the fans
+          off while five Builders keep going.
+        </p>
+      </section>
+
+      <section data-search="What runs where on a local-only Mac" id="layout">
+        <h2>What runs where</h2>
+        <p>
+          Every piece of the factory lives on disk under the standard CodeSense home. One Mac, four
+          familiar directories:
+        </p>
+        <pre><code>~/code/&lt;org-context-repo&gt;/               ← the context repo: agents, routines, team content
+~/.codesense/users/&lt;you&gt;/                  ← app state: connected repos, private files, inboxes
+~/code/&lt;repo&gt;-wt/&lt;story-slug&gt;/              ← per-story worktrees, beside each source clone
+~/.codesense/logs/                          ← agent + session logs</code></pre>
+      </section>
+
+      <section data-search="Scale ceilings on one Mac" id="ceilings">
+        <h2>Scale ceilings on one Mac</h2>
+        <p>You'll hit three ceilings. In rough order:</p>
+        <ol>
+          <li>
+            <strong>CPU under build.</strong> Three Builders running Rust compiles in parallel will
+            warm the fans fast. Mitigation: cap Builder count at <code>cores/2</code> while builds
+            are hot.
+          </li>
+          <li>
+            <strong>Memory per Claude session.</strong> ~800 MB resident per active agent. Six
+            Builders + a Reviewer + a Resolver eats ~7 GB.
+          </li>
+          <li>
+            <strong>Disk bandwidth on worktree creation.</strong> N parallel
+            <code>git worktree add</code> on a cold repo serializes under the lock. Mitigation:
+            create worktrees eagerly during sprint planning, not at claim time.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            Nothing special — the local-only shape IS the default. The MCP calls look like the
+            massively-parallel page: <code>agent_create</code>, write a
+            <code>config/agents/&lt;id&gt;/routines/&lt;routine&gt;/routine.yml</code>, open the agent-dag. No remote-account setup, no private-account dance.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./solo-with-remote.html">Solo with remote →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Local-only</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

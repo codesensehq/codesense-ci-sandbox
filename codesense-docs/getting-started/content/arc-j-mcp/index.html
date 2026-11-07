@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="plug-zap" />
+    <title>CodeSense — Arc J · MCP</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/index"] .cs-main {
+        max-width: 1080px;
+      }
+      body[data-page="arc-j-mcp/index"] h1 {
+        font-size: clamp(32px, 4.4vw, 52px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+        max-width: 22ch;
+      }
+      body[data-page="arc-j-mcp/index"] .lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 64ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-j-mcp/index"] .lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcj-funnel-step {
+        fill: color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface));
+        stroke: var(--cs-accent);
+        stroke-width: 1.4;
+      }
+      .arcj-funnel-step[data-step="4"] {
+        fill: color-mix(in srgb, var(--cs-accent) 24%, var(--cs-surface));
+      }
+      .arcj-funnel-label {
+        fill: var(--cs-fg);
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      .arcj-funnel-sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+        font-family: var(--cs-font-ui);
+      }
+      .arcj-funnel-arrow {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.3;
+      }
+      .arcj-prim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+        margin-top: var(--cs-docs-space-4, 16px);
+      }
+      .arcj-prim-card {
+        padding: 16px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+      }
+      .arcj-prim-card h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-family: var(--cs-font-mono);
+      }
+      .arcj-prim-card p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      .arcj-toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px;
+        margin-top: var(--cs-docs-space-4, 16px);
+      }
+      .arcj-toc a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arcj-toc a:hover,
+      .arcj-toc a:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arcj-toc a strong {
+        display: block;
+        font-size: 15px;
+      }
+      .arcj-toc a span {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+      .arcj-count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        border: 1px solid var(--cs-border);
+        border-radius: 999px;
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Arc J — the CodeSense MCP: every CodeSense verb as a tool, and four tools to find your way"
+        id="hero"
+      >
+        <h1>Every verb is a tool. Four help you find it.</h1>
+        <p class="lede">
+          CodeSense's MCP server has a few hundred tools: every verb the app has, for any agent, on this
+          Mac or a machine. All of them are listed in <code>tools/list</code>, so any MCP client can
+          see and call them. You don't need to memorise them. Start with
+          <code>codesense_overview</code>, search for the verb you need, read its schema, call it.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Discovery path: codesense_overview, then codesense_search_tools, then codesense_get_tool_schema, then calling the tool by name or through codesense_call_tool. The whole catalog of CodeSense tools is listed in tools/list beside them."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="20" y="30" class="arcj-funnel-sub" style="font-size: 11px">
+              The discovery path — four tools to orient and find a verb
+            </text>
+
+            <!-- Step 1 -->
+            <g transform="translate(20 50)">
+              <rect class="arcj-funnel-step" data-step="1" width="140" height="68" rx="10" />
+              <text x="70" y="26" text-anchor="middle" class="arcj-funnel-label">codesense_</text>
+              <text x="70" y="42" text-anchor="middle" class="arcj-funnel-label">overview</text>
+              <text x="70" y="60" text-anchor="middle" class="arcj-funnel-sub">where you are</text>
+            </g>
+
+            <path class="arcj-funnel-arrow" d="M164 84 L 190 84" marker-end="url(#arcj-arrow)" />
+
+            <!-- Step 2 -->
+            <g transform="translate(194 50)">
+              <rect class="arcj-funnel-step" data-step="2" width="140" height="68" rx="10" />
+              <text x="70" y="26" text-anchor="middle" class="arcj-funnel-label">codesense_</text>
+              <text x="70" y="42" text-anchor="middle" class="arcj-funnel-label">search_tools</text>
+              <text x="70" y="60" text-anchor="middle" class="arcj-funnel-sub">find the verb</text>
+            </g>
+
+            <path class="arcj-funnel-arrow" d="M338 84 L 364 84" marker-end="url(#arcj-arrow)" />
+
+            <!-- Step 3 -->
+            <g transform="translate(368 50)">
+              <rect class="arcj-funnel-step" data-step="3" width="140" height="68" rx="10" />
+              <text x="70" y="26" text-anchor="middle" class="arcj-funnel-label">
+                codesense_get_
+              </text>
+              <text x="70" y="42" text-anchor="middle" class="arcj-funnel-label">tool_schema</text>
+              <text x="70" y="60" text-anchor="middle" class="arcj-funnel-sub">
+                read the contract
+              </text>
+            </g>
+
+            <path class="arcj-funnel-arrow" d="M512 84 L 536 84" marker-end="url(#arcj-arrow)" />
+
+            <!-- Step 4 -->
+            <g transform="translate(500 170)">
+              <rect class="arcj-funnel-step" data-step="4" width="140" height="68" rx="10" />
+              <text x="70" y="26" text-anchor="middle" class="arcj-funnel-label">codesense_</text>
+              <text x="70" y="42" text-anchor="middle" class="arcj-funnel-label">call_tool</text>
+              <text x="70" y="60" text-anchor="middle" class="arcj-funnel-sub">
+                (or call by name)
+              </text>
+            </g>
+
+            <!-- Hidden tool pool -->
+            <text x="20" y="150" class="arcj-funnel-sub" style="font-size: 11px">
+              Also in tools/list — every other CodeSense tool, a few hundred in all
+            </text>
+            <g transform="translate(20 170)">
+              <rect
+                width="460"
+                height="150"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+                stroke-dasharray="4 3"
+              />
+              <text x="16" y="26" class="arcj-funnel-sub">describe_setup</text>
+              <text x="16" y="46" class="arcj-funnel-sub">list_orgs_teams</text>
+              <text x="16" y="66" class="arcj-funnel-sub">add_source_repo</text>
+              <text x="16" y="86" class="arcj-funnel-sub">agent_create</text>
+              <text x="16" y="106" class="arcj-funnel-sub">send_message</text>
+              <text x="16" y="126" class="arcj-funnel-sub">routine_create</text>
+              <text x="160" y="26" class="arcj-funnel-sub">open_workspace</text>
+              <text x="160" y="46" class="arcj-funnel-sub">apply_canvas</text>
+              <text x="160" y="66" class="arcj-funnel-sub">render_canvas</text>
+              <text x="160" y="86" class="arcj-funnel-sub">read_rendered_document</text>
+              <text x="160" y="106" class="arcj-funnel-sub">query_context</text>
+              <text x="160" y="126" class="arcj-funnel-sub">inbox_list</text>
+              <text x="320" y="26" class="arcj-funnel-sub">set_active_team</text>
+              <text x="320" y="46" class="arcj-funnel-sub">validate_story</text>
+              <text x="320" y="66" class="arcj-funnel-sub">hydrate_worktree</text>
+              <text x="320" y="86" class="arcj-funnel-sub">routine_run_now</text>
+              <text x="320" y="106" class="arcj-funnel-sub">who_am_i</text>
+              <text x="320" y="126" class="arcj-funnel-sub">…and the rest</text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section
+        data-search="Why discovery tools — finding one verb among a few hundred"
+        id="why"
+      >
+        <h2>Why discovery tools</h2>
+        <p>
+          Every registered tool is in <code>tools/list</code>, because strict clients (Claude Code,
+          for one) can only call tools they see there. The list doesn't change during a session, so
+          clients can cache it. With a few hundred tools, finding the right one by name is the hard
+          part. The four discovery tools do that: orient, search, read the schema, call.
+        </p>
+      </section>
+
+      <section data-search="The four discovery tools" id="meta-tools">
+        <h2>The four discovery tools</h2>
+        <div class="arcj-prim-grid">
+          <div class="arcj-prim-card">
+            <h3>codesense_overview</h3>
+            <p>
+              The first call, read-only. Your active org and team, machines, running sessions, saved
+              agents, routines, inbox and open workspaces, each with the tools to call for more.
+            </p>
+          </div>
+          <div class="arcj-prim-card">
+            <h3>codesense_search_tools</h3>
+            <p>
+              Searches tool names and descriptions (case-insensitive; several terms must all match).
+              Name matches rank above description matches. Default 20 results, up to 100.
+            </p>
+          </div>
+          <div class="arcj-prim-card">
+            <h3>codesense_get_tool_schema</h3>
+            <p>
+              The full description and input JSON schema of one tool. Then call the tool by its
+              name.
+            </p>
+          </div>
+          <div class="arcj-prim-card">
+            <h3>codesense_call_tool</h3>
+            <p>
+              Calls any tool by name with an arguments object, for a host that can't call a tool
+              directly. Most agents never need it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Pages in this arc" id="toc">
+        <h2>Pages in this arc</h2>
+        <div class="arcj-toc">
+          <a href="./progressive-discovery.html"
+            ><strong>Progressive discovery</strong>
+            <span>The four discovery tools, when to reach for each.</span></a
+          >
+          <a href="./overview-call.html"
+            ><strong><code>codesense_overview</code></strong>
+            <span>The universal first call. What it returns.</span></a
+          >
+          <a href="./finding-a-tool.html"
+            ><strong><code>codesense_search_tools</code></strong>
+            <span>Search pattern. Worked example.</span></a
+          >
+          <a href="./reading-a-schema.html"
+            ><strong><code>codesense_get_tool_schema</code></strong>
+            <span>Contract + how to read the shape.</span></a
+          >
+          <a href="./calling-by-name.html"
+            ><strong><code>codesense_call_tool</code></strong>
+            <span>Calling a tool by name from any host.</span></a
+          >
+          <a href="./writing-an-mcp-agent.html"
+            ><strong>Writing an MCP agent</strong>
+            <span>Build one that uses only the bridge. End-to-end.</span></a
+          >
+          <a href="./adding-the-mcp-to-your-agent.html"
+            ><strong>Adding the MCP to your agent</strong>
+            <span>Claude Code, Codex, any MCP client.</span></a
+          >
+        </div>
+      </section>
+
+      <section data-search="Try this now — overview call" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Make the first call. It's read-only. You'll see what CodeSense knows about your setup
+          right now: your active org and team, machines, sessions, agents, routines, inbox and open
+          workspaces.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_overview", "args": {}}'
+          label="Run codesense_overview"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            The whole arc, in four calls. Every tool here is in <code>tools/list</code>, so a host
+            can call <code>add_source_repo</code> directly once it knows the name.
+          </p>
+          <pre><code>// 1. Where am I?
+codesense.invoke('codesense_overview', {})
+
+// 2. Find the verb I need.
+codesense.invoke('codesense_search_tools', { query: 'add source repo' })
+
+// 3. Read the contract.
+codesense.invoke('codesense_get_tool_schema', { name: 'add_source_repo' })
+
+// 4. Call it — directly if your host can, else via codesense_call_tool.
+codesense.invoke('add_source_repo', { org: 'acme/team-context', team: 'default', url: '…' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · MCP</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

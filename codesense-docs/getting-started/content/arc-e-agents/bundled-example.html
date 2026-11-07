@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="package-open" />
+    <title>CodeSense — Bundled example (docs-helper)</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 20px 24px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arce-hero pre {
+        margin: 0;
+        padding: 16px;
+        background: color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface));
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow-x: auto;
+      }
+      .arce-hero pre code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arce-fields {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-fields th,
+      .arce-fields td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-fields th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-fields code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/bundled-example">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="The bundled docs-helper agent — the minimum viable agent.yaml" id="hero">
+        <h1>A small agent with the tools it needs.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <pre><code>id: docs-helper
+name: Docs helper
+description: Keeps the CodeSense docs up to date and answers questions about CodeSense.
+created_by: codesense
+runtime: claude
+launch: headless
+permissions:
+  claude:
+    allow:
+      - Read
+      - Skill(update-codesense-docs)
+      - mcp__codesense__codesense_overview
+      - mcp__codesense__update_codesense_docs
+revision: 2</code></pre>
+        </figure>
+      </section>
+
+      <section data-search="What docs-helper is for" id="why">
+        <p><code>docs-helper</code> is the bundled headless agent for reading CodeSense docs
+          and running the manual offline update routine. Its agent file has no
+          startup entries. The routine task names the update skill explicitly; the helper
+          does not edit pages or add skills to the read-only docs.</p>
+      </section>
+
+      <section data-search="Field by field — what each line does and what the defaults fill in" id="fields">
+        <h2>Field by field</h2>
+        <table class="arce-fields">
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th>What it does</th>
+              <th>What default fills in when it's missing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id: docs-helper</code></td>
+              <td>Immutable key within the team.</td>
+              <td>— required</td>
+            </tr>
+            <tr>
+              <td><code>name: Docs helper</code></td>
+              <td>Shown in the agent picker and in message bylines.</td>
+              <td>— required</td>
+            </tr>
+            <tr>
+              <td><code>description: Keeps the CodeSense docs …</code></td>
+              <td>One-line explanation for humans. The CLI never auto-triggers
+                on this; that's the SKILL.md's job.</td>
+              <td><code>""</code> — skipped if empty</td>
+            </tr>
+            <tr>
+              <td><code>created_by: codesense</code></td>
+              <td>Attribution for the first revision. Never moves.</td>
+              <td><code>""</code></td>
+            </tr>
+            <tr>
+              <td><code>runtime: claude</code></td>
+              <td>Picks the CLI. Could just as easily be
+                <code>codex</code> — the file wouldn't change otherwise.</td>
+              <td>— required</td>
+            </tr>
+            <tr>
+              <td><code>launch: headless</code></td>
+              <td>Runs under the terminal server when invoked from a routine;
+                still opens in a tab if a user picks it directly.</td>
+              <td><code>foreground</code></td>
+            </tr>
+            <tr>
+              <td><em>no <code>startup</code></em></td>
+              <td>No explicit startup documents. The routine's task tells the helper to
+                run <code>update-codesense-docs</code>.</td>
+              <td><code>[]</code> — nothing extra</td>
+            </tr>
+            <tr>
+              <td><em>no <code>mcp.servers</code></em></td>
+              <td>Only the CodeSense bridge is attached. That's all this
+                agent needs — the bridge gives it document reads and
+                invokes.</td>
+              <td><code>{servers:[]}</code></td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.allow</code></td>
+              <td>Allows reading the skill and docs, loading the update skill, and calling
+                the overview and offline updater. Headless Claude uses <code>dontAsk</code>;
+                these explicit rules let the workflow run without a permission prompt.</td>
+              <td>Communication and routine-result tools are already supplied by CodeSense.</td>
+            </tr>
+            <tr>
+              <td><code>revision: 2</code></td>
+              <td>Changes when the definition is updated; a mismatch on
+                <code>agent_update</code> is a conflict.</td>
+              <td>— required</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="The manual docs helper routine" id="trace">
+        <h2>The routine supplies the task</h2>
+        <p>The bundled <code>agent.yaml</code> has no <code>startup</code> entries.
+          Its manual routine lives at
+          <code>config/agents/docs-helper/routines/update-codesense-docs/routine.yml</code>.
+          There is no schedule. The <code>each_mac</code> routine starts disabled on each Mac;
+          explicitly enable it before running it, as shown on the
+          <a href="../arc-a-first-touch/update-the-docs.html#steps">update page</a>.
+          With <code>where.kind: team_workspace</code>, a fresh run
+          starts in the placed docs team's content directory. The task names the
+          <code>update-codesense-docs</code> skill; no <code>CLAUDE.md</code> or
+          <code>requires:</code> chain is needed to explain this behavior.</p>
+      </section>
+
+      <section data-search="What the docs helper actually does" id="what-it-does">
+        <h2>Check, update, report</h2>
+        <p>The skill calls <code>codesense_overview</code> to check docs versions and state,
+          then <code>update_codesense_docs</code> for the requested offline refresh.
+          The tool resolves the canonical profile docs root independently of cwd.
+          Before selecting the bundled HEAD and index it preserves local history, staged
+          content, working edits and nonignored untracked files on a named local branch.
+          Ignored machine state stays in place; collisions block the update.</p>
+        <p>The helper reports versions, state, preservation branch and changed paths, then
+          calls <code>signal_done</code>. Codex agents pass their own <code>sessionId</code>
+          to <code>send_message</code> and <code>signal_done</code>. If docs disagree with a
+          live tool description, trust the tool and check <code>docs.state</code>.</p>
+      </section>
+
+      <section data-search="Use the bundled agent as an example" id="fork">
+        <h2>Use the file as an example</h2>
+        <p>Creating a context repo with “Start from the CodeSense example” deliberately
+          leaves out <code>docs-helper</code>, its routine and the docs-update skill.
+          They manage the canonical docs rather than an editable copy. To create an agent
+          for your own team, use <code>agent_preview</code> and <code>agent_create</code>
+          with a task and startup context appropriate to that team.</p>
+      </section>
+
+      <section data-search="Try this now — preview the shipped docs-helper against the real validator" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Use <code>agent_preview</code> to check the shipped agent's launch fields,
+          including its explicit Claude permissions. The agent-side call returns the
+          resolved launch manifest without writing a definition; the example below shows
+          the call to make.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Docs helper", "id": "docs-helper", "description": "Keeps the CodeSense docs up to date and answers questions about CodeSense.", "runtime": "claude", "launch": "headless", "permissions": {"claude": {"allow": ["Read", "Skill(update-codesense-docs)", "mcp__codesense__codesense_overview", "mcp__codesense__update_codesense_docs"]}}}}'
+          label="Preview docs-helper"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Get the shipped definition as the viewer sees it.
+codesense.invoke('agent_get', { id: 'docs-helper' })
+
+// Preview these launch fields, including the shipped permission rules.
+codesense.invoke('agent_preview', {
+  "name": "Docs helper",
+  "id": "docs-helper",
+  "description": "Keeps the CodeSense docs up to date and answers questions about CodeSense.",
+  "runtime": "claude",
+  "launch": "headless",
+  "permissions": {
+    "claude": {
+      "allow": [
+        "Read",
+        "Skill(update-codesense-docs)",
+        "mcp__codesense__codesense_overview",
+        "mcp__codesense__update_codesense_docs"
+      ]
+    }
+  }
+})
+
+// Open a tab for the helper.
+codesense.invoke('open_terminal_tab', { agentId: 'docs-helper' })</code></pre>
+          <p>
+            See <a href="./context-field.html">the context resolver</a> for
+            the full trace, and
+            <a href="../mcp-explorer.html">mcp-explorer</a> for every tool.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Previous: <a href="./remote-agents.html">Remote agents</a> ·
+        Next: <a href="./user-recipes.html">User recipes →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/agent-yaml"
+          >schema-browser · agent.yaml</a
+        >
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Bundled example</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

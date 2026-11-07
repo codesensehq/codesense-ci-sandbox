@@ -1,0 +1,858 @@
+{
+  "after": {
+    "rev": 2,
+    "snapshot": [
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:_personal/1/acme/api/_scratch/private-edit",
+        "key": "_personal/1/acme/api/_scratch/private-edit",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:acme/api/backend/default",
+        "key": "acme/api/backend/default",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/claude",
+        "key": "builtin/claude",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/claude-unattended",
+        "key": "builtin/claude-unattended",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/codex",
+        "key": "builtin/codex",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/codex-unattended",
+        "key": "builtin/codex-unattended",
+        "rowType": "account"
+      },
+      {
+        "id": "definition:_personal/1/acme/api/_scratch/private-edit",
+        "key": "_personal/1/acme/api/_scratch/private-edit",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "_personal/1/acme/api/_scratch/private-edit",
+          "launch": "foreground",
+          "model": null,
+          "name": "Agent private-edit",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "personal",
+          "team": "_scratch",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:acme/api/backend/default",
+        "key": "acme/api/backend/default",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "acme/api/backend/default",
+          "launch": "foreground",
+          "model": null,
+          "name": "Agent default",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "team",
+          "team": "backend",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "acme/api/backend/unused-live",
+          "launch": "foreground",
+          "model": null,
+          "name": "External edit",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "team",
+          "team": "backend",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 2
+      },
+      {
+        "id": "definition:builtin/claude",
+        "key": "builtin/claude",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Claude Code with its defaults and your own login. Starts with the team's CLAUDE.md when it has one.",
+          "key": "builtin/claude",
+          "launch": "foreground",
+          "model": null,
+          "name": "Claude",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/claude-unattended",
+        "key": "builtin/claude-unattended",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Claude Code that runs without asking for permission (permission checks skipped), for unattended background work.",
+          "key": "builtin/claude-unattended",
+          "launch": "foreground",
+          "model": null,
+          "name": "Claude (unattended)",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/codex",
+        "key": "builtin/codex",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Codex with its defaults and your own login. Starts with the team's AGENTS.md when it has one.",
+          "key": "builtin/codex",
+          "launch": "foreground",
+          "model": null,
+          "name": "Codex",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/codex-unattended",
+        "key": "builtin/codex-unattended",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Codex that runs without asking for permission (approval never, no sandbox), for unattended background work.",
+          "key": "builtin/codex-unattended",
+          "launch": "foreground",
+          "model": null,
+          "name": "Codex (unattended)",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "detail": {
+          "created_by": "alice",
+          "created_by_you": true,
+          "definition": {
+            "created_by": "1",
+            "id": "unused-live",
+            "launch": "foreground",
+            "mcp": {
+              "servers": []
+            },
+            "name": "External edit",
+            "revision": 1,
+            "runtime": "codex"
+          },
+          "key": "acme/api/backend/unused-live",
+          "resolved": {
+            "agent": {
+              "definition_hash": "blake3:9bd40d9b31293f70a29c563bba347f363829cb493124eba80dc69440be6bb277",
+              "key": "acme/api/backend/unused-live",
+              "revision": 1
+            },
+            "archived": false,
+            "launch": {
+              "account_requirement": "optional",
+              "args": [],
+              "binary": "codex",
+              "env_suppress": [
+                "OPENAI_API_KEY"
+              ],
+              "escalating": false,
+              "id": "acme/api/backend/unused-live",
+              "mcp_allow": [],
+              "mode": "interactive"
+            },
+            "manifest": {
+              "agent": {
+                "definition_hash": "blake3:9bd40d9b31293f70a29c563bba347f363829cb493124eba80dc69440be6bb277",
+                "key": "acme/api/backend/unused-live",
+                "revision": 1
+              },
+              "entries": [],
+              "errors": [],
+              "essentials": [
+                {
+                  "id": "codesense-bridge",
+                  "reason": "CodeSense MCP bridge — required by CodeSense"
+                }
+              ],
+              "generated": [
+                {
+                  "content": {},
+                  "hash": "blake3:6e46dd10defc9b56c29a6ec56b508c21f54c08192194e4df25bf36f0c9c3c279",
+                  "id": "codex-scoped-config",
+                  "required": [],
+                  "target": "launch_settings"
+                }
+              ],
+              "manifest_hash": "blake3:7d4b0f23e99e4ce7a081fb79bcd4d6c7b96401f90e9357bd181ffacd0cd873eb",
+              "runtime": "codex",
+              "totals": {
+                "bytes": 0,
+                "files": 0
+              }
+            },
+            "manifest_applies_at_launch": false,
+            "offered_mcp_servers": [],
+            "provides": {
+              "commands": [],
+              "skills": []
+            },
+            "warnings": []
+          },
+          "revisions": [
+            {
+              "agent": {
+                "created_by": "1",
+                "id": "unused-live",
+                "launch": "foreground",
+                "mcp": {
+                  "servers": []
+                },
+                "name": "Agent unused-live",
+                "revision": 1,
+                "runtime": "codex"
+              },
+              "at": "2026-10-22T10:05:24Z",
+              "author": {
+                "kind": "user",
+                "name": "1"
+              },
+              "definition_hash": "blake3:92fe7a07618e6a74e5d6398726c4a15a54d2bd42310e9c3b898a0d5a95d32902",
+              "revision": 1
+            }
+          ],
+          "scope": "team"
+        },
+        "id": "detail:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "rowType": "detail"
+      },
+      {
+        "id": "facts",
+        "routinesRevision": 0,
+        "rowType": "facts"
+      }
+    ],
+    "topic": "agentDefinitions",
+    "viewKey": "agentDefinitions:1:native"
+  },
+  "before": {
+    "rev": 1,
+    "snapshot": [
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:_personal/1/acme/api/_scratch/private-edit",
+        "key": "_personal/1/acme/api/_scratch/private-edit",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:acme/api/backend/default",
+        "key": "acme/api/backend/default",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/claude",
+        "key": "builtin/claude",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "claude",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/claude-unattended",
+        "key": "builtin/claude-unattended",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/codex",
+        "key": "builtin/codex",
+        "rowType": "account"
+      },
+      {
+        "account": {
+          "account_id": null,
+          "availability": "not_applicable",
+          "bound_account_id": null,
+          "capture_raw_terminal": false,
+          "label": null,
+          "provider": "codex",
+          "reason": "optional-system-default",
+          "resolved_source": "system_default",
+          "source": "runtime_default",
+          "spawn_eligible": true
+        },
+        "id": "account:builtin/codex-unattended",
+        "key": "builtin/codex-unattended",
+        "rowType": "account"
+      },
+      {
+        "id": "definition:_personal/1/acme/api/_scratch/private-edit",
+        "key": "_personal/1/acme/api/_scratch/private-edit",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "_personal/1/acme/api/_scratch/private-edit",
+          "launch": "foreground",
+          "model": null,
+          "name": "Agent private-edit",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "personal",
+          "team": "_scratch",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:acme/api/backend/default",
+        "key": "acme/api/backend/default",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "acme/api/backend/default",
+          "launch": "foreground",
+          "model": null,
+          "name": "Agent default",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "team",
+          "team": "backend",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "alice",
+          "created_by_you": true,
+          "default_prompt": "",
+          "description": "",
+          "key": "acme/api/backend/unused-live",
+          "launch": "foreground",
+          "model": null,
+          "name": "Agent unused-live",
+          "org": "acme/api",
+          "revision": 1,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "team",
+          "team": "backend",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/claude",
+        "key": "builtin/claude",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Claude Code with its defaults and your own login. Starts with the team's CLAUDE.md when it has one.",
+          "key": "builtin/claude",
+          "launch": "foreground",
+          "model": null,
+          "name": "Claude",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/claude-unattended",
+        "key": "builtin/claude-unattended",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Claude Code that runs without asking for permission (permission checks skipped), for unattended background work.",
+          "key": "builtin/claude-unattended",
+          "launch": "foreground",
+          "model": null,
+          "name": "Claude (unattended)",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "claude",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/codex",
+        "key": "builtin/codex",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Codex with its defaults and your own login. Starts with the team's AGENTS.md when it has one.",
+          "key": "builtin/codex",
+          "launch": "foreground",
+          "model": null,
+          "name": "Codex",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "id": "definition:builtin/codex-unattended",
+        "key": "builtin/codex-unattended",
+        "row": {
+          "archived": false,
+          "archived_routines": [],
+          "avatar": null,
+          "created_by": "CodeSense",
+          "created_by_you": false,
+          "default_prompt": "",
+          "description": "Codex that runs without asking for permission (approval never, no sandbox), for unattended background work.",
+          "key": "builtin/codex-unattended",
+          "launch": "foreground",
+          "model": null,
+          "name": "Codex (unattended)",
+          "org": "builtin",
+          "revision": 25,
+          "role": null,
+          "routines": [],
+          "running_now": 0,
+          "runtime": "codex",
+          "scope": "builtin",
+          "team": "",
+          "used_by": []
+        },
+        "rowType": "definition",
+        "sourceRevision": 1
+      },
+      {
+        "detail": {
+          "created_by": "alice",
+          "created_by_you": true,
+          "definition": {
+            "created_by": "1",
+            "id": "unused-live",
+            "launch": "foreground",
+            "mcp": {
+              "servers": []
+            },
+            "name": "Agent unused-live",
+            "revision": 1,
+            "runtime": "codex"
+          },
+          "key": "acme/api/backend/unused-live",
+          "resolved": {
+            "agent": {
+              "definition_hash": "blake3:92fe7a07618e6a74e5d6398726c4a15a54d2bd42310e9c3b898a0d5a95d32902",
+              "key": "acme/api/backend/unused-live",
+              "revision": 1
+            },
+            "archived": false,
+            "launch": {
+              "account_requirement": "optional",
+              "args": [],
+              "binary": "codex",
+              "env_suppress": [
+                "OPENAI_API_KEY"
+              ],
+              "escalating": false,
+              "id": "acme/api/backend/unused-live",
+              "mcp_allow": [],
+              "mode": "interactive"
+            },
+            "manifest": {
+              "agent": {
+                "definition_hash": "blake3:92fe7a07618e6a74e5d6398726c4a15a54d2bd42310e9c3b898a0d5a95d32902",
+                "key": "acme/api/backend/unused-live",
+                "revision": 1
+              },
+              "entries": [],
+              "errors": [],
+              "essentials": [
+                {
+                  "id": "codesense-bridge",
+                  "reason": "CodeSense MCP bridge — required by CodeSense"
+                }
+              ],
+              "generated": [
+                {
+                  "content": {},
+                  "hash": "blake3:6e46dd10defc9b56c29a6ec56b508c21f54c08192194e4df25bf36f0c9c3c279",
+                  "id": "codex-scoped-config",
+                  "required": [],
+                  "target": "launch_settings"
+                }
+              ],
+              "manifest_hash": "blake3:b044003e8a5bc99f93fc9777b023bcfee2c44fc416969e639707ed7f14ebf37a",
+              "runtime": "codex",
+              "totals": {
+                "bytes": 0,
+                "files": 0
+              }
+            },
+            "manifest_applies_at_launch": false,
+            "offered_mcp_servers": [],
+            "provides": {
+              "commands": [],
+              "skills": []
+            },
+            "warnings": []
+          },
+          "revisions": [
+            {
+              "agent": {
+                "created_by": "1",
+                "id": "unused-live",
+                "launch": "foreground",
+                "mcp": {
+                  "servers": []
+                },
+                "name": "Agent unused-live",
+                "revision": 1,
+                "runtime": "codex"
+              },
+              "at": "2026-10-22T10:05:24Z",
+              "author": {
+                "kind": "user",
+                "name": "1"
+              },
+              "definition_hash": "blake3:92fe7a07618e6a74e5d6398726c4a15a54d2bd42310e9c3b898a0d5a95d32902",
+              "revision": 1
+            }
+          ],
+          "scope": "team"
+        },
+        "id": "detail:acme/api/backend/unused-live",
+        "key": "acme/api/backend/unused-live",
+        "rowType": "detail"
+      },
+      {
+        "id": "facts",
+        "routinesRevision": 0,
+        "rowType": "facts"
+      }
+    ],
+    "topic": "agentDefinitions",
+    "viewKey": "agentDefinitions:1:native"
+  }
+}

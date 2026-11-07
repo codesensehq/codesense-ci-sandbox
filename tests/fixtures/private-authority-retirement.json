@@ -1,0 +1,34 @@
+[
+  {
+    "epoch": "1",
+    "available": true
+  },
+  {
+    "epoch": "1",
+    "available": true
+  },
+  {
+    "epoch": "2",
+    "available": true
+  },
+  {
+    "epoch": "3",
+    "available": true
+  },
+  {
+    "epoch": "4",
+    "available": false
+  },
+  {
+    "epoch": "5",
+    "available": true
+  },
+  {
+    "epoch": "6",
+    "available": false
+  },
+  {
+    "epoch": "18446744073709551615",
+    "available": false
+  }
+]

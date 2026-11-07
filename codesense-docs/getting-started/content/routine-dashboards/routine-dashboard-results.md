@@ -1,0 +1,19 @@
+# Agent-backed dashboard results
+
+Agents collect external data with their existing profile MCPs or CLIs. CodeSense stores a private validated snapshot; it does not ask for service connector credentials. Attach context locally and configure a runnable agent profile first. Signed-out local context works through the same local principal as ordinary routines.
+
+Create a routine with `routine_create`, omitting `when` for manual-only operation (`"manual"` is also accepted). For example:
+
+```json
+{"name":"Repository digest","task":"Use your configured GitHub MCP or CLI to collect open pull requests. Publish {count:number} with routine_publish_result using your sessionId, then signal_done success. If collection fails, signal_done failed. Never include credentials.","scope":"team","org":"owner/context","team":"engineering","agent":"default","resultSchema":{"type":"object","properties":{"count":{"type":"integer","minimum":0}},"required":["count"],"additionalProperties":false}}
+```
+
+Use the returned routine `id` as the dashboard `key`. The working example is [routine-dashboard.html](examples/routine-dashboard.html). Copy it into attached context, open it in CodeSense, enter the key, and grant its declared capabilities. Load cached data shows the last good snapshot. Refresh explicitly invokes the existing routine admission policy, chosen profile, headless/visible mode and runtime limit. Cancel retains the last good snapshot. The page shows collecting, failure, last successful update and schema/revision mismatch states.
+
+The granted HTML SDK methods are `codesense.routineResult({key})`, `routineStatus({key})`, `routineRefresh({key, variables?})`, and `routineCancel({key})`. Refresh returns the existing routine admission result, including coalesced/skipped/held outcomes. `onRoutineResult(callback)` returns an unsubscribe function and sends invalidations only; reread through the granted result method. It never launches an agent. `codesense.snapshot()` still exports the DOM; it is unrelated to routine data. `routine_result` provides the same cached result to MCP callers.
+
+`resultSchema` is optional. On update, explicit `null` clears the schema; omission preserves it. Cached status includes `active_attempt` separately from the latest fire, so coalesced/skipped refreshes do not hide ongoing collection. Ordinary routines keep their summary-only behavior. A result-bearing run gets an immutable admitted schema and principal. Call `routine_publish_result` with `{sessionId,payload}` before `signal_done` success. No caller-supplied run ID is accepted. Valid publication stages a candidate; successful completion atomically promotes it. A success signal without a candidate becomes `failed/result_missing`. Failure, timeout, cancellation and restart interruption retain the previous snapshot and discard the candidate. Publishing after termination is rejected. A schema edit does not change an in-flight run's contract; reads identify an incompatible cached schema explicitly.
+
+The inline JSON Schema contract is bounded to 32 KiB, depth 32, 2,048 nodes and four combinator levels. `$ref`, `$dynamicRef` and `$recursiveRef` are refused: inline the shape. Payload limits are 1 MiB, depth 64 and 50,000 nodes. Validation is offline with a bounded linear-time regex engine. Private snapshots persist across routine archive, alongside retained run history. Payloads are kept in the machine-local coordinator database, keyed by principal plus routine, never in shared YAML. Errors omit private payload values.
+
+Authorization preserves the established local MCP trust boundary: local clients are trusted as the desktop user; a session ID is not a cryptographic caller identity. Publication additionally requires a live recorded launch principal and matching admitted run, principal and session. Remote MCP routine access remains denied by existing policy. This feature does not add a new local-client identity protocol.

@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file-code-2" />
+    <title>CodeSense — agent.yaml</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 20px 24px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arce-hero pre {
+        margin: 0;
+        padding: 16px;
+        background: color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface));
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow-x: auto;
+      }
+      .arce-hero pre code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+
+      .arce-fields {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-fields th,
+      .arce-fields td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        vertical-align: top;
+      }
+      .arce-fields th {
+        font-weight: 600;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+      }
+      .arce-fields code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      .arce-fields .arce-req {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--cs-success) 20%, transparent);
+        color: var(--cs-success);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      .arce-fields .arce-opt {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--cs-fg) 10%, transparent);
+        color: var(--cs-muted-fg);
+        font-size: 10px;
+        letter-spacing: 0.03em;
+      }
+      .arce-source {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-faint-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/agent-yaml">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="agent.yaml — every field explained with source refs" id="hero">
+        <h1>agent.yaml, field by field.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <pre><code>id: slack-triage
+name: Slack triage
+description: Sweeps #support and files actionable issues.
+created_by: you
+runtime: claude
+launch: headless
+args: [--model, opus]
+mcp:
+  servers: [slack]
+startup:
+  - CLAUDE.md
+  - .claude/skills/triage/
+  - .claude/commands/bmad-help.md
+permissions:
+  claude:
+    allow: [Read, Grep, Glob, "mcp__slack__*"]
+    deny:  [Edit, Write, Bash]
+budget_usd:
+  per_day: 50
+  per_week: 200
+default_prompt: /triage
+avatar: builtin-funny:hardhat-raccoon
+revision: 7</code></pre>
+        </figure>
+      </section>
+
+      <section id="spend-cap" data-search="budget_usd per_day per_week spend cap">
+        <h2>Optional spend cap</h2>
+        <p><code>budget_usd: {per_day: 50, per_week: 200}</code> sets positive finite USD limits.
+          Either field may be omitted. Spend is shared across this saved agent's sessions and machines,
+          using local calendar days and Monday weeks. Lower values apply immediately and ratchet the
+          locally accepted cap down. A raise or removal in this file or through MCP stays pending until
+          a person accepts it in the native app. MCP spells the field <code>budgetUsd</code>, with
+          <code>perDay</code> and <code>perWeek</code>.</p>
+        <p>Caps count recorded usage. When this Mac's managed Claude settings send Claude's usage
+          to your organization's own collector, a Claude agent's cap counts usage from Claude's
+          session log instead, which appears when each turn ends.</p>
+        <p>Usage exporter settings are engine-owned for every launch: saved <code>OTEL_*</code> and
+          telemetry enable/disable environment variables are refused with a message naming the variable.
+          CodeSense also forces its exporter endpoint and enable settings at launch.</p>
+        <p>These settings cover launches through CodeSense. Agents run as you; give an agent you don't
+          fully trust sandboxed permissions. See <a href="./spend-caps.html#authority">Spend caps: Architecture boundary</a>
+          and <a href="https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents">How CodeSense trusts agents</a>.</p>
+        <p>See <a href="./spend-caps.html">Spend caps</a> for counting, wake holds and acceptance.</p>
+      </section>
+
+      <section data-search="What agent.yaml is" id="why">
+        <p>
+          Every agent you can see — the six starters (<code>builtin/claude</code>,
+          <code>builtin/codex</code>, <code>builtin/opencode</code> and their
+          <code>-unattended</code> twins),
+          your team agents, your Only-me ones — is this one file, kept at
+          <code>config/agents/&lt;id&gt;/agent.yaml</code> (the starters live in the
+          app, not on disk). You rarely open it by hand: the
+          <code>agent_preview</code> and <code>agent_create</code> MCP tools
+          take the same fields and refuse anything the file would refuse. The
+          table below is the whole shape, straight from the Rust validator.
+          Where a value is normalized on save ("whitespace-trimmed", "no
+          duplicates"), that normalization is what the preview also returns.
+        </p>
+      </section>
+
+      <section id="hermes-preview" data-search="Hermes preview installation starters">
+        <h2>Hermes (preview)</h2>
+        <p>Hermes support is a preview: it is not yet available for saved agents or
+          launches, and the setup below stays inactive until it is.</p>
+        <p>The prepared integration uses <code>runtime: hermes</code>, with
+          <code>builtin/hermes</code> and <code>builtin/hermes-unattended</code> templates,
+          selected context and a private per-session home. The unattended template
+          passes Hermes's <code>--yolo</code> flag.</p>
+        <p>Install the pinned <a href="https://github.com/NousResearch/hermes-agent/tree/v0.22.5">Hermes Agent v0.22.5 source release</a>
+          (commit <code>bf0203a794a07aac3ff764972ab9087baa4e4f4e</code>) following its upstream
+          instructions. Keep <code>hermes</code> on PATH. CodeSense does not install it.</p>
+        <p>Before launch, set a keyless local OpenAI-compatible endpoint and model in
+          <strong>Edit → Runs on</strong>. These non-secret selectors are saved with this
+          agent as <code>startup_settings.model</code> (<code>provider: custom</code>,
+          <code>base_url</code> on loopback, and <code>default</code> for the model).
+          A selected startup <code>config.yaml</code> also works; inline settings override it,
+          and explicit <code>--model</code> args win. A starter without a model endpoint is
+          blocked before launch.</p>
+        <p>Remote launch, activity and automatic inbox delivery, usage, permission and
+          headless integration, and accounts are not part of the preview. Inbox mail waits
+          for the agent's next turn; the preview does not show Ready or a waiter. Hand-typed <code>hermes</code> stays unmanaged.</p>
+      </section>
+
+      <section data-search="Required fields — id, name, runtime, revision" id="required">
+        <h2>Required</h2>
+        <table class="arce-fields">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code> <span class="arce-req">required</span></td>
+              <td>string</td>
+              <td>
+                Immutable agent identifier. Must match
+                <code>[a-z0-9][a-z0-9-]{0,63}</code> — 1–64 chars, lowercase,
+                digits, hyphens; starts with a letter or digit. It only has to
+                be free in the scope where it lives.
+              </td>
+            </tr>
+            <tr>
+              <td><code>name</code> <span class="arce-req">required</span></td>
+              <td>string</td>
+              <td>
+                Display name. Non-empty after a whitespace trim; everything
+                else goes.
+              </td>
+            </tr>
+            <tr>
+              <td><code>runtime</code> <span class="arce-req">required</span></td>
+              <td>enum</td>
+              <td>
+                <code>claude</code>, <code>codex</code> or <code>opencode</code>, lowercase. May be
+                omitted when you pass <code>sessionId</code> and CodeSense
+                knows which CLI launched you; otherwise leaving it out is an
+                <code>invalid</code> reply naming <code>runtime</code> — never a
+                guess.
+              </td>
+            </tr>
+            <tr>
+              <td><code>revision</code> <span class="arce-req">required</span></td>
+              <td>integer</td>
+              <td>
+                Monotonic version counter. Starts at <code>1</code>, increases
+                by one on every save. You pass the last one you read as
+                <code>baseRevision</code> on <code>agent_update</code>; a
+                mismatch is a <code>conflict</code> reply and nothing is written.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Optional fields — description, created_by, args, launch, mcp, startup, permissions, default_prompt, avatar, archived_at" id="optional">
+        <h2>Optional</h2>
+        <table class="arce-fields">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type · default</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>description</code> <span class="arce-opt">opt</span></td>
+              <td>string · <code>""</code></td>
+              <td>
+                One-line description. Skipped when empty.
+              </td>
+            </tr>
+            <tr>
+              <td><code>created_by</code> <span class="arce-opt">opt</span></td>
+              <td>string · <code>""</code></td>
+              <td>
+                User id of whoever first saved it. Each later revision is
+                credited to whoever made it; <code>created_by</code> never
+                moves.
+              </td>
+            </tr>
+            <tr>
+              <td><code>args</code> <span class="arce-opt">opt</span></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Extra argv words, one string each —
+                <code>["--model", "opus"]</code>. Never a command line. No
+                empty strings, no NUL, no pipes / redirects / shell syntax.
+              </td>
+            </tr>
+            <tr>
+              <td><code>env</code> <span class="arce-opt">opt</span></td>
+              <td>map of string → string · <code>{}</code></td>
+              <td>
+                Environment variables every launch of this agent sets, for
+                example <code>{ CLAUDE_CONFIG_DIR: "/Users/sam/.claude-work" }</code>,
+                so it can run isolated. CodeSense's own launch variables always
+                win over one here of the same name. Up to 64 variables. Anyone
+                who can read the agent sees them, so never put a secret here. A
+                machine needs a current terminal server for an agent that sets
+                <code>env</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>launch</code> <span class="arce-opt">opt</span></td>
+              <td>enum · <code>foreground</code></td>
+              <td>
+                <code>foreground</code> (a visible terminal tab) or
+                <code>headless</code> (no terminal tab; the run shows in the Agents
+                list). A launcher or routine can override it.
+              </td>
+            </tr>
+            <tr>
+              <td><code>mcp</code> <span class="arce-opt">opt</span></td>
+              <td>object · <code>{servers:[]}</code></td>
+              <td>
+                MCP server access: <code>servers</code> and, for Codex and OpenCode,
+                <code>bridge_tools</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>mcp.servers</code> <span class="arce-opt">opt</span></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Whitelist of server keys from the team's
+                <code>.mcp.json</code> (claude) or
+                <code>.codex/config.toml</code> (codex). No duplicates, no NUL.
+                The CodeSense bridge is always on and
+                <strong>never listed</strong> — passing <code>codesense</code>
+                here is refused.
+              </td>
+            </tr>
+            <tr>
+              <td><code>startup</code> <span class="arce-opt">opt</span></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Ordered list of content-relative paths. Each is a file (a
+                command) or a directory (a skill). Normalized on save:
+                relative, no <code>..</code>, no globs, no reserved top-level
+                dirs, no duplicates, no entry inside another entry. Order is
+                preserved. See
+                <a href="./context-field.html">context resolver</a> for how it
+                resolves.
+              </td>
+            </tr>
+            <tr>
+              <td><code>mcp.bridge_tools</code> <span class="arce-opt">opt</span></td>
+              <td>string array · <code>null</code></td>
+              <td>
+                Applies to local Codex and OpenCode launches. A remote agent with an explicit
+                list is refused, so a restriction is never silently dropped; a remote agent with
+                no list (omitted or <code>null</code>) has the full tool set. Exact, unqualified tool names; 1–128 ASCII
+                letters, digits, underscores or hyphens, without duplicates or
+                wildcards. Omitted or <code>null</code> allows all tools;
+                <code>[]</code> allows none. Unknown names warn and grant nothing.
+                In <code>agent_create</code>, <code>agent_update</code> and
+                <code>agent_preview</code>, use <code>mcpBridgeTools</code>.
+                An update keeps an omitted list; <code>null</code> clears it.
+                Preview reports <code>launch.bridge_tools</code> and sorted
+                <code>launch.effective_bridge_tools</code>, and warns when
+                <code>signal_done</code>, <code>read_messages</code> or
+                <code>reply</code> is excluded. Include completion and inbox tools
+                when the agent needs them. A call through
+                <code>codesense_call_tool</code> requires both the wrapper and its
+                target tool enabled; preview explains this when the wrapper is listed.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions</code> <span class="arce-opt">opt</span></td>
+              <td>object · <code>null</code></td>
+              <td>
+                Runtime-specific permission config. Holds a block per runtime
+                (<code>claude:</code>, <code>codex:</code>, <code>opencode:</code>).
+                Only the block matching <code>runtime</code> applies; blocks for
+                other runtimes are kept untouched. Passed through to the CLI;
+                CodeSense never enforces it itself.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.allow</code></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Claude's own allowlist strings
+                (<code>Read</code>, <code>Grep</code>, <code>"Bash(npm test:*)"</code>,
+                <code>"mcp__slack__*"</code>). Unique, non-empty.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.ask</code></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Ask-on-each rules. Same string shape as <code>allow</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.deny</code></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Blocklist. Same string shape as <code>allow</code>. CodeSense
+                only adds allows its own tools need
+                (<code>signal_done</code> and friends); a rule that blocks
+                those is kept as written and warned about.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.additional_directories</code></td>
+              <td>string array · <code>[]</code></td>
+              <td>
+                Extra directories the CLI may read. Alias in input:
+                <code>additionalDirectories</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.default_mode</code></td>
+              <td>string · <code>null</code></td>
+              <td>
+                e.g. <code>"bypassPermissions"</code>. Alias in input:
+                <code>defaultMode</code>. The bypass flag is never added for
+                you; it applies only if the agent's own <code>args</code> carry
+                it.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.claude.disable_bypass_permissions_mode</code></td>
+              <td>string · <code>null</code></td>
+              <td>
+                Alias in input: <code>disableBypassPermissionsMode</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.codex.approval_policy</code></td>
+              <td>string · <code>null</code></td>
+              <td>
+                e.g. <code>"on-request"</code>, <code>"never"</code>. Alias:
+                <code>approvalPolicy</code>. A headless Codex agent with no
+                policy gets <code>never</code> for you (otherwise it would hang
+                on an approval nobody sees).
+                <p><strong>Policy.</strong> CodeSense always sets
+                <code>default_tools_approval_mode="approve"</code> on its generated
+                Codex bridge alias, including with <code>on-request</code> and
+                <code>untrusted</code>: bridge calls do not prompt. The captured
+                bridge grant plus <code>mcp.bridge_tools</code> control least
+                privilege. Filesystem and shell sandbox limits and approvals stay
+                as configured. Bridge tools execute in CodeSense outside that
+                shell sandbox, so an allowed mutation tool can still change data.
+                Other MCP servers keep their existing approval behavior.</p>
+                <p><code>bridge_tools</code> applies to local launches. A remote agent with an
+                explicit list, including <code>[]</code>, is refused, so a restriction is never
+                silently dropped; <code>agent_preview</code> reports this as
+                <code>bridge_tools_local_only</code>.</p>
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.codex.sandbox_mode</code></td>
+              <td>string · <code>null</code></td>
+              <td>
+                e.g. <code>"workspace-write"</code>,
+                <code>"read-only"</code>. Alias: <code>sandboxMode</code>. A
+                headless Codex agent with no mode gets
+                <code>workspace-write</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.opencode</code></td>
+              <td>object · <code>null</code></td>
+              <td>
+                OpenCode's permission config, used when
+                <code>runtime: opencode</code>. See
+                <a href="#opencode-permissions">OpenCode permissions</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>permissions.opencode.permission</code></td>
+              <td>map · <code>{}</code></td>
+              <td>
+                Tool pattern to <code>ask</code>, <code>allow</code> or
+                <code>deny</code>. See
+                <a href="#opencode-permissions">OpenCode permissions</a>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>context</code> <span class="arce-opt">opt</span></td>
+              <td>array · runtime default</td>
+              <td>
+                The folders and files a workspace gets for this agent at
+                launch: bare paths or <code>{path, dest?}</code>, at most 32.
+                Left out: the runtime's default (claude: <code>CLAUDE.md</code>
+                + <code>.claude/{commands,hooks,agents,skills}</code>; codex:
+                <code>AGENTS.md</code> + <code>.agents/skills</code>).
+                <code>[]</code>: none. Per-repo additions and removals live
+                beside the agent in
+                <code>config/agents/&lt;id&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;.yaml</code>
+                (<code>repoOverrides</code> on <code>agent_create</code> /
+                <code>agent_update</code>) and count toward its revision.
+              </td>
+            </tr>
+            <tr>
+              <td><code>default_prompt</code> <span class="arce-opt">opt</span></td>
+              <td>string · <code>""</code></td>
+              <td>
+                What a launch starts with when the launcher gives nothing.
+                If it starts with <code>/name</code>, the matching skill or
+                command must be in <code>startup</code> or the run won't find
+                it — <code>agent_preview</code> warns when it doesn't.
+              </td>
+            </tr>
+            <tr>
+              <td><code>avatar</code> <span class="arce-opt">opt</span></td>
+              <td>string · <code>null</code></td>
+              <td>
+                Agent face. Three shapes: <code>pack:id</code>
+                (<code>builtin-funny:hardhat-raccoon</code>; <code>avatar_list</code>
+                lists them), a colour, or a single emoji. Display only.
+              </td>
+            </tr>
+            <tr>
+              <td><code>allowWake</code> <span class="arce-opt">opt</span></td>
+              <td>boolean · <code>false</code></td>
+              <td>
+                Lets a routine wake a running session of this agent even while
+                it skips permission checks (a bypass flag or an unattended
+                starter). Means nothing for an agent that keeps its checks.
+                Alias: <code>allow_wake</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>resumeAfterRestart</code> <span class="arce-opt">opt</span></td>
+              <td>boolean · <code>false</code></td>
+              <td>
+                After a terminal server update ends one of its sessions,
+                CodeSense relaunches it as this agent, in the same workspace and
+                tab, with a resume brief. Alias: <code>resume_after_restart</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><code>archived_at</code> <span class="arce-opt">opt</span></td>
+              <td>ISO 8601 · <code>null</code></td>
+              <td>
+                Archive timestamp. Set = archived: drops out of lists and
+                pickers, and its routines are archived with it. Clear it with
+                <code>agent_unarchive</code> (<code>restoreRoutines: true</code>
+                brings its routines back too).
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="OpenCode permissions permissions.opencode permissions.opencode.permission OPENCODE_CONFIG_CONTENT ask allow deny codesense_ tool pattern bridge_tools" id="opencode-permissions">
+        <h2>OpenCode permissions</h2>
+        <p>
+          With <code>runtime: opencode</code>, <code>permissions.opencode</code>
+          is the permission config. Its one supported key is
+          <code>permission</code>: a map from a tool pattern (an OpenCode tool
+          name or glob; CodeSense MCP tools appear as
+          <code>codesense_&lt;tool&gt;</code>) to <code>ask</code>,
+          <code>allow</code> or <code>deny</code>. A decision outside those three
+          is rejected when the agent is saved, and so is any other key under
+          the OpenCode block. A <code>permissions.opencode</code> block on an agent with a
+          different runtime is not checked and is kept untouched.
+        </p>
+        <p>
+          CodeSense converts the map into OpenCode 2's ordered
+          <code>permissions</code> rules in <code>OPENCODE_CONFIG_CONTENT</code>,
+          alongside the launch's MCP configuration. More specific rules follow
+          the default rule, and the last matching rule wins.
+          CodeSense adds a rule only where you set none for that pattern:
+          <code>"*": ask</code> on a foreground launch (a headless one differs, below); <code>allow</code> for its lifecycle tools
+          (<code>codesense_who_am_i</code>, <code>codesense_list_sessions</code>,
+          <code>codesense_signal_progress</code>, <code>codesense_signal_done</code>,
+          <code>codesense_ask_user</code>, <code>codesense_post_agent_message</code>,
+          <code>codesense_read_messages</code>, <code>codesense_reply</code>); and,
+          only when <code>mcp.bridge_tools</code> is declared,
+          <code>"codesense_*": deny</code>, with an <code>allow</code> for each
+          listed tool. With <code>bridge_tools</code> omitted or
+          <code>null</code>, CodeSense tools follow <code>*</code>.
+        </p>
+        <p>
+          A <strong>headless launch</strong> (a routine run with no tab) starts from a
+          different base, because <code>opencode run</code> answers the first
+          <code>ask</code> by rejecting it and stopping with no answer:
+          <code>"*": deny</code>, <code>allow</code> for <code>read</code>,
+          <code>glob</code>, <code>grep</code>, <code>list</code> and
+          <code>todowrite</code>, and <code>external_directory: deny</code>, beside the
+          CodeSense allows above. A tool the map denies does not park or empty the
+          run: the denied call ends in an error turn, which shows in the run's turns,
+          and the run goes on. Your own <code>permission</code> map still wins, key by key:
+          set <code>shell: allow</code> to let a routine agent run shell commands. A
+          foreground launch keeps <code>"*": ask</code>. For an OpenCode agent that
+          routines run, set a short <code>max_runtime</code> on the routine
+          (<code>30m</code> suggested): a provider 5xx retries silently until it.
+        </p>
+        <p>
+          <strong>Unattended OpenCode.</strong> The OpenCode unattended starter keeps
+          <code>--auto</code>. An <em>escalating</em> agent (<code>--auto</code> in its
+          args, or an all-allow <code>permission</code> map) gets an
+          <code>"*": allow</code> base on a headless launch instead of the deny base,
+          because <code>--auto</code> alone does not override a <code>deny</code>. The
+          CodeSense allows still apply and your own keys still win, so an escalating
+          agent with <code>shell: deny</code> keeps shell commands denied. Such an agent can run any
+          tool, so pair it with a sandbox. Each of its routines still needs a short
+          <code>policy.max_runtime</code> (<code>30m</code> suggested).
+        </p>
+<pre><code>runtime: opencode
+permissions:
+  opencode:
+    permission:
+      "*": ask
+      shell: allow</code></pre>
+      </section>
+
+      <section data-search="OpenCode activity plugin status Working Ready Needs approval subagents server.js plugins standalone" id="opencode-activity">
+        <h2>OpenCode activity</h2>
+        <p>
+          An OpenCode tab shows Working, Ready, Needs approval and
+          <em>Working · N subagents</em> like a Claude or Codex tab. CodeSense
+          lists its own plugin directory, <code>~/.codesense/opencode/</code>,
+          in the inline <code>plugins</code> config of every OpenCode it launches,
+          using its <code>server.js</code> entrypoint, saved agent or
+          typed in a CodeSense terminal (unless you set
+          <code>OPENCODE_CONFIG_CONTENT</code> yourself). The plugin tells CodeSense when a
+          session starts, a prompt is sent, a tool runs, OpenCode asks for
+          permission or puts a question to you, a session goes idle or errors,
+          a compaction runs, and when a subagent starts or goes idle. It sends only ids, tool names and an error
+          kind: never prompt text, tool arguments or output, or permission
+          patterns. CodeSense rewrites the file when it updates and never
+          touches the plugins in your own OpenCode config. Managed launches use
+          <code>--standalone</code>, so their private server receives the tab's
+          context, tools and activity settings.
+        </p>
+        <p>
+          If one of your own OpenCode plugins also reports activity to CodeSense,
+          remove that duplicate integration so the tab is not told twice.
+        </p>
+      </section>
+
+      <section data-search="OpenCode usage cost spend cap session_usage tokens notional price Go subscription plugin" id="opencode-usage">
+        <h2>OpenCode usage and cost</h2>
+        <p>
+          An OpenCode session launched by CodeSense shows in
+          <code>session_usage</code> with <code>cli: "opencode"</code>, and its
+          spend counts toward the agent's spend cap like a Claude or Codex
+          session. The same plugin reports each finished assistant message once:
+          its model and token counts (input, output including reasoning, cache
+          reads and writes) and the cost OpenCode itself worked out. It sends no
+          prompt text or output.
+        </p>
+        <p>
+          The cost is OpenCode's price for the model, not what you were billed.
+          On an OpenCode Go subscription it is a notional price: the
+          subscription's flat fee is not in it. When OpenCode reports no cost
+          for a call, CodeSense prices it from the model rates on file
+          (<code>model_rates</code>), seeded with the OpenCode Zen list prices
+          for the common Go and Zen models. Allowance windows are not shown.
+        </p>
+      </section>
+
+      <section data-search="OpenCode inbox mail wake idle working waiter plugin session.prompt inboxWaiter" id="opencode-inbox">
+        <h2>OpenCode inbox</h2>
+        <p>
+          New mail reaches an OpenCode agent the same way as a Claude one: an
+          idle agent wakes to a short notice, and a working one hears it at its
+          next queued turn. The same CodeSense plugin does it. It
+          waits for mail from the tab's CodeSense host, and when mail arrives
+          it queues the notice through OpenCode's native
+          <code>session.prompt</code> API for its main session, confirming delivery
+          only after OpenCode returns the accepted inbox item.
+          Nothing is typed into the terminal, so a draft you have half written
+          stays as it is. The notice only says
+          you have mail; the agent reads it with <code>read_messages</code>.
+          <code>list_sessions</code> shows <code>inboxWaiter: true</code> while
+          the plugin is waiting, and false if the plugin did not load, the
+          agent has exited or it is a one-shot <code>opencode run</code>.
+          Subagent sessions never wait. A session restored with
+          <code>--continue</code> or <code>--session</code> starts waiting at
+          boot, and cancelling a turn that mail started leaves it waiting.
+          Deleting the conversation a tab follows retires its waiter. Mail
+          counts as delivered only once OpenCode has taken the notice, so a
+          notice that had nowhere to go (a deleted conversation, a refusal, OpenCode
+          quitting) stays unread and reaches the next conversation you work in.
+          The plugin works out whether OpenCode was started to resume a session,
+          or as a one-shot run, from OpenCode&rsquo;s own command line, so those
+          checks are tied to the OpenCode versions CodeSense qualifies and are
+          rechecked when it qualifies a new release.
+        </p>
+      </section>
+
+      <section data-search="OpenCode version support unsupported release warning plugin disabled qualify new release cli_version_unqualified" id="opencode-versions">
+        <h2>OpenCode version support</h2>
+        <p>
+          The CodeSense plugin relies on events and hooks of the OpenCode
+          releases it was checked against (2.1.4 and newer 2.x). CodeSense uses
+          the native OpenCode 2 API; a 1.x install needs updating. The dependency
+          check requires at least 2.1. A release outside the qualified range
+          (for example 3.x) still
+          starts, but says so first: the
+          launch preview, the launch itself, <code>agent_get</code> and
+          <code>agent_preview</code> carry a warning with the code
+          <code>cli_version_unqualified</code> that names the version found
+          and the supported range, and the CLI's row in Settings shows
+          &ldquo;Not a supported version&rdquo;. The same warning appears for
+          Claude and Codex releases outside their ranges, and nothing is
+          refused because of it.
+        </p>
+        <p>
+          For OpenCode the plugin is also left out of a managed launch of an
+          unsupported release, and a typed OpenCode's plugin checks its host at
+          start and disables itself with one log line. Either way the tab shows
+          no activity or usage, and <code>list_sessions</code> shows
+          <code>inboxWaiter: false</code>, instead of a status that is not
+          true. Settings and <code>get_viewer_state</code> report each CLI's
+          <code>qualified</code> (true, false, or null when its version cannot
+          be read) and <code>supported</code> range.
+        </p>
+        <p>
+          A saved-agent session started on such a release says so on its
+          <code>list_sessions</code> row, and the Agents list shows
+          &ldquo;Limited&rdquo; where it would show &ldquo;Ready&rdquo;, with
+          the same note as its tooltip:
+        </p>
+        <pre><code>{
+  "handle": "_worker/acme/app/t1/oc1",
+  "state": "idle",
+  "inboxWaiter": false,
+  "releaseQualified": false,
+  "releaseNote": "This CLI version (3.0.1) isn't supported yet (supported: OpenCode 2.1.4 or a newer 2.x release). Status, inbox wake and usage may not work."
+}</code></pre>
+        <p>
+          <code>releaseQualified</code> is only ever <code>false</code>, and
+          <code>releaseNote</code> comes with it. Both are absent when the
+          release is qualified <em>or not known</em>: a CLI typed into a plain
+          tab records no version, so it has no flag and keeps its normal
+          status. Absent therefore means &ldquo;nothing is known to be wrong&rdquo;,
+          not &ldquo;verified supported&rdquo;. Read <code>state</code> and
+          <code>inboxWaiter</code> as before; the flag adds the reason.
+        </p>
+        <p>
+          A newer OpenCode release is supported once every event, hook and client call in the
+          plugin's <code>contract.json</code> has been checked against it and the OpenCode
+          adapter's version range is widened.
+        </p>
+      </section>
+
+      <section data-search="Validation and errors" id="validation">
+        <h2>What breaks a save</h2>
+        <p>
+          A validation error is
+          <code>{ok: false, error: {code: "invalid", message, field}}</code>
+          and writes nothing. The <code>field</code> names exactly where to fix
+          it. The common ones:
+        </p>
+        <ul>
+          <li><code>id</code> — doesn't match <code>[a-z0-9][a-z0-9-]{0,63}</code>.</li>
+          <li><code>runtime</code> — not <code>claude</code>, <code>codex</code> or <code>opencode</code> (and no <code>sessionId</code> to infer from).</li>
+          <li><code>args[n]</code> — contains shell syntax (pipe, redirect, quote), NUL, or an empty string.</li>
+          <li><code>mcp.servers[n]</code> — <code>codesense</code> (the bridge), a duplicate, empty, or NUL.</li>
+          <li><code>startup[n]</code> — absolute path, <code>..</code>, a glob, inside a reserved top-level dir, or overlaps an earlier entry.</li>
+          <li><code>permissions.&lt;runtime&gt;.&lt;key&gt;</code> — a key the runtime doesn't have.</li>
+          <li><code>revision</code> — &lt; 1, or (on update) doesn't match <code>baseRevision</code> → <code>conflict</code>.</li>
+        </ul>
+        <p>
+          Anything that isn't an error but looks off comes back in
+          <code>warnings</code> and <code>manifest</code>: a huge startup entry
+          or binary files in a directory, a <code>/name</code> the agent
+          doesn't start with, permissions that would block CodeSense's own
+          tools. CodeSense never caps or edits what you asked for; the user
+          decides.
+        </p>
+      </section>
+
+      <section data-search="Codex hooks and trust under CodeSense — project hooks, trust, MCP scope" id="codex-hooks-trust">
+        <h2>Codex hooks and trust under CodeSense</h2>
+        <p>
+          A project or team <code>.codex/hooks.json</code> hook is untrusted until
+          Codex records its hash. An untrusted hook puts a <em>Hooks need review</em>
+          screen in front of the TUI, and Codex records "Trust all and continue" in
+          its own <code>config.toml</code>. CodeSense keeps that write working: a scoped
+          launch hands Codex one <code>mcp_servers</code> override that switches off
+          every server the Codex home already lists and adds only the ones the agent
+          selected. Each switched-off entry still names a complete server of its own
+          type (a no-op <code>command</code> for a stdio server, a dead local
+          <code>url</code> for a remote one), because Codex validates the merged
+          configuration on every write, and an entry with no transport fails it with
+          <code>invalid transport in mcp_servers.&lt;name&gt;</code>. The placeholder
+          never carries the server's real args, url, working directory or
+          <code>env</code>: those would land in the process list.
+        </p>
+        <ul>
+          <li>
+            Trust a project hook once, from a CodeSense launch. It then stays trusted
+            across relaunches (the override is not saved into
+            <code>config.toml</code>).
+          </li>
+          <li>
+            An unattended agent cannot answer the review screen. Trust the hooks
+            before the agent runs unattended, or leave them out of that agent's
+            project.
+          </li>
+          <li>
+            Hooks CodeSense generates itself (its activity observers) are trusted by
+            CodeSense and never prompt.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Source reference — Rust validator" id="source">
+        <h2>Where this lives</h2>
+        <p class="arce-source">
+          Fields, defaults and validation:
+          <code>src-tauri/src/agents/model.rs</code> (the <code>Agent</code> struct and
+          <code>ValidationError</code>); <code>context</code> entries in
+          <code>src-tauri/src/agents/context.rs</code>.
+          Id pattern: <code>is_valid_id()</code> in <code>model.rs</code>.
+          Team-chain lookup used by the context resolver:
+          <code>src-tauri/src/domain/org.rs</code> (<code>team_chain</code>).
+          Full inventory with cross-refs:
+          <a href="../schema-browser.html#schema/agent-yaml">schema-browser →
+          agent.yaml</a>.
+        </p>
+      </section>
+
+      <section data-search="Try this now — validate an agent.yaml draft" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Preview a draft against the real validator. Nothing is written. You
+          get back <code>manifest</code> (what the agent would start with and
+          how big it is), <code>warnings</code>, and
+          <code>errors</code>. Fix the named field and try again.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Example triage", "runtime": "claude", "launch": "headless", "startup": ["CLAUDE.md", ".claude/skills/triage/"], "mcpServers": ["slack"], "permissions": {"claude": {"allow": ["Read", "Grep", "Glob", "mcp__slack__*"], "deny": ["Edit", "Write", "Bash"]}}, "defaultPrompt": "/triage"}}'
+          label="Preview a draft agent.yaml"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Preview before you create — same inputs as agent_create.
+codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions })
+// → { manifest: {totals, errors, provides}, warnings, resolved: {account} }
+
+// Create it. dryRun returns the same reply and writes nothing.
+codesense.invoke('agent_create', { name, runtime, startup, scope: 'team', dryRun: true })
+
+// Update it. Pass only the fields that change; keep the revision you last read.
+codesense.invoke('agent_update', { id, baseRevision, startup, permissions })
+
+// Get the current definition + revision.
+codesense.invoke('agent_get', { id })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Next: <a href="./claude-md-agents-md.html">CLAUDE.md &amp; AGENTS.md →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/agent-yaml">schema-browser · agent.yaml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · agent.yaml</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

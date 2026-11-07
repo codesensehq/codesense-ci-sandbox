@@ -1,0 +1,629 @@
+/* SPDX-License-Identifier: MIT */
+/* An agent's inbox (the Agents tab's Messages and the agent side panel) and the side panel. */
+
+.ib-root,
+.cs-agent-panel {
+  --am-line: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --am-wash: color-mix(in oklab, var(--foreground) 3%, var(--background));
+  --ib-unread: var(--accent);
+  --ib-unread-wash: color-mix(in oklab, var(--accent) 7%, var(--background));
+  --ib-hover: color-mix(in oklab, var(--foreground) 4%, var(--background));
+  --ib-muted: var(--muted-foreground);
+  --ib-ok: var(--cs-status-added);
+  --ib-busy: var(--accent);
+  --ib-wait: color-mix(in oklab, var(--foreground) 62%, var(--background));
+  /* Pieces and tags cut out of faces by the surface. */
+  --ag-bg: var(--background);
+  --ag-text: var(--foreground);
+}
+
+/* ---- Composer ---------------------------------------------------------------------- */
+
+.ib-root {
+  overflow: hidden;
+}
+.ib-compose {
+  flex: none;
+}
+.ib-compose .am-box {
+  min-height: 40px;
+}
+.ib-compose[data-composing] .am-box,
+.ib-compose:focus-within .am-box {
+  min-height: 72px;
+}
+.ib-compose-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 8px 12px;
+}
+.ib-compose:not(:focus-within):not([data-composing]) .ib-compose-foot {
+  /* Idle, the box is one line; its hint and Send appear once it is in use. */
+  display: none;
+}
+
+/* ---- Toolbar: filters and Mark all read ---------------------------------------------- */
+
+.ib-toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 4px;
+}
+.ib-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+.ib-seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ib-muted);
+  white-space: nowrap;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ib-seg button:hover {
+  color: var(--foreground);
+}
+.ib-seg button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: var(--background);
+  box-shadow:
+    0 1px 2px color-mix(in oklab, black 12%, transparent),
+    inset 0 0 0 1px var(--am-line);
+}
+.ib-seg button:focus-visible,
+.ib-text-btn:focus-visible,
+.ib-action:focus-visible,
+.ib-head:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.ib-seg-n {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ib-muted);
+}
+.ib-seg-n[data-hot] {
+  color: var(--ib-unread);
+  font-weight: 600;
+}
+.ib-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ib-muted);
+}
+.ib-text-btn:hover {
+  color: var(--foreground);
+  background: var(--ib-hover);
+}
+
+/* ---- The list ---------------------------------------------------------------------- */
+
+.ib-list {
+  padding: 4px 8px 12px;
+  min-height: 120px;
+}
+.ib-convs {
+  display: flex;
+  flex-direction: column;
+}
+.ib-conv + .ib-conv {
+  border-top: 1px solid var(--am-line);
+}
+.ib-conv {
+  padding: 2px 0;
+}
+.ib-replies {
+  position: relative;
+  margin-left: 21px;
+  padding-left: 12px;
+}
+.ib-replies::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 14px;
+  width: 1px;
+  background: var(--am-line);
+}
+
+.ib-msg {
+  position: relative;
+  border-radius: 8px;
+}
+.ib-msg[data-unread] {
+  background: var(--ib-unread-wash);
+}
+.ib-msg[data-open] {
+  background: var(--am-wash);
+}
+.ib-head {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  padding: 8px 8px 8px 6px;
+  border-radius: 8px;
+  text-align: left;
+}
+.ib-msg[data-open] .ib-head {
+  padding-bottom: 4px;
+}
+.ib-msg:not([data-open]) .ib-head:hover {
+  background: var(--ib-hover);
+}
+.ib-msg[data-unread]:not([data-open]) .ib-head:hover {
+  background: color-mix(in oklab, var(--accent) 11%, var(--background));
+}
+.ib-face {
+  position: relative;
+  flex: none;
+  padding-top: 1px;
+}
+.ib-you {
+  width: 26px;
+  height: 26px;
+}
+.ib-unread-dot {
+  position: absolute;
+  left: -5px;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ib-unread);
+  box-shadow: 0 0 0 2px var(--background);
+}
+.ib-head-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+.ib-line1 {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+}
+.ib-name {
+  flex: none;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.ib-msg[data-unread] .ib-name {
+  font-weight: 650;
+}
+.ib-to {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ib-muted);
+}
+.ib-time {
+  flex: none;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ib-muted);
+}
+.ib-msg[data-unread] .ib-time {
+  color: var(--ib-unread);
+  font-weight: 500;
+}
+.ib-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: color-mix(in oklab, var(--foreground) 82%, var(--background));
+  overflow-wrap: anywhere;
+}
+.ib-msg[data-unread] .ib-preview {
+  color: var(--foreground);
+}
+.ib-msg[data-withdrawn] .ib-preview,
+.ib-msg[data-withdrawn] .ib-text {
+  color: var(--ib-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, var(--ib-muted) 60%, transparent);
+}
+
+/* Where a message stands: a glyph and a word, toned by how far it got. */
+.ib-badge {
+  display: inline-flex;
+  max-width: 100%;
+  align-self: flex-start;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 15px;
+  color: var(--ib-wait);
+}
+.ib-badge[data-tone="accent"] {
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--accent-foreground);
+  background: var(--ib-unread);
+}
+.ib-badge[data-tone="busy"] {
+  color: var(--ib-busy);
+}
+.ib-badge[data-tone="done"] {
+  color: var(--ib-ok);
+}
+.ib-badge[data-tone="quiet"] {
+  color: var(--ib-muted);
+}
+.ib-badge[data-tone="wait"] svg {
+  opacity: 0.85;
+}
+
+/* ---- An open message ---------------------------------------------------------------- */
+
+.ib-body {
+  padding: 0 10px 10px 42px;
+  /* The text starts under the name, not under the taller face beside it. */
+  margin-top: -9px;
+}
+.ib-text {
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 72ch;
+  color: var(--foreground);
+}
+.ib-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--ib-muted);
+  background: var(--background);
+  box-shadow: inset 0 0 0 1px var(--am-line);
+}
+.ib-steps li {
+  position: relative;
+  padding-left: 14px;
+}
+.ib-steps li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.ib-steps li[data-tone="done"]::before {
+  background: var(--ib-ok);
+}
+.ib-steps li[data-tone="busy"]::before {
+  background: var(--ib-busy);
+}
+.ib-steps li[data-tone="wait"]::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ib-wait);
+}
+.ib-steps li[data-tone="busy"] {
+  color: var(--foreground);
+}
+.ib-steps time {
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--ib-muted) 85%, var(--background));
+}
+.ib-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.ib-note {
+  display: block;
+  margin-top: 2px;
+  font-style: italic;
+  color: var(--foreground);
+}
+.ib-actions-wrap {
+  margin-top: 8px;
+}
+.ib-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-left: -6px;
+}
+.ib-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ib-muted);
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ib-action:hover:not(:disabled) {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.ib-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ib-reason {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--ib-muted);
+}
+.ib-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--destructive) 8%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--destructive) 28%, transparent);
+}
+.ib-reply {
+  margin: 8px 0 0;
+}
+
+.ib-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 12px 24px;
+  text-align: center;
+}
+.ib-state .ib-text-btn {
+  margin: 4px 0 0;
+}
+
+.ib-caption {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 5px;
+  padding: 12px 16px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ib-muted);
+}
+.ib-caption-name {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* ---- Inside the side panel: the inbox is the panel's body, not a card on it ---------- */
+
+.ib-root[data-variant="panel"] {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.ib-root[data-variant="panel"] .ib-compose {
+  margin: 8px 14px 4px;
+}
+.ib-root[data-variant="panel"] .ib-toolbar {
+  padding: 6px 14px 6px;
+}
+.ib-root[data-variant="panel"] .ib-list {
+  padding: 2px 8px 16px;
+  min-height: 0;
+}
+
+/* ---- The agent side panel ------------------------------------------------------------ */
+
+.cs-agent-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  width: clamp(420px, 34vw, 480px);
+  max-width: calc(100% - 24px);
+  flex-direction: column;
+  color: var(--foreground);
+  background: var(--background);
+  border-left: 1px solid var(--border);
+  box-shadow:
+    -12px 0 32px -12px color-mix(in oklab, black 28%, transparent),
+    -2px 0 6px -2px color-mix(in oklab, black 10%, transparent);
+  outline: none;
+  animation: ap-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dark .cs-agent-panel {
+  box-shadow:
+    -16px 0 40px -12px color-mix(in oklab, black 60%, transparent),
+    -2px 0 8px -2px color-mix(in oklab, black 40%, transparent);
+}
+.cs-agent-panel ::selection {
+  background: color-mix(in oklab, var(--accent) 28%, transparent);
+}
+@keyframes ap-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-agent-panel {
+    animation: ap-fade 120ms ease-out;
+  }
+}
+@keyframes ap-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.ap-head {
+  flex: none;
+  padding: 14px 14px 12px 16px;
+  border-bottom: 1px solid var(--am-line);
+}
+.ap-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ap-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ap-sub {
+  margin-top: 1px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ib-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ap-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ib-muted);
+}
+.ap-status-label {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.ap-icon-btn {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--ib-muted);
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ap-icon-btn:hover,
+.ap-icon-btn[data-state="open"] {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.ap-icon-btn:focus-visible,
+.ap-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.ap-needs {
+  margin-top: 12px;
+  padding: 9px 12px 10px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--cs-status-needs) 12%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cs-status-needs) 34%, transparent);
+}
+.ap-needs-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--cs-status-needs) 78%, var(--foreground));
+}
+.ap-needs-q {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.ap-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.ap-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--ib-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklab, var(--ib-muted) 40%, transparent);
+}
+.ap-link:hover {
+  color: var(--foreground);
+  text-decoration-color: currentColor;
+}
+.ap-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.ap-calm {
+  margin: 24px 20px;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--ib-muted);
+}
+.ap-calm strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}

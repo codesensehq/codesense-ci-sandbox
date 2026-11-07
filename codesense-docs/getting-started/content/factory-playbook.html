@@ -1,0 +1,2369 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Factory playbook</title>
+
+    <!-- Shared docs chrome: top-nav + palette + theme glue. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+    <script src="./_shared/create-repo-primer.js" defer></script>
+
+    <style>
+      /* =============================================================================
+       * factory-playbook — local tokens + styles
+       *
+       * The real viewer vends --cs-* via theme injection; the --fp-* tokens below are
+       * dashboard-local so the 14-phase group chroma, phase-rail segments, and braid
+       * SVG stay independent of theme drift. Light mode mirrors the palette.
+       * Scoped to this page via `body[data-page="factory-playbook"]`.
+       * ========================================================================== */
+
+      body[data-page="factory-playbook"] {
+        /* core canvas */
+        --fp-ground: #0b0f14;
+        --fp-stage: #0f141b;
+        --fp-panel: #141a22;
+        --fp-panel-raised: #1a2230;
+        --fp-line: #1f2834;
+        --fp-line-strong: #2a3444;
+        --fp-ink: #e6edf3;
+        --fp-ink-dim: #9aa6b2;
+        --fp-ink-faint: #6b7684;
+        --fp-ring: #58a6ff;
+
+        /* group chroma */
+        --g-plan: #58a6ff;
+        --g-design: #d670d6;
+        --g-build: #f0a93b;
+        --g-verify: #3fb950;
+        --g-ship: #39d3bb;
+        --g-loop: #a08cff;
+
+        /* semantics (match embedded dashboards) */
+        --ok: #3fb950;
+        --amber: #d29922;
+        --danger: #f85149;
+
+        --radius: 10px;
+        --radius-sm: 6px;
+        --radius-lg: 14px;
+
+        background: var(--fp-ground);
+        color: var(--fp-ink);
+      }
+      html[data-theme="light"] body[data-page="factory-playbook"] {
+        --fp-ground: #f6f8fa;
+        --fp-stage: #ffffff;
+        --fp-panel: #ffffff;
+        --fp-panel-raised: #f6f8fa;
+        --fp-line: #eaeef2;
+        --fp-line-strong: #d0d7de;
+        --fp-ink: #1f2328;
+        --fp-ink-dim: #656d76;
+        --fp-ink-faint: #8b949e;
+        --fp-ring: #0969da;
+
+        --g-plan: #0969da;
+        --g-design: #a228a2;
+        --g-build: #b57a0e;
+        --g-verify: #1a7f37;
+        --g-ship: #1b7f74;
+        --g-loop: #6639ba;
+
+        --ok: #1a7f37;
+        --amber: #9a6700;
+        --danger: #cf222e;
+      }
+
+      body[data-page="factory-playbook"] {
+        margin: 0;
+        font-family: var(--cs-font-sans);
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      body[data-page="factory-playbook"] ::selection {
+        background: color-mix(in oklab, var(--fp-ring) 32%, transparent);
+        color: var(--fp-ink);
+      }
+      body[data-page="factory-playbook"] :focus-visible {
+        outline: 2px solid var(--fp-ring);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      body[data-page="factory-playbook"] kbd {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 1px 5px;
+        border: 1px solid var(--fp-line-strong);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        background: var(--fp-panel-raised);
+      }
+
+      /* ─────────────────────── TITLE BAR ─────────────────────── */
+      .fp-title {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 20px;
+        align-items: end;
+        padding: 28px 24px 20px;
+        border-bottom: 1px solid var(--fp-line);
+        background: linear-gradient(180deg, var(--fp-stage), var(--fp-ground));
+      }
+      .fp-title .title-stack h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 650;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+      }
+      .fp-title .title-stack .sub {
+        margin-top: 6px;
+        color: var(--fp-ink-dim);
+        font-size: 14px;
+        max-width: 68ch;
+      }
+      .fp-title .epic-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: 999px;
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--fp-ink-dim);
+      }
+      .fp-title .epic-chip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--g-build);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--g-build) 20%, transparent);
+      }
+      .fp-title .epic-chip strong {
+        color: var(--fp-ink);
+        font-weight: 650;
+      }
+
+      /* Local ⇄ Remote physical switch */
+      .lr-switch {
+        display: inline-grid;
+        align-items: center;
+        grid-template-columns: auto 56px auto;
+        gap: 10px;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        user-select: none;
+      }
+      .lr-switch .label {
+        color: var(--fp-ink-faint);
+        transition: color 180ms ease;
+      }
+      .lr-switch[data-state="local"] .label.local {
+        color: var(--fp-ink);
+      }
+      .lr-switch[data-state="remote"] .label.remote {
+        color: var(--fp-ink);
+      }
+      .lr-switch button {
+        all: unset;
+        cursor: pointer;
+        width: 56px;
+        height: 22px;
+        border-radius: 999px;
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        position: relative;
+        transition:
+          background 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+      .lr-switch button::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: linear-gradient(
+          180deg,
+          color-mix(in oklab, var(--fp-ink) 94%, white),
+          var(--fp-ink)
+        );
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+        transition:
+          transform 180ms cubic-bezier(0.2, 0.9, 0.1, 1),
+          background 180ms ease;
+      }
+      .lr-switch[data-state="remote"] button {
+        background: color-mix(in oklab, var(--g-plan) 22%, var(--fp-panel));
+        border-color: color-mix(in oklab, var(--g-plan) 40%, var(--fp-line));
+      }
+      .lr-switch[data-state="remote"] button::after {
+        transform: translateX(32px);
+      }
+
+      /* ─────────────────────── PHASE RAIL ─────────────────────── */
+      .rail-wrap {
+        padding: 18px 24px 10px;
+        background: var(--fp-ground);
+        border-bottom: 1px solid var(--fp-line);
+      }
+      .rail-groups {
+        display: grid;
+        grid-template-columns: 2fr 2fr 5fr 3fr 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        color: var(--fp-ink-faint);
+        text-transform: uppercase;
+      }
+      .rail-groups > span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .rail-groups > span::before {
+        content: "";
+        width: 10px;
+        height: 2px;
+        border-radius: 2px;
+        background: currentColor;
+      }
+      .rail-groups .gp-plan { color: var(--g-plan); }
+      .rail-groups .gp-design { color: var(--g-design); }
+      .rail-groups .gp-build { color: var(--g-build); }
+      .rail-groups .gp-verify { color: var(--g-verify); }
+      .rail-groups .gp-ship { color: var(--g-ship); }
+      .rail-groups .gp-loop { color: var(--g-loop); }
+
+      .rail {
+        display: grid;
+        grid-template-columns: repeat(14, minmax(0, 1fr));
+        gap: 4px;
+      }
+      @media (max-width: 960px) {
+        .rail { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+      }
+      .seg {
+        all: unset;
+        cursor: pointer;
+        display: grid;
+        grid-template-rows: 2px 1fr auto;
+        min-height: 86px;
+        border-radius: 8px;
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        position: relative;
+        overflow: hidden;
+        transition:
+          background 160ms ease,
+          border-color 160ms ease,
+          transform 160ms ease,
+          filter 240ms ease;
+      }
+      .seg:hover {
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 8%, var(--fp-panel));
+        border-color: color-mix(in oklab, var(--g, var(--fp-ring)) 30%, var(--fp-line));
+      }
+      .seg .stripe {
+        height: 2px;
+        background: var(--g, var(--fp-ring));
+        opacity: 0.55;
+      }
+      .seg .body {
+        padding: 10px 10px 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .seg .num {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        /* WCAG 2.1 AA: --fp-ink-faint on --fp-panel misses
+         * 4.5:1 for small text; --fp-ink-dim clears the bar. */
+        color: var(--fp-ink-dim);
+        letter-spacing: 0.04em;
+      }
+      .seg .label {
+        font-weight: 550;
+        font-size: 12.5px;
+        color: var(--fp-ink);
+        letter-spacing: -0.005em;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .seg .foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px 8px;
+        color: var(--fp-ink-faint);
+      }
+      .seg .agent-chip {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 30%, var(--fp-panel-raised));
+        color: var(--fp-ink);
+        font-size: 10px;
+        font-weight: 650;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -0.03em;
+        border: 1px solid color-mix(in oklab, var(--g, var(--fp-ring)) 40%, var(--fp-line));
+      }
+      .seg[aria-selected="true"] {
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 16%, var(--fp-panel));
+        border-color: color-mix(in oklab, var(--g, var(--fp-ring)) 55%, var(--fp-line));
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.3),
+          0 0 0 1px color-mix(in oklab, var(--g, var(--fp-ring)) 25%, transparent);
+      }
+      .seg[aria-selected="true"] .stripe {
+        opacity: 1;
+        height: 3px;
+      }
+      .seg[aria-selected="true"] .num {
+        color: color-mix(in oklab, var(--g, var(--fp-ring)) 60%, var(--fp-ink-dim));
+      }
+      .seg[aria-selected="true"] .label {
+        color: var(--fp-ink);
+        font-weight: 650;
+      }
+      .seg.pulse {
+        filter: brightness(1.15);
+      }
+
+      /* Group tint — assigned per segment via data-group */
+      .seg[data-group="Plan"] { --g: var(--g-plan); }
+      .seg[data-group="Design"] { --g: var(--g-design); }
+      .seg[data-group="Build"] { --g: var(--g-build); }
+      .seg[data-group="Verify"] { --g: var(--g-verify); }
+      .seg[data-group="Ship"] { --g: var(--g-ship); }
+      .seg[data-group="Loop"] { --g: var(--g-loop); }
+
+      /* ─────────────────────── STAGE ─────────────────────── */
+      .stage {
+        padding: 28px 24px;
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 1180px) {
+        .stage { grid-template-columns: 1fr; }
+      }
+      .stage-left { min-width: 0; }
+
+      .phase-head {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 24px;
+        align-items: baseline;
+        margin-bottom: 20px;
+      }
+      .phase-head .big {
+        font-size: 96px;
+        font-weight: 650;
+        letter-spacing: -0.045em;
+        line-height: 0.85;
+        font-variant-numeric: tabular-nums lining-nums;
+        color: color-mix(in oklab, var(--g, var(--fp-ring)) 85%, var(--fp-ink));
+        text-shadow: 0 0 60px color-mix(in oklab, var(--g, var(--fp-ring)) 25%, transparent);
+      }
+      .phase-head .kname {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        /* WCAG 2.1 AA: small uppercase label needs ≥ 4.5:1. */
+        color: var(--fp-ink-dim);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .phase-head h2 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 650;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+      }
+      .phase-head .pitch {
+        margin-top: 10px;
+        color: var(--fp-ink-dim);
+        max-width: 62ch;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      /* Mini dashboards grid */
+      .minis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      @media (max-width: 760px) {
+        .minis { grid-template-columns: 1fr; }
+      }
+      .mini {
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 196px;
+        position: relative;
+      }
+      .mini-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--fp-line);
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--fp-ink-dim);
+      }
+      .mini-head .name {
+        color: var(--fp-ink);
+        font-weight: 500;
+        letter-spacing: -0.005em;
+      }
+      .mini-head .state {
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 15%, var(--fp-panel-raised));
+        color: color-mix(in oklab, var(--g, var(--fp-ring)) 50%, var(--fp-ink));
+        font-size: 10.5px;
+      }
+      .mini-body {
+        flex: 1;
+        padding: 10px 12px;
+        background: var(--fp-panel-raised);
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--fp-ink-dim);
+        line-height: 1.6;
+        overflow: hidden;
+      }
+      .mini-body .node-row {
+        display: grid;
+        grid-template-columns: 90px 1fr auto;
+        gap: 8px;
+        align-items: center;
+      }
+      .mini-body .node-row .bar {
+        height: 8px;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 40%, var(--fp-panel-raised));
+        border-radius: 2px;
+      }
+      .mini-body .node-row .status {
+        font-size: 10px;
+        /* WCAG 2.1 AA: --fp-ink-faint fails 4.5:1 at 10px. */
+        color: var(--fp-ink-dim);
+      }
+
+      /* ─────────────────────── FACET CARD ─────────────────────── */
+      .facet {
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius-lg);
+        padding: 4px 0;
+        position: sticky;
+        top: 68px;
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.3),
+          0 24px 48px -32px rgba(0, 0, 0, 0.5);
+      }
+      .facet-row {
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--fp-line);
+      }
+      .facet-row:last-child { border-bottom: none; }
+      .facet-row .k {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        /* WCAG 2.1 AA. */
+        color: var(--fp-ink-dim);
+        padding-top: 4px;
+      }
+      .facet-row .v { min-width: 0; }
+      .facet-row .v.agent {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+      .facet-row .initial-chip {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: -0.03em;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 22%, var(--fp-panel-raised));
+        color: var(--fp-ink);
+        border: 1px solid color-mix(in oklab, var(--g, var(--fp-ring)) 45%, var(--fp-line));
+      }
+      .facet-row .agent .name {
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .facet-row .agent .role {
+        font-size: 12.5px;
+        color: var(--fp-ink-dim);
+        margin-top: 2px;
+        font-family: var(--cs-font-mono);
+      }
+      .mono { font-family: var(--cs-font-mono); }
+      .facet-row .skill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 14%, var(--fp-panel-raised));
+        color: color-mix(in oklab, var(--g, var(--fp-ring)) 70%, var(--fp-ink));
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        border: 1px solid color-mix(in oklab, var(--g, var(--fp-ring)) 25%, var(--fp-line));
+      }
+      .facet-row .inbox-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: var(--fp-panel-raised);
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--fp-ink);
+        border: 1px solid var(--fp-line-strong);
+      }
+      .facet-row .inbox-chip::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--g, var(--fp-ring));
+      }
+      .trigger-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+      }
+      .trigger-line .hint {
+        /* WCAG 2.1 AA. */
+        color: var(--fp-ink-dim);
+        font-family: var(--cs-font-sans);
+        font-size: 12.5px;
+      }
+
+      /* ─────────────────────── SNIPPETS ─────────────────────── */
+      .snippets {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 760px) {
+        .snippets { grid-template-columns: 1fr; }
+      }
+      .snippet {
+        background: var(--fp-panel-raised);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 196px;
+      }
+      .snippet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--fp-line);
+        background: color-mix(in oklab, var(--fp-panel) 60%, var(--fp-panel-raised));
+      }
+      .snippet-head .fname {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--fp-ink-dim);
+      }
+      .snippet-head .fname .ext { color: var(--fp-ink); }
+      .snippet-head .copy {
+        all: unset;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 7px;
+        border-radius: 5px;
+        color: var(--fp-ink-dim);
+        font-size: 11.5px;
+        border: 1px solid transparent;
+      }
+      .snippet-head .copy:hover {
+        background: var(--fp-panel);
+        color: var(--fp-ink);
+        border-color: var(--fp-line);
+      }
+      .snippet pre {
+        margin: 0;
+        padding: 12px 14px;
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--fp-ink);
+        white-space: pre;
+        overflow-x: auto;
+        flex: 1;
+      }
+
+      .copy-cta {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .copy-cta .primary {
+        all: unset;
+        cursor: pointer;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        background: color-mix(in oklab, var(--g, var(--fp-ring)) 85%, white 0%);
+        color: #0b0f14;
+        border: 1px solid color-mix(in oklab, var(--g, var(--fp-ring)) 100%, black 10%);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset;
+      }
+      .copy-cta .primary:hover { filter: brightness(1.08); }
+      .copy-cta .primary[aria-busy="true"] { opacity: 0.65; cursor: progress; }
+      .copy-cta .hint {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        /* WCAG 2.1 AA. */
+        color: var(--fp-ink-dim);
+      }
+      .copy-cta .ok { color: var(--ok); }
+      .copy-cta .refused { color: var(--amber); }
+      .copy-primer { margin-top: 12px; }
+      .copy-primer:empty { display: none; }
+
+      /* ─────────────────────── SUBTABS + BRAID ─────────────────────── */
+      .subtabs {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 24px;
+        border-bottom: 1px solid var(--fp-line);
+      }
+      .subtab {
+        all: unset;
+        cursor: pointer;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--fp-ink-dim);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .subtab[aria-selected="true"] {
+        color: var(--fp-ink);
+        border-bottom-color: var(--g, var(--g-build));
+        font-weight: 600;
+      }
+      .subtabs .right {
+        margin-left: auto;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--fp-ink-faint);
+      }
+
+      .braid-panel {
+        padding: 24px;
+        background: linear-gradient(180deg, var(--fp-stage), var(--fp-ground));
+        border-bottom: 1px solid var(--fp-line);
+      }
+      .braid-panel[hidden] { display: none; }
+      .braid-panel .braid-head {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .braid-panel .braid-head h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+      .braid-panel .braid-head .meta {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--fp-ink-dim);
+      }
+      .braid-panel .braid-head .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--g-build) 15%, var(--fp-panel-raised));
+        color: color-mix(in oklab, var(--g-build) 60%, var(--fp-ink));
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        border: 1px solid color-mix(in oklab, var(--g-build) 35%, var(--fp-line));
+      }
+      .braid-stage {
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .braid-canvas {
+        width: 100%;
+        display: block;
+        height: 360px;
+      }
+      .braid-labels {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1px;
+        background: var(--fp-line);
+        border-top: 1px solid var(--fp-line);
+      }
+      .wtcard {
+        background: var(--fp-panel);
+        padding: 12px 14px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        cursor: pointer;
+        transition: background 160ms ease;
+      }
+      .wtcard:hover { background: var(--fp-panel-raised); }
+      .wtcard .path {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--fp-ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .wtcard .branch {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        color: var(--fp-ink-dim);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .wtcard .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 4px;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        color: var(--fp-ink-faint);
+      }
+      .wtcard .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .st-building { background: var(--g-build); box-shadow: 0 0 0 3px color-mix(in oklab, var(--g-build) 25%, transparent); }
+      .st-review { background: var(--amber); }
+      .st-merged { background: var(--g-verify); }
+      .st-planning { background: var(--fp-ink-faint); }
+
+      /* ─────────────────────── RESOLVER THREAD ─────────────────────── */
+      .thread-panel {
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        border-bottom: 1px solid var(--fp-line);
+        background: var(--fp-ground);
+      }
+      .thread-panel[hidden] { display: none; }
+      @media (max-width: 980px) {
+        .thread-panel { grid-template-columns: 1fr; }
+      }
+      .thread-main {
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius-lg);
+        padding: 0;
+      }
+      .thread-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--fp-line);
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .thread-head h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .thread-head .status {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: color-mix(in oklab, var(--g-verify) 15%, var(--fp-panel-raised));
+        color: color-mix(in oklab, var(--g-verify) 60%, var(--fp-ink));
+        border: 1px solid color-mix(in oklab, var(--g-verify) 30%, var(--fp-line));
+      }
+      .msg {
+        padding: 16px 20px;
+        border-top: 1px solid var(--fp-line);
+        display: grid;
+        grid-template-columns: 40px 1fr;
+        gap: 14px;
+      }
+      .msg:first-of-type { border-top: none; }
+      .msg .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 650;
+        font-size: 13px;
+        color: var(--fp-ink);
+      }
+      .msg[data-role="builder"] .avatar {
+        background: color-mix(in oklab, var(--g-build) 25%, var(--fp-panel-raised));
+        border: 1px solid color-mix(in oklab, var(--g-build) 45%, var(--fp-line));
+      }
+      .msg[data-role="resolver"] .avatar {
+        background: color-mix(in oklab, var(--g-build) 40%, var(--fp-panel-raised));
+        border: 1px solid color-mix(in oklab, var(--g-build) 65%, var(--fp-line));
+        color: #0b0f14;
+        font-weight: 700;
+      }
+      .msg[data-role="analyst"] .avatar {
+        background: color-mix(in oklab, var(--g-plan) 25%, var(--fp-panel-raised));
+        border: 1px solid color-mix(in oklab, var(--g-plan) 50%, var(--fp-line));
+      }
+      .msg .who {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .msg .who .role {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--fp-ink-dim);
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: var(--fp-panel-raised);
+        border: 1px solid var(--fp-line);
+        font-weight: 400;
+      }
+      .msg .when {
+        margin-left: auto;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--fp-ink-faint);
+      }
+      .msg .body {
+        margin-top: 8px;
+        color: var(--fp-ink);
+        font-size: 13.5px;
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      .msg .body code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        background: var(--fp-panel-raised);
+        padding: 1px 5px;
+        border-radius: 4px;
+        border: 1px solid var(--fp-line);
+      }
+      .msg .body blockquote {
+        margin: 10px 0;
+        padding: 8px 12px;
+        background: var(--fp-panel-raised);
+        border-radius: 6px;
+        color: var(--fp-ink-dim);
+        font-size: 12.5px;
+        border: 1px solid var(--fp-line);
+      }
+      .thread-side {
+        background: var(--fp-panel);
+        border: 1px solid var(--fp-line);
+        border-radius: var(--radius-lg);
+        align-self: start;
+      }
+      .thread-side h4 {
+        margin: 0;
+        padding: 14px 16px;
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--fp-ink-faint);
+        font-weight: 600;
+        border-bottom: 1px solid var(--fp-line);
+        font-family: var(--cs-font-mono);
+      }
+      .thread-side .artifact {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--fp-line);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .thread-side .artifact:last-child { border-bottom: none; }
+      .thread-side .artifact .label {
+        font-size: 11px;
+        color: var(--fp-ink-faint);
+        font-family: var(--cs-font-mono);
+      }
+      .thread-side .artifact .value {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--fp-ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ─────────────────────── FOOTER ─────────────────────── */
+      .seed-note {
+        padding: 20px 24px 48px;
+        /* WCAG 2.1 AA. */
+        color: var(--fp-ink-dim);
+        font-size: 12.5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .seed-note code {
+        font-family: var(--cs-font-mono);
+        background: var(--fp-panel);
+        padding: 2px 7px;
+        border-radius: 4px;
+        border: 1px solid var(--fp-line);
+        color: var(--fp-ink-dim);
+      }
+
+      /* ─────────────────────── BRAID ANIMATION ─────────────────────── */
+      @media (prefers-reduced-motion: no-preference) {
+        .braid-stroke {
+          stroke-dasharray: 1200;
+          stroke-dashoffset: 1200;
+          animation: braid-draw 1.6s cubic-bezier(0.2, 0.9, 0.1, 1) forwards;
+        }
+        .braid-stroke.s1 { animation-delay: 0ms; }
+        .braid-stroke.s2 { animation-delay: 80ms; }
+        .braid-stroke.s3 { animation-delay: 160ms; }
+        .braid-stroke.s4 { animation-delay: 240ms; }
+        .braid-stroke.s5 { animation-delay: 320ms; }
+        .braid-stroke.trunk { animation-delay: 1200ms; animation-duration: 1.2s; }
+        .merge-pulse {
+          transform-origin: center;
+          animation: merge-pulse 1.4s cubic-bezier(0.2, 0.9, 0.1, 1) 1500ms forwards;
+          opacity: 0;
+        }
+      }
+      @keyframes braid-draw { to { stroke-dashoffset: 0; } }
+      @keyframes merge-pulse {
+        0% { opacity: 0; r: 10; }
+        30% { opacity: 1; r: 20; }
+        100% { opacity: 0; r: 30; }
+      }
+
+      /* Phase flip transition */
+      .flip-in {
+        animation: flip-in 260ms cubic-bezier(0.2, 0.9, 0.1, 1);
+      }
+      @keyframes flip-in {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .flip-in,
+        .braid-stroke,
+        .merge-pulse,
+        .seg.pulse {
+          animation: none !important;
+          transition: none !important;
+          filter: none !important;
+        }
+        .braid-stroke { stroke-dashoffset: 0 !important; }
+        .merge-pulse { opacity: 0.6 !important; }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="factory-playbook">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main">
+      <!-- ─────────── TITLE BAR ─────────── -->
+      <section class="fp-title">
+        <div class="title-stack">
+          <h1>Factory playbook</h1>
+          <p class="sub">
+            A seeded fake epic — <em>DEMO: per-agent kill switch</em> — walked through all
+            <data-count id="phase-count">14</data-count> SDLC phases. Each phase is one agent,
+            one skill, one inbox role, one trigger, and one dashboard. Flip through, read the
+            snippet, copy it into your own context repo.
+          </p>
+        </div>
+        <div
+          class="lr-switch"
+          data-state="local"
+          id="lrSwitch"
+          role="switch"
+          tabindex="0"
+          aria-checked="false"
+          aria-label="Local or remote host"
+        >
+          <span class="label local">LOCAL</span>
+          <!-- Thumb is a decorative span, not a nested button, so the switch
+               stays a single interactive element (WCAG 2.1 AA).
+               Click handler is on #lrSwitch; keyboard activation is Space/Enter
+               via the role="switch". -->
+          <span class="thumb" aria-hidden="true" data-cs-lr-toggle></span>
+          <span class="label remote">REMOTE</span>
+        </div>
+        <div class="epic-chip" aria-label="seeded epic">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Epic</span>
+          <strong>DEMO</strong>
+          <span style="color: var(--fp-ink-faint)">·</span>
+          <span><data-count id="story-count">5</data-count> stories</span>
+          <span style="color: var(--fp-ink-faint)">·</span>
+          <span>status: <span style="color: var(--g-build)">build</span></span>
+        </div>
+      </section>
+
+      <!-- ─────────── PHASE RAIL ─────────── -->
+      <section class="rail-wrap" aria-label="phase rail">
+        <div class="rail-groups" aria-hidden="true">
+          <span class="gp-plan">Plan</span>
+          <span class="gp-design">Design</span>
+          <span class="gp-build">Build</span>
+          <span class="gp-verify">Verify</span>
+          <span class="gp-ship">Ship</span>
+          <span class="gp-loop">Loop</span>
+        </div>
+        <div
+          class="rail"
+          role="tablist"
+          aria-label="SDLC phases"
+          id="phaseRail"
+          data-cs-populated="false"
+        >
+          <!-- rail segments rendered from generated/phases.yml at boot -->
+        </div>
+      </section>
+
+      <!-- ─────────── STAGE ─────────── -->
+      <section
+        class="stage flip-in"
+        id="stage"
+        role="tabpanel"
+        aria-label="active phase"
+        data-phase="1"
+      >
+        <div class="stage-left" id="stageLeft">
+          <div class="phase-head">
+            <div class="big" aria-hidden="true" data-cs-phase-big>01</div>
+            <div>
+              <div class="kname" data-cs-phase-kname>&nbsp;</div>
+              <h2 data-cs-phase-title>Loading…</h2>
+              <p class="pitch" data-cs-phase-pitch>&nbsp;</p>
+            </div>
+          </div>
+
+          <div class="minis" aria-label="live mini-dashboards for this phase">
+            <!-- pipeline mini -->
+            <article class="mini">
+              <header class="mini-head">
+                <span class="name">pipeline-graph</span>
+                <span class="state" data-cs-pipeline-state>loading…</span>
+              </header>
+              <div class="mini-body" data-cs-pipeline-body>
+                &nbsp;
+              </div>
+            </article>
+
+            <!-- agent-dag mini -->
+            <article class="mini">
+              <header class="mini-head">
+                <span class="name">agent-dag</span>
+                <span class="state" data-cs-dag-state>loading…</span>
+              </header>
+              <div class="mini-body" data-cs-dag-body>
+                &nbsp;
+              </div>
+            </article>
+
+            <!-- inbox mini -->
+            <article class="mini">
+              <header class="mini-head">
+                <span class="name">agent-inbox-console</span>
+                <span class="state" data-cs-inbox-state>loading…</span>
+              </header>
+              <div class="mini-body" data-cs-inbox-body>
+                &nbsp;
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <aside class="stage-right" id="stageRight" style="min-width: 0;">
+          <div class="facet" aria-label="phase facets">
+            <div class="facet-row">
+              <div class="k">Agent</div>
+              <div class="v agent">
+                <span class="initial-chip" data-cs-agent-chip>&nbsp;</span>
+                <div>
+                  <div class="name" data-cs-agent-name>&nbsp;</div>
+                  <div class="role">
+                    <span data-cs-agent-role>&nbsp;</span>
+                    &nbsp;·&nbsp;
+                    <span data-cs-agent-persona>&nbsp;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="facet-row">
+              <div class="k">Skill</div>
+              <div class="v"><span class="skill-chip" data-cs-skill>&nbsp;</span></div>
+            </div>
+            <div class="facet-row">
+              <div class="k">Inbox role</div>
+              <div class="v">
+                <span class="inbox-chip mono" data-cs-inbox-role>&nbsp;</span>
+              </div>
+            </div>
+            <div class="facet-row">
+              <div class="k">Trigger</div>
+              <div class="v">
+                <div class="trigger-line mono" data-cs-trigger-line>
+                  <span data-cs-trigger>&nbsp;</span>
+                  <span class="hint" data-cs-trigger-hint>&nbsp;</span>
+                </div>
+              </div>
+            </div>
+            <div class="facet-row">
+              <div class="k">Dashboard</div>
+              <div class="v">
+                <div class="trigger-line mono">
+                  <span style="color: var(--fp-ink)" data-cs-dashboard>&nbsp;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="snippets" aria-label="copy-pasteable config">
+            <div class="snippet">
+              <div class="snippet-head">
+                <span class="fname"
+                  >agent<span class="ext">.yaml</span></span
+                >
+                <button
+                  class="copy"
+                  type="button"
+                  aria-label="copy agent.yaml"
+                  data-cs-copy-snippet="agent"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span data-cs-copy-label>copy</span>
+                </button>
+              </div>
+              <pre data-cs-agent-yaml>&nbsp;</pre>
+            </div>
+
+            <div class="snippet">
+              <div class="snippet-head">
+                <span class="fname"
+                  >routine<span class="ext">.yml</span></span
+                >
+                <button
+                  class="copy"
+                  type="button"
+                  aria-label="copy routine.yml"
+                  data-cs-copy-snippet="routine"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span data-cs-copy-label>copy</span>
+                </button>
+              </div>
+              <pre data-cs-routine-yml tabindex="0">&nbsp;</pre>
+            </div>
+          </div>
+
+          <div class="copy-cta" data-cs-copy-cta>
+            <span class="hint" data-cs-copy-hint
+              >Copy each snippet into your context repo: the agent to
+              <span style="color: var(--fp-ink-dim)">config/agents/&lt;id&gt;/agent.yaml</span>,
+              the routine to
+              <span style="color: var(--fp-ink-dim)">config/agents/&lt;id&gt;/routines/&lt;routine&gt;/routine.yml</span>.
+              Or ask an agent to set them up.</span
+            >
+          </div>
+        </aside>
+      </section>
+
+      <!-- ─────────── SUB-TABS ─────────── -->
+      <div class="subtabs" role="tablist" aria-label="phase sub-tabs" id="subtabs" hidden>
+        <button class="subtab" role="tab" aria-selected="true" data-cs-sub="overview">
+          Overview
+        </button>
+        <button
+          class="subtab"
+          role="tab"
+          aria-selected="false"
+          data-cs-sub="parallel"
+          hidden
+        >
+          Massively parallel
+        </button>
+        <button
+          class="subtab"
+          role="tab"
+          aria-selected="false"
+          data-cs-sub="resolver"
+          hidden
+        >
+          Resolver escalation
+        </button>
+        <span class="right" data-cs-sub-right></span>
+      </div>
+
+      <!-- ─────────── BRAID (phase 8) ─────────── -->
+      <section
+        class="braid-panel"
+        aria-label="massively parallel braid"
+        id="braidPanel"
+        hidden
+      >
+        <div class="braid-head">
+          <h3>Five parallel chains, one trunk</h3>
+          <span class="pill">bmad-build × 5</span>
+          <span class="meta">
+            Each stream is one Amelia session, one worktree, one branch. They converge on
+            <span style="color: var(--fp-ink); font-family: var(--cs-font-mono)">main</span>
+            through the reviewer inbox.
+          </span>
+        </div>
+
+        <div class="braid-stage">
+          <svg
+            class="braid-canvas"
+            viewBox="0 0 1200 360"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="trunk-grad" x1="0" x2="1">
+                <stop offset="0" stop-color="#f0a93b" />
+                <stop offset="1" stop-color="#3fb950" />
+              </linearGradient>
+              <radialGradient id="merge-glow">
+                <stop offset="0" stop-color="#f0a93b" stop-opacity=".8" />
+                <stop offset="1" stop-color="#f0a93b" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- entry labels -->
+            <g font-family="var(--cs-font-mono)" font-size="11" fill="#9aa6b2">
+              <text x="20" y="60">amelia-1 <tspan fill="#6b7684">· DEMO-1 · merged</tspan></text>
+              <text x="20" y="130">amelia-2 <tspan fill="#6b7684">· DEMO-2 · building</tspan></text>
+              <text x="20" y="200">amelia-3 <tspan fill="#6b7684">· DEMO-3 · building</tspan></text>
+              <text x="20" y="270">amelia-4 <tspan fill="#6b7684">· DEMO-4 · review</tspan></text>
+              <text x="20" y="330">amelia-5 <tspan fill="#6b7684">· DEMO-5 · rebasing</tspan></text>
+            </g>
+
+            <!-- entry nodes -->
+            <g>
+              <circle cx="180" cy="52" r="7" fill="#3fb950" />
+              <circle cx="180" cy="122" r="7" fill="#f0a93b" />
+              <circle cx="180" cy="192" r="7" fill="#f3b85a" />
+              <circle cx="180" cy="262" r="7" fill="#d29922" />
+              <circle cx="180" cy="322" r="7" fill="#8b949e" />
+            </g>
+
+            <!-- 5 streams converging to merge node at (900, 180) -->
+            <g fill="none" stroke-width="2.25" stroke-linecap="round">
+              <path class="braid-stroke s1" d="M187 52  C 420 52,  520 180, 900 180" stroke="#3fb950" />
+              <path class="braid-stroke s2" d="M187 122 C 420 122, 560 180, 900 180" stroke="#f0a93b" />
+              <path class="braid-stroke s3" d="M187 192 C 420 192, 560 180, 900 180" stroke="#f3b85a" />
+              <path class="braid-stroke s4" d="M187 262 C 420 262, 560 180, 900 180" stroke="#d29922" />
+              <path class="braid-stroke s5" d="M187 322 C 420 322, 560 180, 900 180" stroke="#8b949e" opacity=".55" />
+            </g>
+
+            <!-- milestones -->
+            <g font-family="var(--cs-font-mono)" font-size="9" fill="#6b7684">
+              <text x="360" y="46" fill="#9aa6b2">build</text>
+              <text x="520" y="46" fill="#9aa6b2">review</text>
+              <text x="680" y="46" fill="#9aa6b2">merge</text>
+              <text x="360" y="116">build</text>
+              <text x="520" y="116" fill="#f0a93b">running…</text>
+              <text x="360" y="186">build</text>
+              <text x="520" y="186" fill="#f3b85a">running…</text>
+              <text x="360" y="256">build</text>
+              <text x="520" y="256" fill="#d29922">review-wait</text>
+              <text x="360" y="316">rebase</text>
+            </g>
+
+            <!-- merge glow + node -->
+            <circle class="merge-pulse" cx="900" cy="180" r="20" fill="url(#merge-glow)" />
+            <circle cx="900" cy="180" r="12" fill="#f0a93b" stroke="#0b0f14" stroke-width="2" />
+            <text x="872" y="152" font-family="var(--cs-font-mono)" font-size="11" fill="#f0a93b" font-weight="700">merge</text>
+
+            <!-- trunk out to main -->
+            <path
+              class="braid-stroke trunk"
+              d="M912 180 L 1150 180"
+              stroke="url(#trunk-grad)"
+              stroke-width="4"
+              fill="none"
+              stroke-linecap="round"
+            />
+
+            <!-- main node -->
+            <circle cx="1150" cy="180" r="12" fill="#3fb950" stroke="#0b0f14" stroke-width="2" />
+            <text x="1115" y="152" font-family="var(--cs-font-mono)" font-size="11" fill="#3fb950" font-weight="700">main</text>
+            <text x="1115" y="212" font-family="var(--cs-font-mono)" font-size="10" fill="#6b7684">+ 5 PRs</text>
+
+            <!-- column dividers -->
+            <g stroke="#1f2834" stroke-dasharray="2 4" opacity=".55">
+              <line x1="350" y1="20" x2="350" y2="340" />
+              <line x1="510" y1="20" x2="510" y2="340" />
+              <line x1="670" y1="20" x2="670" y2="340" />
+              <line x1="830" y1="20" x2="830" y2="340" />
+            </g>
+            <g font-family="var(--cs-font-mono)" font-size="10" fill="#6b7684" letter-spacing="0.08em">
+              <text x="265" y="20">BUILD</text>
+              <text x="425" y="20">REVIEW</text>
+              <text x="585" y="20">PR</text>
+              <text x="745" y="20">MERGE</text>
+              <text x="950" y="20">TRUNK</text>
+            </g>
+          </svg>
+
+          <div class="braid-labels">
+            <div class="wtcard">
+              <div class="path" data-cs-lr-local="~/wt/demo-1" data-cs-lr-remote="/srv/cs/wt/demo-1">~/wt/demo-1</div>
+              <div class="branch">demo/story-1</div>
+              <div class="row"><span>inbox 0</span><span class="status-dot st-merged" title="merged"></span></div>
+            </div>
+            <div class="wtcard">
+              <div class="path" data-cs-lr-local="~/wt/demo-2" data-cs-lr-remote="/srv/cs/wt/demo-2">~/wt/demo-2</div>
+              <div class="branch">demo/story-2</div>
+              <div class="row"><span>inbox 2</span><span class="status-dot st-building" title="building"></span></div>
+            </div>
+            <div class="wtcard">
+              <div class="path" data-cs-lr-local="~/wt/demo-3" data-cs-lr-remote="/srv/cs/wt/demo-3">~/wt/demo-3</div>
+              <div class="branch">demo/story-3</div>
+              <div class="row"><span>inbox 1</span><span class="status-dot st-building" title="building"></span></div>
+            </div>
+            <div class="wtcard">
+              <div class="path" data-cs-lr-local="~/wt/demo-4" data-cs-lr-remote="/srv/cs/wt/demo-4">~/wt/demo-4</div>
+              <div class="branch">demo/story-4</div>
+              <div class="row"><span>inbox 3</span><span class="status-dot st-review" title="review"></span></div>
+            </div>
+            <div class="wtcard">
+              <div class="path" data-cs-lr-local="~/wt/demo-5" data-cs-lr-remote="/srv/cs/wt/demo-5">~/wt/demo-5</div>
+              <div class="branch">demo/story-5</div>
+              <div class="row"><span>inbox 1</span><span class="status-dot st-planning" title="rebasing"></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────── RESOLVER THREAD (phase 9) ─────────── -->
+      <section class="thread-panel" aria-label="resolver escalation" id="threadPanel" hidden>
+        <div class="thread-main">
+          <header class="thread-head">
+            <h3>
+              PermissionDenied semantics on <code>kill_agent</code> — decision needed
+            </h3>
+            <span class="status">resolved · 12m</span>
+          </header>
+          <div class="msg" data-role="builder">
+            <div class="avatar">A3</div>
+            <div>
+              <div class="who">
+                amelia-3 <span class="role">builder</span>
+                <span class="when">14:02 · DEMO-3</span>
+              </div>
+              <div class="body">
+                Spec says <code>kill_agent</code> must refuse if the caller is not the session
+                owner, but the host-ladder doesn't actually check a principal today. Two paths:
+                (a) treat the session owner's principal as the admin check, (b) add a new
+                <code>admin</code> field on <code>agent.yaml</code>. Blocking merge — need a
+                call before I touch the schema.
+              </div>
+            </div>
+          </div>
+          <div class="msg" data-role="resolver">
+            <div class="avatar">R</div>
+            <div>
+              <div class="who">
+                resolver <span class="role">resolver</span>
+                <span class="when">14:03</span>
+              </div>
+              <div class="body">
+                Reading <code>DEMO/architecture.md §3.2</code> and the kill-ladder contract.
+                Pulling in <strong>Mary</strong> on analyst — the spec is ambiguous about where
+                the authority check lives.
+              </div>
+            </div>
+          </div>
+          <div class="msg" data-role="analyst">
+            <div class="avatar">M</div>
+            <div>
+              <div class="who">
+                mary <span class="role">analyst</span>
+                <span class="when">14:08</span>
+              </div>
+              <div class="body">
+                Intent was <strong>session owner's principal is the admin check</strong>. No new
+                <code>agent.yaml</code> field. Adding a schema line now will leak a concept the
+                spec never had.
+                <blockquote>
+                  Updated DEMO/architecture.md §3.2 to lock session-owner-principal as the
+                  authority rule.
+                </blockquote>
+              </div>
+            </div>
+          </div>
+          <div class="msg" data-role="resolver">
+            <div class="avatar">R</div>
+            <div>
+              <div class="who">
+                resolver <span class="role">resolver</span>
+                <span class="when">14:09</span>
+              </div>
+              <div class="body">
+                Decision: path (a) — session owner's principal is the authority. DEMO-3
+                proceeds. <strong>@amelia-3</strong> you're unblocked.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="thread-side">
+          <h4>Artifacts</h4>
+          <div class="artifact">
+            <div class="label">spec reference</div>
+            <div class="value">DEMO/architecture.md §3.2</div>
+          </div>
+          <div class="artifact">
+            <div class="label">story</div>
+            <div class="value">DEMO-3</div>
+          </div>
+          <div class="artifact">
+            <div class="label">resolution</div>
+            <div class="value">session-owner principal</div>
+          </div>
+          <div class="artifact">
+            <div class="label">host</div>
+            <div
+              class="value mono"
+              data-cs-lr-local="localhost"
+              data-cs-lr-remote="cs-remote.example.com"
+            >
+              localhost
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ─────────── FOOTER ─────────── -->
+      <footer class="seed-note">
+        <div>
+          This dashboard runs on seeded fake data — epic <code>DEMO</code>,
+          <data-count id="story-count-footer">5</data-count> stories, 1 sample source repo at
+          <code>acme/sample-source-repo</code>. Nothing here is live.
+        </div>
+        <div class="mono">
+          source: <code>generated/phases.yml</code> · <code>generated/factory-phase-{N}.json</code>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      /* =========================================================================
+       * factory-playbook — runtime
+       *
+       * Loads two feeds at boot and renders the 14-phase stepper:
+       *   - ./generated/phases.yml           (canonical phase table)
+       *   - ./generated/factory-phase-{N}.json  (per-phase snapshot the mini
+       *     dashboards render)
+       *
+       * No external deps: a tiny YAML parser handles phases.yml's block-mapping
+       * subset. Everything else is vanilla DOM.
+       *
+       * Phase flip resets the big display number, kname, title, pitch, 5-facet
+       * card, agent.yaml + routine.yml wells, loaded JSON snapshot, and shows
+       * sub-tabs for the two special phases (8, 9).
+       * ======================================================================= */
+      (function () {
+        "use strict";
+
+        var state = {
+          phases: [],          // from phases.yml
+          phaseById: {},       // phase number -> entry
+          snapshots: {},       // phase number -> factory-phase-N.json (lazy)
+          current: 1,
+          lr: "local",
+          sub: "overview",
+        };
+
+        // -------------------------------------------------------------------
+        // Tiny YAML parser — just the subset phases.yml uses (block mapping,
+        // list of maps under `phases:`, nested maps for `agent:`, and `|`
+        // block scalars for `agentYaml` / `routineYml` / prose fields).
+        // -------------------------------------------------------------------
+        function parsePhasesYaml(text) {
+          var lines = text.replace(/\r\n/g, "\n").split("\n");
+          var i = 0;
+          // Skip to `phases:`
+          while (i < lines.length && !/^phases\s*:\s*$/.test(lines[i])) i++;
+          i++;
+          var entries = [];
+          while (i < lines.length) {
+            var line = lines[i];
+            if (!line.trim()) {
+              i++;
+              continue;
+            }
+            if (/^\S/.test(line)) break; // top-level key => end of list
+            var m = /^(\s*)-\s+(.+)$/.exec(line);
+            if (!m) {
+              i++;
+              continue;
+            }
+            var baseIndent = m[1].length + 2; // the `- ` eats 2 chars
+            var entry = {};
+            // First mapping key is on the same line as the `-`.
+            var firstKv = /^([a-zA-Z_][\w-]*)\s*:\s*(.*)$/.exec(m[2]);
+            if (firstKv) {
+              entry[firstKv[1]] = parseScalar(firstKv[2]);
+            }
+            i++;
+            while (i < lines.length) {
+              var cur = lines[i];
+              if (!cur.trim()) {
+                i++;
+                continue;
+              }
+              var curIndent = cur.length - cur.replace(/^\s*/, "").length;
+              if (curIndent < baseIndent) break;
+              var kv = /^(\s*)([a-zA-Z_][\w-]*)\s*:\s*(.*)$/.exec(cur);
+              if (!kv) {
+                i++;
+                continue;
+              }
+              var keyIndent = kv[1].length;
+              var key = kv[2];
+              var val = kv[3];
+              if (keyIndent !== baseIndent) {
+                i++;
+                continue;
+              }
+              if (val === "" || val === "|" || val === ">") {
+                // block scalar or nested map
+                // Look ahead at next non-empty line to decide
+                var j = i + 1;
+                while (j < lines.length && !lines[j].trim()) j++;
+                if (j >= lines.length) {
+                  entry[key] = val === "|" || val === ">" ? "" : {};
+                  i++;
+                  break;
+                }
+                var nextIndent =
+                  lines[j].length - lines[j].replace(/^\s*/, "").length;
+                if (val === "|" || val === ">") {
+                  // Block scalar: all lines indented > baseIndent, stripping
+                  // the leading `nextIndent` whitespace.
+                  var block = [];
+                  i = j;
+                  while (i < lines.length) {
+                    var raw = lines[i];
+                    if (!raw.trim()) {
+                      block.push("");
+                      i++;
+                      continue;
+                    }
+                    var ind =
+                      raw.length - raw.replace(/^\s*/, "").length;
+                    if (ind < nextIndent) break;
+                    block.push(raw.slice(nextIndent));
+                    i++;
+                  }
+                  // Trim trailing empties and ensure trailing newline (|).
+                  while (block.length && block[block.length - 1] === "")
+                    block.pop();
+                  entry[key] = block.join("\n") + (val === "|" ? "\n" : "");
+                } else {
+                  // nested mapping — read keys at nextIndent
+                  var sub = {};
+                  i = j;
+                  while (i < lines.length) {
+                    var r = lines[i];
+                    if (!r.trim()) {
+                      i++;
+                      continue;
+                    }
+                    var subInd = r.length - r.replace(/^\s*/, "").length;
+                    if (subInd < nextIndent) break;
+                    if (subInd !== nextIndent) {
+                      i++;
+                      continue;
+                    }
+                    var skv =
+                      /^(\s*)([a-zA-Z_][\w-]*)\s*:\s*(.*)$/.exec(r);
+                    if (!skv) {
+                      i++;
+                      continue;
+                    }
+                    sub[skv[2]] = parseScalar(skv[3]);
+                    i++;
+                  }
+                  entry[key] = sub;
+                }
+              } else if (val.indexOf("[") === 0) {
+                // inline flow list, e.g. [a, b]
+                entry[key] = val
+                  .replace(/^\[|\]$/g, "")
+                  .split(",")
+                  .map(function (s) {
+                    return parseScalar(s.trim());
+                  })
+                  .filter(function (s) {
+                    return s !== "";
+                  });
+                i++;
+              } else {
+                entry[key] = parseScalar(val);
+                i++;
+              }
+            }
+            // Peek: next line could be a list item `- key:` or another list
+            if (
+              i < lines.length &&
+              /^\s*-\s+/.test(lines[i])
+            ) {
+              // another entry at same indent
+              // outer loop handles it
+            }
+            entries.push(entry);
+          }
+          return entries;
+        }
+
+        function parseScalar(raw) {
+          var s = raw.trim();
+          if (!s) return "";
+          if (/^(true|false)$/i.test(s)) return s.toLowerCase() === "true";
+          if (/^-?\d+$/.test(s)) return Number(s);
+          if (/^".*"$/.test(s)) return s.slice(1, -1);
+          if (/^'.*'$/.test(s)) return s.slice(1, -1);
+          // Strip trailing inline comments on bare scalars.
+          var hash = s.indexOf(" #");
+          if (hash > 0) s = s.slice(0, hash).trim();
+          return s;
+        }
+
+        // -------------------------------------------------------------------
+        // Agent initials — one char/short-chip per persona name (M, W, S, J,
+        // Mu, A, R). Falls back to the first letter.
+        // -------------------------------------------------------------------
+        function agentInitial(name) {
+          if (!name) return "·";
+          if (/^murat/i.test(name)) return "Mu";
+          if (/^any$/i.test(name)) return "·";
+          return name.trim().charAt(0).toUpperCase();
+        }
+
+        // Lucide path shortcuts for the trigger glyph on rail segments.
+        var TRIGGER_SVG = {
+          manual:
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 11V5a2 2 0 1 1 4 0v6"/><path d="M13 11V3a2 2 0 1 1 4 0v10"/><path d="M17 11V5a2 2 0 1 1 4 0v9a7 7 0 0 1-7 7h-2a7 7 0 0 1-6.3-3.9L4 15"/><path d="M9 11V7a2 2 0 1 0-4 0v8"/></svg>',
+          role_pending:
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+          inbox_idle:
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+          schedule:
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+          event:
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>',
+        };
+
+        // -------------------------------------------------------------------
+        // Rail render
+        // -------------------------------------------------------------------
+        function renderRail(root) {
+          root.innerHTML = "";
+          state.phases.forEach(function (p) {
+            var btn = document.createElement("button");
+            btn.className = "seg";
+            btn.setAttribute("role", "tab");
+            btn.setAttribute("aria-selected", String(p.phase === state.current));
+            btn.setAttribute("data-phase", String(p.phase));
+            btn.setAttribute("data-group", String(p.group || "Plan"));
+            btn.setAttribute(
+              "aria-controls",
+              "stage",
+            );
+            btn.innerHTML =
+              '<span class="stripe"></span>' +
+              '<span class="body">' +
+              '<span class="num">' +
+              String(p.phase).padStart(2, "0") +
+              " · " +
+              String(p.group || "").toUpperCase() +
+              "</span>" +
+              '<span class="label">' +
+              escapeHtml(p.name || "") +
+              "</span>" +
+              "</span>" +
+              '<span class="foot">' +
+              '<span class="agent-chip" title="' +
+              escapeHtml((p.agent && p.agent.name) || "") +
+              '">' +
+              escapeHtml(agentInitial(p.agent && p.agent.name)) +
+              "</span>" +
+              '<span class="trig" title="' +
+              escapeHtml(p.trigger || "") +
+              '">' +
+              (TRIGGER_SVG[p.trigger] || "") +
+              "</span>" +
+              "</span>";
+            btn.addEventListener("click", function () {
+              flipTo(p.phase);
+            });
+            root.appendChild(btn);
+          });
+          root.setAttribute("data-cs-populated", "true");
+        }
+
+        function escapeHtml(s) {
+          return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        // -------------------------------------------------------------------
+        // Local / Remote templating — swap host, worktree paths, ssh prefixes
+        // -------------------------------------------------------------------
+        var LR_SUBS = [
+          { local: /^host:\s*localhost\b/gm, remote: "host: cs-remote.example.com" },
+          { local: /\/Users\/[a-z0-9_-]+\/wt\//g, remote: "/srv/cs/wt/" },
+          { local: /~\/wt\//g, remote: "/srv/cs/wt/" },
+        ];
+
+        function applyLR(text, lr) {
+          if (lr === "local") return text;
+          var out = text;
+          for (var i = 0; i < LR_SUBS.length; i++) {
+            out = out.replace(LR_SUBS[i].local, LR_SUBS[i].remote);
+          }
+          return out;
+        }
+
+        function reanchorExamples() {
+          document.querySelectorAll("[data-cs-lr-local]").forEach(function (el) {
+            el.textContent =
+              state.lr === "local"
+                ? el.getAttribute("data-cs-lr-local")
+                : el.getAttribute("data-cs-lr-remote");
+          });
+          // Re-render snippets with the new host.
+          if (state.current) renderSnippets(state.phaseById[state.current]);
+        }
+
+        // -------------------------------------------------------------------
+        // Snapshot fetch (lazy)
+        // -------------------------------------------------------------------
+        function loadSnapshot(n) {
+          if (state.snapshots[n])
+            return Promise.resolve(state.snapshots[n]);
+          return fetch("./generated/factory-phase-" + n + ".json", {
+            cache: "no-store",
+          })
+            .then(function (r) {
+              return r.ok ? r.json() : null;
+            })
+            .then(function (doc) {
+              if (doc) state.snapshots[n] = doc;
+              return doc;
+            })
+            .catch(function () {
+              return null;
+            });
+        }
+
+        // -------------------------------------------------------------------
+        // Mini-dashboard render from snapshot
+        // -------------------------------------------------------------------
+        function renderMinis(phase, snapshot) {
+          var pipelineBody = document.querySelector("[data-cs-pipeline-body]");
+          var pipelineState = document.querySelector("[data-cs-pipeline-state]");
+          var dagBody = document.querySelector("[data-cs-dag-body]");
+          var dagState = document.querySelector("[data-cs-dag-state]");
+          var inboxBody = document.querySelector("[data-cs-inbox-body]");
+          var inboxState = document.querySelector("[data-cs-inbox-state]");
+
+          if (!snapshot) {
+            pipelineBody.textContent = "(seed data unavailable)";
+            dagBody.textContent = "(seed data unavailable)";
+            inboxBody.textContent = "(seed data unavailable)";
+            pipelineState.textContent = "offline";
+            dagState.textContent = "offline";
+            inboxState.textContent = "offline";
+            return;
+          }
+
+          // Pipeline: render story rows w/ status bars.
+          var stories = (snapshot.pipeline && snapshot.pipeline.nodes) || [];
+          var storyRows = stories.filter(function (n) {
+            return n.kind === "story";
+          });
+          pipelineBody.innerHTML = storyRows
+            .map(function (n) {
+              var pct = ({
+                todo: 20,
+                "in-progress": 60,
+                review: 80,
+                blocked: 35,
+                done: 100,
+                merged: 100,
+              })[n.status] || 50;
+              var color = ({
+                done: "var(--g-verify)",
+                merged: "var(--g-verify)",
+                "in-progress": "var(--g-build)",
+                review: "var(--amber)",
+                blocked: "var(--amber)",
+                todo: "var(--fp-ink-faint)",
+              })[n.status] || "var(--fp-ink-faint)";
+              return (
+                '<div class="node-row">' +
+                "<span>" + escapeHtml(n.id) + "</span>" +
+                '<span class="bar" style="background: ' + color + '; width: ' + pct + '%;"></span>' +
+                '<span class="status">' + escapeHtml(n.status) + "</span>" +
+                "</div>"
+              );
+            })
+            .join("");
+          pipelineState.textContent = storyRows.length + " stories";
+
+          // DAG: list the sessions.
+          var sessions = (snapshot.agentDag && snapshot.agentDag.sessions) || [];
+          dagBody.innerHTML = sessions.length
+            ? sessions
+                .map(function (s) {
+                  var ok = s.status === "done" || s.status === "merged";
+                  var color = ok
+                    ? "var(--g-verify)"
+                    : s.status === "running"
+                      ? "var(--g-build)"
+                      : "var(--fp-ink-faint)";
+                  return (
+                    '<div class="node-row">' +
+                    "<span>" + escapeHtml(s.agent.replace(/^.*\//, "")) + "</span>" +
+                    '<span class="bar" style="background: ' + color + '; width: 60%;"></span>' +
+                    '<span class="status">' + escapeHtml(s.status) + "</span>" +
+                    "</div>"
+                  );
+                })
+                .join("")
+            : "(no sessions this phase)";
+          dagState.textContent = sessions.length + " sessions";
+
+          // Inbox: list threads + focus.
+          var threads =
+            (snapshot.inbox && snapshot.inbox.threads) || [];
+          var focus = snapshot.inbox && snapshot.inbox.focus;
+          inboxBody.innerHTML = threads.length
+            ? threads
+                .map(function (t) {
+                  var isFocus = focus && t.indexOf(focus) >= 0;
+                  var dot = isFocus
+                    ? '<span style="color: var(--amber)">▸</span> '
+                    : '<span style="color: var(--fp-ink-faint)">▸</span> ';
+                  return "<div>" + dot + escapeHtml(t) + "</div>";
+                })
+                .join("")
+            : "(no open threads)";
+          inboxState.textContent =
+            threads.length + " threads · " + (phase.inboxRole || "");
+        }
+
+        // -------------------------------------------------------------------
+        // Snippet render (agent.yaml + routine.yml with LR-templating)
+        // -------------------------------------------------------------------
+        function renderSnippets(phase) {
+          if (!phase) return;
+          var agentEl = document.querySelector("[data-cs-agent-yaml]");
+          var routineEl = document.querySelector("[data-cs-routine-yml]");
+          var agentText = phase.agentYaml || "";
+          var routineText = phase.routineYml || "";
+          agentEl.textContent = applyLR(agentText, state.lr);
+          routineEl.textContent = applyLR(routineText, state.lr);
+        }
+
+        // -------------------------------------------------------------------
+        // Facet card render
+        // -------------------------------------------------------------------
+        function renderFacet(phase) {
+          if (!phase) return;
+          document.querySelector("[data-cs-agent-chip]").textContent = agentInitial(
+            phase.agent && phase.agent.name,
+          );
+          document.querySelector("[data-cs-agent-name]").textContent =
+            (phase.agent && phase.agent.name) || "";
+          document.querySelector("[data-cs-agent-role]").textContent =
+            (phase.agent && phase.agent.role) || "";
+          document.querySelector("[data-cs-agent-persona]").textContent =
+            phase.skill || "";
+          document.querySelector("[data-cs-skill]").textContent =
+            phase.skill || "";
+          document.querySelector("[data-cs-inbox-role]").textContent =
+            phase.inboxRole || "";
+          document.querySelector("[data-cs-trigger]").textContent =
+            phase.trigger || "";
+          document.querySelector("[data-cs-trigger-hint]").textContent =
+            phase.trigger === "manual"
+              ? "(click to run)"
+              : phase.trigger === "role_pending"
+                ? "starts on mail for the " + (phase.inboxRole || "") + " role"
+                : phase.trigger === "inbox_idle"
+                  ? "wakes an idle session with unread mail"
+                  : phase.trigger === "schedule"
+                    ? "on schedule"
+                    : "";
+          document.querySelector("[data-cs-dashboard]").textContent =
+            phase.dashboard || "";
+        }
+
+        // -------------------------------------------------------------------
+        // Phase flip
+        // -------------------------------------------------------------------
+        function flipTo(n) {
+          var phase = state.phaseById[n];
+          if (!phase) return;
+          state.current = n;
+
+          // Rail selection + pulse
+          document.querySelectorAll(".seg").forEach(function (el) {
+            var selected = Number(el.getAttribute("data-phase")) === n;
+            el.setAttribute("aria-selected", String(selected));
+            if (selected) {
+              el.classList.remove("pulse");
+              // Reflow then re-add for the brief flash on each flip.
+              void el.offsetWidth;
+              el.classList.add("pulse");
+              setTimeout(function () {
+                el.classList.remove("pulse");
+              }, 260);
+            }
+          });
+
+          var stage = document.getElementById("stage");
+          stage.setAttribute("data-phase", String(n));
+          stage.setAttribute(
+            "aria-label",
+            "phase " + n + " — " + (phase.name || ""),
+          );
+
+          // Group chroma propagates via --g on both left and right columns.
+          var g = "var(--g-" + String(phase.group || "plan").toLowerCase() + ")";
+          var left = document.getElementById("stageLeft");
+          var right = document.getElementById("stageRight");
+          var subtabs = document.getElementById("subtabs");
+          if (left) left.style.setProperty("--g", g);
+          if (right) right.style.setProperty("--g", g);
+          if (subtabs) subtabs.style.setProperty("--g", g);
+
+          // Phase head.
+          document.querySelector("[data-cs-phase-big]").textContent = String(n).padStart(2, "0");
+          document.querySelector("[data-cs-phase-kname]").textContent =
+            String(phase.group || "").toUpperCase() +
+            " · " +
+            (phase.agent && phase.agent.role ? phase.agent.role + " · " : "") +
+            (phase.trigger || "");
+          document.querySelector("[data-cs-phase-title]").textContent =
+            phase.name || "";
+          document.querySelector("[data-cs-phase-pitch]").textContent =
+            phase.workedExample || "";
+
+          renderFacet(phase);
+          renderSnippets(phase);
+
+          // Flip-in animation.
+          stage.classList.remove("flip-in");
+          void stage.offsetWidth;
+          stage.classList.add("flip-in");
+
+          // Sub-tabs: phase 8 → parallel, phase 9 → resolver.
+          configureSubtabs(n);
+
+          // Mini-dashboards from snapshot (lazy fetch).
+          loadSnapshot(n).then(function (snap) {
+            if (state.current !== n) return; // changed again
+            renderMinis(phase, snap);
+          });
+
+          // "Flip to this phase" is implicit: clicking the rail already flips.
+          // Persist last phase for reload.
+          try {
+            window.codesense?.setPrefs?.({ phase: n }).catch(console.error);
+          } catch (_) {
+            /* ignore */
+          }
+        }
+
+        function configureSubtabs(n) {
+          var subtabs = document.getElementById("subtabs");
+          var braid = document.getElementById("braidPanel");
+          var thread = document.getElementById("threadPanel");
+          var right = subtabs.querySelector("[data-cs-sub-right]");
+          var parallel = subtabs.querySelector('[data-cs-sub="parallel"]');
+          var resolver = subtabs.querySelector('[data-cs-sub="resolver"]');
+
+          braid.hidden = true;
+          thread.hidden = true;
+          parallel.hidden = true;
+          resolver.hidden = true;
+
+          if (n === 8) {
+            subtabs.hidden = false;
+            parallel.hidden = false;
+            right.textContent =
+              "live: 5 of 5 worktrees · last merge 1m 22s ago";
+            setSub("parallel");
+            braid.hidden = false;
+          } else if (n === 9) {
+            subtabs.hidden = false;
+            resolver.hidden = false;
+            right.textContent =
+              "example thread · agent-inbox-console";
+            setSub("resolver");
+            thread.hidden = false;
+          } else {
+            subtabs.hidden = true;
+            right.textContent = "";
+          }
+        }
+
+        function setSub(which) {
+          state.sub = which;
+          document
+            .querySelectorAll('[data-cs-sub]')
+            .forEach(function (el) {
+              el.setAttribute(
+                "aria-selected",
+                String(el.getAttribute("data-cs-sub") === which),
+              );
+            });
+          var braid = document.getElementById("braidPanel");
+          var thread = document.getElementById("threadPanel");
+          if (which === "parallel") {
+            braid.hidden = false;
+            thread.hidden = true;
+          } else if (which === "resolver") {
+            braid.hidden = true;
+            thread.hidden = false;
+          } else if (which === "overview") {
+            braid.hidden = true;
+            thread.hidden = true;
+          }
+        }
+
+        // Sub-tab click wiring (delegated).
+        document.addEventListener("click", function (ev) {
+          var t = ev.target.closest("[data-cs-sub]");
+          if (!t) return;
+          setSub(t.getAttribute("data-cs-sub"));
+        });
+
+        // -------------------------------------------------------------------
+        // Local / Remote toggle
+        // -------------------------------------------------------------------
+        function initLR() {
+          // The whole switch handles the click + keyboard (role="switch");
+          // the thumb inside is decorative. This satisfies the no-nested-
+          // interactive and visible-focus a11y bars (WCAG 2.1 AA).
+          var sw = document.getElementById("lrSwitch");
+          if (sw) {
+            sw.addEventListener("click", toggleLR);
+            sw.addEventListener("keydown", function (e) {
+              if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                toggleLR();
+              }
+            });
+          }
+          try {
+            var saved = dashboardPrefs.lr;
+            if (saved === "remote") {
+              setLR("remote");
+            }
+          } catch (_) {
+            /* ignore */
+          }
+        }
+        function toggleLR() {
+          setLR(state.lr === "local" ? "remote" : "local");
+        }
+        function setLR(next) {
+          state.lr = next;
+          var sw = document.getElementById("lrSwitch");
+          sw.setAttribute("data-state", next);
+          sw.setAttribute("aria-checked", String(next === "remote"));
+          reanchorExamples();
+          try {
+            window.codesense?.setPrefs?.({ lr: next }).catch(console.error);
+          } catch (_) {
+            /* ignore */
+          }
+        }
+
+        // Snippet copy (per-well).
+        function copySnippet(which) {
+          var phase = state.phaseById[state.current];
+          if (!phase) return;
+          var text = applyLR(
+            which === "agent" ? phase.agentYaml || "" : phase.routineYml || "",
+            state.lr,
+          );
+          var done = function () {
+            var sel =
+              '[data-cs-copy-snippet="' + which + '"] [data-cs-copy-label]';
+            var label = document.querySelector(sel);
+            if (!label) return;
+            var prev = label.textContent;
+            label.textContent = "copied";
+            setTimeout(function () {
+              label.textContent = prev;
+            }, 1500);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {});
+          } else {
+            try {
+              var ta = document.createElement("textarea");
+              ta.value = text;
+              ta.setAttribute("readonly", "");
+              ta.style.position = "fixed";
+              ta.style.top = "-1000px";
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+              done();
+            } catch (_) {
+              /* ignore */
+            }
+          }
+        }
+
+        // -------------------------------------------------------------------
+        // Keyboard nav on the rail
+        // -------------------------------------------------------------------
+        function initKeyboard() {
+          document.addEventListener("keydown", function (ev) {
+            if (
+              ["ArrowRight", "ArrowLeft", "Home", "End"].indexOf(ev.key) < 0
+            )
+              return;
+            var target = ev.target;
+            // Only hijack when focus is on the rail or on no interactive form field.
+            if (
+              target &&
+              (target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.isContentEditable)
+            )
+              return;
+            var count = state.phases.length;
+            if (!count) return;
+            var idx = state.phases.findIndex(function (p) {
+              return p.phase === state.current;
+            });
+            if (idx < 0) idx = 0;
+            if (ev.key === "ArrowRight") idx = Math.min(count - 1, idx + 1);
+            if (ev.key === "ArrowLeft") idx = Math.max(0, idx - 1);
+            if (ev.key === "Home") idx = 0;
+            if (ev.key === "End") idx = count - 1;
+            var next = state.phases[idx].phase;
+            if (next !== state.current) {
+              flipTo(next);
+              ev.preventDefault();
+            }
+          });
+        }
+
+        // -------------------------------------------------------------------
+        // <data-count> resolver — matches README.html's pattern. Values that
+        // come from phases.yml are resolved immediately; others leave their
+        // seed value in place (I-11: no hard-coded surface counts in copy).
+        // -------------------------------------------------------------------
+        function resolveDataCounts() {
+          var slots = document.querySelectorAll("data-count[id]");
+          slots.forEach(function (el) {
+            var id = el.getAttribute("id");
+            if (id === "phase-count") {
+              el.textContent = String(state.phases.length);
+              el.setAttribute("data-count-resolved", "true");
+            } else if (id === "story-count" || id === "story-count-footer") {
+              // Resolved from the active snapshot's `sprint.stories` length.
+              loadSnapshot(1).then(function (snap) {
+                var n =
+                  snap && snap.sprint && Array.isArray(snap.sprint.stories)
+                    ? snap.sprint.stories.length
+                    : null;
+                if (typeof n === "number") {
+                  el.textContent = String(n);
+                  el.setAttribute("data-count-resolved", "true");
+                }
+              });
+            }
+          });
+        }
+
+        // -------------------------------------------------------------------
+        // Boot
+        // -------------------------------------------------------------------
+        let dashboardPrefs = {};
+        async function boot() {
+          dashboardPrefs = await (window.codesense?.prefs?.() ?? Promise.resolve({}));
+          document
+            .querySelectorAll("[data-cs-copy-snippet]")
+            .forEach(function (btn) {
+              btn.addEventListener("click", function () {
+                copySnippet(btn.getAttribute("data-cs-copy-snippet"));
+              });
+            });
+
+          fetch("./generated/phases.yml", { cache: "no-store" })
+            .then(function (r) {
+              return r.ok ? r.text() : null;
+            })
+            .then(function (text) {
+              if (!text) throw new Error("phases.yml unavailable");
+              state.phases = parsePhasesYaml(text);
+              state.phaseById = {};
+              state.phases.forEach(function (p) {
+                state.phaseById[p.phase] = p;
+              });
+              renderRail(document.getElementById("phaseRail"));
+              resolveDataCounts();
+
+              // Pick starting phase: last-remembered, else phase 1.
+              var start = 1;
+              try {
+                var saved = Number(dashboardPrefs.phase);
+                if (saved && state.phaseById[saved]) start = saved;
+              } catch (_) {
+                /* ignore */
+              }
+              flipTo(start);
+            })
+            .catch(function (err) {
+              // Fail soft: leave the shell with a readable fallback.
+              var pitch = document.querySelector("[data-cs-phase-pitch]");
+              if (pitch)
+                pitch.textContent =
+                  "Could not load generated/phases.yml. " +
+                  "Rebuild the docs bundle: `node scripts/build-codesense-docs.mjs`.";
+              console.warn("[factory-playbook] boot failed:", err);
+            });
+
+          initLR();
+          initKeyboard();
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", boot);
+        } else {
+          boot();
+        }
+      })();
+    </script>
+  </body>
+</html>

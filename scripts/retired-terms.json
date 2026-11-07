@@ -1,0 +1,119 @@
+{
+  "$comment": "Retired product terms that shipped docs must not use. Read by scripts/check-docs-terms.mjs. `pattern` is a JavaScript regular expression (the `i` flag is added when `ignoreCase` is true). `allow` lists globs, relative to the repo root, of files where the term is legitimately historical. `use` says what to write instead.",
+  "roots": ["codesense-docs"],
+  "extensions": [
+    ".astro",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".mdx",
+    ".mjs",
+    ".svg",
+    ".txt",
+    ".yaml",
+    ".yml"
+  ],
+  "skipDirs": [".astro", ".git", "dist", "node_modules"],
+  "terms": [
+    {
+      "term": "home base",
+      "pattern": "\\bhome[ -]?base\\b",
+      "ignoreCase": true,
+      "use": "the local workspace CodeSense creates for you on this Mac",
+      "allow": []
+    },
+    {
+      "term": "src/features/home-base",
+      "pattern": "features/home-base",
+      "ignoreCase": false,
+      "use": "the current source path of the component, or no path at all",
+      "allow": []
+    },
+    {
+      "term": "Publish button / Publish mode",
+      "pattern": "\\bPublish (button|mode)\\b",
+      "ignoreCase": true,
+      "use": "agents commit and push the context repo with git",
+      "allow": []
+    },
+    {
+      "term": "invite-team",
+      "pattern": "\\binvite[- ]team\\b",
+      "ignoreCase": true,
+      "use": "teammates clone the context repo and connect it",
+      "allow": []
+    },
+    {
+      "term": "help-setup",
+      "pattern": "\\bhelp[- ]setup\\b",
+      "ignoreCase": true,
+      "use": "the setup guide and the agent's MCP tools",
+      "allow": []
+    },
+    {
+      "term": "controller pack",
+      "pattern": "\\bcontroller[- ]packs?\\b",
+      "ignoreCase": true,
+      "use": "an agent you define (a manager or controller is just an agent)",
+      "allow": []
+    },
+    {
+      "term": "panes as a product surface (pane packs, JSON widgets)",
+      "pattern": "\\b(pane[- ]packs?|pack[- ]panes?|json widgets?|widget specs?)\\b",
+      "ignoreCase": true,
+      "use": "an HTML pane in the team's panes/ folder, or a dashboard in the team repo",
+      "allow": []
+    },
+    {
+      "term": "~/.codesense/users/<id>/orgs clone",
+      "pattern": "\\.codesense/users/[^/\\s]+/orgs\\b",
+      "ignoreCase": false,
+      "use": "the context repo folder you cloned or created (CodeSense records where in ~/.codesense/users/<id>/context-attachments.yml)",
+      "allow": []
+    },
+    {
+      "term": "__codesenseContext",
+      "pattern": "__codesenseContext",
+      "use": "codesense.onSlotContext",
+      "allow": []
+    },
+    {
+      "term": "codesense_register_pane",
+      "pattern": "codesense_register_pane",
+      "use": "pane_write",
+      "allow": []
+    },
+    {
+      "term": "codesense_open_dashboard",
+      "pattern": "codesense_open_dashboard",
+      "use": "pane_open",
+      "allow": []
+    },
+    {
+      "term": "codesense_write_file",
+      "pattern": "codesense_write_file",
+      "use": "pane_write or write_content_file",
+      "allow": []
+    },
+    {
+      "term": "h.unsubscribe(",
+      "pattern": "h\\.unsubscribe\\s*\\(",
+      "use": "the off() returned by subscribeContext",
+      "allow": []
+    },
+    {
+      "term": "mq run",
+      "pattern": "\\bmq\\s+run\\b",
+      "use": "Keep internal machine queue commands out of shipped docs",
+      "allow": []
+    },
+    {
+      "term": "list_roles",
+      "pattern": "\\blist_roles\\b",
+      "ignoreCase": false,
+      "use": "roles_list for configured settings; role_state for live registrations",
+      "allow": []
+    }
+  ]
+}

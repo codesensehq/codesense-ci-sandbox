@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 30,
+ "snapshot": {
+  "cols": 120,
+  "rows": 32,
+  "seq": 9415,
+  "resize_gen": 3,
+  "scrollback": 5000,
+  "vt": "\u001b[1mtui-fixture 100x30 frame 8\u001b[73C\u001b[0m|\r\n----------------------------------------------------------------------------------------------------\r\nframe grid line parse grid 端末 kernel 漢字\r\ngrid alpha parse kernel height bravo echo\r\nscroll height 端末\r\n表示 端末 delta\r\nparse query grid node 漢字 query\r\ndelta 漢字 echo 画面\r\nmargin delta query bravo index height\r\nnode bravo cursor cursor line echo jolt bravo\r\n\u001b[4Cwidthset parse grid node\r\n\u001b[1mtui-fixture 60x20 frame 14\u001b[33C\u001b[0m|\r\n------------------------------------------------------------\r\n漢字 tile index echo query\r\nframe index scroll alpha 画面 node\r\noffset index bravo\r\n漢字 scroll query\r\n画面 parse region line 幅広 query\r\nalpha kernel 幅広\r\nline 漢字 jolt\r\nindex height parse index offset node parse 画面\r\ngrid delta parse parse height frame 幅広\r\nnode delta 表示 echo jolt alpha line\r\n表示 echo 画面 bravo cursor width\r\nwidth echo grid 端末 tile\r\nmargin offset margin node\r\ndelta tile echo index parse\r\nframe line echo\r\njolt echo 端末 漢字 表示 height tile\r\n------------------------------------------------------------\r\n[60x20] normal screen\u001b[?25l\u001b[31;18H\u001b[0m\u001b7\u001b[31;22H\u001b[0m"
+ }
+}

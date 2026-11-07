@@ -1,0 +1,22 @@
+{
+  "cwd": "/tmp/claude-hook-capture",
+  "duration_ms": 733,
+  "hook_event_name": "PostToolUse",
+  "permission_mode": "default",
+  "prompt_id": "c1a0de00-0000-4000-b000-000000000302",
+  "session_id": "c1a0de00-0000-4000-a000-000000000304",
+  "tool_input": {
+    "command": "ls .",
+    "description": "List files in current directory"
+  },
+  "tool_name": "Bash",
+  "tool_response": {
+    "interrupted": false,
+    "isImage": false,
+    "noOutputExpected": false,
+    "stderr": "",
+    "stdout": "captured.jsonl\nrun1-permission.jsonl\nrun3-apierror.jsonl"
+  },
+  "tool_use_id": "toolu_01Fixture010000000000000",
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000304.jsonl"
+}

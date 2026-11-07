@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="help-circle" />
+    <title>CodeSense — Decisions &amp; escalation</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      pre code {
+        font-size: 12px;
+      }
+
+      .arcf-msg {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arcf-msg .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-top: 6px;
+        background: var(--role-color, var(--cs-muted-fg));
+      }
+      .arcf-msg[data-from="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .arcf-msg[data-from="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .arcf-msg[data-from="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .arcf-msg__head {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+      .arcf-msg__from {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .arcf-msg__body {
+        margin-top: 6px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/decisions-and-escalation">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Decisions and escalation — the Resolver pattern" id="hero">
+        <h1>Escalate once. Resume.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A builder hits an ambiguous spec, sends a question to the resolver role, resumes once the verdict comes back."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <g class="glyph-node" data-role="builder" transform="translate(40 150)">
+              <rect width="140" height="60" rx="8" />
+              <text x="70" y="30" text-anchor="middle">builder</text>
+              <text x="70" y="46" text-anchor="middle" class="sub">hits ambiguous spec</text>
+            </g>
+
+            <g class="glyph-node" data-role="resolver" transform="translate(260 150)">
+              <rect width="140" height="60" rx="8" />
+              <text x="70" y="30" text-anchor="middle">resolver</text>
+              <text x="70" y="46" text-anchor="middle" class="sub">human or Resolver agent</text>
+            </g>
+
+            <g class="glyph-node" data-role="human" transform="translate(480 150)">
+              <rect width="130" height="60" rx="8" />
+              <text x="65" y="30" text-anchor="middle">verdict</text>
+              <text x="65" y="46" text-anchor="middle" class="sub">in-thread reply</text>
+            </g>
+
+            <path class="glyph-edge" d="M180 180 L 260 180" />
+            <text x="200" y="170" class="glyph-mbadge">send_message · role:resolver</text>
+            <path class="glyph-edge" d="M400 180 L 480 180" />
+            <text x="420" y="170" class="glyph-mbadge">decide</text>
+
+            <!-- resume arc -->
+            <path class="glyph-edge" d="M560 160 C 580 60, 60 60, 95 160" />
+            <text x="320" y="76" text-anchor="middle" class="glyph-mbadge">
+              reply · threaded · builder resumes with the fact pinned to the story
+            </text>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              The thread is the memory. The builder never guesses — it waits, decides, moves on.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What the resolver pattern solves" id="why">
+        <p>
+          Fully autonomous flows die the moment a worker meets an under-specified acceptance
+          criterion. The <strong>Resolver</strong> pattern is the fix: when a builder hits a
+          decision it can't make, it posts a crisp question to the <code>resolver</code> role —
+          options listed, recommendation stated — and waits. A human (or an agent running
+          <code>bmad-loop-resolve</code>) picks it up, replies in-thread, and the builder resumes.
+          The verdict lives in the story, not in anyone's head.
+        </p>
+      </section>
+
+      <section data-search="A real escalation thread from the seed" id="example">
+        <h2>The seed escalation thread</h2>
+        <p>
+          Verbatim from <code>examples/inboxes/02-decision-escalation.yml</code>. The builder hits a
+          <code>PermissionDenied</code> vocabulary question in DEMO-3; the human replies; the
+          builder updates the story and continues.
+        </p>
+
+        <div class="arcf-msg" data-from="builder">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">amelia-builder</span>
+              <span>→ role:resolver</span>
+              <span>11:03 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              Escalating DEMO-3 AC-2: the story lists <code>PermissionDenied</code> as an error
+              case but there is no admin / non-admin distinction in <code>agent.yaml</code> today.
+              Do we add an <code>admin: bool</code> field, or do we interpret "admin" as "the agent
+              that opened the session"? Blocked until this is decided.
+            </div>
+          </div>
+        </div>
+
+        <div class="arcf-msg" data-from="human">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">human</span>
+              <span>→ amelia-builder</span>
+              <span>11:21 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              Interpret as "the human who owns the session." No new field. The host already threads
+              principal through — reuse that. Update AC-2 copy to clarify, then resume.
+            </div>
+          </div>
+        </div>
+
+        <div class="arcf-msg" data-from="builder">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">amelia-builder</span>
+              <span>→ human</span>
+              <span>11:24 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              Got it. Rewriting AC-2 in the story and continuing. Thanks.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="How to write a good escalation message" id="how-to">
+        <h2>How to escalate well</h2>
+        <ol>
+          <li>
+            <strong>Name the AC.</strong> Which acceptance criterion, which story. Resolver opens
+            the exact file; no scavenger hunt.
+          </li>
+          <li>
+            <strong>Options, not a question.</strong> List 2–3 concrete options with a one-line
+            consequence for each. "Do what you think" is not an option.
+          </li>
+          <li>
+            <strong>State a recommendation.</strong> Even if you're wrong, it anchors the
+            conversation. The resolver can accept or push back in one line.
+          </li>
+          <li>
+            <strong>Say what unblocks you.</strong> "Blocked until this is decided." Resolver treats
+            it as a priority delivery.
+          </li>
+          <li>
+            <strong>Set <code>replyTo</code> explicitly.</strong> Usually
+            <code>replyTo: "role:builder-{storyId}"</code> so the verdict lands on your shard's
+            queue — survives a session restart.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="The Resolver as an agent, not just a human" id="agent">
+        <h2>The Resolver agent</h2>
+        <p>
+          You don't have to be the human. <strong>bmad-loop-resolve</strong> is a skill that holds
+          the <code>resolver</code> role, picks up an escalation, runs an interactive clarification
+          pass (reading the story, the architecture, the deferred-work ledger), and either answers
+          in-thread or kicks it to a human when it genuinely can't decide. This is how a
+          fully-autonomous loop stays unblocked overnight.
+        </p>
+        <pre><code># agent.yaml for a Resolver agent
+id: resolver
+name: Resolver
+description: Holds the `resolver` role queue, resolves spec ambiguity against the story
+             and architecture, and escalates to the human only when it genuinely cannot.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/bmad-loop-resolve/
+default_prompt: /bmad-loop-resolve
+revision: 1</code></pre>
+        <p>
+          Pair it with a routine on <code>inbox_idle</code> for the <code>resolver</code>
+          queue and you've got a self-driving decision loop with a human safety net.
+        </p>
+      </section>
+
+      <section data-search="Try this now — look at the sample escalation thread" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the seed escalation thread in your editable context repo. The agent-inbox console
+          renders it with the same shape as a live thread.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "content/examples/inboxes/02-decision-escalation.yml"}'
+          label="Open the escalation thread"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Builder escalates
+codesense.invoke('send_message', {
+  to: 'role:resolver',
+  text: `Escalating ${storyId} AC-2 — options: (A) …, (B) …; recommend (B). Blocked.`,
+  sessionId,
+  replyTo: `role:builder-${storyId}`,
+})
+
+// Resolver claims and answers
+const { deliveries } = codesense.invoke('claim_role_messages', {
+  team, role: 'resolver', instanceId, generation, limit: 10,
+})
+for (const d of deliveries) {
+  codesense.invoke('accept_role_message', { ..., disposition: { kind: 'work' } })
+  codesense.invoke('reply', { messageId: d.messageId, text: verdict, sessionId })
+  codesense.invoke('ack_role_message', { ..., receiptId })
+}</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./flexibility.html">← Build your own</a> · Next:
+        <a href="./local-vs-remote.html">Local vs remote →</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/reply">reply</a> ·
+        <a href="../factory-playbook.html#phase-9">factory phase 9 · decisions</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Decisions &amp; escalation</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

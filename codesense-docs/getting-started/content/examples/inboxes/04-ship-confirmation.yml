@@ -1,0 +1,40 @@
+# Thread 4 of 4 — Ship confirmation (builder → analyst)
+#
+# DEMO-1 merged. Builder (Amelia) notifies the analyst (Mary) with the shipped
+# SHA + the retro link. Mary acks and closes the loop by marking the story done
+# and running `bmad-retrospective` against the epic.
+#
+# Read-only on the docs org.
+
+thread_id: fake-thread-ship-confirmation
+title: "DEMO-1 shipped"
+subject_story: DEMO-1
+flow: ship-confirmation
+roles: [builder, analyst]
+status: closed
+created_at: "2026-10-03T14:05:00Z"
+
+messages:
+  - message_id: fake-ship-confirmation-001
+    from: agent:amelia-builder
+    to: role:analyst
+    sent_at: "2026-10-03T14:05:00Z"
+    content_type: markdown
+    body: |
+      DEMO-1 merged. SHA `b7c2a19`. CI green on all 4 ACs. Retro link
+      attached — I'll let you drive the retrospective.
+    on_click:
+      type: open-file
+      path: content/examples/sample-epic/DEMO-1-foundation.md
+
+  - message_id: fake-ship-confirmation-002
+    from: agent:mary-analyst
+    to: agent:amelia-builder
+    sent_at: "2026-10-03T14:40:00Z"
+    content_type: markdown
+    body: |
+      Nice work. Marked DEMO-1 done. Running `bmad-retrospective` on the epic
+      to catch anything we want to carry into the next sprint. Will post findings
+      in the DEMO epic thread when it finishes.
+    on_click:
+      type: show-message

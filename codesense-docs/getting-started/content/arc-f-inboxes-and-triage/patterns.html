@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="shuffle" />
+    <title>CodeSense — Four patterns</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node[data-role="inbox"] {
+        --role-color: var(--cs-muted-fg);
+      }
+      .glyph-node[data-role="ci"] {
+        --role-color: var(--cs-muted-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-edge.is-trigger {
+        stroke: var(--cs-accent, var(--role-triager));
+        stroke-dasharray: 3 3;
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .pattern {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+        gap: 20px;
+        padding: 20px;
+        border-radius: var(--cs-docs-radius-lg, 14px);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+        margin: 20px 0;
+      }
+      @media (max-width: 820px) {
+        .pattern {
+          grid-template-columns: 1fr;
+        }
+      }
+      .pattern figure {
+        margin: 0;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow: hidden;
+      }
+      .pattern figure svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .pattern h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-lg, 18px);
+      }
+      .pattern .pattern-sub {
+        margin: 0 0 10px;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+      .pattern p {
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .pattern code {
+        font-size: 12px;
+      }
+      .pattern-tag {
+        display: inline-block;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--cs-muted-fg) 20%, var(--cs-surface));
+        color: var(--cs-muted-fg);
+        margin-right: 6px;
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/patterns">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Four patterns — one kit" id="hero">
+        <h1>Same kit, four shapes.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Four pattern thumbnails: dispatch, HITL, SDLC, one-shot — all composed from the same four primitives."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- 01 Dispatch -->
+            <g transform="translate(24 24)">
+              <rect width="140" height="150" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">01 · dispatch</text>
+              <g class="glyph-node" data-role="triager" transform="translate(14 50)">
+                <rect width="46" height="22" rx="3" />
+                <text x="23" y="15" text-anchor="middle">tri</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(82 32)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(82 56)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(82 80)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">rev</text>
+              </g>
+              <path class="glyph-edge" d="M60 58 L 82 42" />
+              <path class="glyph-edge" d="M60 62 L 82 66" />
+              <path class="glyph-edge" d="M60 66 L 82 90" />
+              <path class="glyph-edge is-trigger" d="M14 60 C 2 60, 2 108, 14 108" />
+              <text x="14" y="128" class="glyph-mbadge">inbox_idle</text>
+            </g>
+
+            <!-- 02 HITL -->
+            <g transform="translate(180 24)">
+              <rect width="140" height="150" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">02 · HITL</text>
+              <g class="glyph-node" data-role="inbox" transform="translate(10 46)">
+                <rect width="40" height="16" rx="3" />
+                <rect width="40" height="16" rx="3" transform="translate(4 20)" />
+                <rect width="40" height="16" rx="3" transform="translate(8 40)" />
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(66 56)">
+                <rect width="60" height="32" rx="16" />
+                <text x="30" y="18" text-anchor="middle">human</text>
+                <text x="30" y="29" text-anchor="middle" class="sub">resolver</text>
+              </g>
+              <path class="glyph-edge" d="M54 60 L 66 70" />
+              <path class="glyph-edge is-trigger" d="M96 90 C 100 118, 70 118, 66 90" />
+              <text x="14" y="128" class="glyph-mbadge">30m → nudge</text>
+            </g>
+
+            <!-- 03 SDLC -->
+            <g transform="translate(336 24)">
+              <rect width="140" height="150" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">03 · SDLC</text>
+              <g class="glyph-node" data-role="scout" transform="translate(10 52)">
+                <rect width="30" height="18" rx="3" />
+                <text x="15" y="13" text-anchor="middle">sc</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(50 52)">
+                <rect width="30" height="18" rx="3" />
+                <text x="15" y="13" text-anchor="middle">bl</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(90 52)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">rev</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(50 94)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">res</text>
+              </g>
+              <path class="glyph-edge" d="M40 61 L 50 61" />
+              <path class="glyph-edge" d="M80 61 L 90 61" />
+              <path class="glyph-edge" d="M64 70 L 64 94" />
+              <path class="glyph-edge" d="M106 70 C 100 85, 90 97, 86 97" />
+              <text x="14" y="128" class="glyph-mbadge">escalate on ambiguity</text>
+            </g>
+
+            <!-- 04 One-shot -->
+            <g transform="translate(492 24)">
+              <rect width="124" height="150" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">04 · one-shot</text>
+              <g class="glyph-node" data-role="ci" transform="translate(10 54)">
+                <circle cx="14" cy="14" r="14" />
+                <text x="14" y="18" text-anchor="middle">CI</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(50 48)">
+                <rect width="40" height="30" rx="4" style="stroke-dasharray: 3 2" />
+                <text x="20" y="14" text-anchor="middle">rtn</text>
+                <text x="20" y="25" text-anchor="middle" class="sub">cron</text>
+              </g>
+              <g class="glyph-node" data-role="human" transform="translate(94 48)">
+                <rect width="24" height="30" rx="4" />
+                <text x="12" y="20" text-anchor="middle">me</text>
+              </g>
+              <path class="glyph-edge" d="M38 68 L 50 66" />
+              <path class="glyph-edge" d="M90 64 L 94 64" />
+              <text x="14" y="128" class="glyph-mbadge">no queue · no triage</text>
+            </g>
+
+            <!-- bottom caption -->
+            <text x="320" y="208" text-anchor="middle" class="glyph-mbadge" style="font-size: 13px">
+              Every shape is composed of: inbox messages · role queues · routines on inbox_idle.
+            </text>
+
+            <!-- primitives row -->
+            <g transform="translate(60 240)">
+              <g class="glyph-node" data-role="inbox">
+                <rect width="110" height="30" rx="6" />
+                <text x="55" y="20" text-anchor="middle">messages</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(130 0)">
+                <rect width="110" height="30" rx="6" />
+                <text x="55" y="20" text-anchor="middle">roles</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(260 0)">
+                <rect width="110" height="30" rx="6" />
+                <text x="55" y="20" text-anchor="middle">queues</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(390 0)">
+                <rect width="130" height="30" rx="6" />
+                <text x="65" y="20" text-anchor="middle">routines · inbox_idle</text>
+              </g>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="One kit, four shapes" id="why">
+        <p>
+          You've got the kit: messages, roles, queues, inbox_idle. The flexibility story is that
+          these four primitives recompose into a surprising range of shapes. Below are the four we
+          ship with — a closed dispatch factory, a human-in-the-loop pipe, a linear SDLC flow with
+          an escalation hop, and a one-shot notify. Each has a sibling
+          <code>.excalidraw</code> source under <code>./diagrams/inbox-flows/</code>, a seed routine
+          + agent, and lives on the <a href="../inbox-flows.html">inbox-flows</a>
+          dashboard so you can pop open the full detail sheet.
+        </p>
+      </section>
+
+      <!-- 01 · Dispatch -->
+      <section data-search="Dispatch factory pattern" id="dispatch">
+        <div class="pattern">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-d"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="triager" transform="translate(60 76)">
+                <rect width="80" height="30" rx="4" />
+                <text x="40" y="20" text-anchor="middle">triager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(200 24)">
+                <rect width="80" height="26" rx="3" />
+                <text x="40" y="18" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(200 60)">
+                <rect width="80" height="26" rx="3" />
+                <text x="40" y="18" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(200 96)">
+                <rect width="80" height="26" rx="3" />
+                <text x="40" y="18" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(200 132)">
+                <rect width="80" height="26" rx="3" />
+                <text x="40" y="18" text-anchor="middle">reviewer</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-d);
+                "
+                d="M140 86 L 200 36"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-d);
+                "
+                d="M140 90 L 200 72"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-d);
+                "
+                d="M140 94 L 200 108"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-d);
+                "
+                d="M140 98 L 200 144"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-d);
+                "
+                d="M240 50 C 300 50, 300 150, 240 150 L 160 150 C 130 150, 130 115, 140 100"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-accent, var(--role-triager));
+                  stroke-width: 1.2;
+                  stroke-dasharray: 3 3;
+                  marker-end: url(#arrow-d);
+                "
+                d="M30 92 C 10 92, 10 68, 60 86"
+              />
+              <text x="12" y="60" class="glyph-mbadge">inbox_idle</text>
+            </svg>
+          </figure>
+          <div>
+            <h3>01 · Dispatch factory</h3>
+            <p class="pattern-sub">
+              <span class="pattern-tag">closed loop</span>
+              <span class="pattern-tag">no humans in hot path</span>
+            </p>
+            <p>
+              A <strong>triager</strong> role fans incoming work out to typed worker queues —
+              builder, reviewer, scout — and the workers return results to the triager. Replies loop
+              back; a human only sees the roll-up. This is the shape the <code>Manager</code> Agent
+              + <code>manager-wake</code> routine ship as the default.
+            </p>
+            <pre><code># config/agents/manager/routines/manager-wake/routine.yml (seed)
+id: manager-wake
+mode: wake          # typed into the Manager's own idle session
+triggers: [{event: {kind: inbox_idle}}]
+task: You have unread mail. Call read_messages, then claim_role_messages …</code></pre>
+            <p><a href="./parallel.html">Scale this to N builders →</a></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 · HITL -->
+      <section data-search="Human-in-the-loop pattern" id="hitl">
+        <div class="pattern">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-h"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="inbox" transform="translate(20 56)">
+                <rect width="60" height="22" rx="3" />
+                <rect width="60" height="22" rx="3" transform="translate(4 26)" />
+                <rect width="60" height="22" rx="3" transform="translate(8 52)" />
+                <text x="30" y="15" text-anchor="middle" class="sub">incoming</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(130 70)">
+                <rect width="90" height="40" rx="20" />
+                <text x="45" y="22" text-anchor="middle">resolver</text>
+                <text x="45" y="33" text-anchor="middle" class="sub">(human-held)</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(250 50)">
+                <rect width="50" height="22" rx="3" />
+                <text x="25" y="15" text-anchor="middle">reply</text>
+              </g>
+              <g class="glyph-node" data-role="scout" transform="translate(250 100)">
+                <rect width="50" height="22" rx="3" />
+                <text x="25" y="15" text-anchor="middle">handoff</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-h);
+                "
+                d="M84 86 L 130 90"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-h);
+                "
+                d="M220 86 L 250 61"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-h);
+                "
+                d="M220 94 L 250 110"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-accent, var(--role-triager));
+                  stroke-width: 1.2;
+                  stroke-dasharray: 3 3;
+                  marker-end: url(#arrow-h);
+                "
+                d="M175 125 C 175 162, 110 162, 100 135"
+              />
+              <text x="100" y="170" class="glyph-mbadge">inbox_idle · 30m → nudge</text>
+            </svg>
+          </figure>
+          <div>
+            <h3>02 · Human-in-the-loop queue</h3>
+            <p class="pattern-sub">
+              <span class="pattern-tag">one pair of hands</span>
+              <span class="pattern-tag">nudge on stale</span>
+            </p>
+            <p>
+              Every incoming message funnels through a single <strong>resolver</strong> role held by
+              a human. They reply, or they hand off to another role. A routine that starts a new
+              digest agent on a schedule posts the stale items to the human's Inbox. Shape is
+              identical to dispatch — only the holder changed from an agent to a human.
+            </p>
+            <pre><code># config/agents/digest/routines/stale-digest/routine.yml
+mode: fresh
+triggers: [{schedule: {cron: "0 */2 * * *", tz: UTC}}]
+task: Post a one-line digest of stale resolver items with inbox_post.</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 · SDLC -->
+      <section data-search="SDLC pipeline pattern" id="sdlc">
+        <div class="pattern">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-s"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="scout" transform="translate(14 70)">
+                <rect width="68" height="28" rx="4" />
+                <text x="34" y="18" text-anchor="middle">scout</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(110 70)">
+                <rect width="68" height="28" rx="4" />
+                <text x="34" y="18" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(206 70)">
+                <rect width="80" height="28" rx="4" />
+                <text x="40" y="18" text-anchor="middle">reviewer</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(140 130)">
+                <rect width="80" height="28" rx="4" />
+                <text x="40" y="18" text-anchor="middle">resolver</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-s);
+                "
+                d="M82 84 L 110 84"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-s);
+                "
+                d="M178 84 L 206 84"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-s);
+                "
+                d="M144 98 C 148 115, 160 125, 170 128"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-s);
+                "
+                d="M196 128 C 216 125, 240 113, 236 98"
+              />
+              <text x="170" y="118" class="glyph-mbadge" text-anchor="middle">
+                escalate on ambiguity
+              </text>
+            </svg>
+          </figure>
+          <div>
+            <h3>03 · SDLC pipeline</h3>
+            <p class="pattern-sub">
+              <span class="pattern-tag">linear</span>
+              <span class="pattern-tag">escalation hop</span>
+            </p>
+            <p>
+              Scout → builder → reviewer in sequence. Each step is a role; each handoff is a
+              <code>reply</code> with <code>replyTo: "role:next"</code>. When either the builder or
+              the reviewer hits an ambiguous spec, they escalate to a <strong>resolver</strong>; the
+              verdict comes back and the pipeline resumes. This is the exact shape the
+              <strong>decision-escalation</strong> seed thread traces (<a
+                href="./decisions-and-escalation.html"
+                >more →</a
+              >).
+            </p>
+            <pre><code># agent.yaml (seed · examples/agents/manager)
+id: manager          # the triager at the head of the pipeline
+runtime: claude
+default_prompt: /manage-team</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 · One-shot -->
+      <section data-search="One-shot notify pattern" id="one-shot">
+        <div class="pattern">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-o"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="ci" transform="translate(30 72)">
+                <circle cx="20" cy="20" r="20" />
+                <text x="20" y="24" text-anchor="middle">CI</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(120 70)">
+                <rect width="80" height="44" rx="4" style="stroke-dasharray: 4 3" />
+                <text x="40" y="20" text-anchor="middle">routine</text>
+                <text x="40" y="34" text-anchor="middle" class="sub">cron · 1m</text>
+              </g>
+              <g class="glyph-node" data-role="human" transform="translate(240 70)">
+                <rect width="60" height="44" rx="4" />
+                <text x="30" y="20" text-anchor="middle">me</text>
+                <text x="30" y="34" text-anchor="middle" class="sub">(my inbox)</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-o);
+                "
+                d="M70 92 L 120 92"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#arrow-o);
+                "
+                d="M200 92 L 240 92"
+              />
+              <text x="95" y="82" text-anchor="middle" class="glyph-mbadge">poll</text>
+              <text x="220" y="82" text-anchor="middle" class="glyph-mbadge">ping (once)</text>
+            </svg>
+          </figure>
+          <div>
+            <h3>04 · One-shot notify</h3>
+            <p class="pattern-sub">
+              <span class="pattern-tag">smallest shape</span>
+              <span class="pattern-tag">no queue</span>
+            </p>
+            <p>
+              A single routine polls an external signal — CI, a webhook, a watched file — and sends
+              one message when the condition flips. No role; no queue; no second actor. The
+              routine's cron is the trigger. The shape exists to prove you don't have to adopt the
+              full kit for a trivial need.
+            </p>
+            <pre><code># routine.yml
+id: ci-green-ping
+triggers: [{schedule: {cron: "* * * * *", tz: UTC}}]
+task: |
+  1. Poll CI status for the current PR.
+  2. If status is green and we have not pinged yet, send_message
+     {to: "human", text: "CI green on PR #42."}
+policy: { max_runtime: 2m, overlap: skip }</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Try this now — open the composer" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the <a href="../inbox-flows.html">inbox-flows</a> dashboard — the four shapes live
+          there as detail sheets, and the <strong>Build your own</strong> composer emits a matching
+          <code>routine.yml</code> + <code>agent.yaml</code> for whatever shape you wire up.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "inbox-flows.html"}'
+          label="Open the inbox-flows dashboard"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Each pattern reduces to a routine wake-up and the shared role-queue loop:</p>
+          <pre><code>// 1. A routine on inbox_idle fires on the right role.
+// 2. In mode: wake, CodeSense types the routine's task into that agent's idle session.
+// 3. The holder's loop: claim_role_messages → accept_role_message → do work
+//    → reply/send_message → ack_role_message.
+// Changing the shape = changing the roles + the edges between them.</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./triggers.html">← Triggers</a> · Next:
+        <a href="./parallel.html">Massively parallel →</a> · Edge cases &amp; reference →
+        <a href="../inbox-flows.html">inbox-flows dashboard</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Four patterns</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

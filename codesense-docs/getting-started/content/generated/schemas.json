@@ -1,0 +1,2362 @@
+{
+  "schema": 1,
+  "generatedAt": "deterministic",
+  "schemas": [
+    {
+      "slug": "agent-yaml",
+      "name": "agent.yaml",
+      "kind": "yaml",
+      "icon": "user",
+      "description": "Saved agent definition: runtime, environment, content, role and native permissions. Generated from the serde model; save-time semantic validation still applies.",
+      "path": "<context repo>/<team>/config/agents/<agent-id>/agent.yaml",
+      "sourceRef": "agents/model.rs:Agent",
+      "sourceFile": "src-tauri/src/agents/model.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "agent"
+      },
+      "fields": [
+        {
+          "name": "allowWake",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "A routine may wake a running session of this\nagent even while it skips permission checks (bypass or unattended).\nOff by default; it means nothing for an agent that keeps its checks.",
+          "sourceRef": null
+        },
+        {
+          "name": "archived_at",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "args",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Appended to the runtime's argv; never a raw command line.",
+          "sourceRef": null
+        },
+        {
+          "name": "args[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "avatar",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The face its sessions wear when a launch names none: `pack:id`, or a\ncolour or emoji. Display only.",
+          "sourceRef": null
+        },
+        {
+          "name": "budget_usd",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "budget_usd.per_day",
+          "type": "number | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "budget_usd.per_week",
+          "type": "number | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "context",
+          "type": "null | array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The bulk content sets a workspace gets for this agent.\nAbsent means the runtime's default, resolved at launch and never\nwritten back ([`super::context::default_context`]); `[]` means none.",
+          "sourceRef": null
+        },
+        {
+          "name": "context[]",
+          "type": "string | object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "context[].dest",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "context[].path",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "created_by",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "The local user id that created it. Attribution only, never a permission:\nany teammate may edit a team agent.",
+          "sourceRef": null
+        },
+        {
+          "name": "default_prompt",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "env",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Environment variables every launch sets on the runtime's process, by\nname. CodeSense's own launch variables are always CodeSense's, and any\nother variable CodeSense sets for the launch wins over one here of the\nsame name. Every value is a string. Anyone who can read the agent sees\nthem: not for secrets.",
+          "sourceRef": null
+        },
+        {
+          "name": "env.*",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Immutable once created.",
+          "sourceRef": null
+        },
+        {
+          "name": "launch",
+          "type": "string",
+          "required": false,
+          "default": "\"foreground\"",
+          "allowed": [
+            "foreground",
+            "headless"
+          ],
+          "pattern": null,
+          "description": "How a launch runs the agent unless the launcher or routine overrides it.",
+          "sourceRef": null
+        },
+        {
+          "name": "mcp",
+          "type": "object",
+          "required": false,
+          "default": "{\"servers\":[]}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Which MCP servers the agent can reach, by `.mcp.json` server key. The\nCodeSense bridge is always present and never listed.",
+          "sourceRef": null
+        },
+        {
+          "name": "mcp.bridge_tools",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Codex bridge tool names, unqualified and exact. Omitted/null allows all;\nan empty list allows none. A by-name call through `codesense_call_tool`\nrequires both the wrapper and its target in this list.",
+          "sourceRef": null
+        },
+        {
+          "name": "mcp.bridge_tools[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "mcp.servers",
+          "type": "array",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "mcp.servers[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.additional_directories",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.additional_directories[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.allow",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.allow[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.ask",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.ask[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.default_mode",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.deny",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.deny[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.claude.disable_bypass_permissions_mode",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.codex",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.codex.approval_policy",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.codex.sandbox_mode",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes.approval",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes.deny",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes.deny[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes.toolsets",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.hermes.toolsets[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.opencode",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.opencode.permission",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "permissions.opencode.permission.*",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "resumeAfterRestart",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "After a terminal server update ends its session, the\nsession is relaunched as this same Agent, in its workspace and tab,\nwith a resume brief CodeSense builds from what it knows (never a CLI\nsession id). Off by default.",
+          "sourceRef": null
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "required": false,
+          "default": "0",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "role",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "runtime",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": [
+            "claude",
+            "codex",
+            "opencode",
+            "hermes"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "startup",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Ordered content-relative paths, stored normalized by every save. Kept as\nwritten on read so one bad hand edit is a typed validation error, not\nan unreadable definition.",
+          "sourceRef": null
+        },
+        {
+          "name": "startup[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        }
+      ],
+      "example": "id: reviewer\nname: Reviewer\nruntime: codex\nrole: reviewer\nenv:\n  CHANNEL: review\ncontext:\n  - path: docs\nrevision: 1\n"
+    },
+    {
+      "slug": "org-yml",
+      "name": "org.yml",
+      "kind": "yaml",
+      "icon": "building",
+      "description": "Organization config. One per context repo at its root. Declares the org slug, display name, tag schema, and credential bindings.",
+      "path": "<context repo>/org.yml",
+      "sourceRef": "org.rs:33-78",
+      "sourceFile": "src-tauri/src/domain/org.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "org"
+      },
+      "fields": [
+        {
+          "name": "slug",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "URL-normalized org identifier. Must match the directory name.",
+          "sourceRef": null
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Human-readable organization name.",
+          "sourceRef": null
+        },
+        {
+          "name": "created_at",
+          "type": "iso-8601",
+          "required": false,
+          "default": "auto",
+          "allowed": null,
+          "pattern": null,
+          "description": "Organization creation timestamp. Auto-set on first write.",
+          "sourceRef": null
+        },
+        {
+          "name": "remote_url",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Git remote URL (e.g. GitHub SSH origin).",
+          "sourceRef": null
+        },
+        {
+          "name": "config_flags.workspace_root_dir",
+          "type": "path",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Alternative location for managed source clones. Defaults to ~/.codesense/sources/.",
+          "sourceRef": null
+        },
+        {
+          "name": "tag_schema",
+          "type": "object",
+          "required": false,
+          "default": "{}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Team-defined tag registry. Empty dict = unopinionated default.",
+          "sourceRef": null
+        },
+        {
+          "name": "credential_ref",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Bound context-repo connection (provider, account id).",
+          "sourceRef": null
+        },
+        {
+          "name": "people",
+          "type": "array<object>",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "Organization members.",
+          "sourceRef": null
+        }
+      ],
+      "example": "slug: acme\ndisplay_name: Acme Inc.\nremote_url: git@github.com:acme/context.git\ntag_schema:\n  categories:\n    - id: priority\n      label: Priority\n      tags:\n        - id: p0\n          label: Critical\n          color: red\n        - id: p1\n          label: High\npeople: []\n"
+    },
+    {
+      "slug": "role-yaml",
+      "name": "role config YAML",
+      "kind": "yaml",
+      "icon": "users",
+      "description": "Durable role queue display settings and optional default handler. Save through role_save; this does not launch a handler or change queue registrations.",
+      "path": "<team>/content/roles/<encoded-id>.yaml",
+      "sourceRef": "queue_roles.rs:RoleConfig",
+      "sourceFile": "src-tauri/src/queue_roles.rs",
+      "recordCount": null,
+      "validator": null,
+      "fields": [
+        {
+          "name": "defaultHandler",
+          "type": "string | null",
+          "required": false,
+          "default": "null",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "icon",
+          "type": "string | null",
+          "required": false,
+          "default": "null",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        }
+      ],
+      "example": "id: reviewer\nname: Review\nicon: builtin-chess:knight\ndefaultHandler: acme/dev/reviewer\n"
+    },
+    {
+      "slug": "routine-yml",
+      "name": "routine.yml",
+      "kind": "yaml",
+      "icon": "clock",
+      "description": "An agent task or argv command, run manually, on a schedule, on an event or after another routine. Generated from RoutineDef; save-time validation checks valid combinations.",
+      "path": "<team>/config/agents/<agent-id>/routines/<id>/routine.yml (commands: config/agents/_command/routines/<id>/routine.yml)",
+      "sourceRef": "routines/model.rs:RoutineDef",
+      "sourceFile": "src-tauri/src/routines/model.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "routine"
+      },
+      "fields": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "agent",
+            "command"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "after",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "after.on",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "succeeded",
+            "finished"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "after.routine",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "agent",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The agent that runs the task; see [`AgentRef`]. A routine stored under\nits agent (`config/agents/<agent>/routines/<id>/`) does not write it: the\npath names the agent and every read fills it in (`layout`). Only a\nlegacy `config/routines/<id>/` file or an `_unassigned` one carries it.",
+          "sourceRef": null
+        },
+        {
+          "name": "archived_at",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "archived_with_agent",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Archived because its agent was archived: restoring the agent offers to\nrestore exactly these (`lifecycle`).",
+          "sourceRef": null
+        },
+        {
+          "name": "arm_epoch",
+          "type": "integer",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Bumped on every move of the routine between a desktop and a\nmachine. A machine refuses an arm or disarm older than the epoch it\nholds, so a stale definition can never re-arm it there.",
+          "sourceRef": null
+        },
+        {
+          "name": "armed_host",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "The local host id of the one Mac that arms this routine, so it fires\nonce however many machines have it. Placement, not permission: anyone\nmay move it. Unset only in a definition written outside CodeSense; see\n`host::is_armed_here`.",
+          "sourceRef": null
+        },
+        {
+          "name": "armed_machine",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The team-shared id of the machine whose session server arms this\nroutine: it fires there on the machine's own clock, with or\nwithout a desktop. `armed_host` then names the Mac that manages the\narm (pushes it, and records its runs); no Mac fires it itself. Old\nclients carry it as an unknown key.",
+          "sourceRef": null
+        },
+        {
+          "name": "command",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "command[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "handover_from",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The machine this routine moved off and the epoch of that\nmove, until that machine acknowledged it stopped firing it. No Mac\nfires the routine meanwhile (it may still fire there), whichever Mac\nreads this; the Mac that manages it clears it once acknowledged.",
+          "sourceRef": null
+        },
+        {
+          "name": "handover_from.epoch",
+          "type": "integer",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "handover_from.machine",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "migrated",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Where a migrated routine came from (`migrate`).",
+          "sourceRef": null
+        },
+        {
+          "name": "migrated.from",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The legacy dir relative to the space's `config/`: `routines/<id>`.\nThe legacy content last brought forward (the 3-way merge base for an\nolder client's edits) is kept beside the routine, in\n`migrate::BASE_FILE`, so mirroring it never rewrites this file.",
+          "sourceRef": null
+        },
+        {
+          "name": "migrated.note",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Shown with the routine: why it was renamed on the way (an id clash).",
+          "sourceRef": null
+        },
+        {
+          "name": "migrated.revision",
+          "type": "integer | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The revision the move wrote: the editor says why the routine\nstarts a new session only until a later revision is saved.",
+          "sourceRef": null
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "What a fire does: `fresh` starts a new instance of the agent, `wake`\ndelivers the task into a live one (starting one only when\nnone is running). Blank when the author picked none: the default is worked out\nat fire time (`service::effective_mode`); migration writes `fresh`.\nKept as a string so an unknown value is a\ntyped [`ValidationError`]; see [`RoutineDef::mode`].",
+          "sourceRef": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "The principal who created this routine, for display and attribution.\nIt grants nothing: anyone who can see a routine can change it.",
+          "sourceRef": null
+        },
+        {
+          "name": "policy",
+          "type": "object",
+          "required": false,
+          "default": "{\"missed\":\"skip\",\"overlap\":\"coalesce\",\"visible\":false}",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.budget_usd",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.budget_usd.per_day",
+          "type": "number | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.budget_usd.per_week",
+          "type": "number | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.max_runtime",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Required. `30m` / `2h`, between one minute and a day. Optional on the wire\nonly so a missing value is a typed validation error.",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.max_wakes",
+          "type": "integer | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Optional, set by the routine's author (usually an\nagent): how many deliveries its wakes may make in all. Reached, the\nroutine pauses itself with one inbox note; resuming starts a new count.",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.max_wakes_per_day",
+          "type": "integer | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Deliveries in any rolling 24 h. Over it a fire is\n`undelivered(limit_reached)`; it resumes on its own.",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.min_gap",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The least time between two wakes of this routine, into any session (`30m`,\n`2h`, `1d`; at most `7d`), for wakes that start heavy work. A fire\ninside it is coalesced or skipped per `overlap`.",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.missed",
+          "type": "string",
+          "required": false,
+          "default": "\"skip\"",
+          "allowed": [
+            "skip",
+            "run_once"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.overlap",
+          "type": "string",
+          "required": false,
+          "default": "\"coalesce\"",
+          "allowed": [
+            "coalesce",
+            "skip",
+            "queue"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "policy.visible",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "result_schema",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Optional bounded inline JSON Schema for a private dashboard snapshot.",
+          "sourceRef": null
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "required": false,
+          "default": "0",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "runs_on",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "How a team routine runs: `one_mac` (the default, also when empty) runs\nit once for the team on the `armed_host` Mac; `each_mac` runs it on\nevery Mac whose user turned it on there, each with its own runs. Kept\nas a string so an unknown value is a typed [`ValidationError`]; see\n[`RoutineDef::runs_on`].",
+          "sourceRef": null
+        },
+        {
+          "name": "task",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Empty means manual-only.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[]",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "One trigger. On the wire it is a single-key map: `- schedule: {…}` or\n`- event: {…}`.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].schedule",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "A wall-clock schedule: a 5-field cron in an IANA zone (see\n[`super::schedule`]). A missing `tz` is filled with this machine's zone at\nsave and persisted, so it never changes with where the app later runs.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].schedule.cron",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].schedule.tz",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "An event trigger: `agent_done` (an agent finished), `inbox_idle` (an agent sits\nidle at its prompt with unread inbox mail) or `role_pending` (a message is queued\nfor a role inbox in reach of the routine).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.from_agent",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "`agent_done` only: only an agent this names finishing fires it; read like\n[`RoutineDef::agent`].",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.kind",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.list",
+          "type": "boolean",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "An authoring hint for list wording; matching always uses the query engine.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous.key",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,\n`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).\nMatching ignores case, `-`/`_` and camelCase vs snake_case.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous.max",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous.min",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous.op",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "eq",
+            "in",
+            "not",
+            "exists",
+            "missing",
+            "contains",
+            "range",
+            "prefix"
+          ],
+          "pattern": null,
+          "description": "A filter operator.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.previous.value",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The operand for `eq`/`in`/`not`/`contains`/`prefix`. `\"@me\"` stands for the\nsigned-in user.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection",
+          "type": "object",
+          "required": false,
+          "default": "{\"where\":{\"orgs\":\"all\"}}",
+          "allowed": null,
+          "pattern": null,
+          "description": "The query. See the module docs for an example.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.cursor",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The `nextCursor` of a previous page.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[]",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "One filter clause. Clauses on the same key OR together; different keys AND.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[].key",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,\n`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).\nMatching ignores case, `-`/`_` and camelCase vs snake_case.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[].max",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[].min",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[].op",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "eq",
+            "in",
+            "not",
+            "exists",
+            "missing",
+            "contains",
+            "range",
+            "prefix"
+          ],
+          "pattern": null,
+          "description": "A filter operator.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.filters[].value",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The operand for `eq`/`in`/`not`/`contains`/`prefix`. `\"@me\"` stands for the\nsigned-in user.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.groupBy",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Count matches per value of this key (every item of a list counts).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.limit",
+          "type": "integer | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.match",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Shorthand: `{ \"status\": [\"todo\", \"review\"], \"team\": \"default\" }` — a\nscalar is `eq`, an array is `in`.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships",
+          "type": "object | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.backlinkedBy",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "This lists the file in its `supporting_docs`.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.dependedOnBy",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "This depends on the file (the file is a dependency of it).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.dependsOn",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The file `depends_on` this.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.hasDeps",
+          "type": "boolean | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.hasSupportingDoc",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The file lists this in `supporting_docs`.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.isBacklinked",
+          "type": "boolean | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.relationships.parentEpic",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The file's parent epic (`parent_epic`/`epic` frontmatter, or a folder on its path).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.select",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Frontmatter keys to return (plus the built-in row fields). Include\n`\"relationships\"` to also get relationship refs. Omitted: everything.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.select[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort",
+          "type": "array",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Sort keys, applied in order; ties fall back to path. Default: path.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[]",
+          "type": "string | object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "One sort key: `\"status\"`, `\"-mtime\"` (descending), or the object form.\n`order` ranks values explicitly (e.g. a team's own status order); values\nnot listed sort after the listed ones. It also orders `groupBy` buckets\nwhen the group key is sorted on.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[].dir",
+          "type": "string",
+          "required": false,
+          "default": "\"asc\"",
+          "allowed": [
+            "asc",
+            "desc"
+          ],
+          "pattern": null,
+          "description": "Sort direction.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[].key",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[].missing",
+          "type": "string",
+          "required": false,
+          "default": "\"last\"",
+          "allowed": [
+            "first",
+            "last"
+          ],
+          "pattern": null,
+          "description": "Where files without a value for the sort key go. Default: last.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[].order",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.sort[].order[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.text",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Token-aware title, heading and body match (bounded scan).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where",
+          "type": "object",
+          "required": false,
+          "default": "{\"orgs\":\"all\"}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Where to look. Every dimension narrows; omitted means unconstrained.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.kinds",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.kinds[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "story",
+            "bug",
+            "spike",
+            "epic",
+            "doc",
+            "dashboard",
+            "skill",
+            "other"
+          ],
+          "pattern": null,
+          "description": "What a file is, by the existing classification rules (frontmatter `type`,\nfile extension, location).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.layers",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.layers[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "team",
+            "private",
+            "all-orgs"
+          ],
+          "pattern": null,
+          "description": "Which layer of the context footprint a file lives in.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.orgs",
+          "type": "string | array",
+          "required": false,
+          "default": "\"all\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "Orgs to search. Default: every synced org. All-orgs content matches any org.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.orgs[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.pathGlob",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "A glob over the path relative to the content root (e.g. `**/DEMO-*.md`).",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.pathPrefix",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "An absolute path prefix, or a prefix of the path relative to the content root.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.sameOrgAs",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Limit to the org of the content root this absolute path (a file or a\nfolder) sits under — a UI default, e.g. a `csquery` block searching its\nown org. Fails closed: a path under no org's root (all-orgs content, or\noutside the footprint) leaves only all-orgs content.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.sameRootAs",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Limit to the one content root (a team's context repo, a private space, or\nall-orgs content) this absolute path sits under — e.g. a team board\nlisting its own team's stories. Nothing matches when the path is under no root.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.teams",
+          "type": "array | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Team names. Private and all-orgs files have no team, so naming teams excludes them.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.selection.where.teams[]",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "One filter clause. Clauses on the same key OR together; different keys AND.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target.key",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,\n`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).\nMatching ignores case, `-`/`_` and camelCase vs snake_case.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target.max",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target.min",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target.op",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": [
+            "eq",
+            "in",
+            "not",
+            "exists",
+            "missing",
+            "contains",
+            "range",
+            "prefix"
+          ],
+          "pattern": null,
+          "description": "A filter operator.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.metadata.target.value",
+          "type": "any",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The operand for `eq`/`in`/`not`/`contains`/`prefix`. `\"@me\"` stands for the\nsigned-in user.",
+          "sourceRef": null
+        },
+        {
+          "name": "triggers[].event.role",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "`role_pending` only: watch this queue; omit to watch every queue in reach.",
+          "sourceRef": null
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "variables.*",
+          "type": "object",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "A declared task variable. `default` is required when any trigger is a\nschedule, because nobody is there to supply a value.",
+          "sourceRef": null
+        },
+        {
+          "name": "variables.*.default",
+          "type": "string | number | boolean | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "variables.*.type",
+          "type": "string",
+          "required": false,
+          "default": "\"text\"",
+          "allowed": [
+            "text",
+            "number",
+            "boolean"
+          ],
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "where",
+          "type": "object",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Where the run happens. `kind` is `team_workspace` or `repo:<owner>/<repo>`.",
+          "sourceRef": null
+        },
+        {
+          "name": "where.kind",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "",
+          "sourceRef": null
+        },
+        {
+          "name": "where.machine",
+          "type": "string | null",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Which machine runs it: `local`, `any` or a team-shared machine id;\nabsent means local.",
+          "sourceRef": null
+        }
+      ],
+      "example": "id: morning-review\nname: Morning review\nowner: codesense\nmode: fresh\ntask: Review stories and report the result.\nwhere:\n  kind: team_workspace\ntriggers:\n  - schedule:\n      cron: '0 9 * * 1-5'\n      tz: UTC\npolicy:\n  max_runtime: 5m\nrevision: 1\n"
+    },
+    {
+      "slug": "teams-yml",
+      "name": "teams.yml",
+      "kind": "yaml",
+      "icon": "users",
+      "description": "Team roster for an org. Array of team objects; each team may declare a parent for context inheritance.",
+      "path": "<context repo>/teams.yml",
+      "sourceRef": "team.rs; org.rs:80-196",
+      "sourceFile": "src-tauri/src/domain/team.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "teams"
+      },
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Unique team name per org.",
+          "sourceRef": null
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Directory name under teams/. Kebab-case.",
+          "sourceRef": null
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Human-readable label.",
+          "sourceRef": null
+        },
+        {
+          "name": "remote",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Git remote key, e.g. \"origin\" or \"upstream\".",
+          "sourceRef": null
+        },
+        {
+          "name": "remote_url",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Git clone URL.",
+          "sourceRef": null
+        },
+        {
+          "name": "parent_team",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Single-parent chain for inheritance. No cycles, max depth 64.",
+          "sourceRef": null
+        },
+        {
+          "name": "landing_page",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "The team's starter page, relative to its content folder (no `..`, no hidden file or folder), opened whenever the team has nothing open. Set it from a file's menu (Set as team starter page), Settings → Workspace, or the set_team_starter_page MCP tool. Unset: README.md, README.html or index.html there, else nothing.",
+          "sourceRef": null
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "Team description.",
+          "sourceRef": null
+        },
+        {
+          "name": "is_archived",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "allowed": [
+            "true",
+            "false"
+          ],
+          "pattern": null,
+          "description": "Archived teams don't appear in the switcher.",
+          "sourceRef": null
+        },
+        {
+          "name": "settings",
+          "type": "object",
+          "required": false,
+          "default": "{}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Team-level overrides.",
+          "sourceRef": null
+        }
+      ],
+      "example": "- name: Backend\n  slug: backend\n  display_name: Backend Team\n  remote: origin\n  remote_url: git@github.com:acme/api.git\n  description: Core backend services\n  parent_team: null\n  is_archived: false\n\n- name: Auth\n  slug: auth\n  display_name: Auth Subsystem\n  remote: origin\n  parent_team: Backend\n"
+    },
+    {
+      "slug": "worktree-yaml",
+      "name": "worktree.yaml",
+      "kind": "yaml",
+      "icon": "git-branch",
+      "description": "Runtime state for a context-repo worktree. Tracks sync status and mtime cache for warm starts. Managed by the sync engine; rarely hand-edited.",
+      "path": "<context repo>/_codesense/worktree/<owner>/<repo>.yaml",
+      "sourceRef": "worktree_index.rs",
+      "sourceFile": "src-tauri/src/install/worktree_index.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "worktree"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Worktree identifier, typically team/repo.",
+          "sourceRef": null
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": true,
+          "default": null,
+          "allowed": [
+            "pending",
+            "syncing",
+            "synced",
+            "failed"
+          ],
+          "pattern": null,
+          "description": "SyncStatus. Live state updated by the sync engine.",
+          "sourceRef": null
+        },
+        {
+          "name": "mtime_cache",
+          "type": "object",
+          "required": true,
+          "default": "{}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Timestamp -> mtime map for warm-start skips.",
+          "sourceRef": null
+        },
+        {
+          "name": "sync_state",
+          "type": "object",
+          "required": false,
+          "default": "{}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Forward/reverse sync state including residual_metrics counters.",
+          "sourceRef": null
+        }
+      ],
+      "example": "id: team/repo\nstatus: synced\nmtime_cache: {}\nsync_state:\n  last_sync: \"2026-10-04T10:30:00Z\"\n  residual_metrics:\n    forward: 0\n    reverse: 0\n"
+    },
+    {
+      "slug": "epic-frontmatter",
+      "name": "epic frontmatter",
+      "kind": "frontmatter",
+      "icon": "book-marked",
+      "description": "Same field set as story frontmatter, but used on the epic overview file (README.md or index.md, case-insensitive). Serves as the epic-level context anchor; can carry supporting_docs regardless of type.",
+      "path": "README.md or index.md in an epic directory",
+      "sourceRef": "frontmatter_perf.rs; docs/pipeline-document-types.md",
+      "sourceFile": "src-tauri/src/install/frontmatter_perf.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "epic-frontmatter"
+      },
+      "fields": [
+        {
+          "name": "type",
+          "type": "enum",
+          "required": false,
+          "default": "\"story\"",
+          "allowed": [
+            "story",
+            "bug",
+            "spike",
+            "doc",
+            "retro"
+          ],
+          "pattern": null,
+          "description": "Document type for the epic overview. Non-actionable types (doc, retro) are common.",
+          "sourceRef": null
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": false,
+          "default": "none",
+          "allowed": [
+            "planning",
+            "todo",
+            "in-progress",
+            "blocked",
+            "review",
+            "qa",
+            "done"
+          ],
+          "pattern": null,
+          "description": "Optional epic-level status. Actionable types only.",
+          "sourceRef": null
+        },
+        {
+          "name": "story_id",
+          "type": "string",
+          "required": false,
+          "default": "dirname",
+          "allowed": null,
+          "pattern": null,
+          "description": "Display label. Defaults to the epic directory name.",
+          "sourceRef": null
+        },
+        {
+          "name": "depends_on",
+          "type": "array<string>",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "Cross-epic dependencies. Same resolution rules as story frontmatter.",
+          "sourceRef": null
+        },
+        {
+          "name": "supporting_docs",
+          "type": "array<path>",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "Epic overviews can have supporting_docs regardless of type.",
+          "sourceRef": null
+        },
+        {
+          "name": "source_repo",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Default source repository for stories in this epic.",
+          "sourceRef": null
+        }
+      ],
+      "example": "---\ntype: story\nsupporting_docs:\n  - ./retro-sprint-1.md\n  - ./research-architecture-options.md\nsource_repo: acme/api\n---\n\n# Epic Overview: Pipeline Viewer\n\nHigh-level context for the pipeline viewer epic...\n"
+    },
+    {
+      "slug": "story-frontmatter",
+      "name": "story frontmatter",
+      "kind": "frontmatter",
+      "icon": "book-open",
+      "description": "YAML frontmatter at the top of any .md file in a pipeline epic directory. type defaults to story when absent; status defaults to none (file renders without a status spine).",
+      "path": "any .md file in a pipeline epic directory",
+      "sourceRef": "frontmatter_perf.rs; docs/pipeline-frontmatter.md",
+      "sourceFile": "src-tauri/src/install/frontmatter_perf.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "story-frontmatter"
+      },
+      "fields": [
+        {
+          "name": "type",
+          "type": "enum",
+          "required": false,
+          "default": "\"story\"",
+          "allowed": [
+            "story",
+            "bug",
+            "spike",
+            "doc",
+            "retro"
+          ],
+          "pattern": null,
+          "description": "Document type. Unknown values normalize to doc.",
+          "sourceRef": null
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": false,
+          "default": "none",
+          "allowed": [
+            "planning",
+            "todo",
+            "in-progress",
+            "blocked",
+            "review",
+            "qa",
+            "done"
+          ],
+          "pattern": null,
+          "description": "Pipeline status. Actionable types only (story, bug, spike). Invalid values silently ignored.",
+          "sourceRef": null
+        },
+        {
+          "name": "story_id",
+          "type": "string",
+          "required": false,
+          "default": "filename",
+          "allowed": null,
+          "pattern": null,
+          "description": "Display label on the pipeline node. Falls back to the file's basename minus .md.",
+          "sourceRef": null
+        },
+        {
+          "name": "depends_on",
+          "type": "array<string>",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "Story IDs within the epic. Cross-epic refs: \"other-epic/S-1\". Unresolved refs silently dropped.",
+          "sourceRef": null
+        },
+        {
+          "name": "supporting_docs",
+          "type": "array<path>",
+          "required": false,
+          "default": "[]",
+          "allowed": null,
+          "pattern": null,
+          "description": "Relative paths - same-directory only; must be non-story types. Actionable stories only.",
+          "sourceRef": null
+        },
+        {
+          "name": "source_repo",
+          "type": "string",
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Source repository identifier. Observed by the org story resolver.",
+          "sourceRef": null
+        }
+      ],
+      "example": "---\ntype: story\nstatus: in-progress\nstory_id: W-5\ndepends_on: [W-3, W-4]\nsupporting_docs:\n  - ./spike-auth-tokens.md\n  - ./bug-login-race.md\nsource_repo: acme/api\n---\n\n# User Auth Flow\n"
+    },
+    {
+      "slug": "bundle-json",
+      "name": "bundle.json",
+      "kind": "json",
+      "icon": "package",
+      "description": "Agent launch bundle. Pre-wired agent + startup config a user can one-click launch. Fields inferred from DashboardLaunchState; the full schema is not generated yet.",
+      "path": "<context repo>/<team>/bundles/<bundle-id>/bundle.json",
+      "sourceRef": "dashboard_launch.rs",
+      "sourceFile": "src-tauri/src/commands/dashboard_launch.rs",
+      "recordCount": null,
+      "validator": {
+        "bridgeVerb": "validateYaml",
+        "kind": "bundle"
+      },
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Bundle identifier. Kebab-case; unique within the team.",
+          "sourceRef": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Display name shown in the launch picker.",
+          "sourceRef": null
+        },
+        {
+          "name": "agent_id",
+          "type": "string",
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "pattern": null,
+          "description": "Default agent to launch. Must reference an existing agent.yaml id.",
+          "sourceRef": null
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "allowed": null,
+          "pattern": null,
+          "description": "Short description of what the bundle sets up.",
+          "sourceRef": null
+        },
+        {
+          "name": "launch_params",
+          "type": "object",
+          "required": false,
+          "default": "{}",
+          "allowed": null,
+          "pattern": null,
+          "description": "Pre-populated launch parameters merged into the picker form.",
+          "sourceRef": null
+        }
+      ],
+      "example": "{\n  \"id\": \"web-dev\",\n  \"name\": \"Web Dev Loop\",\n  \"description\": \"Build + review + test for the web app\",\n  \"agent_id\": \"my-claude\",\n  \"launch_params\": {\n    \"startup_file\": \"./CLAUDE.md\",\n    \"worktree\": \"web\"\n  }\n}\n"
+    }
+  ]
+}

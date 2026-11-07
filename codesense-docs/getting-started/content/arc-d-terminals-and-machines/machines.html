@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="server" />
+    <title>CodeSense — Machines</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/machines">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Machine kinds and modes" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Machines</span>
+        </p>
+        <h1>What CodeSense means by a machine</h1>
+      </section>
+
+      <section data-search="What a machine is" id="why">
+        <p>
+          A <strong>machine</strong> is somewhere a CodeSense terminal can run. Your Mac
+          is one. A Linux build box over SSH is another. A machine shows up in the
+          Machines list once you (or a teammate) have declared it. Everyone picks it
+          from the same list; everyone signs in as themselves.
+        </p>
+      </section>
+
+      <section data-search="Machine load memory disk resources" id="resources">
+        <h2>Load, memory and free disk</h2>
+        <p>Each connected machine, including This Mac, reports a plain line in the Machines tab:</p>
+        <pre><code>Load 38% of 8 cores · Memory 12.1 / 16 GB · 84 GB free of 460 GB · reported 14:32</code></pre>
+        <p>Load is the one-minute load average divided by the logical core count (it can exceed
+          100%). Memory used is total minus available memory. Disk is the volume holding the
+          terminal server's workspace directory. Hover over the line for the reporting machine,
+          sample time and disk path. GB uses decimal bytes.</p>
+        <p>These figures are self-reported observations, not reserved capacity. CodeSense adds no
+          thresholds or placement decisions. An operation that needs disk space still checks it
+          again. Disconnected machines show no line. An older server says
+          “Load, memory and disk unknown · update the terminal server”.</p>
+        <p>The server samples every 30 seconds only while a Machines view subscribes. Hiding or
+          closing the view releases its subscription; returning catches up from a snapshot and
+          live changes through the shared <code>machineStats</code> LiveHub topic. Samples stay in
+          local runtime memory and never sync.</p>
+        <p>Agents use <code>list_machines {orgSlug, team?}</code>. Dashboard authors use
+          <code>await codesense.machines()</code> for the same optional fields:
+          <code>load1</code>, <code>cpuCount</code>, <code>memUsedBytes</code>,
+          <code>memTotalBytes</code>, <code>diskFreeBytes</code>, <code>diskTotalBytes</code>,
+          <code>diskPath</code> and <code>sampledAt</code> (Unix epoch milliseconds on the server).
+          MCP reads reuse a sample under 30 seconds old or request one fresh sample; they do not
+          leave a watcher running. <code>machineStatsSupported: false</code> identifies an old server.</p>
+        <pre><code>const machines = await codesense.machines();
+for (const machine of machines) {
+  if (machine.diskFreeBytes !== undefined) {
+    console.log(machine.label, machine.diskFreeBytes / 1e9, 'GB free', machine.diskPath);
+  }
+}</code></pre>
+      </section>
+
+      <section data-search="Two records — declaration and binding" id="two-records">
+        <h2>Two records per machine</h2>
+        <p>
+          CodeSense splits every machine into two records so a teammate can share
+          "where it is" without ever handing out "how to log in":
+        </p>
+        <ul>
+          <li>
+            <strong>Declaration</strong> — public: label, host, port, pinned host key,
+            default base dir. Lives either in your personal layer (just you see it) or
+            in a team's <code>config/</code> (every teammate sees it after sync).
+            Never carries a user name, key, or password.
+          </li>
+          <li>
+            <strong>Binding</strong> — personal: your Unix username on that box, your
+            private key file, your keychain handle, whether you've hidden it. Lives
+            in your own directory. Never syncs anywhere.
+          </li>
+        </ul>
+        <p>
+          That split is the whole reason "my teammate shared the build box with me"
+          doesn't mean "my teammate handed me their key". Each person binds the shared
+          declaration to their own account on the machine.
+        </p>
+      </section>
+
+      <section data-search="Machine kinds — this Mac, remote" id="kinds">
+        <h2>Kinds</h2>
+        <ol>
+          <li>
+            <strong>This Mac</strong> — the machine CodeSense is running on. It owns
+            your account directory and runs the host-agent. You never add it; it's
+            always present.
+          </li>
+          <li>
+            <strong>Remote</strong> — any other host reachable over SSH. You add it
+            once, test it, and from then on it appears in the picker next to "this Mac".
+            Linux is the common case; another Mac works too.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Two modes — private-account and read-only" id="modes">
+        <h2>Two modes</h2>
+        <p>Every remote machine runs in one of two modes:</p>
+        <ul>
+          <li>
+            <strong>Private-account</strong>
+            <span class="cs-docs-chip cs-docs-chip--ok">recommended</span>
+            — you have your own Unix account on the box. Your files, your agent CLI
+            logins, your terminal server identity. Teammates on the same box have
+            theirs. This is the mode CodeSense is built around: parity with local
+            comes from this mode. See
+            <a href="./remote-private-account.html">Remote (private account)</a>.
+          </li>
+          <li>
+            <strong>Read-only (shared account)</strong>
+            <span class="cs-docs-chip cs-docs-chip--warn">narrow use</span>
+            — multiple teammates work as the same Unix user. Everyone can see and
+            change each other's files. Fine for a CI box or a classroom demo;
+            not what you want for day-to-day work. CodeSense still works, but
+            per-user state (agent logins, keychain handles) is a shared concern on
+            that account.
+          </li>
+        </ul>
+        <p>
+          The <a href="./add-machine-user.html">add-machine-user</a> page walks the
+          choice. The <code>/add-machine-user</code> skill recommends "own account"
+          by default.
+        </p>
+      </section>
+
+      <section data-search="Where machines are stored" id="storage">
+        <h2>Where they live on disk</h2>
+        <p>Short tour of the files, in case you're spelunking:</p>
+        <ul>
+          <li>
+            <strong>Personal declaration</strong> —
+            <code>~/.codesense/users/&lt;principal&gt;/machines.d/&lt;id&gt;.yaml</code>
+          </li>
+          <li>
+            <strong>Team declaration</strong> —
+            <code>&lt;team-content&gt;/config/machines.d/&lt;id&gt;.yaml</code>
+            (shared through the context repo's git like everything else in the team layer).
+          </li>
+          <li>
+            <strong>Your bindings</strong> —
+            <code>~/.codesense/users/&lt;principal&gt;/machine-bindings.json</code>.
+            Never syncs; never leaves your Mac.
+          </li>
+          <li>
+            <strong>Private-account state</strong> (v1) —
+            <code>~/.codesense/users/&lt;principal&gt;/machines-private-v1.d/&lt;id&gt;.yaml</code>
+            plus <code>machine-private-bindings-v1.json</code> for the per-account
+            uid, canonical home, and enrollment id. Also never synced.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — list machines" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List every machine you (or your team) have declared, with mode and setup state.
+        </p>
+        <cs-try-this
+          verb="machines"
+          args="{}"
+          label="List machines"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to list / save machines via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// List
+codesense.invoke('list_machines', {})
+
+// Save a new remote machine (public declaration)
+codesense.invoke('save_machine', {
+  label: 'build-box-01',
+  host: 'build-box-01.lab',
+  port: 22,
+  share: 'personal',          // or { team: 'ops' }
+})</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc D home</a> ·
+        <a href="./local-machine.html">Local machine →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_machines">list_machines</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Machines</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

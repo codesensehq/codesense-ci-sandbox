@@ -1,0 +1,521 @@
+/* SPDX-License-Identifier: MIT */
+/* Sidebar utility classes — consume --cs-sidebar-* with Tailwind fallbacks.
+   Fallbacks use var(--tailwind-var) directly (hex values, no hsl() wrapper). */
+.cs-sidebar-icon {
+  color: var(--cs-sidebar-icon, var(--muted-foreground));
+}
+.cs-sidebar-muted {
+  color: var(--cs-sidebar-text-muted, var(--muted-foreground));
+}
+.cs-sidebar-hover:hover {
+  background-color: var(--cs-sidebar-hover, color-mix(in srgb, var(--muted) 50%, transparent));
+}
+.cs-sidebar-item {
+  color: var(--cs-sidebar-text, var(--foreground));
+}
+.cs-sidebar-item:hover {
+  background-color: var(--cs-sidebar-hover, color-mix(in srgb, var(--muted) 50%, transparent));
+}
+/* SW-XS-15: the agent context overlay. With "Context for <Agent>" picked, a row
+   outside the agent's want set takes a muted ink (and quieter icons), so the set
+   reads at a glance; hover or focus brings it back to full ink. A row in the set
+   carries a quiet 10px source tag (team / repo / private) in a fixed right-hand
+   slot, so the row actions line up whatever the tag. The muted ink is each theme's
+   `--cs-agent-ctx-out` (a step of its own palette chosen to stay at or above 4.5:1
+   on its sidebar, which several themes' `--cs-sidebar-text-muted` is not; pinned by
+   viewer-themes.agent-context.test.ts), else the muted text pulled toward the text. */
+.cs-agent-ctx-out .cs-sidebar-item,
+.cs-agent-ctx-tag {
+  color: var(
+    --cs-agent-ctx-out,
+    color-mix(
+      in oklab,
+      var(--cs-sidebar-text-muted, var(--muted-foreground)) 75%,
+      var(--cs-sidebar-text, var(--foreground))
+    )
+  );
+}
+.cs-agent-ctx-out svg {
+  opacity: 0.6;
+}
+.cs-agent-ctx-out:hover .cs-sidebar-item,
+.cs-agent-ctx-out:focus-within .cs-sidebar-item {
+  color: var(--cs-sidebar-text, var(--foreground));
+}
+.cs-agent-ctx-out .cs-sidebar-item-selected {
+  color: var(--cs-sidebar-selected-text, var(--foreground));
+}
+.cs-agent-ctx-out:hover svg,
+.cs-agent-ctx-out:focus-within svg {
+  opacity: 1;
+}
+.cs-agent-ctx-tag {
+  flex: none;
+  width: 2.5rem;
+  padding-right: 6px;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1;
+  user-select: none;
+}
+/* SLW-FX-21: drag-to-link drop-target highlight — an inset ring + faint fill,
+   themed via --cs-sidebar-* so it reads in light and dark. Box-shadow (not the
+   Tailwind ring plumbing) keeps it self-contained on the DnD wrapper. */
+.cs-sidebar-drop-ring {
+  box-shadow: inset 0 0 0 2px var(--cs-sidebar-selected, var(--ring, #3b82f6));
+  background-color: color-mix(in srgb, var(--cs-sidebar-hover, var(--muted)) 35%, transparent);
+}
+/* Hide the browser's default focus ring after mouse clicks (macOS WebKit
+   leaves a blue square on <button> rows post-click). Keyboard focus stays
+   visible via :focus-visible. */
+.cs-sidebar-item:focus:not(:focus-visible) {
+  outline: none;
+}
+.cs-sidebar-item-selected {
+  background-color: var(--cs-sidebar-selected, var(--muted));
+  color: var(--cs-sidebar-selected-text, var(--foreground));
+}
+.cs-sidebar-item-active {
+  background-color: var(--cs-sidebar-selected, var(--muted));
+  color: var(--cs-sidebar-selected-text, var(--foreground));
+}
+/* SW-EW-12: raised workspace card — a surface distinct from the panel bg, NOT
+   the old full-row highlight. Each theme sets `--cs-workspace-card-bg` a step
+   off `--cs-sidebar-bg`; the fallback derives one (mix toward the text color so
+   it raises on dark themes and on light themes alike). Hover lifts it further
+   in the same direction. New class — `.cs-sidebar-item` is left untouched for
+   the console bar + other nav rows. */
+.cs-workspace-card {
+  background-color: var(
+    --cs-workspace-card-bg,
+    color-mix(in srgb, var(--cs-sidebar-bg, var(--card)) 88%, var(--cs-sidebar-text, #fff))
+  );
+  border: 1px solid var(--cs-sidebar-border, var(--border));
+  /* Subtle elevation so the card reads as raised even on light themes where the
+     bg-delta vs the panel is small (the bg-delta carries the dark themes). */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.cs-workspace-card:hover {
+  /* Lift the surface further on hover, in the theme's own direction: mixing
+     toward the text color darkens on light themes and lightens on dark. Falls
+     back to `--foreground` (defined by the default theme, which has no
+     `--cs-sidebar-text`) so the default light theme still gets a hover delta. */
+  background-color: color-mix(
+    in srgb,
+    var(--cs-workspace-card-bg, var(--cs-sidebar-bg, var(--card))) 90%,
+    var(--cs-sidebar-text, var(--foreground, #fff))
+  );
+}
+/* Minimized workspaces recede through their decorative card chrome. Never
+   fade the container: its shared status mark, text and focus remain legible. */
+.cs-workspace-card-minimized {
+  background-color: var(--cs-sidebar-bg, var(--card));
+  border-style: dashed;
+  box-shadow: none;
+}
+/* Where a pill dragged along the tray lands: one thin line in the gap between pills, the height of
+   the strip's row, in the focus ring's ink (it marks an interaction, not a team). */
+.cs-tray-insertion {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ring);
+  pointer-events: none;
+  z-index: 3;
+  /* Placed by `transform` (set inline), so a move between gaps never relays out the strip. */
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Held at the pill's own place: the line stays, dimmed, so the drag still reads as live while a
+   release there moves nothing. Before the first pill it overlays that pill's edge (the strip
+   opens no air for it, so nothing shifts as a drag enters the band). */
+.cs-tray-insertion[data-at-home] {
+  opacity: 0.35;
+}
+/* A small ring at each end, as the Agents pane's drop line has at its start: the line reads as a
+   place, not as a pill's edge. */
+.cs-tray-insertion::before,
+.cs-tray-insertion::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cs-sidebar-bg, var(--background));
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+.cs-tray-insertion::before {
+  top: -2px;
+}
+.cs-tray-insertion::after {
+  bottom: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-tray-insertion {
+    transition: none;
+  }
+}
+/* Suppress the post-click focus ring (macOS WebKit) — keyboard focus stays
+   visible via :focus-visible, matching `.cs-sidebar-item`. */
+.cs-workspace-card:focus:not(:focus-visible) {
+  outline: none;
+}
+/* A workspace pill on the one-row bar: one calm line, the epic rail pill's density. Its stage (a
+   story's, its control) or folder leads, then the name, the tally (the status mark and the agent
+   count), the lead's face, and one end slot: the ⌘ number at rest, the close × on hover or focus.
+   Colour is only status (the tally's mark, its needs-you ink) and machine (a remote pill's mark
+   and ring).
+   The pill's ink comes from the card's own theme tokens, so a light card on a dark bar (or the
+   reverse) keeps its contrast: muted at rest, full on hover and when selected. */
+.cs-workspace-pill-one-line {
+  --cs-pill-identity-min: 32px;
+  --cs-pill-ink: var(--cs-sidebar-text, var(--foreground));
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 8px 6px;
+  border-radius: inherit;
+  font-size: calc(12px * var(--bar-floor, 1));
+  line-height: 1;
+  color: color-mix(in srgb, var(--cs-pill-ink) 70%, transparent);
+}
+.cs-workspace-pill-remote {
+  --cs-pill-identity-min: 47px;
+}
+.cs-workspace-pill-one-line .cs-workspace-pill-selection,
+.cs-workspace-pill-one-line .cs-workspace-pill-selection:hover {
+  color: inherit;
+}
+.cs-workspace-card:hover .cs-workspace-pill-one-line,
+.cs-workspace-card-selected .cs-workspace-pill-one-line {
+  color: var(--cs-pill-ink);
+}
+/* A capped pill gives way first in its operation text, then in its name (it truncates, the full
+   name on hover); its marks, tally and end slot keep their size. */
+.cs-workspace-pill-one-line .cs-workspace-pill-selection {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  gap: 6px;
+  border-radius: 0;
+  background: none;
+}
+/* Keyboard focus rings the whole pill, not the name's box inside it. */
+.cs-workspace-pill-one-line .cs-workspace-pill-selection:focus-visible {
+  outline: none;
+}
+.cs-workspace-pill-one-line:has(> .cs-workspace-pill-selection:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.cs-workspace-pill-one-line .cs-workspace-pill-label {
+  min-width: 32px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  /* Room for descenders inside the truncating box (it clips what overhangs). */
+  line-height: 1.35;
+}
+.cs-workspace-card-selected .cs-workspace-pill-one-line .cs-workspace-pill-label {
+  font-weight: 600;
+}
+.cs-workspace-pill-one-line .cs-workspace-pill-identity {
+  min-width: var(--cs-pill-identity-min);
+  flex: 1 1 auto;
+}
+.cs-workspace-pill-one-line
+  .cs-workspace-pill-selection
+  > :not(.cs-workspace-pill-identity):not(.cs-workspace-pill-label) {
+  flex-shrink: 0;
+}
+.cs-workspace-pill-one-line .cs-workspace-pill-meta {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+.cs-workspace-pill-one-line .cs-workspace-pill-meta:empty {
+  display: none;
+}
+.cs-workspace-pill-state-slot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+/* The Hidden-tabs badge gives way on a tight strip (see the container steps below). */
+.cs-workspace-pill-hidden-slot {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  align-items: center;
+}
+.cs-workspace-pill-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12px;
+}
+.cs-workspace-pill-state button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+/* The actions hold only the operation chip now; it is the pill's first part to give way. */
+.cs-workspace-pill-actions {
+  display: contents;
+}
+/* The tally: the status mark and how many agents work here, in a quiet chip as on the Agents
+   pane's card; it takes the needs-you ink while any of them waits on you. */
+.cs-workspace-pill-tally {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: calc(16px * var(--bar-floor, 1));
+  padding-inline: 5px;
+  border-radius: 999px;
+  font-size: calc(11px * var(--bar-floor, 1));
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--cs-sidebar-text, var(--foreground)) 7%, transparent);
+}
+.cs-workspace-pill-tally:not(:has(> .tabular-nums)) {
+  padding-inline: 3px;
+}
+.cs-workspace-pill-tally[data-has-needs] {
+  color: var(--cs-status-needs);
+  background: color-mix(in srgb, var(--cs-status-needs) 16%, transparent);
+}
+/* The end slot: the ⌘ number and the close × share one place, so hovering moves nothing. */
+.cs-workspace-pill-end {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+}
+.cs-workspace-pill-end > * {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+.cs-tray-shortcut {
+  /* A rebound jump key can be longer than the ⌘ number: it stays on one line and truncates
+     rather than widening the pill or spilling out of the slot. */
+  max-width: 4.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Room for the glyphs inside the clipping box: at a line height of 1 the Small bar's raised
+     floor size cut their tops and bottoms. */
+  line-height: 1.25;
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  transition: opacity 120ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-tray-shortcut {
+    transition: none;
+  }
+}
+.group:hover > .cs-workspace-pill-end[data-has-close] > .cs-tray-shortcut,
+.group:focus-within > .cs-workspace-pill-end[data-has-close] > .cs-tray-shortcut {
+  opacity: 0;
+}
+/* A one-line tray pill never outgrows the strip, less the strip's two edge fades
+   (`--cs-tray-fade`, set from FADE_PX in workspace-tray.tsx), so even the full active pill scrolls
+   wholly into view. */
+.cs-tray-chip-one-line {
+  max-width: max(0px, calc(100cqw - 2 * var(--cs-tray-fade)));
+}
+/* The operation chip shrinks first (its text truncates) down to its icon. */
+.cs-workspace-pill-operation-one-line {
+  flex: 0 1000 auto;
+  min-width: 0;
+  max-width: min(15rem, 25cqw);
+}
+.cs-workspace-pill-operation-one-line:has([data-testid="operation-chip"]) {
+  min-width: 23px;
+}
+.cs-workspace-pill-operation-one-line [data-testid="operation-chip"] {
+  max-width: 100%;
+}
+.cs-workspace-pill-one-line .cs-workspace-hidden-control {
+  order: 3;
+}
+.cs-workspace-hidden-control {
+  grid-template-columns: 10px max-content;
+  line-height: 1.5;
+}
+.cs-workspace-hidden-eye {
+  grid-column: 1;
+}
+.cs-workspace-hidden-count {
+  grid-column: 2;
+}
+.cs-workspace-hidden-mark-envelope {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+}
+.cs-workspace-hidden-control:has(.cs-workspace-hidden-mark-envelope) {
+  grid-template-rows: 10px 10px;
+}
+.cs-workspace-hidden-control:has(.cs-workspace-hidden-mark-envelope) .cs-workspace-hidden-eye {
+  grid-row: 2;
+}
+.cs-workspace-hidden-control:has(.cs-workspace-hidden-mark-envelope) .cs-workspace-hidden-count {
+  grid-row: 1 / span 2;
+}
+/* The lead's face, with room for its piece badge and its shadow; its number tag belongs to the
+   rows. */
+.cs-workspace-pill-one-line .cs-agent-identity {
+  padding: 1.5px 4.5px 3.5px 1.5px;
+}
+.cs-workspace-pill-one-line .ag-face-tag {
+  display: none;
+}
+.cs-workspace-pill-one-line .ag-crew-lead > .ag-face {
+  display: flex;
+}
+/* A tight strip (a narrow window, the full-screen CLI's title bar) sheds in a fixed order, the
+   least telling part first: (1) the operation chip of every pill but the selected one, and the
+   Hidden-tabs badge's count (its eye and status stay; the count is in its name); (2) the ⌘ number
+   (the close × still shows on hover or focus); (3) the lead's face; (4) the tally's agent count,
+   and at the very tightest (about one pill wide) the Hidden-tabs badge (its tabs stay listed, to
+   restore, in the pill's menu), the repo glyph and the archived mark. The stage or folder, the
+   status mark and the name's minimum never go; the crew stays in the pill's words. */
+@container workspace-tray (max-width: 384px) {
+  .cs-workspace-pill-one-line {
+    gap: 4px;
+    padding-inline: 6px 4px;
+  }
+  .cs-workspace-pill-one-line .cs-workspace-pill-selection {
+    gap: 4px;
+  }
+  [data-tray-chip][data-active="false"] .cs-workspace-pill-operation-one-line {
+    display: none;
+  }
+  .cs-workspace-pill-one-line .cs-workspace-hidden-count {
+    display: none;
+  }
+  .cs-workspace-pill-one-line .cs-workspace-hidden-control {
+    grid-template-columns: 10px;
+    padding-inline: 2px;
+  }
+}
+@container workspace-tray (max-width: 320px) {
+  .cs-workspace-pill-end > .cs-tray-shortcut {
+    display: none;
+  }
+  .cs-workspace-pill-end {
+    min-width: 14px;
+  }
+  /* From here the parts sit 3px apart, so a pill that keeps its face, a Hidden-tabs badge and its
+     operation chip still holds every part down to the face's step. */
+  .cs-workspace-pill-one-line {
+    gap: 3px;
+    padding-inline: 5px 3px;
+  }
+  .cs-workspace-pill-one-line .cs-workspace-pill-selection {
+    gap: 3px;
+  }
+}
+@container workspace-tray (max-width: 284px) {
+  .cs-workspace-pill-one-line .cs-agent-identity {
+    display: none;
+  }
+  .cs-workspace-pill-operation-one-line {
+    flex-shrink: 0;
+    max-width: 24px;
+  }
+  .cs-workspace-pill-operation-one-line [data-testid="operation-chip"] {
+    gap: 0;
+  }
+  .cs-workspace-pill-operation-one-line [data-testid="operation-chip-text"] {
+    display: none;
+  }
+}
+@container workspace-tray (max-width: 240px) {
+  .cs-workspace-pill-tally > .tabular-nums {
+    display: none;
+  }
+  .cs-workspace-pill-tally {
+    padding-inline: 2px;
+  }
+}
+@container workspace-tray (max-width: 200px) {
+  .cs-workspace-pill-hidden-slot,
+  .cs-workspace-pill-one-line [data-testid$="-repo-glyph"],
+  .cs-workspace-pill-one-line [data-testid$="-archived"] {
+    display: none;
+  }
+  /* About one pill wide: it may take one fade's room, and packs its parts 2px apart. */
+  .cs-tray-chip-one-line {
+    max-width: max(0px, calc(100cqw - var(--cs-tray-fade)));
+  }
+  .cs-workspace-pill-one-line {
+    gap: 2px;
+    padding-inline: 4px 2px;
+  }
+  .cs-workspace-pill-one-line .cs-workspace-pill-selection {
+    gap: 2px;
+  }
+}
+/* SW-CW-2: structural selection — the ONE selected chip/pill. It wins the
+   hierarchy by fill + elevation + weight, never hue (legible with color removed,
+   for CVD users, in every viewer theme). Derived from the card bg via the same
+   `color-mix`-toward-text mechanism as the resting/hover rules above, so it's
+   theme-portable with no per-theme token; the 80% mix reads STRONGER than the
+   90% hover, keeping the hierarchy monotonic (resting < hover < selected). The
+   `:hover` selector is listed explicitly so it matches `.cs-workspace-card:hover`
+   specificity and, coming later in source order, keeps the selected fill from
+   regressing to the weaker hover mix on hover. The neutral left bar is applied
+   inline (selectionBarStyle) so it stays a single 2px element shared with the
+   epic spine. */
+.cs-workspace-card-selected,
+.cs-workspace-card-selected:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--cs-workspace-card-bg, var(--cs-sidebar-bg, var(--card))) 80%,
+    var(--cs-sidebar-text, var(--foreground, #fff))
+  );
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.28);
+  font-weight: 600;
+}
+/* Tab utility classes */
+.cs-tab-item {
+  color: var(--cs-tab-text, var(--muted-foreground));
+}
+.cs-tab-item:hover {
+  background-color: var(--cs-tab-hover, color-mix(in srgb, var(--muted) 50%, transparent));
+  color: var(--cs-tab-active-text, var(--foreground));
+  border-radius: 0.375rem;
+}
+.cs-tab-item-active {
+  background-color: var(--cs-tab-active-bg, var(--muted));
+  color: var(--cs-tab-active-text, var(--foreground));
+}
+
+/* An agent's face on a History lane sits in a ring of the row's own ground, so the lane
+   reads as passing behind it. */
+.cs-history-face .ag-face {
+  box-shadow: 0 0 0 2px var(--cs-sidebar-bg, var(--background));
+  border-radius: 50%;
+}
+.cs-sidebar-hover:hover .cs-history-face .ag-face {
+  box-shadow: 0 0 0 2px var(--cs-sidebar-hover, var(--background));
+}
+.cs-history-open .cs-history-face .ag-face {
+  box-shadow: 0 0 0 2px var(--cs-sidebar-selected, var(--accent));
+}

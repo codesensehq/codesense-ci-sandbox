@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="network" />
+    <title>CodeSense — Local vs remote</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+        --mach-local: var(--role-builder);
+        --mach-remote: var(--role-reviewer);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .machine-frame rect {
+        fill: color-mix(in srgb, var(--mach-color, var(--cs-muted-fg)) 10%, var(--cs-surface));
+        stroke: var(--mach-color, var(--cs-muted-fg));
+        stroke-dasharray: 4 3;
+      }
+      .machine-frame[data-mach="local"] {
+        --mach-color: var(--mach-local);
+      }
+      .machine-frame[data-mach="remote"] {
+        --mach-color: var(--mach-remote);
+      }
+      .machine-frame[data-mach="mac-A"] {
+        --mach-color: var(--role-triager);
+      }
+      .machine-frame[data-mach="mac-B"] {
+        --mach-color: var(--role-reviewer);
+      }
+      .machine-frame text {
+        fill: var(--mach-color, var(--cs-muted-fg));
+        font-size: 11px;
+        font-family: var(--cs-font-mono);
+      }
+
+      .arcf-shape {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+        background: var(--cs-surface);
+        margin: 20px 0;
+      }
+      @media (max-width: 820px) {
+        .arcf-shape {
+          grid-template-columns: 1fr;
+        }
+      }
+      .arcf-shape figure {
+        margin: 0;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow: hidden;
+      }
+      .arcf-shape figure svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcf-shape h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-shape p {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+
+      .parity-callout {
+        display: flex;
+        gap: 12px;
+        padding: 12px 14px;
+        border-left: 3px solid var(--role-resolver);
+        background: color-mix(in srgb, var(--role-resolver) 10%, var(--cs-surface));
+        border-radius: 8px;
+        margin: 16px 0;
+        font-size: 13px;
+      }
+      .parity-callout strong {
+        color: var(--role-resolver);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/local-vs-remote">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Local vs remote — distribute roles across machines" id="hero">
+        <h1>Any role. Any machine.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Three distribution shapes: all-local, local triager with remote builders, and roaming — same inbox lives in the team workspace."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              A role is addressed by name. Where its holder runs is a deployment choice.
+            </text>
+
+            <!-- shape A: all-local -->
+            <g transform="translate(24 70)">
+              <text x="0" y="-6" class="glyph-mbadge">A · all local</text>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect width="180" height="150" rx="10" />
+                <text x="90" y="20" text-anchor="middle">mac-A</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(14 40)">
+                <rect width="60" height="22" rx="3" />
+                <text x="30" y="15" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(14 70)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(80 70)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(14 96)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">rev</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(80 96)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">res</text>
+              </g>
+              <path class="glyph-edge" d="M44 62 L 44 70" />
+              <path class="glyph-edge" d="M44 62 L 110 70" />
+            </g>
+
+            <!-- shape B: hybrid -->
+            <g transform="translate(236 70)">
+              <text x="0" y="-6" class="glyph-mbadge">B · hybrid</text>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect width="78" height="150" rx="10" />
+                <text x="39" y="20" text-anchor="middle">mac-A</text>
+              </g>
+              <g class="machine-frame" data-mach="remote" transform="translate(88 0)">
+                <rect width="92" height="150" rx="10" />
+                <text x="46" y="20" text-anchor="middle">remote</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(10 40)">
+                <rect width="60" height="22" rx="3" />
+                <text x="30" y="15" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(10 70)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">res</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(98 40)">
+                <rect width="74" height="18" rx="3" />
+                <text x="37" y="13" text-anchor="middle">bld-1</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(98 64)">
+                <rect width="74" height="18" rx="3" />
+                <text x="37" y="13" text-anchor="middle">bld-2</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(98 88)">
+                <rect width="74" height="18" rx="3" />
+                <text x="37" y="13" text-anchor="middle">bld-3</text>
+              </g>
+              <path class="glyph-edge" d="M70 52 L 98 48" />
+              <path class="glyph-edge" d="M70 52 L 98 72" />
+              <path class="glyph-edge" d="M70 52 L 98 96" />
+            </g>
+
+            <!-- shape C: roaming -->
+            <g transform="translate(448 70)">
+              <text x="0" y="-6" class="glyph-mbadge">C · roaming</text>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect width="78" height="150" rx="10" />
+                <text x="39" y="20" text-anchor="middle">mac-A</text>
+              </g>
+              <g class="machine-frame" data-mach="mac-B" transform="translate(88 0)">
+                <rect width="78" height="150" rx="10" />
+                <text x="39" y="20" text-anchor="middle">mac-B</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(10 40)">
+                <rect width="60" height="22" rx="3" style="opacity: 0.4" />
+                <text x="30" y="15" text-anchor="middle" style="opacity: 0.5">manager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(10 70)">
+                <rect width="60" height="18" rx="3" style="opacity: 0.4" />
+                <text x="30" y="13" text-anchor="middle" style="opacity: 0.5">bld</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(98 40)">
+                <rect width="60" height="22" rx="3" />
+                <text x="30" y="15" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(98 70)">
+                <rect width="60" height="18" rx="3" />
+                <text x="30" y="13" text-anchor="middle">bld</text>
+              </g>
+              <path
+                class="glyph-edge"
+                d="M70 50 C 90 50, 90 50, 98 50"
+                style="stroke-dasharray: 3 3"
+              />
+              <text x="56" y="100" class="glyph-mbadge" style="font-size: 10px">mac-A sleeps,</text>
+              <text x="56" y="112" class="glyph-mbadge" style="font-size: 10px">
+                mac-B picks up
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="How role names decouple from machines" id="why">
+        <p>
+          A role lives in the team workspace, not on a machine. When an agent calls
+          <code>register_role {role: "manager"}</code>, the inbox queue is addressed by the role
+          name — not by the hostname or the session id. That means you can run the same flow with
+          every role on one Mac, with half of them on a beefy remote, or with the whole thing
+          roaming between two Macs that take turns being awake. Three shapes below; the
+          <code>agent.yaml</code> is identical across them. Only the <code>machineId</code> on
+          <code>open_workspace</code> and the <code>runs_on</code>
+          field on the routine change.
+        </p>
+      </section>
+
+      <!-- Shape A · all local -->
+      <section data-search="Shape A — all local" id="all-local">
+        <h2>Shape A · All local</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="la"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect x="20" y="30" width="280" height="130" rx="10" />
+                <text x="40" y="48">this Mac</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(50 70)">
+                <rect width="80" height="28" rx="4" />
+                <text x="40" y="18" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(190 60)">
+                <rect width="80" height="22" rx="4" />
+                <text x="40" y="15" text-anchor="middle">builder-1</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(190 90)">
+                <rect width="80" height="22" rx="4" />
+                <text x="40" y="15" text-anchor="middle">builder-2</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(190 120)">
+                <rect width="80" height="22" rx="4" />
+                <text x="40" y="15" text-anchor="middle">reviewer</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#la);
+                "
+                d="M130 84 L 190 71"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#la);
+                "
+                d="M130 86 L 190 101"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#la);
+                "
+                d="M130 90 L 190 131"
+              />
+            </svg>
+          </figure>
+          <div>
+            <h3>Everything on your Mac</h3>
+            <p>
+              Simplest shape. Every role's holder session runs on the same machine the user is on.
+              Fast, deterministic, and the only shape that works with no network. The inbox-flows
+              dashboard and factory-playbook render this when the Local↔Remote toggle is set to
+              <strong>Local</strong>.
+            </p>
+            <pre><code>// Launch every worker on this Mac
+codesense.invoke('open_workspace', {
+  target: 'story', storyId, name: 'builder-DEMO-1',
+  agent: 'builder',
+  // machineId omitted → defaults to the local machine
+})</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shape B · hybrid -->
+      <section data-search="Shape B — local triager, remote workers" id="hybrid">
+        <h2>Shape B · Local triager, remote workers</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="lb"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect x="12" y="30" width="130" height="130" rx="10" />
+                <text x="30" y="48">this Mac</text>
+              </g>
+              <g class="machine-frame" data-mach="remote">
+                <rect x="160" y="30" width="150" height="130" rx="10" />
+                <text x="178" y="48">remote (private-account)</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(30 70)">
+                <rect width="90" height="30" rx="4" />
+                <text x="45" y="20" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(30 110)">
+                <rect width="90" height="24" rx="4" />
+                <text x="45" y="17" text-anchor="middle">resolver</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(180 60)">
+                <rect width="110" height="22" rx="4" />
+                <text x="55" y="15" text-anchor="middle">builder-1</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(180 86)">
+                <rect width="110" height="22" rx="4" />
+                <text x="55" y="15" text-anchor="middle">builder-2</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(180 112)">
+                <rect width="110" height="22" rx="4" />
+                <text x="55" y="15" text-anchor="middle">builder-3</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(180 138)">
+                <rect width="110" height="18" rx="4" />
+                <text x="55" y="13" text-anchor="middle">reviewer</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#lb);
+                "
+                d="M120 85 L 180 70"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#lb);
+                "
+                d="M120 85 L 180 96"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#lb);
+                "
+                d="M120 85 L 180 122"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#lb);
+                "
+                d="M120 90 L 180 146"
+              />
+            </svg>
+          </figure>
+          <div>
+            <h3>Keep the human-facing roles close; farm out the heavy lifting</h3>
+            <p>
+              The <code>manager</code> and <code>resolver</code> stay on your Mac so you can see and
+              interrupt them. The <code>builder-*</code> shards run on remote machines in
+              private-account mode — more cores, more RAM, no interruption to your dev loop. Replies
+              arrive in your inbox like any other message; the dashboards show a machine badge next
+              to each session.
+            </p>
+            <pre><code>// Local manager — default
+codesense.invoke('open_workspace', { target: 'team-workspace', name: 'manager', agent: 'manager' })
+
+// Remote builders — one per story shard
+codesense.invoke('open_workspace', {
+  target: 'story', storyId, name: `builder-${storyId}`,
+  agent: 'builder',
+  machineId: pickRemote(storyId),   // picks a remote by id from list_machines
+})</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shape C · roaming -->
+      <section data-search="Shape C — roaming between Macs" id="roaming">
+        <h2>Shape C · Roaming between Macs</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="lc"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="machine-frame" data-mach="mac-A">
+                <rect x="10" y="30" width="140" height="130" rx="10" />
+                <text x="28" y="48">mac-A (asleep)</text>
+              </g>
+              <g class="machine-frame" data-mach="mac-B">
+                <rect x="170" y="30" width="140" height="130" rx="10" />
+                <text x="188" y="48">mac-B (awake)</text>
+              </g>
+              <g
+                class="glyph-node"
+                data-role="triager"
+                transform="translate(30 80)"
+                style="opacity: 0.35"
+              >
+                <rect width="100" height="28" rx="4" />
+                <text x="50" y="18" text-anchor="middle">manager</text>
+              </g>
+              <g
+                class="glyph-node"
+                data-role="builder"
+                transform="translate(30 120)"
+                style="opacity: 0.35"
+              >
+                <rect width="100" height="22" rx="4" />
+                <text x="50" y="15" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="triager" transform="translate(190 80)">
+                <rect width="100" height="28" rx="4" />
+                <text x="50" y="18" text-anchor="middle">manager</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(190 120)">
+                <rect width="100" height="22" rx="4" />
+                <text x="50" y="15" text-anchor="middle">builder</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  stroke-dasharray: 3 3;
+                  marker-end: url(#lc);
+                "
+                d="M130 94 C 160 94, 160 94, 190 94"
+              />
+              <text x="124" y="88" class="glyph-mbadge">role hands off</text>
+            </svg>
+          </figure>
+          <div>
+            <h3>Follow the awake Mac</h3>
+            <p>
+              Two Macs that take turns. The role names are the same on both; whichever Mac wakes up
+              first, the <code>manager-ensure</code> routine on it registers the
+              <code>manager</code> role and starts work. The queue persisted while nobody was
+              holding it, so the overnight escalation that arrived at 2am is waiting intact. This is
+              what makes "my laptop closed, nothing is lost" a true statement.
+            </p>
+            <pre><code># routine.yml — one wake routine deployed on each machine
+runs_on: each_mac
+triggers:
+  - schedule: { cron: "*/5 * * * *", tz: UTC }  # health check
+  - event:    { kind: inbox_idle }
+# the task does role_state first; if nobody holds the role AND work is pending,
+# this machine takes it.</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Parity gaps and when to care" id="parity">
+        <h2>Parity gaps</h2>
+        <div class="parity-callout">
+          <div>
+            <strong>⚠ Parity gap.</strong> The host-agent runs only on the Mac you run
+            CodeSense on. Everything else — launching sessions, inbox state, routines on
+            <code>inbox_idle</code>, role queues — is machine-agnostic. If a flow depends on
+            host-agent-only verbs (e.g. deep OS automation), those shards must stay on the
+            Mac you run CodeSense on. The <a href="../factory-playbook.html">factory-playbook</a>
+            marks these with a per-phase callout.
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Try this now — list machines you can launch to" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List the machines registered on your team workspace. Each entry is a potential
+          <code>machineId</code> for the next <code>open_workspace</code> call.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "list_machines", "args": {}}'
+          label="List machines"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Where could I run a session?
+codesense.invoke('list_machines', {})
+// → [{ id: 'mac-A', local: true, awake: true },
+//    { id: 'mac-B', local: false, awake: true, kind: 'private-account' },
+//    { id: 'remote-1', local: false, awake: false, kind: 'private-account' }]
+
+// Launch a shard on a specific machine
+codesense.invoke('open_workspace', {
+  target: 'story', storyId, name: `builder-${storyId}`,
+  agent: 'builder',
+  machineId: 'mac-B',
+})
+
+// A routine with runs_on: each_mac deploys to every machine automatically.</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./decisions-and-escalation.html">← Decisions &amp; escalation</a> ·
+        <a href="./index.html">Back to Arc F overview</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_machines">list_machines</a> ·
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml · runs_on</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Local vs remote</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1095 @@
+/* SPDX-License-Identifier: MIT */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
+@import "./styles/viewer-themes.css";
+@import "./styles/status-mark.css";
+@import "./styles/status-tones.css";
+@import "./styles/scratch-note.css";
+@import "./styles/focus-indicator.css";
+/* SW-IB1-A1: shared inbox tokens consumed by every v0.0.19 inbox surface
+   (push pane, human inbox, shared cells, compose). Loaded before the
+   agent-inbox + other feature stylesheets so downstream rules can read
+   `--ib-*` without an ordering caveat. */
+@import "./features/weft/styles/inbox-tokens.css";
+@import "./styles/agents.css";
+@import "./styles/agent-launch.css";
+@import "./styles/agent-inbox.css";
+/* SW-IB1-A1: HTML sandbox fallback — layout containment for message bodies
+   rendered via `<section class="inbox-html">` when Shadow DOM is not used. */
+@import "./features/weft/styles/inbox-html.css";
+/* The inbox lenses, docked split and rollup. */
+@import "./features/inbox/inbox.css";
+@import "@fontsource-variable/geist";
+@import "./styles/theme-tokens.css";
+@import "./styles/theme-code.css";
+
+@font-face {
+  font-family: "MesloLGS NF";
+  src: url("/fonts/MesloLGS-NF-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Retained public names for the original dark palette. */
+  --cs-dark-foreground: var(--theme-compat-cs-dark-foreground);
+  --cs-dark-muted-foreground: var(--theme-compat-cs-dark-muted-foreground);
+  --cs-dark-accent: var(--theme-compat-cs-dark-accent);
+  --cs-dark-border: var(--theme-compat-cs-dark-border);
+  --cs-dark-popover: var(--theme-compat-cs-dark-popover);
+  --background: var(--theme-compat-background);
+  --foreground: var(--theme-compat-foreground);
+  --card: var(--theme-compat-card);
+  --card-foreground: var(--theme-compat-card-foreground);
+  /* SW-EW-12: raised workspace-card surface for the DEFAULT theme (no
+     palette override). White card lifts off the grey panel; the border +
+     elevation shadow on .cs-workspace-card carry the raise on light. */
+  --cs-workspace-card-bg: var(--theme-compat-cs-workspace-card-bg);
+  --popover: var(--theme-compat-popover);
+  --popover-foreground: var(--theme-compat-popover-foreground);
+  --primary: var(--theme-compat-primary);
+  --primary-foreground: var(--theme-compat-primary-foreground);
+  --secondary: var(--theme-compat-secondary);
+  --secondary-foreground: var(--theme-compat-secondary-foreground);
+  --muted: var(--theme-compat-muted);
+  --muted-foreground: var(--theme-compat-muted-foreground);
+  --accent: var(--theme-compat-accent);
+  --accent-foreground: var(--theme-compat-accent-foreground);
+  --destructive: var(--theme-compat-destructive);
+  /* SW-GS-2: git A/M/D status markers (light). Reused by the sync changed-files
+     list; available to the SW-GS-3 redline viewer. */
+  --cs-status-added: var(--theme-compat-cs-status-added);
+  --cs-status-modified: var(--theme-compat-cs-status-modified);
+  --cs-status-deleted: var(--theme-compat-cs-status-deleted);
+  /* SW-GS-14: rename marker — distinct blue so a move reads differently from an
+     edit (amber). */
+  --cs-status-renamed: var(--theme-compat-cs-status-renamed);
+  /* SW-DX-1: per-type tag colors (light) — the default palette `tagDisplay`
+     resolves when a `TagDef` declares no `color`. Consumed by DX-2 query results,
+     DX-4 dashboards, and the metadata band chips (one source: tag-display.ts). */
+  --cs-tag-text: var(--theme-compat-cs-tag-text);
+  --cs-tag-select: var(--theme-compat-cs-tag-select);
+  --cs-tag-multi-select: var(--theme-compat-cs-tag-multi-select);
+  --cs-tag-ordered: var(--theme-compat-cs-tag-ordered);
+  --cs-tag-status: var(--theme-compat-cs-tag-status);
+  --cs-tag-date: var(--theme-compat-cs-tag-date);
+  --cs-tag-relation: var(--theme-compat-cs-tag-relation);
+  /* SLW-WDE-7: code-syntax palette (light) — GitHub Primer light hues. Consumed
+     by the shared CodeMirror HighlightStyle (themes/highlight.ts); overridable
+     through the shared semantic syntax roles. */
+  --cs-code-keyword: var(--theme-compat-cs-code-keyword);
+  --cs-code-string: var(--theme-compat-cs-code-string);
+  --cs-code-comment: var(--theme-compat-cs-code-comment);
+  --cs-code-number: var(--theme-compat-cs-code-number);
+  --cs-code-constant: var(--theme-compat-cs-code-constant);
+  --cs-code-function: var(--theme-compat-cs-code-function);
+  --cs-code-variable: var(--theme-compat-cs-code-variable);
+  --cs-code-type: var(--theme-compat-cs-code-type);
+  --cs-code-operator: var(--theme-compat-cs-code-operator);
+  --cs-code-punctuation: var(--theme-compat-cs-code-punctuation);
+  --cs-code-meta: var(--theme-compat-cs-code-meta);
+  --cs-code-regexp: var(--theme-compat-cs-code-regexp);
+  --border: var(--theme-compat-border);
+  --input: var(--theme-compat-input);
+  --ring: var(--theme-compat-ring);
+  --chart-1: var(--theme-compat-chart-1);
+  --chart-2: var(--theme-compat-chart-2);
+  --chart-3: var(--theme-compat-chart-3);
+  --chart-4: var(--theme-compat-chart-4);
+  --chart-5: var(--theme-compat-chart-5);
+  --radius: 0.625rem;
+  --sidebar: var(--theme-compat-sidebar);
+  --sidebar-foreground: var(--theme-compat-sidebar-foreground);
+  --sidebar-primary: var(--theme-compat-sidebar-primary);
+  --sidebar-primary-foreground: var(--theme-compat-sidebar-primary-foreground);
+  --sidebar-accent: var(--theme-compat-sidebar-accent);
+  --sidebar-accent-foreground: var(--theme-compat-sidebar-accent-foreground);
+  --sidebar-border: var(--theme-compat-sidebar-border);
+  --sidebar-ring: var(--theme-compat-sidebar-ring);
+  --cs-doc-bg: var(--theme-compat-cs-doc-bg);
+  /* Terminal tile tab bar (crown + tabs). It must read DARKER than the app
+     title bar above it for every terminal theme. Light app: the title bar is
+     white, so the bar is the terminal theme's own background mixed toward
+     ink (`keep` = share that survives). See `.cs-terminal-tabbar`. */
+  --cs-terminal-tabbar-ink: var(--theme-compat-cs-terminal-tabbar-ink);
+  --cs-terminal-tabbar-keep: 70%;
+}
+
+.dark {
+  --background: var(--theme-compat-background);
+  --foreground: var(--theme-compat-foreground);
+  --card: var(--theme-compat-card);
+  --card-foreground: var(--theme-compat-card-foreground);
+  /* SW-EW-12: raised workspace-card surface for the DEFAULT (dark) theme — a
+     step lighter than the semi-transparent #161b22 panel. */
+  --cs-workspace-card-bg: var(--theme-compat-cs-workspace-card-bg);
+  --popover: var(--theme-compat-popover);
+  --popover-foreground: var(--theme-compat-popover-foreground);
+  --primary: var(--theme-compat-primary);
+  --primary-foreground: var(--theme-compat-primary-foreground);
+  --secondary: var(--theme-compat-secondary);
+  --secondary-foreground: var(--theme-compat-secondary-foreground);
+  --muted: var(--theme-compat-muted);
+  --muted-foreground: var(--theme-compat-muted-foreground);
+  --accent: var(--theme-compat-accent);
+  --accent-foreground: var(--theme-compat-accent-foreground);
+  --destructive: var(--theme-compat-destructive);
+  /* SW-GS-2: git A/M/D status markers (dark). */
+  --cs-status-added: var(--theme-compat-cs-status-added);
+  --cs-status-modified: var(--theme-compat-cs-status-modified);
+  --cs-status-deleted: var(--theme-compat-cs-status-deleted);
+  /* SW-GS-14: rename marker (dark). */
+  --cs-status-renamed: var(--theme-compat-cs-status-renamed);
+  /* SW-DX-1: per-type tag colors (dark) — brighter hues for the dark palette. */
+  --cs-tag-text: var(--theme-compat-cs-tag-text);
+  --cs-tag-select: var(--theme-compat-cs-tag-select);
+  --cs-tag-multi-select: var(--theme-compat-cs-tag-multi-select);
+  --cs-tag-ordered: var(--theme-compat-cs-tag-ordered);
+  --cs-tag-status: var(--theme-compat-cs-tag-status);
+  --cs-tag-date: var(--theme-compat-cs-tag-date);
+  --cs-tag-relation: var(--theme-compat-cs-tag-relation);
+  /* SLW-WDE-7: code-syntax palette (dark) — GitHub Primer dark hues. */
+  --cs-code-keyword: var(--theme-compat-cs-code-keyword);
+  --cs-code-string: var(--theme-compat-cs-code-string);
+  --cs-code-comment: var(--theme-compat-cs-code-comment);
+  --cs-code-number: var(--theme-compat-cs-code-number);
+  --cs-code-constant: var(--theme-compat-cs-code-constant);
+  --cs-code-function: var(--theme-compat-cs-code-function);
+  --cs-code-variable: var(--theme-compat-cs-code-variable);
+  --cs-code-type: var(--theme-compat-cs-code-type);
+  --cs-code-operator: var(--theme-compat-cs-code-operator);
+  --cs-code-punctuation: var(--theme-compat-cs-code-punctuation);
+  --cs-code-meta: var(--theme-compat-cs-code-meta);
+  --cs-code-regexp: var(--theme-compat-cs-code-regexp);
+  --border: var(--theme-compat-border);
+  --input: var(--theme-compat-input);
+  --ring: var(--theme-compat-ring);
+  --chart-1: var(--theme-compat-chart-1);
+  --chart-2: var(--theme-compat-chart-2);
+  --chart-3: var(--theme-compat-chart-3);
+  --chart-4: var(--theme-compat-chart-4);
+  --chart-5: var(--theme-compat-chart-5);
+  --sidebar: var(--theme-compat-sidebar);
+  --sidebar-foreground: var(--theme-compat-sidebar-foreground);
+  --sidebar-primary: var(--theme-compat-sidebar-primary);
+  --sidebar-primary-foreground: var(--theme-compat-sidebar-primary-foreground);
+  --sidebar-accent: var(--theme-compat-sidebar-accent);
+  --sidebar-accent-foreground: var(--theme-compat-sidebar-accent-foreground);
+  --sidebar-border: var(--theme-compat-sidebar-border);
+  --sidebar-ring: var(--theme-compat-sidebar-ring);
+  --cs-doc-bg: var(--theme-compat-cs-doc-bg);
+  /* Dark app: terminal themes can be lighter than the title bar (dracula,
+     nord, …), so the bar derives from the title bar's own `--background`
+     instead, pushed well toward ink — darker than the title bar whatever the
+     terminal theme. */
+  --cs-terminal-tabbar-base: var(--background);
+  --cs-terminal-tabbar-ink: var(--theme-compat-cs-terminal-tabbar-ink);
+  --cs-terminal-tabbar-keep: 20%;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* SW-FX-88: pin the app to the viewport. `overflow: hidden` on the root
+     elements propagates to the viewport and blocks whole-window scrolling on
+     both axes; a definite `height: 100%` chain lets inner panels resolve their
+     own bounds (and their own `overflow:auto`) instead of growing the document.
+     `clip` is deliberately NOT used — it does not propagate to the viewport. */
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Tailwind v4 changed the default <button> cursor to `default` to match
+   * modern browser behavior. codesense is a desktop-styled web app where
+   * pointer-on-hover is the established affordance, so restore it here.
+   * Disabled buttons keep the arrow — reinforces the "you can't click this"
+   * signal alongside `disabled:pointer-events-none`. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  /* Titlebar drag region — prevent text cursor and selection during drag */
+  .titlebar-drag,
+  .titlebar-drag * {
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Restore pointer cursor and exclude interactive elements from drag */
+  .titlebar-drag button,
+  .titlebar-drag a,
+  .titlebar-drag input,
+  .titlebar-drag select,
+  .titlebar-drag textarea,
+  .titlebar-drag [role="button"] {
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+
+  /* Thin scrollbar for tab area */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  /* Disable selection during drag resize */
+  html.dragging,
+  html.dragging * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+
+  /* SW-FX-39 follow-up: a sandboxed/cross-origin iframe (the HTML doc viewer,
+     html-viewer.tsx) swallows pointermove/pointerup, so a pane-resize drag that
+     travels over it stalls or stops tracking — the divider defers
+     setPointerCapture past a 4px threshold (use-drag-resize.ts) and relies on
+     document-level pointer events until then, which the iframe eats. Making the
+     iframe pointer-transparent while any divider drag is active (the global
+     `.dragging` guard) lets those events reach the parent. Covers every divider
+     (terminal split, right-pane width) since they all toggle `.dragging`. */
+  html.dragging iframe {
+    pointer-events: none !important;
+  }
+
+  /* Right-pane section splitter. A 10px hit band centred on the boundary
+     between two stacked sections; at rest a hairline plus a faint grip so the
+     handle is findable, on hover/focus the line thickens and takes the accent,
+     and while held it stays lit. */
+  .rps-splitter {
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    height: 10px;
+    margin: -5px 0;
+    touch-action: none;
+    outline: none;
+  }
+  .rps-splitter-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    transform: translateY(-50%);
+    background: var(--border);
+    pointer-events: none;
+    transition:
+      height 120ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rps-splitter-grip {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 28px;
+    height: 4px;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    background: color-mix(in srgb, var(--muted-foreground) 45%, var(--background));
+    box-shadow: 0 0 0 2px var(--cs-viewer-bg, var(--background));
+    pointer-events: none;
+    transition:
+      width 120ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rps-splitter:hover .rps-splitter-line,
+  .rps-splitter:focus-visible .rps-splitter-line {
+    height: 2px;
+    background: color-mix(in srgb, var(--ring) 55%, transparent);
+  }
+  .rps-splitter:hover .rps-splitter-grip,
+  .rps-splitter:focus-visible .rps-splitter-grip {
+    width: 36px;
+    background: color-mix(in srgb, var(--ring) 80%, var(--background));
+  }
+  .rps-splitter[data-active] .rps-splitter-line {
+    height: 2px;
+    background: var(--ring);
+  }
+  .rps-splitter[data-active] .rps-splitter-grip {
+    width: 36px;
+    background: var(--ring);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rps-splitter-line,
+    .rps-splitter-grip {
+      transition: none;
+    }
+  }
+  /* Held for the life of a splitter press: a transparent full-window layer that
+     keeps every pointer move/up in this document, even over a pane's iframe. */
+  .rps-resize-shield {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    cursor: row-resize;
+    background: transparent;
+  }
+
+  /* Visual feedback when dragging files over the terminal */
+  /* An overlay above the terminal, not an outline on the tile: the terminal's own layers
+     paint over an inset outline and hide most of it. */
+  .terminal-drag-over::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    border: 2px solid var(--accent, #58a6ff);
+    pointer-events: none;
+  }
+
+  /* SW-EW-21 — CLI tile expand/zoom. `data-zoom` rides react-resizable-panels'
+     `...rest` onto the OUTER [data-panel] flex-item (the element that owns panel
+     width), so collapsing/growing here actually resizes the tile — className
+     would only reach the inner content div. `!important` overrides the library's
+     non-important inline flex without touching its size bookkeeping, so un-zoom
+     restores instantly + losslessly. */
+  [data-panel][data-zoom="collapsed"] {
+    display: none !important;
+  }
+  [data-panel][data-zoom="active"] {
+    flex: 1 1 0% !important;
+  }
+
+  /* Prose overrides — structural only, colors via --tw-prose-* variables */
+  .prose h1 {
+    @apply text-2xl font-semibold pb-2 mb-4 mt-0;
+    color: var(--tw-prose-headings);
+    border-bottom: 1px solid var(--tw-prose-hr);
+  }
+  .prose h2 {
+    @apply text-xl font-semibold pb-1 mb-3 mt-8;
+    color: var(--tw-prose-headings);
+    border-bottom: 1px solid var(--tw-prose-hr);
+  }
+  .prose h3 {
+    @apply text-base font-semibold mb-2 mt-6;
+    color: var(--tw-prose-headings);
+  }
+  .prose h4 {
+    @apply text-sm font-semibold mb-2 mt-4;
+    color: var(--tw-prose-headings);
+  }
+  .prose a {
+    color: var(--tw-prose-links);
+    @apply no-underline hover:underline;
+  }
+  .prose blockquote {
+    @apply pl-4 py-1 not-italic;
+    border-left: 4px solid var(--tw-prose-quote-borders);
+    color: var(--tw-prose-quotes, var(--tw-prose-body));
+  }
+  .prose code:not(pre code) {
+    @apply px-1.5 py-0.5 rounded text-[13px] font-normal before:content-[''] after:content-[''];
+    color: var(--tw-prose-code);
+    background: var(--tw-prose-pre-bg, rgba(128, 128, 128, 0.1));
+  }
+  .prose pre {
+    @apply rounded-lg overflow-x-auto my-4;
+    background: var(--tw-prose-pre-bg);
+    border: 1px solid var(--tw-prose-hr, rgba(128, 128, 128, 0.2));
+  }
+  .prose pre code {
+    @apply text-[13px] leading-relaxed;
+    /* Don't set color here — let highlight.js token classes handle syntax colors */
+  }
+  .prose table {
+    @apply w-full border-collapse my-4;
+  }
+  .prose th {
+    @apply px-3 py-2 text-left text-xs font-semibold;
+    border: 1px solid var(--tw-prose-th-borders);
+    background: var(--tw-prose-pre-bg, rgba(128, 128, 128, 0.1));
+  }
+  .prose td {
+    @apply px-3 py-2 text-sm;
+    border: 1px solid var(--tw-prose-td-borders);
+  }
+  .prose tr:nth-child(even) td {
+    background: var(--tw-prose-pre-bg, rgba(128, 128, 128, 0.05));
+  }
+  .prose hr {
+    @apply my-6;
+    border-color: var(--tw-prose-hr);
+  }
+  .prose ul {
+    @apply my-2;
+  }
+  .prose ol {
+    @apply my-2;
+  }
+  .prose li {
+    @apply my-0.5;
+  }
+  .prose img {
+    @apply rounded-lg;
+  }
+  .prose input[type="checkbox"] {
+    @apply rounded;
+  }
+
+  /* SW-GS-3 — rendered-markdown redline marks. Block-aligned added/removed
+     blocks are wrapped in <ins class="cs-redline-add">/<del class="cs-redline-del">;
+     tint + a left rule reads as add/remove without git knowledge. Scoped to the
+     wrapper classes so an author's own <del> (GFM ~~strikethrough~~) is NOT
+     restyled as a removed block. Colors reuse --cs-status-* (theme-aware). */
+  .cs-redline-prose :is(ins.cs-redline-add, del.cs-redline-del) {
+    display: block;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    margin: 0.25rem 0;
+    text-decoration: none;
+  }
+  .cs-redline-prose ins.cs-redline-add {
+    background: color-mix(in srgb, var(--cs-status-added) 14%, transparent);
+    border-left: 3px solid var(--cs-status-added);
+  }
+  .cs-redline-prose del.cs-redline-del {
+    background: color-mix(in srgb, var(--cs-status-deleted) 14%, transparent);
+    border-left: 3px solid var(--cs-status-deleted);
+    opacity: 0.8;
+  }
+}
+
+/*
+ * Skip layout + paint for off-screen block-level markdown children.
+ * Pays off on tab switch: the viewer is kept-alive via `display: none`,
+ * and without this rule the browser re-lays-out the full subtree when
+ * `display` flips back to visible. Scoped via `md-viewer-prose` so other
+ * `.prose` surfaces (scratch-note, dashboard) keep their current paint
+ * path. `@supports` gate keeps pre-Safari-18 WebKit on the old path.
+ */
+@supports (content-visibility: auto) {
+  /*
+   * jsx / sync render paths: top-level markdown elements are direct
+   * children of .md-viewer-prose. content-visibility skips offscreen
+   * layout on tab-switch display-flip.
+   */
+  .md-viewer-prose > p,
+  .md-viewer-prose > ul,
+  .md-viewer-prose > ol,
+  .md-viewer-prose > table,
+  .md-viewer-prose > blockquote,
+  .md-viewer-prose > hr,
+  .md-viewer-prose > div.relative,
+  .md-viewer-prose > div.code-wrap,
+  .md-viewer-prose > h1,
+  .md-viewer-prose > h2,
+  .md-viewer-prose > h3,
+  .md-viewer-prose > h4,
+  .md-viewer-prose > h5,
+  .md-viewer-prose > h6,
+  /*
+   * blocks render path (32.6): each block is wrapped in a <section>
+   * (with `display: contents`) whose sole child is the top-level
+   * markdown element. CSS selectors walk the DOM tree, not the layout
+   * tree — `display: contents` does not change `>` matching — so
+   * without this selector list the 32.5 content-visibility win was
+   * silently lost for every blocks-mode viewer. Keeps the same intrinsic
+   * size hint as the jsx path.
+   */
+  .md-viewer-prose > section > p,
+  .md-viewer-prose > section > ul,
+  .md-viewer-prose > section > ol,
+  .md-viewer-prose > section > table,
+  .md-viewer-prose > section > blockquote,
+  .md-viewer-prose > section > hr,
+  .md-viewer-prose > section > div.code-wrap,
+  .md-viewer-prose > section > h1,
+  .md-viewer-prose > section > h2,
+  .md-viewer-prose > section > h3,
+  .md-viewer-prose > section > h4,
+  .md-viewer-prose > section > h5,
+  .md-viewer-prose > section > h6 {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
+  }
+}
+
+/*
+ * Block-chunked render (story 32.6): the viewer wraps each top-level
+ * block in a <section> so React's block list reconciles cleanly. These
+ * <section>s are pure list-item containers, never styled — `display:
+ * contents` makes them invisible to layout so the inner elements (<p>,
+ * <h1>, <table>, <ul>, etc.) inherit the prose block's flow exactly as
+ * they would in the 32.4 render path. Also restores textContent
+ * whitespace collation so FindBar + downstream text search keep working
+ * across block boundaries.
+ */
+.md-viewer-prose > section {
+  display: contents;
+}
+
+/*
+ * Block-chunked code-fence wrapper (story 32.6 option 3): the worker
+ * emits code fences at any depth as inert `<div class="code-wrap"><pre>
+ * ...</pre><button class="copy-btn"></button></div>`. The viewer's
+ * scroll container has one delegated onClick that handles the copy;
+ * there is no React island per code fence and no per-fence mount cost.
+ *
+ * Text labels ride on `::after` pseudo-elements so DOM stays clean and
+ * the success-state flip is a single class toggle (no React re-render).
+ */
+.md-viewer-prose .code-wrap {
+  position: relative;
+}
+.md-viewer-prose .copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  background: color-mix(in oklab, var(--card) 90%, transparent);
+  color: var(--muted-foreground);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.md-viewer-prose .copy-btn::after {
+  content: "Copy";
+}
+.md-viewer-prose .copy-btn.copied::after {
+  content: "Copied";
+}
+.md-viewer-prose .code-wrap:hover .copy-btn,
+.md-viewer-prose .copy-btn:focus-visible {
+  opacity: 1;
+}
+.md-viewer-prose .copy-btn.copied {
+  opacity: 1;
+  color: var(--ok, #7cd67c);
+  border-color: color-mix(in oklab, var(--ok, #7cd67c) 40%, transparent);
+}
+
+/*
+ * GitHub-flavored alert blocks rendered by `remark-github-blockquote-alert`.
+ * Plugin transforms blockquotes that open with `[!NOTE]` / `[!TIP]` /
+ * `[!IMPORTANT]` / `[!WARNING]` / `[!CAUTION]` into a <div.markdown-alert>
+ * wrapper containing a title paragraph (with inline SVG octicon) and the
+ * blockquote body. We style with our own accent palette — GitHub's colors
+ * don't always read well against our non-default viewer themes.
+ */
+.md-viewer-prose .markdown-alert {
+  border-left: 0.25em solid var(--muted-foreground);
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+.md-viewer-prose .markdown-alert > :last-child {
+  margin-bottom: 0;
+}
+.md-viewer-prose .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  line-height: 1;
+  margin: 0 0 0.5rem 0;
+  text-transform: capitalize;
+}
+.md-viewer-prose .markdown-alert-title svg {
+  fill: currentColor;
+  flex-shrink: 0;
+}
+.md-viewer-prose .markdown-alert-note {
+  border-left-color: #3b82f6;
+}
+.md-viewer-prose .markdown-alert-note .markdown-alert-title {
+  color: #3b82f6;
+}
+.md-viewer-prose .markdown-alert-tip {
+  border-left-color: #10b981;
+}
+.md-viewer-prose .markdown-alert-tip .markdown-alert-title {
+  color: #10b981;
+}
+.md-viewer-prose .markdown-alert-important {
+  border-left-color: #8b5cf6;
+}
+.md-viewer-prose .markdown-alert-important .markdown-alert-title {
+  color: #8b5cf6;
+}
+.md-viewer-prose .markdown-alert-warning {
+  border-left-color: #f59e0b;
+}
+.md-viewer-prose .markdown-alert-warning .markdown-alert-title {
+  color: #f59e0b;
+}
+.md-viewer-prose .markdown-alert-caution {
+  border-left-color: #ef4444;
+}
+.md-viewer-prose .markdown-alert-caution .markdown-alert-title {
+  color: #ef4444;
+}
+
+/* SF-8 (AC-5): brief highlight on rows that just changed during the
+ * post-switch atomic catch-up. Applied via `data-recently-changed="true"`
+ * on pipeline status-nav rows by the consumer's setTimeout, then auto-
+ * cleared. The animation fades a subtle primary-tinted background in
+ * and back out across the SF8_CAUGHT_UP_MS window so the user sees
+ * "this just settled" without visual stickiness. */
+@keyframes sf8-caught-up {
+  0% {
+    background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+[data-recently-changed="true"] {
+  animation: sf8-caught-up 1000ms ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-recently-changed="true"] {
+    animation: none;
+  }
+}
+
+/* SW-SN-5 (AC-7): the jump-landing flash on the editor heading you clicked to in
+ * the outline — a one-shot fade that confirms where you landed. Under reduced
+ * motion it degrades to an INSTANT PERSISTENT highlight (the landing
+ * confirmation must REMAIN, not be removed); the next jump moves the class to
+ * the new heading so only the current landing is marked. */
+@keyframes sw-sn-5-heading-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.scratch-heading-flash {
+  animation: sw-sn-5-heading-flash 900ms ease-out;
+  border-radius: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scratch-heading-flash {
+    animation: none;
+    background-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+}
+
+/* SW-SN-6: sticky-scroll headers overlay. A soft fade as the pinned section
+ * changes — orientation, never obstruction (AC-5). Under reduced motion the
+ * transition is dropped (the headers still show; only the animation goes). */
+.sticky-note-headers {
+  transition: opacity 120ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticky-note-headers {
+    transition: none;
+  }
+}
+
+/* SW-RP-5: shared right-pane live-list cues (add tint, row collapse, badge
+ * pulse, count cross-fade). Kept cheap and BOUNDED rather than run on large
+ * batches: the count cross-fade is opacity-only (compositor); the tint + badge
+ * pulse animate background-color (paint, not layout); the row collapse animates
+ * `grid-template-rows` (0fr) — NOT `height`, which is the jankier choice — but it
+ * is still a layout property, so it's capped to ≤5 concurrent rows (a burst
+ * suppresses per-row exit animations entirely). The add tint mirrors the
+ * sf8-caught-up idiom (data-attr driven, cleared by a bounded timer). Under
+ * reduced motion every animation/transition drops to an instant swap; the text
+ * cues (`Removed` tombstone, aria-live) carry the meaning. */
+@keyframes rp5-live-added {
+  0% {
+    background-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+[data-rp5-added="true"] {
+  animation: rp5-live-added 1200ms ease-out forwards;
+}
+
+.rp5-row {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 150ms ease,
+    opacity 150ms ease;
+}
+.rp5-row > * {
+  min-height: 0;
+  overflow: hidden;
+}
+.rp5-row[data-rp5-collapsing="true"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+@keyframes rp5-badge-pulse {
+  0% {
+    background-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+[data-rp5-pulse="true"] {
+  animation: rp5-badge-pulse 600ms ease-out;
+}
+
+[data-rp5-count] {
+  animation: rp5-count-crossfade 200ms ease-out;
+}
+@keyframes rp5-count-crossfade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* SW-AM-10: the one-shot "Moved here" chip holds, then fades over its last beat —
+ * matched to the roster store's ~2s self-clear that unmounts it. SW-OR-18: the
+ * "Completed — View output" ghost chip rides the SAME fade (same ~2s window). */
+@keyframes rp5-moved-chip {
+  0%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+[data-rp5-moved="true"],
+[data-rp5-completed="true"] {
+  animation: rp5-moved-chip 2000ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rp5-added="true"],
+  [data-rp5-pulse="true"],
+  [data-rp5-count],
+  [data-rp5-moved="true"],
+  [data-rp5-completed="true"] {
+    animation: none;
+  }
+  .rp5-row {
+    transition: none;
+  }
+}
+
+/* OC-16: blocked-nav visible cue. A keyboard-nav command with nowhere to go
+ * (a boundary no-op) flashes the active tile so the press reads as "you're at
+ * the edge" instead of a frozen app. Each cue animates transform only, so it
+ * runs on the compositor (off the main thread) and never reflows siblings. The
+ * cyclic axes (workspace / tab / epic / jump) pulse; directional pane focus
+ * nudges toward the pressed direction. Under reduced motion each cue degrades
+ * to a brief static outline — a momentary "at the edge" mark with no movement.
+ * blocked-nav-cue.ts toggles the class and removes it once the cue settles. */
+@keyframes blocked-nav-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.985);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes blocked-nav-nudge-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+}
+@keyframes blocked-nav-nudge-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+}
+@keyframes blocked-nav-nudge-up {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes blocked-nav-nudge-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(5px);
+  }
+}
+.blocked-nav-pulse,
+.blocked-nav-nudge-left,
+.blocked-nav-nudge-right,
+.blocked-nav-nudge-up,
+.blocked-nav-nudge-down {
+  animation-duration: 240ms;
+  animation-timing-function: ease-out;
+}
+.blocked-nav-pulse {
+  animation-name: blocked-nav-pulse;
+}
+.blocked-nav-nudge-left {
+  animation-name: blocked-nav-nudge-left;
+}
+.blocked-nav-nudge-right {
+  animation-name: blocked-nav-nudge-right;
+}
+.blocked-nav-nudge-up {
+  animation-name: blocked-nav-nudge-up;
+}
+.blocked-nav-nudge-down {
+  animation-name: blocked-nav-nudge-down;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blocked-nav-pulse,
+  .blocked-nav-nudge-left,
+  .blocked-nav-nudge-right,
+  .blocked-nav-nudge-up,
+  .blocked-nav-nudge-down {
+    animation: none;
+    outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    outline-offset: -2px;
+  }
+}
+
+/* SW-CL-8 (N3): Retina glyph crispness for the terminal face. The WebGL atlas
+   already rasters at devicePixelRatio, but the xterm DOM face (selection layer,
+   text-measure element, and the DOM-renderer fallback when WebGL is lost) inherits
+   the app default. Antialiased smoothing + optimizeLegibility keep monospace glyphs
+   crisp on HiDPI, matching a native terminal rather than a fuzzy web-app frame. */
+.xterm {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* The terminal tile's tab-bar row. `--cs-tile-terminal-bg` is set inline from
+   the active terminal theme. Base: `--cs-terminal-tabbar-base` when the app theme
+   sets one (dark: the title bar's `--background`), else the terminal background;
+   then mixed toward `--cs-terminal-tabbar-ink` by `--cs-terminal-tabbar-keep`.
+   Exposed as `--cs-terminal-tabbar-bg` so tab pills can cut their status dots
+   out of the exact same colour. */
+.cs-terminal-tabbar {
+  --cs-terminal-tabbar-bg: color-mix(
+    in srgb,
+    var(--cs-terminal-tabbar-base, var(--cs-tile-terminal-bg, var(--background)))
+      var(--cs-terminal-tabbar-keep),
+    var(--cs-terminal-tabbar-ink)
+  );
+  background-color: var(--cs-terminal-tabbar-bg);
+}
+
+/* Between a slot size change and its settled resize, the display keeps its
+   cols/rows. Taller than the slot: anchored at the bottom, so the prompt row
+   stays in view and the top rows are clipped. Shorter: anchored at the top
+   (the auto margin takes the free space; with none, it is 0 and the end
+   alignment applies). */
+.cs-terminal-display {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.cs-terminal-display > .xterm {
+  flex-shrink: 0;
+  margin-bottom: auto;
+}
+
+/* SW-AGR-6 (R4, design §4.15): a delivered wake's scrollback marker — a faint
+   rule across the row above the pasted text and a small label pill over its
+   left gutter, tinted from the terminal's own colours (set inline as
+   --cs-wake-fg / --cs-wake-bg). An xterm decoration: nothing in the PTY stream. */
+.cs-wake-marker {
+  box-sizing: border-box;
+  border-top: 1px solid color-mix(in srgb, var(--cs-wake-fg, #e6edf3) 18%, transparent);
+  pointer-events: none;
+}
+.cs-wake-marker-pill {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: calc(100% - 2px);
+  max-width: calc(100% - 8px);
+  padding: 0 6px;
+  overflow: hidden;
+  border-radius: var(--ib-radius-sm, 4px);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--cs-wake-fg, #e6edf3) 85%, transparent);
+  background: color-mix(in srgb, var(--cs-wake-fg, #e6edf3) 10%, var(--cs-wake-bg, #0d1117));
+  pointer-events: none;
+  animation: cs-wake-in var(--ib-motion-pane, 160ms) var(--ib-ease-pane, ease-out);
+}
+.cs-wake-marker-pill svg {
+  flex-shrink: 0;
+}
+
+/* SW-AGR-6 (§4.14): "Woken by" fades into the caption's progress slot over
+   160 ms and out over 200 ms; the timer chip fades in over 160 ms (§4.13). */
+.cs-woken-in,
+.cs-timer-chip {
+  animation: cs-wake-in var(--ib-motion-pane, 160ms) var(--ib-ease-pane, ease-out);
+}
+.cs-woken-out {
+  opacity: 0;
+  transition: opacity var(--ib-motion-fade, 200ms) ease-out;
+}
+@keyframes cs-wake-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-wake-marker-pill,
+  .cs-woken-in,
+  .cs-timer-chip {
+    animation: none;
+  }
+  .cs-woken-out {
+    transition: none;
+  }
+}
+
+/* SW-XS-10: the setup line's moving ellipsis for an indeterminate phase (diff,
+   verify) — three dots stepping in turn, never a spinner. Static under reduced
+   motion. */
+.cs-setup-ellipsis > span {
+  animation: cs-setup-ellipsis 1.2s steps(1, end) infinite;
+  opacity: 0.25;
+}
+.cs-setup-ellipsis > span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.cs-setup-ellipsis > span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes cs-setup-ellipsis {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-setup-ellipsis > span {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Terminal chrome follows its painted surface. */
+[data-surface="terminal"] {
+  color-scheme: var(--cs-terminal-scheme, dark);
+  --cs-terminal-tabbar-base: var(--theme-surface-terminal-bg);
+  --cs-terminal-tabbar-keep: 100%;
+}
+
+/* Explicit terminal palettes own their chrome ground; CodeSense retains its original tab-bar shade. */
+[data-surface="terminal"] {
+  color-scheme: var(--cs-terminal-scheme, dark);
+  --cs-terminal-tabbar-base: var(--cs-tile-terminal-bg, var(--theme-terminal-bg));
+}
+:root[data-app-theme="codesense"] [data-surface="terminal"] {
+  --cs-terminal-tabbar-keep: 70%;
+}
+:root.dark[data-app-theme="codesense"] [data-surface="terminal"] {
+  color-scheme: var(--cs-terminal-scheme, dark);
+  --cs-terminal-tabbar-base: var(--theme-surface-canvas-bg);
+  --cs-terminal-tabbar-keep: 20%;
+}

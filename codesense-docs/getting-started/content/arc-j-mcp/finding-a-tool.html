@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="search" />
+    <title>CodeSense — codesense_search_tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/finding-a-tool"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-j-mcp/finding-a-tool"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/finding-a-tool"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      .arcj-rank {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 13.5px;
+      }
+      .arcj-rank th,
+      .arcj-rank td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arcj-rank th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .arcj-rank code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      .arcj-tip {
+        padding: 14px 16px;
+        border-left: 3px solid var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 7%, var(--cs-surface));
+        border-radius: 0 10px 10px 0;
+        margin: 14px 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/finding-a-tool">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="codesense_search_tools — substring search over name plus description, name-match beats description-match"
+        id="hero"
+      >
+        <h1>Describe the verb. Find the tool.</h1>
+        <p class="lede">
+          You know what you want to do: add a source repo to a team. You don't know the exact tool
+          name. <code>codesense_search_tools</code>
+          takes the words you'd use in a description and gives you the best matches — name hits beat
+          description hits, shorter beats longer at equal score.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A query 'add source repo' goes in on the left; four tools come out on the right, ranked, each marked with its rank."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-f"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Query -->
+            <g transform="translate(30 70)">
+              <rect
+                width="240"
+                height="100"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="16"
+                y="30"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                codesense_search_tools
+              </text>
+              <text
+                x="16"
+                y="58"
+                style="fill: var(--cs-fg); font-size: 14px; font-family: var(--cs-font-mono)"
+              >
+                query:
+              </text>
+              <text
+                x="80"
+                y="58"
+                style="fill: var(--cs-fg); font-size: 14px; font-family: var(--cs-font-mono)"
+              >
+                "add source repo"
+              </text>
+              <text x="16" y="80" style="fill: var(--cs-muted-fg); font-size: 11px">
+                AND-matched · case-insensitive
+              </text>
+            </g>
+
+            <path
+              d="M274 120 L 310 120"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.5"
+              fill="none"
+              marker-end="url(#arcj-arrow-f)"
+            />
+
+            <!-- Results -->
+            <g transform="translate(320 30)">
+              <rect
+                width="290"
+                height="300"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                tools (ranked)
+              </text>
+
+              <g transform="translate(14 40)">
+                <rect
+                  width="262"
+                  height="56"
+                  rx="8"
+                  fill="var(--cs-surface)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="12"
+                  y="20"
+                  style="fill: var(--cs-fg); font-size: 12.5px; font-family: var(--cs-font-mono)"
+                >
+                  add_source_repo
+                </text>
+                <text x="12" y="36" style="fill: var(--cs-muted-fg); font-size: 11px">
+                  name hit · all 3 terms matched
+                </text>
+                <rect
+                  x="210"
+                  y="8"
+                  width="46"
+                  height="18"
+                  rx="4"
+                  fill="var(--cs-inset)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="233"
+                  y="21"
+                  text-anchor="middle"
+                  style="
+                    fill: var(--cs-muted-fg);
+                    font-size: 10px;
+                    font-family: var(--cs-font-mono);
+                  "
+                >
+                  #1
+                </text>
+              </g>
+
+              <g transform="translate(14 108)">
+                <rect
+                  width="262"
+                  height="56"
+                  rx="8"
+                  fill="var(--cs-surface)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="12"
+                  y="20"
+                  style="fill: var(--cs-fg); font-size: 12.5px; font-family: var(--cs-font-mono)"
+                >
+                  attach_source_repo_path
+                </text>
+                <text x="12" y="36" style="fill: var(--cs-muted-fg); font-size: 11px">
+                  name hit · 2 terms · bind a clone
+                </text>
+                <rect
+                  x="210"
+                  y="8"
+                  width="46"
+                  height="18"
+                  rx="4"
+                  fill="var(--cs-inset)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="233"
+                  y="21"
+                  text-anchor="middle"
+                  style="
+                    fill: var(--cs-muted-fg);
+                    font-size: 10px;
+                    font-family: var(--cs-font-mono);
+                  "
+                >
+                  #2
+                </text>
+              </g>
+
+              <g transform="translate(14 176)">
+                <rect
+                  width="262"
+                  height="56"
+                  rx="8"
+                  fill="var(--cs-surface)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="12"
+                  y="20"
+                  style="fill: var(--cs-fg); font-size: 12.5px; font-family: var(--cs-font-mono)"
+                >
+                  remove_source_repo
+                </text>
+                <text x="12" y="36" style="fill: var(--cs-muted-fg); font-size: 11px">
+                  name hit · 2 terms · unbind
+                </text>
+                <rect
+                  x="210"
+                  y="8"
+                  width="46"
+                  height="18"
+                  rx="4"
+                  fill="var(--cs-inset)"
+                  stroke="var(--cs-border)"
+                />
+                <text
+                  x="233"
+                  y="21"
+                  text-anchor="middle"
+                  style="
+                    fill: var(--cs-muted-fg);
+                    font-size: 10px;
+                    font-family: var(--cs-font-mono);
+                  "
+                >
+                  #3
+                </text>
+              </g>
+
+              <g transform="translate(14 244)">
+                <rect
+                  width="262"
+                  height="40"
+                  rx="8"
+                  fill="var(--cs-surface)"
+                  stroke="var(--cs-border)"
+                />
+                <text x="12" y="24" style="fill: var(--cs-muted-fg); font-size: 11.5px">
+                  … 7 more desc-hits ↓
+                </text>
+              </g>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section
+        data-search="How search works — AND terms, case-insensitive, name beats description"
+        id="how"
+      >
+        <h2>How it works</h2>
+        <p>
+          <code>query</code> is a string. The server lowercases it, splits on whitespace, and
+          requires every term to appear in the tool's name or description. The hits are then ranked:
+        </p>
+        <ol>
+          <li>
+            <strong>Name hits beat description hits.</strong> Terms appearing in
+            <code>tool.name</code> score higher.
+          </li>
+          <li>
+            <strong>Shorter descriptions beat longer ones</strong> at the same score — more specific
+            tools win over broad ones.
+          </li>
+          <li>
+            <strong>Default limit</strong>: 20 results. Pass <code>limit: 100</code> to see more;
+            the server caps at 100.
+          </li>
+        </ol>
+        <p>
+          Every result row is a <code>name</code> and its <code>description</code>. Every tool is
+          in <code>tools/list</code>, so you can call the one you pick by name; a host that loads
+          tool schemas lazily (Claude Code does) shows only names, so call
+          <code>codesense_get_tool_schema</code> first to see its inputs.
+        </p>
+      </section>
+
+      <section data-search="Worked example — a search run against the live server" id="example">
+        <h2>Worked example</h2>
+        <p>
+          You're writing an agent that onboards a new team. Step one: wire a source repo. You don't
+          know the tool name. Run:
+        </p>
+        <pre><code>codesense.invoke('codesense_search_tools', {
+  query: 'add source repo',
+  limit: 10
+})</code></pre>
+        <p>Reply (abridged):</p>
+        <pre><code>{
+  "tools": [
+    {
+      "name": "add_source_repo",
+      "description": "Add a source repo to a team. Pass `org` (owner/repo) and `team`, …"
+    },
+    {
+      "name": "attach_source_repo_path",
+      "description": "Bind a local git clone to a tracked source repo on a team …"
+    },
+    {
+      "name": "remove_source_repo",
+      "description": "Remove a tracked source repo from a team …"
+    }
+  ]
+}</code></pre>
+        <p><code>add_source_repo</code> is the one. Pick it, read the schema, call it. Done.</p>
+      </section>
+
+      <section data-search="Ranking table — showing why specific terms rank higher" id="rank">
+        <h2>Why one tool ranks ahead of another</h2>
+        <table class="arcj-rank">
+          <thead>
+            <tr>
+              <th>Query</th>
+              <th>Top hit</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>"add source repo"</code></td>
+              <td><code>add_source_repo</code></td>
+              <td>All three terms in the name. Tightest match wins.</td>
+            </tr>
+            <tr>
+              <td><code>"source repo"</code></td>
+              <td><code>list_source_repos</code></td>
+              <td>Short desc, both terms in the name. Shorter wins ties.</td>
+            </tr>
+            <tr>
+              <td><code>"canvas render"</code></td>
+              <td><code>render_canvas</code></td>
+              <td>Both terms in the name.</td>
+            </tr>
+            <tr>
+              <td><code>"validate story"</code></td>
+              <td><code>validate_story</code></td>
+              <td>Exact name.</td>
+            </tr>
+            <tr>
+              <td><code>"send message to inbox"</code></td>
+              <td><code>send_message</code></td>
+              <td>Two terms name, "inbox" in description.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Tips for better queries" id="tips">
+        <h2>Tips</h2>
+        <div class="arcj-tip">
+          <strong>Use the words you'd use in a description.</strong> "List the open sessions" beats
+          "sess_list". The tools are indexed on natural-language text; the server does the
+          normalisation.
+        </div>
+        <div class="arcj-tip">
+          <strong>Narrow by role.</strong> If you're writing an agent that only reads, add
+          <code>"list"</code> or <code>"get"</code>; add <code>"create"</code> or
+          <code>"update"</code> for writes.
+        </div>
+        <div class="arcj-tip">
+          <strong>Two terms is usually enough.</strong> Three terms AND down to a tight band; more
+          than three often cuts the right tool out.
+        </div>
+      </section>
+
+      <section data-search="Try this now — run a search" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Search for the first verb a brand-new agent needs:
+          <code>list_orgs_teams</code>. Read-only; nothing writes.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_search_tools", "args": {"query": "list orgs teams"}}'
+          label="Search for list_orgs_teams"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Default limit is 20. Max is 100.
+codesense.invoke('codesense_search_tools', {
+  query: 'add source repo'
+})
+
+// Narrow further.
+codesense.invoke('codesense_search_tools', {
+  query: 'routine list',
+  limit: 5
+})
+
+// Chain: discover → schema → call
+const { tools } = await codesense.invoke('codesense_search_tools', {
+  query: 'send message'
+})
+const schema = await codesense.invoke('codesense_get_tool_schema', {
+  name: tools[0].name
+})
+// now call tools[0].name by name</code></pre>
+          <p>
+            Deep-link into the explorer:
+            <a href="../mcp-explorer.html#tool/codesense_search_tools"
+              >mcp-explorer#tool/codesense_search_tools</a
+            >.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./overview-call.html">codesense_overview</a> · Next:
+        <a href="./reading-a-schema.html">codesense_get_tool_schema</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · codesense_search_tools</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

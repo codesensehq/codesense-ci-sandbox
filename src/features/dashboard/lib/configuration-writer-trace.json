@@ -1,0 +1,404 @@
+{
+  "deltas": [
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 0,
+        "delta": {
+          "removes": [],
+          "rev": 1,
+          "topic": "profile",
+          "total": 5,
+          "upserts": [
+            {
+              "field": "cliLayout",
+              "id": "cliLayout",
+              "value": "default"
+            },
+            {
+              "field": "id",
+              "id": "id",
+              "value": "default"
+            },
+            {
+              "field": "name",
+              "id": "name",
+              "value": "Default"
+            },
+            {
+              "field": "posture",
+              "id": "posture",
+              "value": ""
+            },
+            {
+              "field": "slots",
+              "id": "slots:dock",
+              "key": "dock",
+              "value": "native"
+            }
+          ],
+          "viewKey": "profile:42:acme/repo"
+        },
+        "subscriptionId": "native:configuration:profile:[\"profile\",\"profile:42:acme/repo\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 1,
+        "topic": "profile",
+        "upserts": [
+          {
+            "field": "cliLayout",
+            "id": "cliLayout",
+            "value": "default"
+          },
+          {
+            "field": "id",
+            "id": "id",
+            "value": "default"
+          },
+          {
+            "field": "name",
+            "id": "name",
+            "value": "Default"
+          },
+          {
+            "field": "posture",
+            "id": "posture",
+            "value": ""
+          },
+          {
+            "field": "slots",
+            "id": "slots:dock",
+            "key": "dock",
+            "value": "native"
+          }
+        ],
+        "viewKey": "profile:42:acme/repo"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 1,
+        "delta": {
+          "removes": [],
+          "rev": 2,
+          "topic": "profile",
+          "total": 7,
+          "upserts": [
+            {
+              "field": "chrome",
+              "id": "chrome:newer",
+              "key": "newer",
+              "value": true
+            },
+            {
+              "field": "name",
+              "id": "name",
+              "value": "Newer name"
+            },
+            {
+              "field": "slots",
+              "id": "slots:file-nav",
+              "key": "file-nav",
+              "value": "native"
+            }
+          ],
+          "viewKey": "profile:42:acme/repo"
+        },
+        "subscriptionId": "native:configuration:profile:[\"profile\",\"profile:42:acme/repo\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 2,
+        "topic": "profile",
+        "upserts": [
+          {
+            "field": "chrome",
+            "id": "chrome:newer",
+            "key": "newer",
+            "value": true
+          },
+          {
+            "field": "name",
+            "id": "name",
+            "value": "Newer name"
+          },
+          {
+            "field": "slots",
+            "id": "slots:file-nav",
+            "key": "file-nav",
+            "value": "native"
+          }
+        ],
+        "viewKey": "profile:42:acme/repo"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 2,
+        "delta": {
+          "removes": [],
+          "rev": 3,
+          "topic": "profile",
+          "total": 7,
+          "upserts": [
+            {
+              "field": "slots",
+              "id": "slots:dock",
+              "key": "dock",
+              "value": {
+                "id": "agents",
+                "org": "acme/repo",
+                "scope": "built-in"
+              }
+            }
+          ],
+          "viewKey": "profile:42:acme/repo"
+        },
+        "subscriptionId": "native:configuration:profile:[\"profile\",\"profile:42:acme/repo\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 3,
+        "topic": "profile",
+        "upserts": [
+          {
+            "field": "slots",
+            "id": "slots:dock",
+            "key": "dock",
+            "value": {
+              "id": "agents",
+              "org": "acme/repo",
+              "scope": "built-in"
+            }
+          }
+        ],
+        "viewKey": "profile:42:acme/repo"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 0,
+        "delta": {
+          "removes": [],
+          "rev": 1,
+          "topic": "workspaceConfig",
+          "total": 1,
+          "upserts": [
+            {
+              "id": "team:acme:dev",
+              "value": {
+                "mainDoc": "Epic.md"
+              }
+            }
+          ],
+          "viewKey": "workspaceConfig:42:native"
+        },
+        "subscriptionId": "native:configuration:workspaceConfig:[\"workspaceConfig\",\"workspaceConfig:42:native\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 1,
+        "topic": "workspaceConfig",
+        "upserts": [
+          {
+            "id": "team:acme:dev",
+            "value": {
+              "mainDoc": "Epic.md"
+            }
+          }
+        ],
+        "viewKey": "workspaceConfig:42:native"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 1,
+        "delta": {
+          "removes": [],
+          "rev": 2,
+          "topic": "workspaceConfig",
+          "total": 2,
+          "upserts": [
+            {
+              "id": "other",
+              "value": {
+                "mainDoc": "Newer.md"
+              }
+            },
+            {
+              "id": "team:acme:dev",
+              "value": {
+                "mainDoc": "Team.md"
+              }
+            }
+          ],
+          "viewKey": "workspaceConfig:42:native"
+        },
+        "subscriptionId": "native:configuration:workspaceConfig:[\"workspaceConfig\",\"workspaceConfig:42:native\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 2,
+        "topic": "workspaceConfig",
+        "upserts": [
+          {
+            "id": "other",
+            "value": {
+              "mainDoc": "Newer.md"
+            }
+          },
+          {
+            "id": "team:acme:dev",
+            "value": {
+              "mainDoc": "Team.md"
+            }
+          }
+        ],
+        "viewKey": "workspaceConfig:42:native"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 2,
+        "delta": {
+          "removes": [],
+          "rev": 3,
+          "topic": "workspaceConfig",
+          "total": 2,
+          "upserts": [
+            {
+              "id": "team:acme:dev",
+              "value": {
+                "mainDoc": "Outside.md"
+              }
+            }
+          ],
+          "viewKey": "workspaceConfig:42:native"
+        },
+        "subscriptionId": "native:configuration:workspaceConfig:[\"workspaceConfig\",\"workspaceConfig:42:native\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 3,
+        "topic": "workspaceConfig",
+        "upserts": [
+          {
+            "id": "team:acme:dev",
+            "value": {
+              "mainDoc": "Outside.md"
+            }
+          }
+        ],
+        "viewKey": "workspaceConfig:42:native"
+      }
+    }
+  ],
+  "final": [
+    {
+      "rev": 3,
+      "snapshot": [
+        {
+          "id": "other",
+          "value": {
+            "mainDoc": "Newer.md"
+          }
+        },
+        {
+          "id": "team:acme:dev",
+          "value": {
+            "mainDoc": "Outside.md"
+          }
+        }
+      ],
+      "topic": "workspaceConfig",
+      "viewKey": "workspaceConfig:42:native"
+    },
+    {
+      "rev": 3,
+      "snapshot": [
+        {
+          "field": "chrome",
+          "id": "chrome:newer",
+          "key": "newer",
+          "value": true
+        },
+        {
+          "field": "cliLayout",
+          "id": "cliLayout",
+          "value": "default"
+        },
+        {
+          "field": "id",
+          "id": "id",
+          "value": "default"
+        },
+        {
+          "field": "name",
+          "id": "name",
+          "value": "Newer name"
+        },
+        {
+          "field": "posture",
+          "id": "posture",
+          "value": ""
+        },
+        {
+          "field": "slots",
+          "id": "slots:dock",
+          "key": "dock",
+          "value": {
+            "id": "agents",
+            "org": "acme/repo",
+            "scope": "built-in"
+          }
+        },
+        {
+          "field": "slots",
+          "id": "slots:file-nav",
+          "key": "file-nav",
+          "value": "native"
+        }
+      ],
+      "topic": "profile",
+      "viewKey": "profile:42:acme/repo"
+    }
+  ],
+  "initial": [
+    {
+      "rev": 0,
+      "snapshot": [],
+      "topic": "profile",
+      "viewKey": "profile:42:acme/repo"
+    },
+    {
+      "rev": 0,
+      "snapshot": [],
+      "topic": "workspaceConfig",
+      "viewKey": "workspaceConfig:42:native"
+    }
+  ]
+}

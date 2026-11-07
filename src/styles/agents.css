@@ -1,0 +1,2318 @@
+/* SPDX-License-Identifier: MIT */
+/* The agents column of the bottom CLI workspace, and the agent identity it shares with the
+   tray: faces, chess pieces, status dots, crew stacks.
+
+   The column sits on the same panel surface as the file nav and the tray
+   (`--cs-sidebar-*`, set by each viewer theme), so it reads as part of the CLI band in
+   every theme. Its secondary tones are mixed from that theme's own text and surface, so
+   they keep their contrast whichever theme is active. */
+.cs-agents,
+.cs-agent-identity {
+  --ag-bg: var(--cs-sidebar-bg, var(--card));
+  --ag-text: var(--cs-sidebar-text, var(--foreground));
+  --ag-muted: color-mix(in oklab, var(--ag-text) 68%, var(--ag-bg));
+  /* 58%: line two and section labels hold about 4.5:1 on dark and light panels alike. */
+  --ag-faint: color-mix(in oklab, var(--ag-text) 58%, var(--ag-bg));
+  --ag-line: color-mix(in oklab, var(--ag-text) 13%, var(--ag-bg));
+  --ag-guide: color-mix(in oklab, var(--ag-text) 16%, var(--ag-bg));
+  --ag-hover: color-mix(in oklab, var(--ag-text) 6%, var(--ag-bg));
+  --ag-current: color-mix(in oklab, var(--ag-text) 11%, var(--ag-bg));
+
+  --ag-needs-text: color-mix(in oklab, var(--cs-status-needs) 80%, var(--ag-text));
+  /* A machine that can't be reached: the machine mark's offline amber, never the needs-you one. */
+  --ag-offline-text: color-mix(in oklab, var(--cs-status-modified) 72%, var(--ag-text));
+  --ag-face-ring: color-mix(in oklab, var(--ag-text) 14%, transparent);
+  /* A role piece in the pane: neutral ink, a step under the text, so a team never takes a hue. */
+  --ag-piece-ink: color-mix(in oklab, var(--ag-text) 80%, var(--ag-bg));
+  /* Piece colours: light pieces on dark panels, deep pieces on light ones. */
+  --ag-piece-l: 50%;
+  --ag-piece-c: 0.15;
+  --ag-face-l: 90%;
+  /* A row's two line heights: line one (name and task) and line two (its details). The via line
+     and the hover actions are sized from these, so they always match the text they sit on. */
+  --ag-line1-lh: 17px;
+  --ag-line2-lh: 15px;
+}
+.dark .cs-agents,
+.dark .cs-agent-identity {
+  --ag-piece-l: 82%;
+  --ag-piece-c: 0.11;
+  --ag-face-l: 34%;
+}
+/* Terminal identity marks follow the actual palette, including a person-wide override. */
+[data-surface="terminal"] .cs-agent-identity,
+[data-surface="terminal"].cs-agent-identity {
+  --ag-face-l: var(--cs-terminal-face-l, 34%);
+  --ag-piece-l: var(--cs-terminal-piece-l, 82%);
+  --ag-text: var(--theme-text-terminal-primary);
+  --ag-bg: var(--theme-surface-terminal-bg);
+}
+.cs-agents {
+  background-color: var(--ag-bg);
+  color: var(--ag-text);
+}
+/* The story-stage rail draws from the pane's own text, so its empty steps read on light panels
+   (the app foreground it uses elsewhere is light inside a light viewer theme's dark app). */
+.cs-agents .cs-rail {
+  --cs-rail-fill: color-mix(in oklab, var(--ag-text) 62%, transparent);
+  --cs-rail-empty: color-mix(in oklab, var(--ag-text) 30%, transparent);
+  --cs-rail-done: var(--ag-text);
+  --cs-rail-wall: var(--ag-text);
+}
+.cs-agents ::selection {
+  background: color-mix(in oklab, var(--cs-accent, var(--accent)) 35%, transparent);
+}
+.cs-agents .ag-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ag-line) transparent;
+}
+/* ---- Rows ------------------------------------------------------------- */
+.ag-row {
+  position: relative;
+  /* A narrow row moves its hover actions to line two (below), so line one keeps its words. */
+  container: ag-row / inline-size;
+  display: flex;
+  /* A session's notice lines wrap under the row's button, the width of the row. */
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin: 0 6px;
+  border-radius: 6px;
+  transition: background-color 140ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ag-row:hover {
+  background-color: var(--ag-hover);
+}
+.ag-row:focus-within:has(:focus-visible) {
+  background-color: var(--ag-hover);
+}
+/* A focused row rings the whole row, on the same box its hover fill takes, not just its button. */
+.ag-row:has(> .ag-main:focus-visible) {
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+.ag-row[data-current="true"] {
+  background-color: var(--ag-current);
+}
+.ag-row[data-current="true"]::before {
+  content: "";
+  position: absolute;
+  /* The same x as the needs-you bar, so a row's one bar always sits in one column. */
+  left: 3px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  border-radius: 1px;
+  background: var(--ag-text);
+  opacity: 0.55;
+}
+
+.ag-row[data-needs="true"][data-current="true"]::before {
+  /* The needs-you bar alone marks the row; the open row keeps its fill. */
+  display: none;
+}
+.ag-row[data-needs="true"]::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  background: var(--cs-status-needs);
+  border-radius: 2px;
+  pointer-events: none;
+  transition: width 140ms ease;
+}
+.ag-row[data-needs="true"]:hover::after,
+.ag-row[data-needs="true"]:focus-within::after {
+  width: 3px;
+}
+/* The agent the side panel shows: lit like a selection, ringed so it reads beside a needs wash. */
+.ag-row[data-panel="true"],
+.ag-row[data-panel="true"]:hover {
+  background-color: color-mix(in oklab, var(--accent) 12%, var(--ag-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 38%, transparent);
+}
+.ag-row .ag-main:focus-visible {
+  outline: none;
+}
+/* A row's line one: the agent's name in bold, then what it is doing in the muted ink. */
+.ag-title {
+  font-size: 12.5px;
+  line-height: var(--ag-line1-lh, 17px);
+  letter-spacing: -0.006em;
+}
+.ag-name {
+  font-weight: 600;
+}
+.ag-task {
+  font-weight: 400;
+  color: var(--ag-muted);
+}
+/* Line two: role, place, machine, model and time, in the faint ink. */
+.ag-sub {
+  font-size: 11px;
+  line-height: var(--ag-line2-lh, 15px);
+  color: var(--ag-faint);
+  font-variant-numeric: tabular-nums;
+}
+/* SW-AA-1 (Phase 1): the row's "latest activity" line — the agent's live
+ * `signal_progress` note (or an N-of-M hint). Weight slightly stronger than
+ * `.ag-sub` so the eye sees "running work" above static metadata. Softened
+ * when the entry is `settled` (done): it is a summary, not live. */
+.ag-activity {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 500;
+  color: var(--ag-muted);
+}
+.ag-activity[data-settled="true"] {
+  font-weight: 400;
+  color: var(--ag-faint);
+}
+/* A session's notice lines: under the row's button, so their actions are buttons of their own,
+   lined up with the row's text column (the button's 4px inset, the 26px avatar, its 6px gap and
+   the text's 4px margin). The button gives up its bottom inset to them. */
+.ag-notes {
+  display: flex;
+  flex-basis: 100%;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 8px 6px 40px;
+}
+.ag-row:has(> .ag-notes) > .ag-main {
+  padding-bottom: 0;
+}
+/* A release CodeSense is not qualified on: wraps whole, never clipped or truncated. */
+.ag-limited {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 500;
+  color: var(--cs-warning-text);
+  overflow-wrap: anywhere;
+}
+/* A session typed by hand: a fact, not a fault, so body ink at 80% (4.5:1 in every theme). */
+.ag-note {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--ag-text) 80%, var(--ag-bg));
+  overflow-wrap: anywhere;
+}
+/* A notice line's one action, inline in its words and ink. */
+.ag-inline-action {
+  margin-left: 2px;
+  white-space: nowrap;
+  border-radius: 3px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.ag-inline-action:hover {
+  text-decoration-thickness: 2px;
+}
+.ag-inline-action:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.ag-ask {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 500;
+  color: var(--ag-needs-text);
+}
+.ag-task[data-tone="working"] {
+  color: var(--cs-status-busy);
+}
+.ag-task[data-tone="needs"] {
+  color: var(--ag-needs-text);
+}
+.ag-row[data-current="true"] .ag-task {
+  color: color-mix(in oklab, var(--ag-text) 78%, var(--ag-bg));
+}
+/* Running subagents: a branch glyph and their count right after the status word, in that word's
+   ink, so line one stays "Working" and the name keeps its room. The words are its tooltip. */
+.ag-subs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  font-size: 10.5px;
+  line-height: 1;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+.ag-subs-glyph {
+  flex: none;
+  width: 10px;
+  height: 10px;
+}
+/* A row whose subagents run splits its title so the mark always shows: the name and "Working"
+   keep their width, the launch prompt after the mark takes what is left and truncates first. */
+.ag-title-split {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+/* Line one without subagents. The launch prompt gives way first (it takes only the room left),
+   then the name, down to a few characters; the status word never does. The task's parts sit in
+   the line itself (`display: contents`), so each shrinks on its own terms. */
+.ag-title-line {
+  display: flex;
+  align-items: baseline;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ag-title-name {
+  flex: 0 1000 auto;
+  min-width: 3ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-title-task {
+  display: contents;
+}
+.ag-title-word {
+  flex: none;
+  white-space: pre;
+}
+.ag-title-more {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-title-sep {
+  white-space: pre;
+}
+.ag-title-lead,
+.ag-title-rest {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ag-title-lead {
+  flex: 0 1 auto;
+}
+.ag-title-rest {
+  flex: 1 1 0;
+}
+.ag-subs-slot {
+  display: inline-flex;
+  flex: none;
+}
+.ag-hidden-mark {
+  display: inline-grid;
+  place-items: center;
+  color: var(--ag-faint);
+}
+.ag-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 15px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ag-muted);
+  background: color-mix(in oklab, var(--ag-text) 9%, transparent);
+}
+.ag-count-needs {
+  color: var(--ag-needs-text);
+  background: color-mix(in oklab, var(--cs-status-needs) 18%, transparent);
+}
+/* A pinned agent's place in its card: its face dims (its status mark, text and controls keep
+   full contrast), since its live copy sits in Pinned. */
+.ag-row[data-pinned="dim"] .ag-avatar {
+  opacity: 0.55;
+}
+.ag-row[data-pinned="dim"]:where(:hover, :focus-within) .ag-avatar {
+  opacity: 0.85;
+}
+/* Who holds a role, after the row's place on line two. */
+.ag-holds {
+  color: var(--ag-muted);
+}
+/* A row's pin marker. (The Pinned group is a quiet label above its rows; the team header
+   below it, with its own rule, closes it.) */
+.ag-pin-mark {
+  color: var(--ag-faint);
+}
+.ag-pin-mark svg {
+  transform: rotate(35deg);
+}
+/* An ended or crashed run: its face greys; its status mark, text and controls keep full contrast. */
+.ag-row[data-dead="true"] .ag-avatar {
+  opacity: 0.72;
+  filter: grayscale(0.6);
+}
+/* Its role piece's cut-out ring stays the panel's own colour. */
+.ag-row[data-dead="true"] .ag-piece {
+  box-shadow: 0 0 0 1.5px var(--ag-crew-cut, var(--ag-bg));
+}
+/* A row whose machine can't be reached: name, task and face are muted; the Offline tag and the
+   tooltip say why. */
+.ag-row[data-offline="true"] .ag-name,
+.ag-row[data-offline="true"] .ag-task {
+  color: var(--ag-muted);
+}
+.ag-row[data-offline="true"] .ag-avatar {
+  opacity: 0.55;
+}
+/* ---- Faces, pieces, dots ---------------------------------------------- */
+.ag-face {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(var(--ag-face-l, 34%) 0.05 var(--ag-face-h, 250));
+  box-shadow: inset 0 0 0 1px var(--ag-face-ring);
+}
+.ag-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+/* A face wearing a number tag lets the tag hang over its edge; the image keeps the circle. */
+.ag-face-tagged {
+  overflow: visible;
+}
+.ag-face-tagged > img {
+  border-radius: 999px;
+}
+/* The number that tells apart agents wearing the same face: top-left, opposite the role
+   piece, cut out of the face by the panel colour like the piece is. */
+.ag-face-tag {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  display: grid;
+  place-items: center;
+  padding: 0 2px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 18%, var(--ag-bg));
+  box-shadow:
+    0 0 0 1.5px var(--ag-crew-cut, var(--ag-bg)),
+    inset 0 0 0 1px color-mix(in oklab, var(--ag-text) 30%, transparent);
+  pointer-events: none;
+}
+.ag-face-mark {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 14%, var(--ag-bg));
+}
+.ag-avatar {
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+.ag-piece {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  border-radius: 30%;
+  color: var(--ag-piece-color, var(--ag-muted));
+  background: color-mix(in oklab, var(--ag-piece-color, var(--ag-muted)) 24%, var(--ag-bg));
+  /* The panel colour cuts the badge out of the face; a hairline of its own hue holds its edge. */
+  box-shadow:
+    0 0 0 1.5px var(--ag-crew-cut, var(--ag-bg)),
+    inset 0 0 0 1px color-mix(in oklab, var(--ag-piece-color, var(--ag-muted)) 45%, transparent);
+  animation: ag-piece-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.ag-piece svg {
+  stroke-width: 1.8;
+}
+/* A face in a terminal tab, the same size whether or not its tab is selected, so selecting a
+   tab never moves its name; the box leaves room for the active face's ring. The active face
+   wears its workspace's team colour as a ring (faces carry the team colour; nothing else in
+   the CLI chrome does), set off by a hairline of the tab's own background and kept soft so it
+   never reads as a status colour; the others sit slightly muted until their tab is hovered or
+   focused. */
+.ag-tab-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ag-tab-face > .ag-face {
+  opacity: 0.9;
+  filter: saturate(0.8) brightness(0.95);
+  transition:
+    opacity 140ms ease-out,
+    filter 140ms ease-out;
+}
+[role="tab"]:hover .ag-tab-face > .ag-face,
+[role="tab"]:focus-visible .ag-tab-face > .ag-face,
+.ag-tab-face[data-active] > .ag-face {
+  opacity: 1;
+  filter: none;
+}
+.ag-tab-face[data-active] > .ag-face {
+  box-shadow:
+    inset 0 0 0 1px var(--ag-face-ring),
+    0 0 0 1px var(--ag-tab-cut, var(--ag-bg)),
+    0 0 0 2.5px var(--ag-tab-ring, var(--ag-muted));
+}
+/* The live status, on the face's lower-right corner, cut out by the tab's own background (a
+   hollow dot's hole shows that background, not the face). Nothing shows while there is no
+   status. */
+.ag-tab-face-status {
+  position: absolute;
+  right: -1.5px;
+  bottom: -1.5px;
+  display: grid;
+  place-items: center;
+  padding: 1.5px;
+  border-radius: 999px;
+  line-height: 0;
+  background: var(--ag-tab-cut, var(--ag-bg));
+}
+/* An inactive tab's hover wash (`#ffffff10`) shows behind the dot too. */
+[role="tab"][data-active="false"]:hover .ag-tab-face-status {
+  background: color-mix(in srgb, #fff 6.3%, var(--ag-tab-cut, var(--ag-bg)));
+}
+/* The ended marker is a square: its cut-out follows. */
+.ag-tab-face-status:has([data-ended]) {
+  border-radius: 2.5px;
+}
+.ag-tab-face-status:not(:has([role="img"])) {
+  display: none;
+}
+@keyframes ag-piece-in {
+  from {
+    transform: scale(0.4) rotate(-30deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+/* A row that arrives after the list has settled eases in. */
+.ag-enter {
+  animation: ag-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ag-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+/* ---- Crew stacks (group headers and tray pills) ------------------------ */
+.ag-crew {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+.ag-crew-lead {
+  flex: none;
+}
+.ag-crew-faces {
+  display: inline-flex;
+  align-items: center;
+}
+.ag-crew-face {
+  box-shadow:
+    0 0 0 1.5px var(--ag-crew-cut, var(--ag-bg)),
+    inset 0 0 0 1px var(--ag-face-ring);
+  animation: ag-face-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.ag-crew-face + .ag-crew-face {
+  margin-left: -4px;
+}
+.ag-crew-more {
+  margin-left: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ag-faint);
+}
+@keyframes ag-face-in {
+  from {
+    opacity: 0;
+    transform: translateX(-3px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* ---- Search ----------------------------------------------------------- */
+.ag-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 6px 0 9px;
+  border-radius: 7px;
+  color: var(--ag-faint);
+  background: color-mix(in oklab, var(--ag-text) 4%, var(--ag-bg));
+  box-shadow: inset 0 0 0 1px var(--ag-line);
+  transition: box-shadow 120ms ease;
+}
+.ag-search:focus-within {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--ring) 70%, transparent),
+    0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
+}
+.ag-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--ag-text);
+  caret-color: var(--ag-text);
+}
+.ag-search input::placeholder {
+  color: var(--ag-faint);
+}
+.ag-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.ag-search-clear {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  color: var(--ag-faint);
+}
+.ag-search-clear:hover {
+  color: var(--ag-text);
+  background: var(--ag-hover);
+}
+.ag-search-clear:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+.ag-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ag-muted);
+  background: color-mix(in oklab, var(--ag-text) 9%, transparent);
+}
+.ag-link {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ag-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ag-line);
+}
+.ag-link:hover {
+  text-decoration-color: currentColor;
+}
+/* ---- Header ----------------------------------------------------------- */
+.ag-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 38px;
+  padding: 0 6px 0 6px;
+  flex: none;
+}
+/* ---- Icon buttons, header --------------------------------------------- */
+.ag-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+  color: var(--ag-faint);
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-icon-btn:hover,
+.ag-icon-btn[aria-pressed="true"] {
+  color: var(--ag-text);
+  background: var(--ag-hover);
+}
+.ag-icon-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+/* ---- The tray's Agents control ----------------------------------------- */
+.ag-dock-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 7px 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-dock-toggle:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.ag-dock-toggle[aria-expanded="true"] {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 11%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+.ag-dock-toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+.ag-dock-toggle .ag-dock-n {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+.ag-dock-toggle .ag-dock-needs {
+  height: 16px;
+  gap: 4px;
+}
+/* The bottom workspace bar at a smaller "Workspace bar size": the bar is drawn
+   at CSS zoom `--bar-zoom` (set on its [data-bar-size] box). Badge text never
+   draws smaller than it does at Normal, and the Agents control keeps a 24px hit
+   target. `--bar-floor` is 1 at Normal and Large, 1/zoom below it. */
+[data-bar-size] {
+  --bar-floor: max(1, 1 / var(--bar-zoom, 1));
+}
+[data-bar-size] .ag-dock-toggle {
+  height: max(26px, calc(24px / var(--bar-zoom, 1)));
+}
+[data-bar-size] .ag-dock-toggle .ag-dock-n {
+  font-size: calc(11px * var(--bar-floor));
+}
+[data-bar-size] .ag-dock-toggle .ag-dock-needs {
+  height: calc(16px * var(--bar-floor));
+  font-size: calc(10px * var(--bar-floor));
+}
+/* The crew numbers: drawn by FaceTag with inline px (8px text on a 15px face). */
+[data-bar-size] .ag-face-tag {
+  font-size: calc(8px * var(--bar-floor)) !important;
+  height: calc(11px * var(--bar-floor)) !important;
+  min-width: calc(11px * var(--bar-floor)) !important;
+}
+/* The run output arrives over the tiles with a short rise. */
+.ag-output-in {
+  animation: ag-output-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ag-output-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-output-in,
+  .ag-enter,
+  .ag-piece,
+  .ag-crew-face {
+    animation: none;
+  }
+  /* A row's wash, a tab's face and a via chip's ink change at once. */
+  .ag-row,
+  .ag-tab-face > .ag-face,
+  .ag-via-pill {
+    transition: none;
+  }
+}
+/* A row's hover actions (Quick view, Messages, Pin; an offline row has no Quick view), shown
+   while the row is hovered or holds focus.
+   They sit at the end of the row's first line, and that line gives them their own room
+   (26px per action, set by the row), so the title truncates before them rather than running
+   underneath. Only line one gives way: line two, the avatar and the row height never move.
+   The buttons carry no fill of their own, so they read on every row wash (hover, selected,
+   needs-you, side-panel). A narrow pane keeps them in the row menu only. */
+.ag-row[data-actions]:hover .ag-line1,
+.ag-row[data-actions]:focus-within .ag-line1 {
+  padding-inline-end: calc(var(--ag-row-actions-n, 3) * 26px);
+}
+/* The Pin action says it while the actions show; the marker would only repeat it. */
+.ag-row[data-actions]:hover .ag-pin-mark,
+.ag-row[data-actions]:focus-within .ag-pin-mark {
+  display: none;
+}
+.ag-row-actions {
+  position: absolute;
+  /* Centred on line one: the row's 6px top inset plus half of line one, less half a 20px button. */
+  top: calc(6px + var(--ag-line1-lh, 17px) / 2 - 10px);
+  right: 4px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.ag-row-action {
+  display: flex;
+}
+/* A narrow row: the hover actions sit over line two's end (its time) instead of taking line one's
+   room, so the name and status word stay readable beside them. */
+@container ag-row (max-width: 300px) {
+  .ag-row-actions {
+    top: calc(6px + var(--ag-line1-lh, 17px) + var(--ag-line2-lh, 15px) / 2 - 10px);
+  }
+  .ag-row[data-actions]:hover .ag-line1,
+  .ag-row[data-actions]:focus-within .ag-line1 {
+    padding-inline-end: 0;
+  }
+  .ag-row[data-actions]:hover .ag-sub,
+  .ag-row[data-actions]:focus-within .ag-sub {
+    padding-inline-end: calc(var(--ag-row-actions-n, 3) * 26px);
+  }
+}
+.ag-row:hover .ag-row-actions,
+.ag-row:focus-within .ag-row-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ag-row-action button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--ag-muted);
+  background: transparent;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-row-action button:hover {
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 10%, transparent);
+}
+.ag-row-action button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+
+.ag-ws-group {
+  margin: 0 6px;
+  display: flow-root;
+}
+.ag-ws-count {
+  display: inline-flex;
+  flex-direction: row;
+  flex: none;
+  width: max-content;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--ag-muted);
+  font-variant-numeric: tabular-nums;
+  padding: 1px 6px;
+  margin-right: 2px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ag-text) 7%, transparent);
+}
+/* A card with an agent waiting on a person: its count takes a calm needs-you wash. */
+.ag-ws-count[data-has-needs] {
+  color: var(--ag-needs-text);
+  background: color-mix(in oklab, var(--cs-status-needs) 14%, transparent);
+}
+/* The card's count summarises; its row's own dot is the one that calls, so this mark holds
+   still and its halo never spills past the chip. */
+.ag-ws-count .cs-mark-halo {
+  animation: none;
+}
+
+/* Who launched the agent, on line two after its role. The role and the launcher's name share
+   the line's first part (the name truncates first); the rest of the line wraps onto a second,
+   clipped line when it does not fit whole, so it shows complete or not at all. */
+.ag-via-line {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: var(--ag-line2-lh, 15px);
+  overflow: hidden;
+}
+.ag-via-lead {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* What comes before the launcher (a Status row's team and workspace) keeps its room; the
+   launcher's name gives way first, and the head is cut only past the room a few letters of that
+   name need. */
+.ag-via-head {
+  flex: none;
+  max-width: calc(100% - 6ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+.ag-via-rest {
+  flex: none;
+  white-space: pre;
+}
+.ag-via-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  /* The name reads as line two's other words do; on hover name and glyph take the accent. */
+  color: var(--ag-muted);
+  text-decoration-line: none;
+  text-underline-offset: 2px;
+  transition: color 140ms ease;
+}
+.ag-via-pill[data-selects="true"] {
+  cursor: pointer;
+}
+.ag-via-pill[data-selects="true"]:hover {
+  color: var(--cs-accent, var(--accent));
+  text-decoration-line: underline;
+}
+/* A manager whose machine is offline: its name is struck through. */
+.ag-via-pill[data-manager-offline="true"] {
+  text-decoration-line: line-through;
+}
+/* The glyph sits in the line's own ink at rest (colour in the pane means status and machine) and
+   takes the accent with its name when a hover says it leads somewhere. */
+.ag-via-glyph {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  color: currentColor;
+}
+
+.ag-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+/* In a row the status dot owns the bottom-right corner, so the role piece takes the
+   bottom-left one (the face's number tag is top-left). Cards have no dot and keep it right. */
+.ag-avatar-wrap .ag-piece {
+  right: auto;
+  left: -3px;
+}
+.ag-avatar-dot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  /* Ring the dot with the pane's own background so the clipped-onto mark reads
+     cleanly against the pane. --ag-bg follows the sidebar theme, so the ring
+     stays correct in every viewer theme. */
+  background: var(--ag-bg);
+  box-shadow: 0 0 0 1.5px var(--ag-bg);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+/* the dot's group picks only the chrome around the mark (the pane-ring
+   background is the same everywhere); the StatusMark inside carries the hue and
+   the motion by shape, from the shared `--cs-status-*` tokens
+   (`styles/status-mark.css`). */
+.ag-avatar-dot-working {
+  background: var(--ag-bg);
+}
+/* On a face, the needs-you halo calls in a tighter ring than it does on open ground, and rests
+   faint: grown to the shared 1.9x it would cover half the face, and held at full strength it
+   reads as a pale disc on a light panel. The row's amber bar and ask line keep calling. */
+.ag-avatar-dot .cs-mark-halo {
+  opacity: 0.22;
+  animation-name: ag-dot-call;
+}
+@keyframes ag-dot-call {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  65% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+  66% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.22;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-avatar-dot .cs-mark-halo {
+    animation: none;
+  }
+}
+
+/* ---- Agents pane: header, find field, filter menu, teams, workspace cards ---- */
+
+.ag-pane-title {
+  /* On the 15px text column the find field's icon, team headers and cards share. */
+  padding: 0 6px 0 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ag-text);
+}
+.ag-pane-count {
+  font-size: 11px;
+  color: var(--ag-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The find field holds its chips on one line; the chips shrink and the input keeps the rest. */
+.ag-find {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 3px 4px 3px 9px;
+  border-radius: 7px;
+  color: var(--ag-faint);
+  background: color-mix(in oklab, var(--ag-text) 4%, var(--ag-bg));
+  box-shadow: inset 0 0 0 1px var(--ag-line);
+  transition: box-shadow 120ms ease;
+}
+.ag-find:has(> input:focus) {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--ring) 70%, transparent),
+    0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
+}
+.ag-find > input[type="search"] {
+  flex: 1 1 60px;
+  min-width: 60px;
+  height: 22px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--ag-text);
+  caret-color: var(--ag-text);
+}
+.ag-find > input[type="search"]::placeholder {
+  color: var(--ag-faint);
+}
+.ag-find > input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+.ag-chips {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  gap: 4px;
+  min-width: 0;
+  max-width: 62%;
+  overflow: hidden;
+}
+.ag-chips .ag-chip {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ag-chips .ag-chip .truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-find-filter {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--ag-faint);
+}
+.ag-find-filter:hover,
+.ag-find-filter[aria-expanded="true"] {
+  color: var(--ag-text);
+  background: var(--ag-hover);
+}
+.ag-find-filter:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+
+/* The filter menu: Teams checklist, Show, Arrange. */
+.ag-fpop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: 232px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 4px 6px 6px;
+  border-radius: 9px;
+  color: var(--ag-text);
+  background: var(--ag-bg);
+  box-shadow:
+    0 0 0 1px var(--ag-line),
+    0 10px 28px rgb(0 0 0 / 0.22);
+}
+.ag-fm-sec {
+  padding: 10px 6px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ag-faint);
+}
+.ag-fm-sec:first-child {
+  padding-top: 6px;
+}
+/* Every section after the first opens on the same hairline, so Teams, Show and Arrange read as
+   three equal parts. */
+.ag-fm-sec:not(:first-child) {
+  margin: 6px 2px 0;
+  padding: 10px 4px 4px;
+  border-top: 1px solid var(--ag-line);
+}
+.ag-fm-orgname {
+  padding: 2px 6px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ag-muted);
+}
+.ag-fm-team,
+.ag-fm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-align: left;
+}
+.ag-fm-team:hover,
+.ag-fm-item:hover {
+  background: var(--ag-hover);
+}
+.ag-fm-item:focus-visible,
+.ag-fm-team:has(input:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.ag-fm-team input:focus-visible {
+  outline: none;
+}
+.ag-fm-team input {
+  flex: none;
+  width: 14px;
+  min-width: 0;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--cs-accent, var(--accent));
+}
+/* The last team shown stays checked: its box reads as fixed, and its title says why. */
+.ag-fm-team:has(input:disabled) {
+  cursor: default;
+}
+.ag-fm-team input:disabled {
+  opacity: 0.55;
+}
+/* One 14px slot for the checkbox or status mark, so Teams and Show labels start at one x. The
+   mark sets its own 8px width inline, so the slot is held by min-width. */
+.ag-fm-item > :first-child {
+  flex: none;
+  width: 14px;
+  min-width: 14px;
+  display: grid;
+  place-items: center;
+}
+.ag-fm-team > span:nth-child(2),
+.ag-fm-item > span:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+.ag-fm-item[aria-checked="true"] {
+  font-weight: 600;
+  background: color-mix(in oklab, var(--ag-text) 9%, transparent);
+}
+.ag-fm-n {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ag-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ag-fp-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: color-mix(in oklab, var(--ag-text) 6%, transparent);
+}
+.ag-fp-seg button {
+  flex: 1 1 0;
+  height: 24px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  color: var(--ag-muted);
+}
+.ag-fp-seg button:hover:not([aria-checked="true"]) {
+  color: var(--ag-text);
+}
+/* The chosen segment is the raised one: a lighter face on the track, in dark and light alike. */
+.ag-fp-seg button[aria-checked="true"] {
+  font-weight: 600;
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 13%, var(--ag-bg));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+}
+.ag-fp-seg button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+
+/* A team header: org › team, in the pane's ink, over a rule. A team takes no hue: colour in the
+   pane means status (dots, the needs-you amber) and machine (a remote agent's mark). */
+.ag-team + .ag-team {
+  margin-top: 4px;
+}
+/* The team's heading holds only its fold button. */
+.ag-team-title {
+  margin: 0;
+  font: inherit;
+}
+.ag-team-head {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 28px;
+  /* The text starts on the column the cards' contents start on (15px); the chevron ends where a
+     card's own chevron does. */
+  padding: 5px 16px 5px 15px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: left;
+  background: var(--ag-bg);
+  /* The rule under the header, a step firmer than a card's edge: the team is the larger break. */
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--ag-text) 26%, var(--ag-bg));
+  transition: background-color 120ms ease;
+}
+.ag-team-head:hover,
+.ag-team:has(.ag-team-funnel:hover) .ag-team-head {
+  background: var(--ag-hover);
+}
+.ag-team-head:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.ag-team-org,
+.ag-team-name {
+  white-space: nowrap;
+}
+.ag-team-org {
+  /* A step quieter than the team name, which takes the full ink. */
+  font-weight: 500;
+  color: var(--ag-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-team-name {
+  color: var(--ag-text);
+  font-weight: 650;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ag-team-sep {
+  color: var(--ag-faint);
+  font-weight: 400;
+}
+.ag-team-need {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ag-needs-text);
+}
+.ag-team-chevron {
+  margin-left: auto;
+  color: var(--ag-faint);
+  /* Tailwind's -rotate-90 sets the rotate property; a transform here as well would add to it
+     and turn a folded team's chevron upside down. */
+  transition:
+    opacity 120ms ease,
+    rotate 120ms ease;
+}
+/* A team's funnel: the workspace card's filter, in the same 18px slot over the chevron (the
+   chevron's centre, 16px + 6px in from the right). Hover or focus swaps it in; on, it stays lit. */
+.ag-team {
+  position: relative;
+}
+.ag-team-funnel {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  right: 13px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  border-radius: 4px;
+  color: var(--ag-faint);
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-team:hover .ag-team-funnel,
+.ag-team:focus-within .ag-team-funnel,
+.ag-team-funnel[aria-pressed="true"] {
+  opacity: 1;
+}
+.ag-team[data-funnel]:hover .ag-team-chevron,
+.ag-team[data-funnel]:focus-within .ag-team-chevron,
+.ag-team[data-funnel="on"] .ag-team-chevron {
+  opacity: 0;
+}
+.ag-team-funnel:hover {
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 10%, transparent);
+}
+.ag-team-funnel[aria-pressed="true"] {
+  color: var(--cs-accent, var(--accent));
+}
+.ag-team-funnel:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+
+/* A workspace card: the body folds it, the name folds it too, and the arrow (on hover or focus)
+   filters the list to it. The card is not a button, so it holds no nested buttons. */
+.ag-ws-head-row {
+  position: relative;
+  z-index: 2;
+
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-line);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* A fixed height, so crew avatars that wrap cannot make the card taller than its rows expect. */
+  height: 28px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 3px 6px 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.ag-ws-stage,
+.ag-ws-crew {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  flex: none;
+  align-items: center;
+}
+/* When the card is tight the faces are clipped, not the workspace name: the crew shrinks a
+   hundred times as readily as the name does. */
+.ag-ws-crew {
+  flex: 0 100 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+/* The face numbers overlap the next face in a card; the rows below carry them. */
+.ag-ws-head-row .ag-face-tag {
+  display: none;
+}
+.ag-ws-head-row:hover {
+  background: var(--ag-hover);
+  border-color: var(--ag-guide);
+}
+/* The card's heading holds only its name button and takes the name's place in the row. */
+.ag-ws-title {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 9ch;
+  margin: 0;
+  font: inherit;
+}
+.ag-ws-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 9ch;
+  /* Monospace sets wide: 12px matches the 12.5px sans of the agent names below it. */
+  font-size: 12px;
+  font-weight: 560;
+  color: var(--ag-text);
+  text-align: left;
+  letter-spacing: -0.01em;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+/* The "No workspace" bucket is a label, not an identifier: the pane's sans, a step quieter. */
+.ag-ws-name[data-kind="none"] {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ag-muted);
+}
+/* A context workspace's repo tile, in the pane's ink rather than the repo's hue (an amber repo
+   would read as needs-you here). */
+.ag-ws-name .ag-ws-repo-mark {
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 16%, var(--ag-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ag-text) 10%, transparent);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.ag-ws-name:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.ag-ws-arrow:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+.ag-ws-end {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+/* At rest the slot shows the fold chevron; hover or focus swaps in the filter button, in place,
+   so nothing in the card moves. While the filter is on, the button stays. */
+.ag-ws-chevron {
+  color: var(--ag-faint);
+  transition:
+    opacity 120ms ease,
+    rotate 120ms ease;
+}
+/* Reduced motion: a fold's chevron turns at once, and the needs-you bar does not grow. */
+@media (prefers-reduced-motion: reduce) {
+  .ag-team-chevron,
+  .ag-ws-chevron {
+    transition: opacity 120ms ease;
+  }
+  .ag-row[data-needs="true"]::after {
+    transition: none;
+  }
+}
+.ag-ws-arrow {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--ag-faint);
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-ws-head-row:hover .ag-ws-arrow,
+.ag-ws-head-row:focus-within .ag-ws-arrow,
+.ag-ws-arrow[aria-pressed="true"] {
+  opacity: 1;
+}
+.ag-ws-head-row:hover .ag-ws-chevron,
+.ag-ws-head-row:focus-within .ag-ws-chevron,
+.ag-ws-group[data-arrow-on] .ag-ws-chevron {
+  opacity: 0;
+}
+.ag-ws-arrow:hover {
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 10%, transparent);
+}
+.ag-ws-arrow[aria-pressed="true"] {
+  color: var(--cs-accent, var(--accent));
+}
+/* Moving a workspace card. A card that can move shows a grip in its left air on hover; the whole
+   head row drags (past a 6px threshold, so a click still folds). */
+.ag-ws-grip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--ag-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.ag-ws-grip svg {
+  margin-left: 1px;
+}
+.ag-ws-group[data-reorderable] .ag-ws-head-row:hover .ag-ws-grip {
+  opacity: 1;
+}
+/* The card being moved stays in its place as a quiet outline: its preview carries it. */
+.ag-ws-group[data-dragging] .ag-ws-head-row {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--ag-guide);
+}
+.ag-ws-group[data-dragging] .ag-ws-head-row > * {
+  opacity: 0.35;
+}
+/* Its controls are not live while it moves: no grip, no filter button in the placeholder. */
+.ag-ws-group[data-dragging] .ag-ws-end,
+.ag-ws-group[data-dragging] .ag-ws-grip {
+  visibility: hidden;
+}
+/* The gap the card would land in: one line across the list, in the focus ring's ink. */
+.ag-drop-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--ring);
+  /* Over the preview, which often sits on the gap it marks. */
+  z-index: 7;
+  pointer-events: none;
+  transition: top 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ag-drop-line::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ag-bg);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+/* The card in the hand: the head row's shape, lifted over the list. */
+.ag-ws-drag-preview {
+  position: absolute;
+  /* Carried a little to the right of the column, so the line's end mark stays in view. */
+  left: 14px;
+  right: 4px;
+  z-index: 6;
+  height: 28px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 4px;
+  border-radius: 6px;
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-guide);
+  color: var(--ag-text);
+  pointer-events: none;
+  box-shadow:
+    0 10px 24px -8px rgb(0 0 0 / 0.45),
+    0 2px 6px -1px rgb(0 0 0 / 0.2);
+  animation: ag-card-lift 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: box-shadow 120ms ease;
+}
+/* Over another team it cannot land: the card stays solid (so the rows under it do not show
+   through) but its contents fade and its edge turns dashed, like the place it left. */
+.ag-ws-drag-preview[data-refused] {
+  border-style: dashed;
+  box-shadow: 0 4px 12px -6px rgb(0 0 0 / 0.4);
+}
+.ag-ws-drag-preview[data-refused] > * {
+  opacity: 0.45;
+}
+.ag-ws-drag-preview > * {
+  transition: opacity 120ms ease;
+}
+/* The roll-up mark holds still in the hand: its halo does not call from a moving card. */
+.ag-ws-drag-preview .cs-mark-halo {
+  animation: none;
+}
+.ag-ws-drag-preview-grip {
+  color: var(--ag-muted);
+  flex: none;
+}
+.ag-ws-drag-preview-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.ag-ws-drag-preview-count {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--ag-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ag-ws-drag-preview .ag-ws-repo-mark {
+  color: var(--ag-text);
+  background: color-mix(in oklab, var(--ag-text) 16%, var(--ag-bg));
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+@keyframes ag-card-lift {
+  from {
+    transform: scale(0.985);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  }
+}
+html[data-ag-card-drag],
+html[data-ag-card-drag] * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+/* Mid-drag the rows under the pointer do not light up or offer their actions; the list itself
+   still takes the wheel. */
+html[data-ag-card-drag] .ag-scroll > [role="list"] {
+  pointer-events: none;
+}
+html[data-ag-card-drag="refused"],
+html[data-ag-card-drag="refused"] * {
+  cursor: not-allowed !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-drop-line,
+  .ag-ws-drag-preview {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Arrange by status: one section per status, no team headers. */
+.ag-group-label,
+.ag-status-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 15px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ag-muted);
+}
+.ag-status-n {
+  font-variant-numeric: tabular-nums;
+  color: var(--ag-faint);
+  font-weight: 500;
+}
+
+/* An offline machine's agent: a tag after the name, in the machine's offline amber. It sits
+   outside the truncating title, so a long name gives way before it does. */
+.ag-offline-tag {
+  flex: none;
+  align-self: center;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ag-offline-text);
+  background: color-mix(in oklab, var(--cs-status-modified) 14%, transparent);
+}
+
+/* Row popups portal outside the Agents pane, so they own their overlay token scope. */
+.ag-quick-send {
+  --ag-bg: var(--theme-surface-overlay-bg);
+  --ag-text: var(--theme-text-overlay-primary);
+  --ag-muted: var(--theme-text-overlay-muted);
+  --ag-faint: var(--ag-muted);
+  --ag-edge: color-mix(in srgb, var(--ag-text) 42%, var(--ag-bg));
+  --ag-line: color-mix(in srgb, var(--ag-text) 28%, var(--ag-bg));
+  --ag-control: color-mix(in srgb, var(--ag-text) 64%, var(--ag-bg));
+  --ag-hover: color-mix(in srgb, var(--ag-text) 6%, var(--ag-bg));
+  --ag-current: color-mix(in srgb, var(--ag-text) 11%, var(--ag-bg));
+  --ag-guide: var(--ag-line);
+  --ag-focus-ring: var(--theme-focus-ring);
+  --ag-offline-text: var(--theme-severitySurface-overlay-warning-fg);
+  --ag-face-ring: color-mix(in srgb, var(--ag-text) 14%, transparent);
+  --ag-face-l: 90%;
+  z-index: 60;
+  animation: ag-popover-in 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left top;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--cs-radius-lg);
+  border: 1px solid var(--ag-edge);
+  background: var(--ag-bg);
+  color: var(--ag-text);
+  box-shadow: var(--cs-shadow-lg);
+  font-size: var(--cs-text-sm);
+  line-height: 1.35;
+  outline: none;
+}
+.dark .ag-quick-send {
+  --ag-edge: color-mix(in srgb, var(--ag-text) 26%, var(--ag-bg));
+  --ag-line: color-mix(in srgb, var(--ag-text) 20%, var(--ag-bg));
+  --ag-face-l: 34%;
+}
+.ag-quick-send-head {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-2);
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 6px 6px 12px;
+  border-bottom: 1px solid var(--ag-line);
+}
+.ag-quick-send-face {
+  position: relative;
+  flex: none;
+  display: flex;
+}
+.ag-quick-send-face > .cs-mark {
+  position: absolute;
+  right: -2px;
+  bottom: -1px;
+  background: var(--ag-bg);
+  box-shadow: 0 0 0 1.5px var(--ag-bg);
+}
+.ag-quick-send-name {
+  flex: 0 1 auto;
+  max-width: 30%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: var(--cs-text-base);
+}
+.ag-quick-send-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--cs-text-sm);
+  color: var(--ag-muted);
+}
+.ag-quick-send-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  color: color-mix(in srgb, var(--ag-text) 84%, var(--ag-bg));
+}
+.ag-quick-send-workspace {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font: var(--cs-text-xs) var(--cs-font-mono);
+}
+.ag-quick-send-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-space-2);
+  min-height: 34px;
+  padding: 6px 24px 6px 12px;
+}
+.ag-quick-send-hint {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--cs-text-sm);
+  overflow-wrap: anywhere;
+  color: var(--ag-muted);
+}
+.ag-quick-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  min-height: 26px;
+  padding: 3px 10px;
+  border-radius: var(--cs-radius);
+  font-size: var(--cs-text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--ag-text);
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-control);
+}
+.ag-quick-send-close {
+  width: 26px;
+  padding: 0;
+}
+.ag-quick-send-terminal {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--cs-radius);
+  min-height: 0;
+}
+.ag-quick-view .ag-quick-send-terminal {
+  flex: none;
+  margin: 8px 8px 0;
+  padding: 10px 12px;
+  background: var(--theme-terminal-bg);
+}
+.ag-quick-view .ag-quick-send-terminal:focus-within {
+  box-shadow: inset 0 0 0 2px var(--ag-terminal-focus-ring);
+}
+.ag-quick-send-terminal > * {
+  height: 100%;
+  min-height: 0;
+}
+.ag-quick-send-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px;
+  padding: 14px;
+  border-radius: var(--cs-radius);
+  font-size: var(--cs-text-sm);
+  line-height: 1.45;
+  color: var(--ag-text);
+  background: color-mix(in srgb, var(--ag-text) 4%, var(--ag-bg));
+}
+.ag-quick-send-ask {
+  padding: 8px 12px 8px 14px;
+  border-radius: var(--cs-radius-lg) var(--cs-radius-lg) 0 0;
+  border-bottom: 1px solid var(--ag-line);
+  background: color-mix(in srgb, var(--theme-status-overlay-needs) 12%, var(--ag-bg));
+  font-size: var(--cs-text-sm);
+  font-weight: 500;
+  color: var(--ag-text);
+  position: relative;
+}
+.ag-quick-send-ask::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--theme-status-overlay-needs);
+}
+.ag-quick-send-btn:hover {
+  background: var(--ag-hover);
+}
+.ag-quick-send :focus-visible {
+  outline: 2px solid var(--ag-focus-ring);
+  outline-offset: 1px;
+}
+.ag-quick-send::selection,
+.ag-quick-send ::selection {
+  background: var(--theme-surface-overlay-selected);
+  color: var(--ag-text);
+}
+/* The chat retains its existing body spacing around the shared header. */
+.ag-chat {
+  gap: 8px;
+  padding: 10px;
+}
+.ag-chat .ag-quick-send-head {
+  margin: -10px -10px 0;
+}
+
+/* The remote machine icon sits inline after the agent's name. Preflight makes svg blocks, which
+   would drop it onto a line of its own. */
+.ag-title > svg {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-left: 4px;
+}
+
+/* The quick view's resize corner: a small diagonal grip at its bottom-right. */
+.ag-quick-send-grip {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--ag-faint) 55% 62%,
+    transparent 62% 75%,
+    var(--ag-faint) 75% 82%,
+    transparent 82%
+  );
+  color: var(--ag-muted);
+}
+
+/* The row popups' arrow: a small notch on the side facing the row, at the row's middle, in the
+   popup's own fill and hairline so it reads as part of the frame. */
+.ag-popover-arrow {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  background: var(--ag-bg);
+  border: 1px solid var(--ag-edge);
+  pointer-events: none;
+}
+.ag-popover-arrow[hidden] {
+  display: none;
+}
+.ag-popover-arrow[data-side="left"] {
+  left: -5.5px;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  transform: rotate(45deg);
+}
+.ag-popover-arrow[data-side="right"] {
+  right: -5.5px;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  transform: rotate(45deg);
+}
+
+/* ---- The inbox chat: an agent's conversation with you, in the quick view's frame ------------ */
+/* The conversation runs to the frame's edges under a hairline, so the popup reads as one
+   surface: header above, messages, the composer at its foot. The inbox's own tokens are
+   re-pointed at the pane's, so it carries no hue but status: your messages sit on the pane's
+   selection fill, the agent's on a hairline, and the send button is plain ink. */
+.ag-chat-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 -10px -10px;
+  border-top: 1px solid var(--ag-line);
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  background: var(--ag-bg);
+  color: var(--ag-text);
+  --ibx-bg: var(--ag-bg);
+  --ibx-card: var(--ag-bg);
+  --ibx-raise: var(--ag-hover);
+  --ibx-fg: var(--ag-text);
+  --ibx-fg2: var(--ag-muted);
+  --ibx-mfg: var(--ag-muted);
+  --ibx-faint: var(--ag-faint);
+  --ibx-disabled: var(--ag-guide);
+  --ibx-border: var(--ag-line);
+  --ibx-hair: var(--ag-line);
+  --ibx-out-bg: var(--ag-current);
+  --ibx-out-line: transparent;
+  --ibx-accent: var(--ag-text);
+  --ibx-accent-ink: var(--ag-bg);
+  --ibx-accent-wash: color-mix(in oklab, var(--ag-text) 7%, transparent);
+  --ibx-accent-line: color-mix(in oklab, var(--ag-text) 28%, transparent);
+}
+.ag-chat-body :focus-visible {
+  outline-color: var(--ring);
+}
+/* Focus in the box is a firmer hairline, not a glow: the pane's own quiet language. */
+.ag-chat-body .ibx-box:focus-within {
+  border-color: color-mix(in oklab, var(--ag-text) 36%, var(--ag-bg));
+  box-shadow: none;
+}
+.ag-chat-body .ibx-msgs {
+  padding: 14px 12px 8px;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ag-guide) transparent;
+}
+.ag-chat-body .ibx-m {
+  max-width: 84%;
+}
+.ag-chat-body .ibx-m .bub {
+  font-size: 12.5px;
+  border-radius: 10px;
+}
+.ag-chat-body .ibx-m.in .bub {
+  border-top-left-radius: 3px;
+}
+.ag-chat-body .ibx-m.out .bub {
+  border-top-right-radius: 3px;
+}
+.ag-chat-body .ibx-m .meta {
+  font-size: 10.5px;
+  color: var(--ag-faint);
+}
+.ag-chat-body .ibx-empty {
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ag-muted);
+}
+.ag-chat-body .ibx-empty strong {
+  font-size: 12.5px;
+}
+.ag-chat-body .ibx-comp.quick {
+  padding-right: 16px;
+}
+
+/* Open in CLI: the way from the quick chat to the full view, beside the close button. */
+.ag-chat-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  height: 24px;
+  padding: 0 8px;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--ag-muted);
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+.ag-chat-open:hover {
+  color: var(--ag-text);
+}
+
+/* The agent's machine is offline: a status line under the header, in the offline amber. */
+.ag-chat-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--ag-offline-text);
+}
+.ag-chat-note > svg {
+  flex: none;
+}
+
+/* The row popups' one authored moment: they settle in from the row's side. */
+@keyframes ag-popover-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px) scale(0.985);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-quick-send {
+    animation: none;
+  }
+}
+
+/* A run of messages from one sender reads as one turn: tight under its first line. */
+.ag-chat-body .ibx-m.grouped {
+  margin-top: -8px;
+}
+.ag-chat-body .ibx-m.in.grouped .bub {
+  border-top-left-radius: 10px;
+}
+.ag-chat-body .ibx-m.out.grouped .bub {
+  border-top-right-radius: 10px;
+}
+/* Day separators speak like the New line: a quiet rule with a label, in the pane's sans. */
+.ag-chat-body .ibx-day {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 10.5px/1 var(--ibx-sans);
+  color: var(--ag-faint);
+}
+.ag-chat-body .ibx-day::before,
+.ag-chat-body .ibx-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: color-mix(in oklab, var(--ag-text) 8%, var(--ag-bg));
+}
+
+/* The chat's own browser surfaces: selection and caret from the pane's ink. */
+.ag-chat-body ::selection {
+  background: color-mix(in oklab, var(--ag-text) 24%, transparent);
+}
+.ag-chat-body textarea {
+  caret-color: var(--ag-text);
+}
+.ag-chat-body .ibx-m .meta .who {
+  font-weight: 500;
+  color: var(--ag-muted);
+}
+.ag-chat-body .ibx-m .meta time {
+  font-size: 10px;
+}
+
+.queue-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  min-width: 0;
+}
+.queue-role-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 28%;
+  background: color-mix(in oklab, var(--ibx-role, #bc8cff) 16%, transparent);
+}
+.queue-role-icon img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+.queue-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 5px 1px 2px;
+  border-radius: 9px;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--ibx-role, #bc8cff) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ibx-role, #bc8cff) 30%, transparent);
+  font-size: 11px;
+}
+
+/* Management is another arrangement of the same session rows. */
+.ag-view-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ag-hover);
+  border-radius: 5px;
+}
+.ag-view-switch button {
+  padding: 2px 5px;
+  font-size: 11px;
+  color: var(--ag-muted);
+  border-radius: 3px;
+}
+.ag-view-switch button[aria-pressed="true"] {
+  background: var(--ag-bg);
+  color: var(--ag-text);
+  font-weight: 600;
+}
+.ag-view-switch button:hover {
+  color: var(--ag-text);
+}
+.ag-view-switch button:focus-visible,
+.ag-manager-fold:focus-visible,
+.ag-native-detail:focus-visible,
+.ag-group-scope select:focus-visible {
+  outline: 1px solid var(--ag-text);
+  outline-offset: 2px;
+}
+.ag-group-scope {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px 6px;
+  font-size: 11px;
+  color: var(--ag-muted);
+}
+.ag-group-scope select {
+  min-width: 0;
+  flex: 1;
+  color: var(--ag-text);
+  background: var(--ag-bg);
+  border-radius: 3px;
+  padding: 3px;
+}
+.ag-rail-head {
+  margin: 8px 15px 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ag-muted);
+}
+.ag-row[data-manager-view] {
+  flex-wrap: wrap;
+}
+.ag-row[data-manager-view] .ag-main {
+  flex-basis: calc(100% - 8px);
+}
+.ag-tree-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ag-guide);
+  pointer-events: none;
+}
+.ag-tree-guide::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  height: 1px;
+  width: var(--ag-elbow-width);
+  background: var(--ag-guide);
+}
+.ag-manager-fold {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+  color: var(--ag-muted);
+  background: var(--ag-bg);
+  border-radius: 3px;
+}
+.ag-manager-fold svg[data-folded] {
+  transform: rotate(-90deg);
+}
+.ag-manager-fold:disabled {
+  opacity: 0.5;
+}
+.ag-workspace-badge {
+  max-width: 100%;
+  width: fit-content;
+  padding: 0 4px;
+  border-inline-start: 1px solid var(--ag-muted);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ag-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ag-workspace-badge[data-current-workspace] {
+  color: var(--ag-text);
+  border-color: var(--ag-text);
+}
+.ag-chosen-manager {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--ag-muted);
+}
+.ag-native-detail {
+  flex-basis: 100%;
+  min-width: 0;
+  margin: 0 8px 5px 39px;
+  text-align: left;
+  font-size: 11px;
+  color: var(--ag-muted);
+}
+.ag-native-detail:hover {
+  color: var(--ag-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ag-native-detail:disabled {
+  opacity: 0.6;
+}
+
+.cs-agents {
+  container-type: inline-size;
+}
+.ag-sub:has(.ag-workspace-badge) {
+  align-items: center;
+  gap: 5px;
+}
+.ag-sub .ag-workspace-badge {
+  flex-shrink: 0;
+  max-width: 45%;
+}
+@container (max-width: 320px) {
+  .ag-head {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 38px;
+    padding-block: 4px;
+  }
+  .ag-view-switch {
+    order: 1;
+    flex-basis: 100%;
+    margin: 3px 6px;
+  }
+  .ag-view-switch button {
+    flex: 1;
+  }
+}
+
+.ag-folded-count {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ag-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ag-row[data-current] .ag-folded-count {
+  color: color-mix(in oklab, var(--ag-text) 78%, var(--ag-bg));
+}
+.ag-folded-count[data-needs] {
+  color: var(--ag-needs-text);
+  font-weight: 600;
+}
+
+/* A runtime chip is painted opaque: the theme's tint laid over its surface's own background.
+   Its ink then keeps the contrast measured against that surface whatever row state (hover,
+   selected, muted) sits behind it. */
+.cs-runtime-badge {
+  background: linear-gradient(var(--rt-bg), var(--rt-bg)) var(--background);
+  color: var(--rt-text);
+}
+.cs-runtime-badge[data-runtime="claude"] {
+  --rt-bg: var(--cs-runtime-claude-bg);
+  --rt-text: var(--cs-runtime-claude-text);
+}
+.cs-runtime-badge[data-runtime="codex"] {
+  --rt-bg: var(--cs-runtime-codex-bg);
+  --rt-text: var(--cs-runtime-codex-text);
+}
+.cs-runtime-badge[data-runtime="opencode"] {
+  --rt-bg: var(--cs-runtime-opencode-bg);
+  --rt-text: var(--cs-runtime-opencode-text);
+}
+
+.cs-runtime-badge[data-runtime="hermes"] {
+  --rt-bg: var(--cs-runtime-hermes-bg);
+  --rt-text: var(--cs-runtime-hermes-text);
+}
+
+/* The Preview label of a CLI offered as a preview: foreground at 82% in a full border, so it
+   holds 4.5:1 on light and dark surfaces alike. A surface with its own fixed ink (the New
+   terminal chooser) sets the two variables. */
+.cs-preview-badge {
+  border-color: var(--cs-preview-line, var(--border));
+  color: var(--cs-preview-ink, color-mix(in oklab, var(--foreground) 82%, var(--background)));
+}

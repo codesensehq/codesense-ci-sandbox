@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en" data-surface="sidebar">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="codesense:slots" content="file-nav right-pane" />
+    <meta name="codesense:icon" content="folder" />
+    <meta
+      name="codesense:capabilities"
+      content="files:read files:write context:read sessions:read sessions:send commands:run launch"
+    />
+    <meta
+      name="codesense:commands"
+      content='[{"id":"collapse-all","label":"Collapse all folders","scope":"slot-visible"}]'
+    />
+    <title>Files</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        font: 12px/1.5 var(--cs-font-sans);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        container-type: inline-size;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+      }
+      :focus-visible {
+        outline: 1.5px solid var(--cs-focus-ring);
+        outline-offset: -1.5px;
+      }
+      .filter-row {
+        display: flex;
+        gap: 2px;
+        padding: 8px 8px 4px;
+        flex: none;
+      }
+      .field {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        height: 24px;
+        gap: 6px;
+        align-items: center;
+        padding: 0 6px;
+        border-radius: 6px;
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+      }
+      .field:focus-within {
+        outline: 1.5px solid var(--cs-focus-ring);
+        outline-offset: -1.5px;
+      }
+      .field input {
+        border: 0;
+        outline: 0;
+        background: transparent;
+        width: 100%;
+        min-width: 0;
+        color: var(--cs-fg);
+        padding: 0;
+      }
+      input::placeholder {
+        color: var(--cs-muted-fg);
+      }
+      .i {
+        flex: none;
+        color: var(--cs-muted-fg);
+      }
+      .icon-button {
+        display: grid;
+        place-items: center;
+        height: 20px;
+        width: 20px;
+        flex: none;
+        border-radius: 5px;
+        color: var(--cs-muted-fg);
+      }
+      .icon-button:hover {
+        background: var(--cs-hover);
+      }
+      .chip {
+        display: flex;
+        align-items: center;
+        flex: none;
+        max-width: 110px;
+        height: 18px;
+        gap: 3px;
+        padding-left: 5px;
+        border-radius: 4px;
+        color: var(--cs-fg);
+        background: color-mix(in srgb, var(--cs-fg) 8%, transparent);
+        font-size: 11px;
+      }
+      .chip span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .chip button {
+        width: 16px;
+        color: var(--cs-muted-fg);
+      }
+      #crumbs {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+        padding: 0 8px 4px;
+        min-height: 24px;
+        flex: none;
+        white-space: nowrap;
+      }
+      #crumbs[hidden] {
+        display: none;
+      }
+      #crumbs button {
+        color: var(--cs-muted-fg);
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #crumbs .current {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+      #tree {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 4px 4px 8px;
+        scrollbar-width: thin;
+      }
+      .file-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 24px;
+        padding-right: 6px;
+        border-radius: 5px;
+        cursor: default;
+        color: var(--cs-sidebar-fg);
+      }
+      .file-row:not([aria-selected="true"]):hover {
+        background: color-mix(in srgb, var(--cs-sidebar-fg) 6%, transparent);
+      }
+      .file-row[aria-selected="true"] {
+        background: var(--cs-sidebar-selected);
+        color: var(--cs-sidebar-fg);
+        font-weight: 500;
+      }
+      .file-row.drop {
+        outline: 1.5px solid var(--cs-sidebar-drop-ring);
+        outline-offset: -1.5px;
+      }
+      .chevron {
+        width: 12px;
+        height: 12px;
+        flex: none;
+        display: grid;
+        place-items: center;
+      }
+      .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+        flex: 1;
+      }
+      .id,
+      .count {
+        color: var(--cs-muted-fg);
+        font-size: 11px;
+      }
+      .epic .title {
+        font-weight: 500;
+      }
+      .count {
+        font-variant-numeric: tabular-nums;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        flex: none;
+        max-width: 7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
+        color: var(--cs-muted-fg);
+      }
+      .badge .i {
+        color: inherit;
+      }
+      .badge .parent {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .drill {
+        visibility: hidden;
+      }
+      .file-row:hover .drill,
+      .file-row:focus-within .drill {
+        visibility: visible;
+      }
+      mark {
+        color: inherit;
+        background: transparent;
+        text-decoration: underline;
+        font-weight: 600;
+        text-underline-offset: 2px;
+      }
+      .git-added .name {
+        color: var(--cs-git-added);
+      }
+      .git-modified .name,
+      .git-renamed .name {
+        color: var(--cs-git-modified);
+      }
+      .git-deleted .name {
+        color: var(--cs-git-deleted);
+        text-decoration: line-through;
+      }
+      .git-conflict .name {
+        color: var(--cs-git-conflict);
+      }
+      #empty {
+        position: absolute;
+        top: 104px;
+        left: 12px;
+        right: 12px;
+        text-align: center;
+        color: var(--cs-muted-fg);
+      }
+      #empty button {
+        display: block;
+        margin: 2px auto;
+        color: var(--cs-fg);
+        text-decoration: underline;
+      }
+      #loading {
+        padding: 4px 12px;
+        color: var(--cs-muted-fg);
+      }
+      #notice {
+        margin: 0 8px 4px;
+        color: var(--cs-warning);
+        flex: none;
+      }
+      #notice button {
+        text-decoration: underline;
+        margin-left: 6px;
+      }
+      .skeleton {
+        display: block;
+        height: 16px;
+        width: 66%;
+        border-radius: 4px;
+        background: var(--cs-inset);
+        opacity: 0.5;
+        animation: pulse 1.2s ease-in-out infinite alternate;
+      }
+      @keyframes pulse {
+        to {
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .skeleton {
+          animation: none;
+        }
+      }
+      @container (max-width:13rem) {
+        .count {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="filter-row">
+      <div class="field">
+        <span id="search-icon"></span
+        ><span class="chip" id="scope-chip" hidden
+          ><span id="scope-icon"></span><span id="scope-label"></span
+          ><button aria-label="Show team files"></button></span
+        ><input
+          id="filter"
+          aria-label="Filter files"
+          placeholder="Filter files"
+          autocomplete="off"
+          spellcheck="false"
+        /><button id="clear-filter" class="icon-button" aria-label="Clear filter" hidden></button>
+      </div>
+      <button
+        id="view"
+        class="icon-button"
+        aria-label="View, show and arrange"
+        title="View, show and arrange"
+      ></button>
+    </div>
+    <nav id="crumbs" aria-label="File breadcrumbs" hidden></nav>
+    <div id="notice" class="cs-notice" role="alert" hidden>
+      <span></span><button>Try again</button>
+    </div>
+    <div id="loading" role="status" hidden>Loading team context…</div>
+    <div id="tree" aria-label="Files"></div>
+    <div id="empty" hidden><span></span><button></button></div>
+    <script>
+      (function () {
+        "use strict";
+        const cs = window.codesense,
+          kit = cs.kit;
+        const $ = (id) => document.getElementById(id);
+        const box = $("tree"),
+          field = $("filter"),
+          chip = $("scope-chip");
+        const compareNavNames =
+          typeof kit.compareNavNames === "function" ? kit.compareNavNames : undefined;
+        let revealedSelection = null;
+        let state = { expanded: [], scope: "team" },
+          slot = null,
+          generation = 0,
+          root = "",
+          drill = "",
+          filter = "",
+          disposed = false;
+        let subscriptions = new Map(),
+          loaded = false,
+          loadingTimer,
+          pendingUi = Promise.resolve(),
+          selection = null;
+        let firstRender = null;
+        let visibleRows = [],
+          visibilityTimer,
+          cacheTimer;
+        const pendingFields = new Map();
+        let prefetching = 0;
+        const ownRows = (rows) =>
+          rows
+            .filter((row) => !row.inheritedFrom)
+            .map((row) => {
+              if (!folders(row)) return row;
+              const { id, path, name } = row;
+              return { id, path, name, kind: "dir", isDirectory: true };
+            });
+        function neededDirectories() {
+          const needed = new Set(["", drill]);
+          if (filter) {
+            const walk = (dir) => {
+              for (const row of rootsFor(dir).filter(folders)) {
+                if (needed.has(row.path)) continue;
+                needed.add(row.path);
+                walk(row.path);
+              }
+            };
+            walk(drill);
+          } else
+            for (const row of visibleRows) {
+              const parent = row.parentId && findRow(row.parentId);
+              if (parent) needed.add(parent.path);
+              if (folders(row) && state.expanded.includes(row.id)) needed.add(row.path);
+            }
+          return needed;
+        }
+        function persistListings() {
+          clearTimeout(cacheTimer);
+          const directories = [...subscriptions]
+            .filter(([, entry]) => entry.ready)
+            .sort(([a], [b]) => Number(b === "") - Number(a === ""))
+            .map(([dir, entry]) => [dir, ownRows(entry.rows)]);
+          const listings = { scope: state.scope, root, directories, scrollTop: box.scrollTop };
+          while (new TextEncoder().encode(JSON.stringify(listings)).length > 224 * 1024) {
+            if (directories.length > 1) directories.pop();
+            else if (directories[0]?.[1].length)
+              directories[0][1] = directories[0][1].slice(
+                0,
+                Math.floor(directories[0][1].length * 0.75),
+              );
+            else break;
+          }
+          return share({ listings });
+        }
+        function cacheSoon() {
+          clearTimeout(cacheTimer);
+          cacheTimer = setTimeout(() => persistListings().catch(report), 250);
+        }
+        function scheduleVisible(rows = visibleRows) {
+          visibleRows = rows;
+          clearTimeout(visibilityTimer);
+          visibilityTimer = setTimeout(reconcileVisible, 0);
+        }
+        function reconcileVisible() {
+          if (disposed) return;
+          const needed = neededDirectories();
+          for (const dir of needed) {
+            if (!filter || !dir) subscribeDirectory(dir).catch(report);
+            else if (!subscriptions.get(dir)?.active && prefetching < 2) {
+              prefetching++;
+              subscribeDirectory(dir)
+                .catch(report)
+                .finally(() => {
+                  prefetching--;
+                  if (!disposed) scheduleVisible();
+                });
+            }
+          }
+          for (const [dir, entry] of subscriptions) {
+            if (!needed.has(dir) && entry.active && !entry.receiving) {
+              entry.active = false;
+              entry.detached = cs.unsubscribe?.("files", entry.changed, entry.options);
+            }
+          }
+          if (filter) return;
+          for (const dir of needed) {
+            if (!dir) continue;
+            for (const row of rootsFor(dir).filter(folders)) {
+              if (subscriptions.has(row.path)) continue;
+              if (prefetching >= 2) break;
+              const epoch = generation;
+              const entry = { rows: [], ready: false, active: false };
+              subscriptions.set(row.path, entry);
+              prefetching++;
+              // A background read warms one level without retaining a live subscription.
+              cs.files
+                ?.list(options(row.path))
+                .then((value) => {
+                  if (disposed || epoch !== generation || subscriptions.get(row.path) !== entry)
+                    return;
+                  entry.rows = value.rows;
+                  entry.ready = true;
+                  cacheSoon();
+                  paint();
+                })
+                .catch(() => {})
+                .finally(() => {
+                  prefetching--;
+                  if (!disposed && epoch === generation) scheduleVisible();
+                });
+            }
+          }
+        }
+        const icon = (name, size = 14) => {
+          const el = kit.icon(name, { size });
+          el.classList.add("i");
+          return el;
+        };
+        $("search-icon").append(icon("search", 12));
+        $("view").append(icon("list-filter", 13));
+        $("clear-filter").append(icon("x", 12));
+        chip.querySelector("button").append(icon("x", 12));
+        const folders = (r) => r.kind === "dir" || (r.kind === "epic" && r.isDirectory);
+        const selectionKey = () => JSON.stringify([slot?.team, generation, selection]);
+        const selectedUnder = (row) =>
+          selection?.startsWith(row.path + "/") ||
+          (row.relativePath && selection?.includes("/content/" + row.relativePath + "/"));
+        function share(patch) {
+          state = { ...state, ...patch };
+          const owner = bound;
+          const fields = Object.keys(patch);
+          fields.forEach((key) => pendingFields.set(key, (pendingFields.get(key) || 0) + 1));
+          pendingUi = pendingUi
+            .catch(() => {})
+            .then(() => (owner === bound ? cs.setUiState?.("ui:file-nav", patch) : undefined))
+            .finally(() =>
+              fields.forEach((key) => {
+                if (owner !== bound) return;
+                const remaining = pendingFields.get(key) - 1;
+                if (remaining) pendingFields.set(key, remaining);
+                else pendingFields.delete(key);
+              }),
+            );
+          return pendingUi;
+        }
+        function report(error) {
+          $("notice").hidden = false;
+          $("notice").querySelector("span").textContent =
+            "Couldn't read the files. " + String(error.message || error);
+        }
+        function options(dir) {
+          const [scope, ...id] = String(state.scope || "team").split(":");
+          return {
+            scope,
+            ...(scope === "story"
+              ? { storyId: id.join(":") }
+              : scope === "agent"
+                ? { agentId: id.join(":") }
+                : {}),
+            ...(dir ? { dir } : {}),
+          };
+        }
+        async function subscribeDirectory(dir = "") {
+          const cached = subscriptions.get(dir);
+          if (cached?.active) return cached.read;
+          const entry = {
+            rows: cached?.rows || [],
+            options: options(dir),
+            read: null,
+            ready: cached?.ready || false,
+            active: true,
+            filter: !!filter && !!dir,
+            changed: null,
+          };
+          const epoch = generation;
+          subscriptions.set(dir, entry);
+          function failed(error) {
+            if (epoch !== generation || subscriptions.get(dir) !== entry || !entry.active) return;
+            entry.error = error;
+            entry.receiving = false;
+            entry.pending = null;
+            clearTimeout(loadingTimer);
+            $("loading").hidden = true;
+            if (!dir) report(error);
+            paint();
+            if (dir === "" && firstRender?.generation === epoch) {
+              firstRender.resolve();
+              firstRender = null;
+            }
+          }
+          async function receive(snapshot, delta) {
+            if (
+              disposed ||
+              epoch !== generation ||
+              subscriptions.get(dir) !== entry ||
+              !entry.active
+            )
+              return;
+            if (entry.receiving) {
+              if (delta) entry.pending = [snapshot, delta];
+              return;
+            }
+            entry.receiving = true;
+            const keepCached = entry.ready && !!snapshot.cursor;
+            let rows = entry.rows;
+            if (snapshot.reset || snapshot.rev !== entry.rev || !delta)
+              rows = snapshot.snapshot || [];
+            if (delta && !snapshot.reset) {
+              const values = new Map(rows.map((row) => [row.id, row]));
+              (delta.removes || []).forEach((id) => values.delete(id));
+              (delta.upserts || []).forEach((row) => values.set(row.id, row));
+              rows = [...values.values()];
+            }
+            if (!keepCached) entry.rows = rows;
+            entry.rev = snapshot.rev;
+            entry.ready = true;
+            loaded = true;
+            root = entry.rows.find((r) => r.root)?.root || root;
+            clearTimeout(loadingTimer);
+            $("loading").hidden = true;
+            paint();
+            if (dir === "" && firstRender?.generation === epoch) {
+              firstRender.resolve();
+              firstRender = null;
+            }
+            let cursor = snapshot.cursor;
+            while (cursor) {
+              const next = await cs.page?.("files", cursor, entry.options);
+              if (epoch !== generation || disposed || !entry.active) return;
+              const values = new Map(rows.map((r) => [r.id, r]));
+              (next.snapshot || []).forEach((row) => values.set(row.id, row));
+              rows = [...values.values()];
+              cursor = next.cursor;
+              if (!keepCached) {
+                entry.rows = rows;
+                paint();
+              }
+            }
+            entry.rows = rows;
+            entry.ready = true;
+            loaded = true;
+            root = entry.rows.find((r) => r.root)?.root || root;
+            clearTimeout(loadingTimer);
+            $("loading").hidden = true;
+            $("notice").hidden = true;
+            paint();
+            entry.receiving = false;
+            if (entry.pending) {
+              const pending = entry.pending;
+              entry.pending = null;
+              receive(...pending).catch(failed);
+            }
+            cacheSoon();
+            scheduleVisible();
+          }
+          entry.changed = (s, d) => {
+            if (!entry.ready) {
+              if (d) entry.pending = [s, d];
+              return;
+            }
+            receive(s, d).catch(failed);
+          };
+          entry.retry = () => {
+            entry.error = null;
+            entry.read = Promise.resolve(cached?.detached)
+              .then(() => cs.subscribe?.("files", { ...entry.options, onChange: entry.changed }))
+              .then((snapshot) => receive(snapshot, null))
+              .catch(failed);
+            return entry.read;
+          };
+          entry.retry();
+          return entry.read;
+        }
+        function clearSubscriptions(filterOnly = false) {
+          subscriptions.forEach((entry) => {
+            if (entry.active && (!filterOnly || entry.filter)) {
+              entry.active = false;
+              entry.detached = cs.unsubscribe?.("files", entry.changed, entry.options);
+            }
+          });
+          if (!filterOnly) subscriptions.clear();
+        }
+        function restart(preserve = false) {
+          generation++;
+          const currentGeneration = generation;
+          let resolveFirstRender;
+          const firstPaint = new Promise((resolve) => {
+            resolveFirstRender = resolve;
+          });
+          firstRender = { generation: currentGeneration, promise: firstPaint, resolve: resolveFirstRender };
+          clearTimeout(cacheTimer);
+          clearTimeout(visibilityTimer);
+          clearSubscriptions();
+          loaded = false;
+          root = "";
+          drill = "";
+          const cached = state.listings;
+          if (cached?.scope === state.scope) {
+            root = cached.root;
+            for (const [dir, rows] of cached.directories)
+              subscriptions.set(dir, { rows: ownRows(rows), ready: true, active: false });
+            loaded = subscriptions.has("");
+            if (loaded) revealedSelection = selectionKey();
+          }
+          if (!preserve) paint();
+          if (loaded) box.scrollTop = cached.scrollTop || 0;
+          clearTimeout(loadingTimer);
+          loadingTimer = setTimeout(() => {
+            if (!loaded) {
+              $("loading").hidden = false;
+              $("loading").textContent = loadingText();
+            }
+          }, 200);
+          subscribeDirectory().catch(report);
+          if (!preserve) paint();
+          return firstPaint;
+        }
+        function scopeName() {
+          if (state.scope === "private") return "Private";
+          const [kind, ...id] = state.scope.split(":");
+          return (
+            (state.sources?.[kind === "story" ? "stories" : "agents"] || []).find(
+              (s) => s.id === id.join(":"),
+            )?.name || id.join(":")
+          );
+        }
+        function loadingText() {
+          return /^(story|agent):/.test(state.scope)
+            ? "Loading " + scopeName() + "'s files…"
+            : "Loading team context…";
+        }
+        function rootsFor(dir) {
+          return subscriptions.get(dir)?.rows || [];
+        }
+        function rowTree(rows, ancestors = new Set()) {
+          const expanded = new Set(state.expanded),
+            query = filter.toLocaleLowerCase();
+          return [...rows]
+            .sort(
+              (a, b) => Number(folders(b)) - Number(folders(a)) || (compareNavNames?.(a.name, b.name) ?? 0),
+            )
+            .flatMap((row) => {
+              if (ancestors.has(row.id)) return [];
+              let value = {
+                ...row,
+                label: row.storyId ? row.storyId + " " + (row.title || row.name) : row.name,
+              };
+              const branch = folders(row);
+              if (branch) {
+                const listing = subscriptions.get(row.path);
+                const visited = new Set(ancestors);
+                visited.add(row.id);
+                value.children =
+                  expanded.has(row.id) || query ? rowTree(rootsFor(row.path), visited) : [];
+                value.expandable = true;
+                if (query && value.children.length) expanded.add(row.id);
+                if (
+                  query &&
+                  !row.name.toLocaleLowerCase().includes(query) &&
+                  !row.path.toLocaleLowerCase().includes(query) &&
+                  !value.children.length
+                )
+                  return [];
+                if (expanded.has(row.id) && listing?.error)
+                  value.children = [
+                    ...value.children,
+                    { id: row.id + ":error", kind: "error", dir: row.path, name: "Couldn't load" },
+                  ];
+                else if (expanded.has(row.id) && listing?.ready && !value.children.length && !query)
+                  value.children = [
+                    {
+                      id: row.id + ":empty",
+                      kind: "empty",
+                      name: "Empty folder",
+                      ariaHidden: true,
+                    },
+                  ];
+                else if (expanded.has(row.id) && !listing?.ready)
+                  value.children = [
+                    {
+                      id: row.id + ":loading",
+                      kind: "loading",
+                      name: "Loading children",
+                      ariaHidden: true,
+                    },
+                  ];
+              } else if (
+                query &&
+                !(value.label + " " + row.path).toLocaleLowerCase().includes(query)
+              )
+                return [];
+              value.selected = row.path === selection;
+              value.highlight = filter;
+              return [value];
+            });
+        }
+        function open(row, pinned = false, event) {
+          if (row.kind === "error") {
+            subscriptions.get(row.dir)?.retry();
+            paint();
+            return;
+          }
+          if (row.kind === "loading" || row.kind === "empty" || row.gitState === "deleted") return;
+          if (event?.metaKey || event?.ctrlKey) {
+            cs.invoke("sendPrompt", { handle: "active", text: row.path, submit: false }).catch(
+              report,
+            );
+            return;
+          }
+          if (folders(row)) {
+            tree?.toggle(row.id);
+            return;
+          }
+          cs.openFile({ path: row.path, preview: !pinned }).catch(report);
+        }
+        function tagged(row) {
+          return { kind: ["story", "epic"].includes(row.kind) ? row.kind : "file", path: row.path };
+        }
+        function nativeAction(action, row, el) {
+          if (!row || row.kind === "loading" || row.gitState === "deleted") return;
+          const rect = el.getBoundingClientRect();
+          cs.showMenu?.({
+            builtinAction: action,
+            anchorId: el.id,
+            row: tagged(row),
+            anchorRect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          }).catch(report);
+        }
+        function highlight(el, text) {
+          const at = filter ? text.toLocaleLowerCase().indexOf(filter.toLocaleLowerCase()) : -1;
+          if (at < 0) {
+            el.textContent = text;
+            return;
+          }
+          el.append(text.slice(0, at));
+          const mark = document.createElement("mark");
+          mark.textContent = text.slice(at, at + filter.length);
+          el.append(mark, text.slice(at + filter.length));
+        }
+        function render(row) {
+          const el = document.createElement("div");
+          el.className = "file-row " + row.kind;
+          if (row.kind === "loading") {
+            const bar = document.createElement("span");
+            bar.className = "skeleton";
+            el.append(bar);
+            el.setAttribute("aria-hidden", "true");
+            return el;
+          }
+          if (row.kind === "empty") {
+            el.textContent = "Empty folder";
+            el.style.color = "var(--cs-muted-fg)";
+            el.setAttribute("aria-hidden", "true");
+            return el;
+          }
+          if (row.kind === "error") {
+            const retry = document.createElement("button");
+            retry.textContent = "Couldn't load · Retry";
+            retry.onclick = () => open(row);
+            el.append(retry);
+            return el;
+          }
+          el.id = "file-row-" + encodeURIComponent(row.id);
+          el.dataset.path = row.path;
+          const disclosure = document.createElement("span");
+          disclosure.className = "chevron";
+          if (folders(row))
+            disclosure.append(icon(row.expanded ? "chevron-down" : "chevron-right", 12));
+          el.append(
+            disclosure,
+            icon(
+              row.kind === "epic"
+                ? "layers"
+                : folders(row)
+                  ? row.expanded
+                    ? "folder-open"
+                    : "folder"
+                  : /\.(png|jpg|gif|webp|svg)$/i.test(row.name)
+                    ? "image"
+                    : /\.(js|ts|json|yaml|rs|py|css)$/i.test(row.name)
+                      ? "file-code"
+                      : /\.(md|txt|html|csv|log)$/i.test(row.name)
+                        ? "file-text"
+                        : "file",
+            ),
+          );
+          const name = document.createElement("span");
+          name.className = "name";
+          if (row.storyId) {
+            const id = document.createElement("span");
+            id.className = "id";
+            highlight(id, row.storyId);
+            id.append(" ");
+            name.append(id);
+            const title = document.createElement("span");
+            title.className = "title";
+            highlight(title, row.title || row.name);
+            name.append(title);
+          } else highlight(name, row.name.replace(/\.excalidraw$/i, ""));
+          const detail = document.createElement("span");
+          detail.className = "git-detail";
+          name.append(detail);
+          el.append(name);
+          if (row.kind === "epic") {
+            const count = document.createElement("span");
+            count.className = "count";
+            el.append(count);
+          }
+          if (row.inheritedFrom) {
+            const badge = document.createElement("span");
+            badge.className = "badge";
+            const parent = document.createElement("span");
+            parent.className = "parent";
+            parent.textContent = row.inheritedFrom;
+            badge.append(icon("corner-left-up", 10), parent);
+            badge.setAttribute("role", "img");
+            badge.setAttribute("aria-label", "Inherited from " + row.inheritedFrom);
+            el.append(badge);
+          }
+          if (folders(row)) {
+            const drillButton = document.createElement("button");
+            drillButton.className = "drill icon-button";
+            drillButton.tabIndex = -1;
+            drillButton.setAttribute("aria-label", "Drill into " + row.name);
+            drillButton.append(icon("chevron-right", 12));
+            drillButton.onclick = (event) => {
+              event.stopPropagation();
+              drill = row.path;
+              subscribeDirectory(drill).catch(report);
+              paint();
+            };
+            el.append(drillButton);
+          }
+          el.onclick = (event) => {
+            el.focus({ preventScroll: true });
+            open(el.__csFileRow, false, event);
+          };
+          el.ondblclick = (event) => {
+            if (!folders(row)) open(el.__csFileRow, true, event);
+          };
+          el.ondragstart = (event) => {
+            event.dataTransfer.setData("application/x-codesense-file", row.path);
+            event.dataTransfer.effectAllowed = "move";
+          };
+          if (folders(row)) {
+            el.ondragover = (event) => {
+              if (event.dataTransfer.types.includes("application/x-codesense-file")) {
+                event.preventDefault();
+                el.classList.add("drop");
+              }
+            };
+            el.ondragleave = () => el.classList.remove("drop");
+            el.ondrop = (event) => {
+              event.preventDefault();
+              el.classList.remove("drop");
+              const from = event.dataTransfer.getData("application/x-codesense-file");
+              if (from && from !== row.path && !row.path.startsWith(from + "/"))
+                cs.files?.move({ from, to: row.path + "/" + from.split("/").pop() }).catch(report);
+            };
+          }
+          update(el, row);
+          return el;
+        }
+        function update(el, row) {
+          const previous = el.__csFileRow;
+          el.__csFileRow = row;
+          if (row.kind === "loading" || row.kind === "empty" || row.kind === "error") return;
+          if (previous?.gitState) el.classList.remove("git-" + previous.gitState);
+          if (row.gitState) el.classList.add("git-" + row.gitState);
+          el.setAttribute("aria-selected", String(row.selected));
+          if (row.gitState === "deleted") delete el.dataset.codesenseRow;
+          else el.dataset.codesenseRow = JSON.stringify(tagged(row));
+          el.draggable = row.gitState !== "deleted" && !row.inheritedFrom;
+          const detail = el.querySelector(".git-detail");
+          const text =
+            row.gitState === "conflict"
+              ? " conflict"
+              : row.gitState === "renamed" && row.oldName
+                ? " ← " + row.oldName
+                : "";
+          if (detail.textContent !== text) detail.textContent = text;
+          const count = el.querySelector(".count");
+          if (count) {
+            count.hidden = row.storyCount == null;
+            const value = row.storyCount == null ? "" : String(row.storyCount);
+            if (count.textContent !== value) count.textContent = value;
+          }
+        }
+        const tree = kit.virtualList?.({
+          container: box,
+          rows: [],
+          tree: true,
+          rowHeight: 24,
+          overscan: 8,
+          render,
+          layoutKey: (row) =>
+            JSON.stringify([
+              row.kind,
+              row.path,
+              row.name,
+              row.storyId,
+              row.title,
+              row.inheritedFrom,
+              row.highlight,
+              row.expanded,
+            ]),
+          update,
+          onActivate: (row, event) => open(row, event.metaKey || event.ctrlKey),
+          onExpandedChange: (expanded, id, open) => {
+            share({ expanded }).catch(report);
+            if (open) {
+              const row = findRow(id);
+              if (filter) scheduleVisible();
+              else if (row) subscribeDirectory(row.path).catch(report);
+            }
+            paint();
+          },
+          onRangeChange: scheduleVisible,
+        });
+        // An app without the kit's virtual list cannot draw this view; say so instead of an empty tree.
+        if (!tree) box.textContent = "This view needs a newer CodeSense.";
+        function findRow(id) {
+          for (const entry of subscriptions.values()) {
+            const row = entry.rows.find((r) => r.id === id);
+            if (row) return row;
+          }
+        }
+        function breadcrumbs() {
+          const nav = $("crumbs");
+          nav.replaceChildren();
+          nav.hidden = !drill;
+          if (!drill) return;
+          const relative =
+            root && drill.startsWith(root + "/") ? drill.slice(root.length + 1) : drill;
+          const names = relative.split("/").filter(Boolean),
+            parts = [
+              { name: slot?.team?.team || "Files", path: "" },
+              ...names.map((name, i) => ({
+                name,
+                path: (root ? root + "/" : "") + names.slice(0, i + 1).join("/"),
+              })),
+            ];
+          const up = document.createElement("button");
+          up.setAttribute("aria-label", "Up one level");
+          up.append(icon("arrow-left", 12));
+          up.onclick = () => {
+            drill = parts.at(-2)?.path || "";
+            paint();
+          };
+          nav.append(up);
+          const shown =
+            parts.length > 4
+              ? [
+                  parts[0],
+                  {
+                    name: "…",
+                    path: parts.at(-3).path,
+                    title: parts
+                      .slice(1, -2)
+                      .map((p) => p.name)
+                      .join(" / "),
+                  },
+                  ...parts.slice(-2),
+                ]
+              : parts;
+          shown.forEach((part, i) => {
+            if (i) nav.append(icon("chevron-right", 12));
+            const button = document.createElement("button");
+            button.textContent = part.name;
+            button.title = part.title || part.name;
+            if (i === shown.length - 1) {
+              button.className = "current";
+              button.setAttribute("aria-current", "page");
+            }
+            button.onclick = () => {
+              drill = part.path;
+              paint();
+            };
+            nav.append(button);
+          });
+        }
+        function paint() {
+          // Reveal only for a new active file. Once found, folding is the
+          // person's choice and subsequent paints must preserve it.
+          if (!filter && selection && selectionKey() !== revealedSelection) {
+            const expanded = new Set(state.expanded);
+            for (const entry of subscriptions.values()) {
+              for (const row of entry.rows)
+                if (folders(row) && selectedUnder(row)) {
+                  expanded.add(row.id);
+                  subscribeDirectory(row.path).catch(report);
+                }
+            }
+            state.expanded = [...expanded];
+          }
+          const rows = rowTree(rootsFor(drill));
+          const expanded = new Set(state.expanded);
+          if (filter) {
+            const walk = (nodes) =>
+              nodes.forEach((r) => {
+                if (r.children?.length) {
+                  expanded.add(r.id);
+                  walk(r.children);
+                }
+              });
+            walk(rows);
+          }
+          $("clear-filter").hidden = !field.value;
+          tree?.setExpanded([...expanded]);
+          tree?.setRows(rows);
+          if (!filter && selection && selectionKey() !== revealedSelection) {
+            tree?.reveal(selection);
+            if (box.querySelector('[data-path="' + CSS.escape(selection) + '"]'))
+              revealedSelection = selectionKey();
+          }
+          breadcrumbs();
+          chip.hidden = state.scope === "team";
+          $("scope-label").textContent = scopeName();
+          const scopeIcon = $("scope-icon");
+          scopeIcon.replaceChildren();
+          if (state.scope === "private") scopeIcon.append(icon("lock", 12));
+          else if (state.scope.startsWith("agent:")) {
+            const agent = state.sources?.agents?.find(
+              (source) => source.id === state.scope.slice(6),
+            );
+            scopeIcon.append(
+              kit.avatar({ name: agent?.name || scopeName(), face: agent?.avatar, size: 14 }),
+            );
+          }
+          const empty = $("empty");
+          empty.hidden = !loaded || rows.length > 0;
+          if (!empty.hidden) {
+            const scope = state.scope,
+              team = slot?.team?.team || "the team",
+              name = scopeName();
+            const entries = [...neededDirectories()].map((dir) => subscriptions.get(dir));
+            const searching = entries.some(
+              (entry) =>
+                !entry?.active || (!entry.error && (entry.rev === undefined || entry.receiving)),
+            );
+            const searchFailed = entries.some((entry) => entry?.error);
+            empty.querySelector("span").textContent = filter
+              ? searching
+                ? "Searching folders…"
+                : searchFailed
+                  ? "Couldn't search all folders."
+                  : 'Nothing matches "' + filter + '".'
+              : scope === "private"
+                ? "Nothing private in " + team + " yet."
+                : scope.startsWith("story:")
+                  ? "No files for " + name + " yet."
+                  : scope.startsWith("agent:")
+                    ? name + " hasn't written any files yet."
+                    : "Nothing here yet";
+            const button = empty.querySelector("button");
+            button.hidden = !filter && scope === "team";
+            button.textContent = filter
+              ? searchFailed
+                ? "Retry"
+                : "Clear filter"
+              : "Show team files";
+            button.onclick = () => {
+              if (filter && searchFailed) {
+                restart();
+              } else if (filter) clearFilter();
+              else chooseScope("team");
+            };
+          }
+        }
+        function clearFilter() {
+          clearSubscriptions(true);
+          filter = "";
+          field.value = "";
+          paint();
+        }
+        function chooseScope(scope) {
+          if (scope === state.scope) return;
+          share({ scope }).catch(report);
+          restart();
+        }
+        $("clear-filter").onclick = clearFilter;
+        chip.querySelector("button").onclick = () => chooseScope("team");
+        field.oninput = () => {
+          clearSubscriptions(true);
+          filter = field.value.trim();
+          paint();
+        };
+        field.onkeydown = (event) => {
+          event.stopPropagation();
+          if (event.key === "Escape") {
+            event.preventDefault();
+            if (field.value) clearFilter();
+            else cs.focusTerminal?.();
+          }
+        };
+        box.addEventListener(
+          "keydown",
+          (event) => {
+            const el = event.target.closest("[data-path]"),
+              row = el && findRow(el.dataset.path);
+            if (
+              event.key === "F2" ||
+              event.key === "Delete" ||
+              (event.key === "Backspace" && (event.metaKey || event.ctrlKey))
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+              nativeAction(event.key === "F2" ? "builtin:rename" : "builtin:delete", row, el);
+            } else if ((event.key === "F10" && event.shiftKey) || event.key === "ContextMenu") {
+              event.preventDefault();
+              if (row && row.gitState !== "deleted") {
+                const rect = el.getBoundingClientRect();
+                cs.showMenu?.({
+                  type: "native",
+                  anchorId: el.id,
+                  row: tagged(row),
+                  anchorRect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+                }).catch(report);
+              }
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              cs.focusTerminal?.();
+            }
+          },
+          true,
+        );
+        $("view").onclick = () => {
+          const rect = $("view").getBoundingClientRect();
+          cs.showMenu?.({
+            type: "native",
+            nativeSurface: "nav-filter",
+            anchorId: "view",
+            row: { kind: "nav-filter" },
+            anchorRect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          }).catch(report);
+        };
+        function collapseAll() {
+          share({ expanded: [] }).catch(report);
+          paint();
+        }
+        $("notice").querySelector("button").onclick = () => restart(true);
+        function uiChanged(snapshot) {
+          const next = { ...(snapshot.snapshot?.[0] || {}) };
+          // Earlier host acknowledgements must not undo newer local folds or source choices.
+          pendingFields.forEach((_, key) => delete next[key]);
+          const previous = state.scope;
+          state = {
+            ...state,
+            ...next,
+            expanded: next.expanded || state.expanded,
+            scope: next.scope || state.scope,
+          };
+          const nextSelection = state.selected || slot?.currentFile || null;
+          selection = nextSelection;
+          if (state.scope !== previous) restart();
+          else paint();
+        }
+        cs.commands?.register(["collapse-all"]).catch(report);
+        cs.onCommand?.((command) => {
+          if (command.id === "collapse-all" || command.id.endsWith("/collapse-all")) collapseAll();
+          if (command.id === "nav.focus-left-search") field.focus();
+          if (command.id === "nav.reveal-file") {
+            selection = command.args?.path || selection;
+            revealedSelection = null;
+            drill = "";
+            clearSubscriptions(true);
+            filter = "";
+            field.value = "";
+            paint();
+          }
+        });
+        cs.onFocusIn?.(() => {
+          if (
+            document.activeElement &&
+            document.activeElement !== document.body &&
+            document.activeElement !== document.documentElement
+          )
+            return;
+          const row = box.querySelector('[tabindex="0"]');
+          if (row) row.focus();
+          else field.focus();
+        });
+        box.addEventListener("scroll", cacheSoon, { passive: true });
+        cs.onFlush?.(() => persistListings());
+        cs.onTeardown?.(() => {
+          disposed = true;
+          clearTimeout(loadingTimer);
+          clearTimeout(cacheTimer);
+          clearTimeout(visibilityTimer);
+          clearSubscriptions();
+          cs.unsubscribe?.("ui:file-nav", uiChanged);
+          tree?.destroy();
+        });
+        let bound = null;
+        cs.onSlotContext?.((context) => {
+          const key = JSON.stringify(context.team);
+          slot = context;
+          if (key !== bound) {
+            const first = bound === null;
+            bound = key;
+            pendingFields.clear();
+            clearTimeout(cacheTimer);
+            clearTimeout(visibilityTimer);
+            generation++;
+            clearSubscriptions();
+            state = { expanded: [], scope: "team" };
+            cs.subscribe?.("ui:file-nav", first ? { onChange: uiChanged } : {})
+              .then((snapshot) => {
+                uiChanged(snapshot);
+                if (!subscriptions.size) restart();
+                const readyGeneration = generation;
+                const firstPaint = firstRender?.generation === readyGeneration
+                  ? firstRender.promise
+                  : Promise.resolve();
+                void firstPaint.then(() => requestAnimationFrame(() => {
+                  if (!disposed && generation === readyGeneration) cs.ready?.();
+                }));
+              })
+              .catch((error) => {
+                report(error);
+                cs.ready?.();
+              });
+          } else if ((context.currentFile ?? state.selected ?? null) !== selection) {
+            selection = context.currentFile ?? state.selected ?? null;
+            paint();
+          }
+        });
+        new ResizeObserver(() => {
+          field.placeholder = document.body.clientWidth < 208 ? "Filter" : "Filter files";
+        }).observe(document.body);
+        cs.theme().catch(report);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="hammer" />
+    <title>Related MCP tools · CodeSense</title>
+
+    <script>window.__codesenseThemeAware = true;</script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg); color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased; min-height: 100vh;
+      }
+
+      /* Shared pane shell */
+      .pane { display: flex; flex-direction: column; max-width: 360px; margin: 0 auto; min-height: 100vh; }
+      .pane__header {
+        position: sticky; top: 0; z-index: 2; display: flex; align-items: center;
+        gap: var(--cs-space-2); height: 36px; padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-accent); flex: 0 0 auto; }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title { margin: 0; font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.005em; }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg); width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer; padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-muted-fg); font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono); background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm); color: var(--cs-fg); font-style: normal;
+      }
+      .pane__body { padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3); flex: 1;
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) { .pane__body { transition: none; } }
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+      .pane__label {
+        display: block; font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .pane__ctas { display: flex; flex-wrap: wrap; gap: var(--cs-space-2); padding: 0 var(--cs-space-4) var(--cs-space-4); }
+      .cta {
+        appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px; font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm); border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface); color: var(--cs-fg); text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta--primary { background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent); }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta svg { width: 14px; height: 14px; }
+
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4); border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono); color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cs-muted-fg); }
+      .pane__prov a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--cs-muted-fg); }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local chrome: tool list ---------------- */
+
+      .tool-list {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--cs-space-2);
+      }
+      .tool {
+        position: relative;
+        padding: 10px 10px 10px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        background: var(--cs-surface);
+        cursor: pointer;
+        transition: border-color 120ms, background 120ms;
+      }
+      .tool:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .tool:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .tool::before {
+        content: '';
+        position: absolute; left: 0; top: 10px; bottom: 10px;
+        width: 2px; border-radius: 1px;
+        background: var(--cs-muted-fg);
+      }
+      .tool[data-family="read"]::before   { background: var(--cs-phase-dev); }
+      .tool[data-family="write"]::before  { background: var(--cs-warning); }
+      .tool[data-family="spawn"]::before  { background: var(--cs-phase-review); }
+      .tool[data-family="send"]::before   { background: var(--cs-success); }
+      .tool[data-family="manage"]::before { background: var(--cs-danger); }
+
+      .tool__row { display: flex; align-items: baseline; gap: var(--cs-space-2); }
+      .tool__name {
+        font: 600 var(--cs-text-sm)/1.2 var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .tool__family {
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--cs-fg);
+        margin-left: auto;
+      }
+      .tool__desc {
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-fg);
+        margin: 4px 0 0;
+      }
+      .tool__try {
+        display: inline-flex; align-items: center; gap: 4px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        color: var(--cs-fg);
+        margin-top: 6px;
+        background: transparent; border: 0; padding: 0; cursor: pointer;
+      }
+      .tool__try svg { width: 11px; height: 11px; }
+      .tool__try:hover { text-decoration: underline; text-underline-offset: 2px; }
+      .tool__try:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; border-radius: 2px; }
+
+      .legend {
+        display: flex; flex-wrap: wrap; gap: 10px;
+        padding: 10px var(--cs-space-4) 0;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+      }
+      .legend .sw {
+        display: inline-flex; align-items: center; gap: 4px;
+      }
+      .legend .chip {
+        width: 10px; height: 2px; border-radius: 1px; display: inline-block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="pane" role="complementary" aria-labelledby="pane-title" data-pane-id="related-mcp">
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: hammer -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m15 12-8.5 8.5a2.1 2.1 0 0 1-3-3L12 9"/>
+          <path d="M17.64 15 22 10.64"/>
+          <path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91z"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Related MCP tools</h2>
+        <span class="spacer"></span>
+        <button class="pane__collapse" type="button" aria-expanded="true"
+                aria-controls="pane-body" title="Collapse (C)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse</span>
+        </button>
+      </header>
+
+      <p class="pane__why">
+        What you're looking at is backed by <strong>MCP tools</strong>. Here are the
+        ones that match <strong>this surface</strong>.
+      </p>
+
+      <!-- Family color legend (quiet, one row) -->
+      <div class="legend" aria-hidden="true">
+        <span class="sw"><span class="chip" style="background:var(--cs-phase-dev)"></span>read</span>
+        <span class="sw"><span class="chip" style="background:var(--cs-warning)"></span>write</span>
+        <span class="sw"><span class="chip" style="background:var(--cs-phase-review)"></span>spawn</span>
+        <span class="sw"><span class="chip" style="background:var(--cs-success)"></span>send</span>
+      </div>
+
+      <section class="pane__body" id="pane-body" aria-labelledby="pane-title">
+        <div class="pane__section">
+          <span class="pane__label">On this surface</span>
+          <ul class="tool-list" id="tool-list">
+            <!-- Rendered by JS. Pre-rendered example for the inbox:thread case. -->
+            <li>
+              <article class="tool" data-family="read" tabindex="0">
+                <header class="tool__row">
+                  <span class="tool__name">inbox</span>
+                  <span class="tool__family">read</span>
+                </header>
+                <p class="tool__desc">List messages in this thread's scope. Re-queries when the thread updates.</p>
+                <button class="tool__try" type="button" data-try="inbox">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                  Try it
+                </button>
+              </article>
+            </li>
+            <li>
+              <article class="tool" data-family="send" tabindex="0">
+                <header class="tool__row">
+                  <span class="tool__name">replyAsHuman</span>
+                  <span class="tool__family">send</span>
+                </header>
+                <p class="tool__desc">Reply to this message as yourself (not an agent). Rate-guarded.</p>
+                <button class="tool__try" type="button" data-try="replyAsHuman">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                  Try it
+                </button>
+              </article>
+            </li>
+            <li>
+              <article class="tool" data-family="send" tabindex="0">
+                <header class="tool__row">
+                  <span class="tool__name">postMessage</span>
+                  <span class="tool__family">send</span>
+                </header>
+                <p class="tool__desc">Post a new message to a role or inbox. Supports onClick payload.</p>
+                <button class="tool__try" type="button" data-try="postMessage">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                  Try it
+                </button>
+              </article>
+            </li>
+            <li>
+              <article class="tool" data-family="read" tabindex="0">
+                <header class="tool__row">
+                  <span class="tool__name">roles</span>
+                  <span class="tool__family">read</span>
+                </header>
+                <p class="tool__desc">List roles and their queue sizes. Explains why a thread is waiting.</p>
+                <button class="tool__try" type="button" data-try="roles">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                  Try it
+                </button>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="open-explorer">
+          <!-- external-link -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          </svg>
+          Open MCP explorer
+        </button>
+        <button type="button" class="cta" data-cta="all-verbs">All 54 verbs</button>
+      </div>
+
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane</span>
+        <span>·</span>
+        <a href="#" data-nav="mcp-explorer">mcp-explorer</a>
+      </footer>
+    </aside>
+
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const body = pane.querySelector('.pane__body');
+        const list = pane.querySelector('#tool-list');
+        const why = pane.querySelector('.pane__why');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // ---------- Context → MCP tool suggestion table --------------------
+        // family values: read | write | spawn | send | manage — matches cs-verb-* vars.
+        const TOOLS = {
+          'viewer:html::factory-playbook': {
+            why: `This is <strong>factory-playbook.html</strong>. These MCP tools drive the factory's parts.`,
+            tools: [
+              ['agents',       'read',  'List all launchable agents in your team.'],
+              ['roles',        'read',  'See every role and its current queue size.'],
+              ['openWorkspace','spawn', 'Create a worktree for a story.'],
+              ['runs',         'read',  'Latest outcome of every recent agent run.'],
+              ['postMessage',  'send',  'Hand new work to a role.'],
+            ],
+          },
+          'viewer:html::inbox-flows': {
+            why: `This is <strong>inbox-flows.html</strong>. These MCP tools power the thread you're reading about.`,
+            tools: [
+              ['inbox',        'read',  'List messages in a scope.'],
+              ['postMessage',  'send',  'Post a new message to a role or inbox.'],
+              ['replyAsHuman', 'send',  'Reply as yourself to a specific message.'],
+              ['watchInbox',   'read',  'Subscribe to inbox-changed events.'],
+            ],
+          },
+          'agents:detail': {
+            why: ctx => `You're on an agent detail. These MCP tools act on <strong>${ctx.agentId || 'this agent'}</strong>.`,
+            tools: [
+              ['agent',         'read',  'Return the full agent object (including running instances).'],
+              ['gotoAgent',     'spawn', 'Focus the agent in the UI.'],
+              ['openWorkspace', 'spawn', 'Open or fork a workspace for a story.'],
+              ['runs',          'read',  'Latest run per agent.'],
+            ],
+          },
+          'inbox:thread': {
+            why: `You're reading an inbox thread. These MCP tools are what the composer uses under the hood.`,
+            tools: [
+              ['inbox',        'read',  'List messages in this thread\'s scope.'],
+              ['replyAsHuman', 'send',  'Reply to this message as yourself.'],
+              ['postMessage',  'send',  'Post a new message to a role or inbox.'],
+              ['roles',        'read',  'See why a thread is waiting.'],
+            ],
+          },
+          'pipeline:story': {
+            why: ctx => `You're on a pipeline story. These MCP tools move it along.`,
+            tools: [
+              ['setField',     'write', 'Flip a story\'s status in frontmatter.'],
+              ['openWorkspace','spawn', 'Create this story\'s worktree.'],
+              ['runs',         'read',  'Latest run that touched this story.'],
+              ['runEvidence',  'read',  'Evidence captured by the last run.'],
+            ],
+          },
+        };
+
+        function pickKey(ctx) {
+          if (ctx.surface === 'viewer:html' && /factory-playbook/.test(ctx.filename || '')) return 'viewer:html::factory-playbook';
+          if (ctx.surface === 'viewer:html' && /inbox-flows/.test(ctx.filename || '')) return 'viewer:html::inbox-flows';
+          return ctx.surface;
+        }
+
+        function renderTools(entry, ctx) {
+          why.innerHTML = typeof entry.why === 'function' ? entry.why(ctx) : entry.why;
+          list.innerHTML = entry.tools.map(([name, family, desc]) => `
+            <li>
+              <article class="tool" data-family="${family}" tabindex="0">
+                <header class="tool__row">
+                  <span class="tool__name">${name}</span>
+                  <span class="tool__family">${family}</span>
+                </header>
+                <p class="tool__desc">${desc}</p>
+                <button class="tool__try" type="button" data-try="${name}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                  Try it
+                </button>
+              </article>
+            </li>
+          `).join('');
+          list.querySelectorAll('.tool__try').forEach(btn => {
+            btn.addEventListener('click', () => openInExplorer(btn.dataset.try));
+          });
+        }
+
+        function openInExplorer(toolName) {
+          window.codesense?.openFile?.({
+            path: `./mcp-explorer.html#tool/${toolName}`,
+            newTab: true,
+          });
+        }
+
+        function applyContext(ctx) {
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            const key = pickKey(ctx);
+            const entry = TOOLS[key];
+            if (!entry) {
+              why.innerHTML = `I don't have MCP suggestions for this surface yet.`;
+              list.innerHTML = `
+                <li>
+                  <article class="tool" data-family="read">
+                    <header class="tool__row">
+                      <span class="tool__name">context</span>
+                      <span class="tool__family">read</span>
+                    </header>
+                    <p class="tool__desc">Any MCP-capable agent can read this doc's own context. Start there.</p>
+                  </article>
+                </li>`;
+            } else {
+              renderTools(entry, ctx);
+            }
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        if (window.codesense?.onSlotContext) {
+          window.CodeSenseDocsPane.onContext(applyContext);
+        } else {
+          applyContext({ surface: 'inbox:thread' });
+        }
+
+        // CTAs
+        pane.querySelector('[data-cta="open-explorer"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './mcp-explorer.html', newTab: true });
+        });
+        pane.querySelector('[data-cta="all-verbs"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './mcp-explorer.html#all', newTab: true });
+        });
+
+        // Collapse
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.legend').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => setCollapsed(pane.dataset.collapsed !== 'true'));
+        pane.addEventListener('keydown', (e) => {
+          if ((e.key === 'c' || e.key === 'C') && e.target.tagName !== 'INPUT') {
+            setCollapsed(pane.dataset.collapsed !== 'true');
+          }
+        });
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

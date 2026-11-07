@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="users" />
+    <title>CodeSense — Agent design</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-cmp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-cmp th,
+      .arce-cmp td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-cmp th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-cmp code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/agent-design">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Agent design — design a team, set up my agents" id="what">
+        <h1>Agent design: start with the work.</h1>
+        <p>Decide what your agents should do, what they may touch, and how you will know they helped. Start with one seat. Add more when the work needs them.</p>
+        <p>CodeSense provides mechanisms: saved agents, roles, routines, inboxes, panes, grants and content layers. You and your agents decide policy: priorities, handoffs, approvals and when to sync. There is no special manager agent or required workflow.</p>
+        <p>Saved changes should show immediately in the app. Check the visible result as you work. Startup files and launch permissions apply when a session launches; editing a definition does not rewrite a running session.</p>
+        <p>Use the <a href="../examples/skills/agent-design/SKILL.md">agent-design skill</a> to walk through this guide. The <a href="./designing-for-a-role.html">seat templates appendix</a> helps shape individual agents.</p>
+      </section>
+
+      <section data-search="Agent design loop discover shape build prove iterate" id="loop">
+        <h2>2. The loop</h2>
+        <figure class="cs-docs-card">
+          <p role="img" aria-label="Discover, then shape, build, prove and iterate; return to discovery when goals change">Discover → Shape → Build → Prove → Iterate ↺</p>
+          <figcaption>Keep the design small enough to test. Return to discovery when the goal changes.</figcaption>
+        </figure>
+        <p>Write the expected result before building. Preview the setup, ask for approval, then apply it. A failed proof changes the design; it does not justify more autonomy.</p>
+      </section>
+
+      <section data-search="Discover recurring work data MCP servers privacy budget autonomy" id="discover">
+        <h2>3. Discover the work and data</h2>
+        <p>Read the current setup first: <code>codesense_overview</code>, <code>describe_setup</code>, <code>agent_list</code> and <code>routine_list</code>. Reuse what fits. If a section reports an error, resolve it before editing that part of the setup.</p>
+        <ul>
+          <li>What work repeats? How often? What would a useful result look like?</li>
+          <li>What needs your judgment? Which actions may run alone?</li>
+          <li>Which repos, tools and machines are involved? Who owns them?</li>
+          <li>Where does the data live? Is it public, internal, personal, financial or health data? Does the task need read access or write access?</li>
+          <li>Which MCP servers are already available? Which tools can do the job with the least access?</li>
+          <li>What is the time and money budget? How will you stop or pause the work?</li>
+        </ul>
+        <p>Ask in batches of at most three questions. Use <code>codesense_search_tools</code> to find CodeSense tools. Inspect the team's MCP choices in <a href="./agent-yaml.html">agent.yaml</a> and an existing agent's <code>agent_get</code> result. Verify external tool contracts with the connected server. An example server name is not proof that the user has it.</p>
+        <p>Minimize data. Give each seat only the sources and fields its task needs. Keep secrets out of prompts, design notes and agent environment values. Use the user's existing service login. Share counts, ids or summaries when raw personal records are unnecessary.</p>
+      </section>
+
+      <section data-search="Shape pattern catalogue determinism first safety tiers" id="shape">
+        <h2>4. Shape the smallest team</h2>
+        <h3>Determinism first</h3>
+        <p>Use a command routine, script or check when the steps and result are fixed. Spend model calls on judgment. For an event chain, a metadata trigger can run a command routine; an agent routine can follow with <code>after</code> when judgment is needed. Use <code>routine_create</code> with <code>action: "command"</code> and a <code>command</code> argv array. Commands run directly, without a shell or model.</p>
+        <p>Newer apps support command actions, metadata triggers and <code>after</code>. Check the running tool schema. If these fields are absent, use an approved schedule-only agent routine that checks state and runs the script.</p>
+        <p>Example: a story enters review → a command checks the artifact → an agent reviews the result. Choose <code>after.on: "succeeded"</code> to continue only after a passing check, or <code>"finished"</code> to let an agent explain either outcome. See <a href="../arc-g-routines/triggers.html">routine triggers</a>. These are design choices.</p>
+        <table class="arce-cmp">
+          <thead><tr><th>Pattern and default</th><th>Use when</th><th>Trade-off</th><th>Primitives</th></tr></thead>
+          <tbody>
+            <tr><td>Solo assistant: one seat</td><td>One person has a few related tasks.</td><td>Cheap coordination; broad context can become noisy.</td><td>Saved agent, session inbox, manual launch</td></tr>
+            <tr><td>Manager + workers: one coordinator</td><td>Work splits into independent assignments.</td><td>Parallel work costs more and needs clear acceptance criteria.</td><td>Agents, role messages, explicit launches, session tracking</td></tr>
+            <tr><td>Role queue pool: start with one holder</td><td>A durable queue has more work than one seat can handle.</td><td>Shared holders need small claims and a chosen concurrency limit.</td><td>Role, registration, claims, receipts, wake routine</td></tr>
+            <tr><td>Reviewer loop: a second seat</td><td>A result needs independent scrutiny.</td><td>Slower delivery; bound the number of fix rounds.</td><td>Builder and reviewer roles, evidence, messages</td></tr>
+            <tr><td>Scheduled sweeper: low frequency first</td><td>A digest or check is useful at known times.</td><td>May run with no new work; prefer a command for fixed checks.</td><td>Schedule trigger, routine, run history</td></tr>
+            <tr><td>Event chain: check before judgment</td><td>A metadata transition makes work ready.</td><td>More moving parts; prove each link and its stop condition.</td><td>Metadata trigger, command routine, after, agent routine</td></tr>
+            <tr><td>Human desk: draft before action</td><td>Personal decisions or consequential actions need approval.</td><td>Human response time limits throughput.</td><td>Private content, needs-you inbox, bounded tools, pane</td></tr>
+          </tbody>
+        </table>
+        <table class="arce-cmp">
+          <thead><tr><th>Need</th><th>Choose</th></tr></thead>
+          <tbody>
+            <tr><td>Repeat a seat's launch setup</td><td>Agent</td></tr>
+            <tr><td>Keep work after a session ends</td><td>Role queue and <code>send_role_message</code></td></tr>
+            <tr><td>Start at a time or on a change</td><td>Routine trigger</td></tr>
+            <tr><td>Ask a person or report progress</td><td><code>send_message</code> with <code>kind: "needs-you"</code> or <code>"update"</code></td></tr>
+            <tr><td>Show state and actions</td><td>Pane with declared capabilities and grants</td></tr>
+          </tbody>
+        </table>
+        <h3 id="safety">Safety tiers</h3>
+        <p>Use these tiers as a design checklist. They are not engine-enforced agent permissions.</p>
+        <table class="arce-cmp">
+          <thead><tr><th>Tier</th><th>Default boundary</th></tr></thead>
+          <tbody>
+            <tr><td>R0 · Read and analyse</td><td>Read selected sources. Produce advice with evidence.</td></tr>
+            <tr><td>R1 · Reversible private work</td><td>Draft notes or code within an agreed workspace and limits.</td></tr>
+            <tr><td>R2 · External effects</td><td>Sending, posting, calendar writes or publishing need explicit human approval of the action, recipients and limits.</td></tr>
+            <tr><td>R3 · High consequence</td><td>Money movement, trading and deletion need explicit human approval of the exact action and hard limits. Keep them out of unattended seats.</td></tr>
+          </tbody>
+        </table>
+        <p>Record allowed amounts, destinations, scope and expiry. Pause when approval is missing. A prompt is policy, not a security boundary: restrict available tools and use CLI permissions too. A read-only sandbox does not make MCP tools read-only. For code-host work, verify GitHub MCP or <code>gh</code> access before a proof run. Separate agents that read untrusted mail or web content from agents that can act on private data. Pass only validated ids and bounded fields across that handoff.</p>
+      </section>
+
+      <section data-search="Models budgets Claude Codex capability comparison decide by task type" id="models">
+        <h2>5. Choose models and budgets</h2>
+        <p>Choose per seat. Compare quality on the same task, response time, total cost per accepted result, context needs and tool access. Read <code>model_rates</code> for prices on file and <code>session_usage</code> for observed tokens and spend. A null cost or an unpriced model is missing information, not free work. Verify prices before making a budget promise.</p>
+        <table class="arce-cmp">
+          <thead><tr><th>CodeSense capability</th><th>Claude runtime</th><th>Codex runtime</th></tr></thead>
+          <tbody>
+            <tr><td>Saved launch</td><td><code>runtime: claude</code></td><td><code>runtime: codex</code></td></tr>
+            <tr><td>Instructions and skills</td><td><code>CLAUDE.md</code>, <code>.claude/skills/</code></td><td><code>AGENTS.md</code>, <code>.agents/skills/</code></td></tr>
+            <tr><td>Model selection</td><td>CLI model arguments in <code>args</code></td><td>CLI model arguments in <code>args</code></td></tr>
+            <tr><td>Native permission config</td><td><code>permissions.claude</code>: allow, ask, deny and modes</td><td><code>permissions.codex</code>: approvalPolicy and sandboxMode</td></tr>
+            <tr><td>Context and tools</td><td>Selected startup/context; CodeSense bridge plus chosen MCP servers</td><td>Selected startup/context; CodeSense bridge plus chosen MCP servers</td></tr>
+            <tr><td>Account</td><td>User's own CLI login</td><td>User's own CLI login</td></tr>
+          </tbody>
+        </table>
+        <p>This table compares integration surfaces. It does not rank models. Native settings differ; do not translate Claude tool rules into Codex rules. Check the installed CLI's help and <code>agent_preview</code> output.</p>
+        <h3>Decide by task type</h3>
+        <ul>
+          <li>Fixed transforms and checks: use code first.</li>
+          <li>Classification and extraction: test a small model on bounded cases.</li>
+          <li>Building and review: compare candidates on real acceptance cases, including tool use and corrections.</li>
+          <li>Ambiguous planning: test reasoning quality and ask a person to resolve missing goals.</li>
+          <li>High-consequence work: keep approval boundaries whatever model you choose.</li>
+        </ul>
+        <p>Set routine <code>maxRuntime</code>, <code>maxWakes</code>, <code>maxWakesPerDay</code> and <code>minGap</code> deliberately. Use <code>overlap: "skip"</code> when another run would repeat work. No aggregate dollar or minute cap exists. <code>maxRuntime</code> is per run. Check <code>session_usage</code> before each launch and stay within the agreed budget. Time and wake limits do not enforce that total. Read <code>routine_runs</code> and pause with <code>routine_set_enabled</code> when results or spend exceed the agreed budget.</p>
+        <p>Claude agents can call <code>who_am_i</code> with no arguments. Their MCP connection supplies <code>session_id</code> for <code>who_am_i</code> and <code>sessionId</code> for <code>signal_done</code> and <code>routine_publish_result</code> when omitted. Use this connection identity for Claude; headless permissions can deny shell variable expansion.</p>
+        <p>Codex agents should pass their own session identity explicitly: <code>send_message</code> and <code>reply</code> take <code>session_id</code>; <code>signal_done</code> takes <code>sessionId</code>. For every <code>send_role_message</code>, set <code>sender</code> to your own handle from <code>who_am_i.handle</code>. Run <code>echo $CODESENSE_TAB_SESSION_ID</code> in your shell to get your id, then pass it explicitly. If it is empty, match your own tab name and workspace in <code>list_sessions</code> and use <code>launchTelemetry.sessionId</code>. If there is no unique match, ask instead of guessing. Pass the id to <code>who_am_i</code> and keep its returned handle for role-message attribution and replies. Read each tool's current input schema.</p>
+      </section>
+
+      <section data-search="Choose panes dashboards inbox agent list visible results" id="panes">
+        <h2>6. Choose what people see</h2>
+        <p>Start with the human Inbox and the agent list. Put decisions in Needs you and progress in Updates. Add a custom pane only when it answers a repeated question better: what is waiting, what changed, or what needs approval?</p>
+        <p>Use <a href="../arc-i-dashboard-primitives/your-first-dashboard.html">your first dashboard</a>, <a href="../arc-i-dashboard-primitives/pane-shapes.html">pane shapes</a> and <a href="../arc-i-dashboard-primitives/reacting-to-state.html">reacting to state</a>. Give each action a clear result. Verify that changes appear immediately. Reuse the bridge's subscriptions; do not add a polling loop per pane.</p>
+      </section>
+
+      <section data-search="Permissions inheritance private team scope shared content" id="permissions">
+        <h2>7. Permissions and inheritance</h2>
+        <p>Keep private work in personal scope. Team agents are shared; any teammate can edit them. <code>created_by</code> is attribution. The CLI enforces native agent permissions. Pane capabilities and grants govern pane actions; they do not replace CLI permissions. See <a href="./agent-yaml.html">agent.yaml</a> and <a href="../arc-i-dashboard-primitives/calling-codesense.html">calling CodeSense from a pane</a>.</p>
+        <p>Today only <strong>content</strong> follows the parent-team chain. Setting a parent does not inherit its saved agents, roles, routines or other config. Put shared teaching and skills in content, then select the needed paths in each agent's startup/context. Verify with <code>agent_preview</code> in the destination team.</p>
+        <p><strong>Planned:</strong> inherited content will narrow to only what the parent explicitly shares. Do not rely on a parent relationship as a privacy boundary today. Use private content for personal and finance memory. Changing a parent with <code>set_team_parent</code> is optional and needs the user's approval.</p>
+      </section>
+
+      <section data-search="Write down design note team-design.yaml record of intent planned" id="record">
+        <h2>8. Write the design down</h2>
+        <p>Keep a short design note in content the user owns. Record goals, data sources and sensitivity, seats, tool boundaries, risk tiers, handoffs, budget, stop conditions and proof cases. Say who chose each policy and why. Include saved agent and routine ids after creation.</p>
+        <p><strong>Planned structured form:</strong> <code>team-design.yaml</code> is an optional record of intent from the planned agent-design team. It holds goals, a data map with sensitivity, the risk tier, members by id, evals and the optimization mode. <code>DESIGN.md</code> is its human-readable companion. Neither is a required runtime file. The real <code>agent.yaml</code> and <code>routine.yml</code> remain the source of truth; do not copy their launch or schedule fields into the design.</p>
+        <p>A CodeSense <strong>Designer</strong> agent that runs this process with you is planned; until it ships, follow the agent-design skill yourself.</p>
+        <p>The same planned team's <a href="#learning">learning and context loop</a> proposes improvements for a person to approve. You can use the plain design note now.</p>
+      </section>
+
+      <section data-search="Build preview agents roles routines panes inheritance dry run" id="build">
+        <h2>9. Build in small steps</h2>
+        <ol>
+          <li>Show the design and dry-run plan. Ask for approval before saving anything.</li>
+          <li>Preview each definition with <code>agent_preview</code>. Check <code>manifest.errors</code>, warnings, resolved context and required skills. Use <code>agent_create</code> with <code>dryRun: true</code> before saving; keep the returned ids.</li>
+          <li>Save matching roles with <code>role_save</code>. Newer apps offer this tool. If it is absent, copy the matching role YAML from the starter and keep explicit worker registration. A default handler does not launch itself. Each worker uses <code>register_role</code> to claim queue work.</li>
+          <li>Use <code>routine_create</code> with <code>dryRun: true</code> and <code>enabled: false</code>, then save disabled. Newer apps support schedules, metadata triggers, command actions and <code>after</code> through MCP. Check the running schema. If advanced fields are absent, use an approved schedule-only agent routine. Event triggers such as <code>role_pending</code> accept the MCP <code>events</code> parameter or YAML; see the <a href="../examples/agents/solo-founder/README.md">starter walkthrough</a>. Read the running tool schema before applying.</li>
+          <li>Write an optional pane with <code>pane_write</code>. Check its capabilities and grants before opening it.</li>
+          <li>Change team inheritance only if the design needs it. Preview from the child team again.</li>
+        </ol>
+        <p>Give every resource a stable, recognizable id. Keep routines disabled until the user enables them one at a time. Tell the user which writes are local context-repo edits; sharing them is a separate git action.</p>
+      </section>
+
+      <section data-search="Prove design preview dry run end to end roles messages evidence" id="prove">
+        <h2>10. Prove it works</h2>
+        <p>Agree on one normal case and one stop case per seat before launch. First validate definitions without running them. Creation dry runs write nothing; <code>routine_run_now</code> is a real run, not a dry-run switch.</p>
+        <p>After approval, send a clearly labelled test with <code>send_role_message</code> through each queue. Verify registration, claim, acceptance receipt and acknowledgement. Confirm a fresh worker gets enough context. Check that a reviewer can return a visible defect and that a missing approval stops action. Bound the test's cost and clean up its messages.</p>
+        <p>Open a pane with <code>pane_open</code> and check the visible result. Inspect <code>routine_runs</code> and <code>routine_run</code> for routine outcomes. Use <code>list_runs</code> and <code>read_run_evidence</code> for story-run evidence when available; a run with no recorded evidence is not proof. Show the user the result, the ids and any unverified step.</p>
+      </section>
+
+      <section data-search="Iterate learning context memory pruning planned evaluator steward improvement loop" id="iterate">
+        <h2>11. Iterate from evidence</h2>
+        <p>Watch failed runs, missed handoffs, repeated Needs you items, time to an accepted result and cost per outcome. Split a seat when it needs conflicting tools or too much context. Merge seats when handoffs cost more than the separation helps. Change one thing, replay the same cases, and compare.</p>
+        <p>To stop the setup, call <code>routine_set_enabled</code> with <code>enabled: false</code> for its routines. This stops future starts. For each running session you intend to end, take its <code>handle</code> from <code>list_sessions</code>, then call <code>close_terminal_tab</code> with that handle. It ends the CLI and keeps the worktree files. Disable routines and close active sessions separately; there is no single kill switch.</p>
+        <h3 id="learning">Learning and context</h3>
+        <p>Keep instructions short. Load only relevant skills and sources. Record durable lessons as small notes with their source, date and confidence. Recheck old facts before loading them. Give each seat a context budget; more history is not always more useful.</p>
+        <p><strong>Planned agent-design team loop:</strong> a fresh-context Evaluator will grade agreed cases. A Steward will collect structured run and usage signals, propose a diff with evidence, then wait for human approval. A monthly prune will keep, merge, summarize or expire notes to an archive. Git history provides the audit trail. Untrusted-source facts stay quarantined until a human promotes them. Personal and finance memory stays private. These evaluator and stewardship skills are planned, not installed by this guide.</p>
+        <p>This loop uses the <a href="#record">record of intent</a>. A weekly or monthly review can be done manually today. An optional review routine needs the user's approval and may propose changes; it must not expand its own access or apply policy changes alone.</p>
+      </section>
+
+      <section data-search="Worked examples solo founder small dev review queue family desk finance analysis" id="examples">
+        <h2>12. Worked examples</h2>
+        <h3>Solo founder</h3>
+        <p>Use a planner to turn goals into acceptance-ready work, a builder in one story workspace, and a reviewer for independent checks. Start with one active assignment. Scope and release decisions stay with the founder. The <a href="../examples/agents/solo-founder/README.md">solo-founder starter</a> includes all three definitions, matching role YAML, exact launch fields and one immediate role-queue wake. Its prompts need no extra skill. Add selected project context before real work. A notes backlog must first become a managed pipeline story: read <code>get_story_format</code>, choose a configured repo with <code>list_source_repos</code>, validate with <code>validate_story</code>, then save it in team content. Confirm <code>query_context</code> finds its story id before launching the builder.</p>
+        <h3>Small dev team with a review queue</h3>
+        <p>Builders share a role queue; one reviewer starts with an exclusive registration. Use claims and receipts to track deliveries. A metadata transition can run deterministic checks before review. Start with a concurrency limit of one; increase it when evidence shows the queue is the bottleneck. Independent review adds cost, so bound fix rounds and escalate unresolved decisions.</p>
+        <h3>Non-dev desk</h3>
+        <p>A family desk can read chosen calendar entries and school notices, then draft a weekly brief in private content. A pane shows upcoming tasks and Needs you decisions. Use a command for fixed totals and an agent for summarizing. Keep untrusted notice text away from calendar-write tools. Ask before changing events or sending the brief; record exactly which recipients and dates were approved.</p>
+        <h3>Finance-analysis desk sketch</h3>
+        <p>A read-only analyst compares selected account exports and drafts a cash-flow summary with sources and uncertainty (R0). It may save a private draft within an agreed budget (R1). Sending a report outside the desk needs approval of the report and recipients (R2). Transfers, trades and deletion require explicit approval of each exact action, amount, account and limit (R3); exclude those tools from unattended agents. Keep finance memory private and use deterministic arithmetic for totals. These are workflow boundaries, not investment recommendations.</p>
+      </section>
+      <p><a href="./index.html">← Arc E · Agents</a> · <a href="../mcp-explorer.html">MCP reference</a></p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Agent design</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

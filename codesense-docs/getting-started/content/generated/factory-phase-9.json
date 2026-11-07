@@ -1,0 +1,37 @@
+{
+  "phase": 9,
+  "name": "Decisions",
+  "group": "Build",
+  "describedBy": "./phases.yml#phase-9",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "in-progress", "title": "Per-agent kill switch"},
+      {"id": "DEMO-1", "kind": "story", "status": "review", "title": "Host kill ladder + MCP wrapper", "points": 3, "sprint": "FAKE-S1"},
+      {"id": "DEMO-2", "kind": "story", "status": "in-progress", "title": "DAG node kill button + confirmation modal", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-3", "kind": "story", "status": "blocked", "title": "Public MCP tool: kill_agent", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-4", "kind": "story", "status": "todo", "title": "Remember a killed agent across relaunches", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-5", "kind": "story", "status": "blocked", "title": "DAG transitions through 'stopping' without a reload", "points": 3, "sprint": "FAKE-S1"}
+    ],
+    "edges": [
+      {"from": "DEMO-1", "to": "DEMO-2"},
+      {"from": "DEMO-1", "to": "DEMO-3"},
+      {"from": "DEMO-1", "to": "DEMO-4"},
+      {"from": "DEMO-1", "to": "DEMO-5"}
+    ]
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-9-resolver", "agent": "resolver", "status": "running", "startedAt": "2026-10-04T11:03:00Z", "endedAt": null, "story": "DEMO-3"}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch", "fake-thread-decision-escalation"],
+    "focus": "fake-decision-escalation-001"
+  },
+  "sprint": {
+    "active": "FAKE-S1",
+    "committed_points": 12,
+    "stories": ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"]
+  },
+  "note": "Phase 9 — DEMO-3 blocked on PermissionDenied semantics; escalated to the resolver role. The decision-escalation inbox thread is active."
+}

@@ -1,0 +1,12 @@
+{
+  "slug": "codesense/sample-source-repo",
+  "displayName": "CodeSense sample source repo",
+  "team": "sample",
+  "branch": "main",
+  "remoteUrl": "https://example.invalid/acme/sample-source-repo.git",
+  "remoteUrlNote": "Fictitious: the reserved .invalid domain never resolves, so a fetch or push fails at once. The sample-source-repo is bundled with CodeSense and placed per-profile on first launch. Never fetched over the network.",
+  "committedAtBase": 1790812800,
+  "committedAtStep": 3600,
+  "author": "CodeSense sample <sample@codesense.ai>",
+  "readme": "README.md"
+}

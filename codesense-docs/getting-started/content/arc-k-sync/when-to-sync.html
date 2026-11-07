@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="calendar-check" />
+    <title>CodeSense — When to sync</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/when-to-sync"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 760px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 16px;
+        padding: 18px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp h3 {
+        font-size: 16px;
+        margin: 0 0 6px;
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp .phase {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp p {
+        max-width: 70ch;
+        margin: 6px 0;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .cp .call {
+        display: block;
+        margin: 8px 0 2px;
+        max-width: 760px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] table.summary {
+        width: 100%;
+        max-width: 820px;
+        margin: 18px 0;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] table.summary th,
+      body[data-page="arc-k-sync/when-to-sync"] table.summary td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] table.summary th {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--cs-border-strong);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] details {
+        max-width: 820px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/when-to-sync"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/when-to-sync"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/when-to-sync">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="When to sync SDLC checkpoints" id="hero">
+        <h1>When to sync</h1>
+        <p class="lede">
+          You rarely need to sync "whenever." The CodeSense SDLC — the 14-phase factory loop
+          <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a> walks — has a small number of
+          <strong>sync checkpoints</strong>, each with a clear reason and a single call. Nothing
+          syncs on its own, so each one is a call an agent (or you) makes. This
+          is the page to bookmark; the one you'll check mid-sprint when you want to know whether
+          <em>now</em> is a sync moment.
+        </p>
+      </section>
+
+      <section data-search="The sync checkpoints at a glance" id="summary">
+        <h2>At a glance</h2>
+        <table class="summary">
+          <thead>
+            <tr>
+              <th>Checkpoint</th>
+              <th>Phase (Arc H)</th>
+              <th>Direction</th>
+              <th>Call</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>After spec written</td>
+              <td><a href="../arc-h-pipelines-and-sdlc/02-spec.html">02 Spec</a></td>
+              <td>out</td>
+              <td><code>reverse_sync_worktree</code></td>
+            </tr>
+            <tr>
+              <td>After story graph generated</td>
+              <td><a href="../arc-h-pipelines-and-sdlc/05-stories.html">05 Stories</a></td>
+              <td>out</td>
+              <td><code>reverse_sync_worktree</code></td>
+            </tr>
+            <tr>
+              <td>Mid-build, pattern adopted into team</td>
+              <td><a href="../arc-h-pipelines-and-sdlc/08-build.html">08 Build</a></td>
+              <td>out</td>
+              <td><code>reverse_sync_worktree</code> with <code>paths</code></td>
+            </tr>
+            <tr>
+              <td>Pre-review</td>
+              <td><a href="../arc-h-pipelines-and-sdlc/10-review.html">10 Review</a></td>
+              <td>out · GitHub</td>
+              <td>an agent commits and pushes</td>
+            </tr>
+            <tr>
+              <td>Post-ship</td>
+              <td><a href="../arc-h-pipelines-and-sdlc/13-ship.html">13 Ship</a></td>
+              <td>out · GitHub</td>
+              <td>an agent commits and pushes</td>
+            </tr>
+            <tr>
+              <td>Reorient after reconnect</td>
+              <td>any</td>
+              <td>read</td>
+              <td>the status button</td>
+            </tr>
+            <tr>
+              <td>Absorb a teammate's push</td>
+              <td>any</td>
+              <td>in</td>
+              <td>an agent pulls</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="SDLC checkpoints detailed" id="checkpoints">
+        <h2>The checkpoints, in order</h2>
+
+        <div class="cp">
+          <span class="cp-n">1</span>
+          <div>
+            <span class="phase">Phase 02 · Spec</span>
+            <h3>After a spec is written</h3>
+            <p>
+              Your spec exists only in <em>your</em> worktree until it is published. A Builder on
+              another machine can't pick up a story whose spec they can't see. Publish it to team
+              content as soon as it stops moving: preview first, then publish.
+            </p>
+            <code class="call">reverse_sync_worktree {paths: ["_bmad-output/&lt;epic&gt;/spec.md"]}</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">2</span>
+          <div>
+            <span class="phase">Phase 05 · Stories</span>
+            <h3>After the story graph is generated</h3>
+            <p>
+              A Scout generated stories and inferred the dependency graph. Publish them before any
+              Reviewer or Builder reads the next sprint plan — otherwise they'll trip over missing
+              <code>depends_on</code> edges.
+            </p>
+            <code class="call">reverse_sync_worktree {paths: ["_bmad-output/&lt;epic&gt;/stories/"]}</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">3</span>
+          <div>
+            <span class="phase">Phase 08 · Build</span>
+            <h3>Mid-build: a pattern deserves to be a team skill</h3>
+            <p>
+              You wrote a one-off helper and it's clearly useful beyond this story. Publish it to
+              team content so the next sprint has it. A file CodeSense didn't copy in is new, so
+              name the folder it lives in with <code>sets</code>.
+            </p>
+            <code class="call">reverse_sync_worktree {sets: [".claude/skills/story-helper"]}</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">4</span>
+          <div>
+            <span class="phase">Phase 10 · Review</span>
+            <h3>Pre-review: push the branch</h3>
+            <p>
+              Review is the first time another agent reads your worktree. The Reviewer pulls via its
+              own agent, so team content needs to be current. Publish the workspace's edits with
+              <code>reverse_sync_worktree</code>, then ask an agent to commit and push the context
+              repo.
+            </p>
+            <code class="call">"Commit and push the team context."</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">5</span>
+          <div>
+            <span class="phase">Phase 13 · Ship</span>
+            <h3>Post-ship: push the closing edits</h3>
+            <p>
+              A story merged. Its retro notes and status changes reach teammates only once they're
+              pushed. Publish the workspace's edits first, or they stay on that machine, then ask
+              an agent to push (<a href="../arc-h-pipelines-and-sdlc/13-ship.html"
+                >Arc H · 13 Ship</a
+              >).
+            </p>
+            <code class="call">"Commit and push the team context."</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">6</span>
+          <div>
+            <span class="phase">Any phase</span>
+            <h3>Reorient after a reconnect</h3>
+            <p>
+              You rebooted, closed the lid, or lost the plot. The status button reads
+              <strong>⎇ branch | ↑N ↓M</strong>: ↑ is what GitHub doesn't have yet, ↓ what's new on
+              GitHub, and a third count appears for conflicts. Its tooltip says when the clone last
+              heard from GitHub. Nothing writes.
+            </p>
+            <code class="call">context_repo_status {}</code>
+          </div>
+        </div>
+
+        <div class="cp">
+          <span class="cp-n">7</span>
+          <div>
+            <span class="phase">Any phase</span>
+            <h3>Absorb a teammate's push</h3>
+            <p>
+              A teammate shipped and the ↓ count went up. Ask an agent to pull the context repo. Your
+              worktrees get it at their agent's next launch, or when an agent calls
+              <code>hydrate_worktree</code>.
+            </p>
+            <code class="call">"Pull the context repo."</code>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="When NOT to sync" id="when-not">
+        <h2>When <em>not</em> to sync</h2>
+        <p>
+          If a file is still moving, let it move. Publishing a half-written spec hands unfinished
+          work to every teammate who hydrates it next. Publish at phase boundaries, not every
+          keystroke.
+        </p>
+        <p>
+          You also don't need to publish a worktree-local scratch file. A publish never writes a
+          file the repo tracks, and only looks for new files under the workspace's declared context
+          or the <code>sets</code> you name.
+        </p>
+      </section>
+
+      <section data-search="When to sync via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalents</strong></summary>
+          <pre><code>const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
+// Preview each publish first with preview_reverse_sync_worktree and the same inputs.
+
+// Phase 02 · Spec
+codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/&lt;epic&gt;/spec.md'] })
+
+// Phase 05 · Stories
+codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/&lt;epic&gt;/stories/'] })
+
+// Phase 08 · Build (share a new skill)
+codesense.invoke('reverse_sync_worktree', { target, sets: ['.claude/skills/story-helper'] })
+
+// Phase 10 · Review and 13 · Ship: run git yourself, then report
+codesense.invoke('report_context_sync', { state: 'ok' })
+
+// Reorient: branch, ahead/behind, conflicts
+codesense.invoke('context_repo_status', {})</code></pre>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../factory-playbook.html">factory playbook</a>
+        ·
+        <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H · pipelines &amp; SDLC</a>
+        ·
+        <a href="./conflicts.html">next: conflicts →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · When to sync</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

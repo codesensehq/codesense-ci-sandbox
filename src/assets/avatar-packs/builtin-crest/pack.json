@@ -1,0 +1,185 @@
+{
+  "name": "Crests",
+  "faces": [
+    {
+      "id": "red-bolt",
+      "file": "red-bolt.svg",
+      "label": "Red bolt"
+    },
+    {
+      "id": "blue-bolt",
+      "file": "blue-bolt.svg",
+      "label": "Blue bolt"
+    },
+    {
+      "id": "green-bolt",
+      "file": "green-bolt.svg",
+      "label": "Green bolt"
+    },
+    {
+      "id": "purple-bolt",
+      "file": "purple-bolt.svg",
+      "label": "Purple bolt"
+    },
+    {
+      "id": "orange-bolt",
+      "file": "orange-bolt.svg",
+      "label": "Orange bolt"
+    },
+    {
+      "id": "black-bolt",
+      "file": "black-bolt.svg",
+      "label": "Black bolt"
+    },
+    {
+      "id": "red-star",
+      "file": "red-star.svg",
+      "label": "Red star"
+    },
+    {
+      "id": "blue-star",
+      "file": "blue-star.svg",
+      "label": "Blue star"
+    },
+    {
+      "id": "green-star",
+      "file": "green-star.svg",
+      "label": "Green star"
+    },
+    {
+      "id": "purple-star",
+      "file": "purple-star.svg",
+      "label": "Purple star"
+    },
+    {
+      "id": "orange-star",
+      "file": "orange-star.svg",
+      "label": "Orange star"
+    },
+    {
+      "id": "black-star",
+      "file": "black-star.svg",
+      "label": "Black star"
+    },
+    {
+      "id": "red-key",
+      "file": "red-key.svg",
+      "label": "Red key"
+    },
+    {
+      "id": "blue-key",
+      "file": "blue-key.svg",
+      "label": "Blue key"
+    },
+    {
+      "id": "green-key",
+      "file": "green-key.svg",
+      "label": "Green key"
+    },
+    {
+      "id": "purple-key",
+      "file": "purple-key.svg",
+      "label": "Purple key"
+    },
+    {
+      "id": "orange-key",
+      "file": "orange-key.svg",
+      "label": "Orange key"
+    },
+    {
+      "id": "black-key",
+      "file": "black-key.svg",
+      "label": "Black key"
+    },
+    {
+      "id": "red-moon",
+      "file": "red-moon.svg",
+      "label": "Red moon"
+    },
+    {
+      "id": "blue-moon",
+      "file": "blue-moon.svg",
+      "label": "Blue moon"
+    },
+    {
+      "id": "green-moon",
+      "file": "green-moon.svg",
+      "label": "Green moon"
+    },
+    {
+      "id": "purple-moon",
+      "file": "purple-moon.svg",
+      "label": "Purple moon"
+    },
+    {
+      "id": "orange-moon",
+      "file": "orange-moon.svg",
+      "label": "Orange moon"
+    },
+    {
+      "id": "black-moon",
+      "file": "black-moon.svg",
+      "label": "Black moon"
+    },
+    {
+      "id": "red-gear",
+      "file": "red-gear.svg",
+      "label": "Red gear"
+    },
+    {
+      "id": "blue-gear",
+      "file": "blue-gear.svg",
+      "label": "Blue gear"
+    },
+    {
+      "id": "green-gear",
+      "file": "green-gear.svg",
+      "label": "Green gear"
+    },
+    {
+      "id": "purple-gear",
+      "file": "purple-gear.svg",
+      "label": "Purple gear"
+    },
+    {
+      "id": "orange-gear",
+      "file": "orange-gear.svg",
+      "label": "Orange gear"
+    },
+    {
+      "id": "black-gear",
+      "file": "black-gear.svg",
+      "label": "Black gear"
+    },
+    {
+      "id": "red-flame",
+      "file": "red-flame.svg",
+      "label": "Red flame"
+    },
+    {
+      "id": "blue-flame",
+      "file": "blue-flame.svg",
+      "label": "Blue flame"
+    },
+    {
+      "id": "green-flame",
+      "file": "green-flame.svg",
+      "label": "Green flame"
+    },
+    {
+      "id": "purple-flame",
+      "file": "purple-flame.svg",
+      "label": "Purple flame"
+    },
+    {
+      "id": "orange-flame",
+      "file": "orange-flame.svg",
+      "label": "Orange flame"
+    },
+    {
+      "id": "black-flame",
+      "file": "black-flame.svg",
+      "label": "Black flame"
+    }
+  ]
+}

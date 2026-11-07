@@ -1,0 +1,5 @@
+id: solo-founder-reviewer
+name: Solo founder reviewer
+icon: builtin-funny:skeptical-goat
+# Replace null with the full key returned by agent_create before saving.
+defaultHandler: null

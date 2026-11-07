@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Content layers</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 1040px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      .layer-stack {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 12px 0 20px;
+      }
+      .layer-row {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 14px;
+        padding: 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      .layer-row__n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .layer-row h3 {
+        margin: 2px 0 4px;
+        font-size: 15px;
+      }
+      .layer-row .path {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--cs-muted-fg);
+        display: block;
+        margin: 0 0 8px;
+      }
+      .layer-row .rule {
+        margin: 0;
+        line-height: 1.55;
+      }
+      .layer-row .rule b {
+        color: var(--cs-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/content-layers">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Content layers, the team chain, and who sees what" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Content layers</span>
+        </p>
+        <h1>Four places. Checked per file, closest first.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          A file in your context lives in exactly one place: a repo's content folder, your
+          private space, your team, or a parent team. Where it lives decides who sees it
+          and whether it is pushed. When an agent launches, CodeSense looks each file up in
+          the order below and takes the closest copy. Learn the four rows and the one rule
+          about launches, and you've learned the model.
+        </p>
+      </section>
+
+      <!-- =============== Priority stack =============== -->
+      <section data-search="Content layer priority order, per file" id="stack">
+        <h2>The priority stack</h2>
+        <p>
+          Highest priority first. For every file an agent's launch asks for, CodeSense
+          checks this stack top-down and uses the first place that has a file at that
+          path. It decides file by file, not folder by folder: <code>.claude/skills/</code>
+          can hold one skill from your team and another from a parent team, side by side.
+        </p>
+        <div class="layer-stack">
+          <div class="layer-row">
+            <span class="layer-row__n">1</span>
+            <div>
+              <h3>Repo content</h3>
+              <code class="path">&lt;org&gt;/&lt;team&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/</code>
+              <p class="rule">
+                <b>Who sees it:</b> the team itself (child teams don't inherit repo content), and only when an
+                agent launches in that repo.
+                It lives in the context repo, so it is pushed like team content. Use it for
+                "the kit for this codebase": a lint skill or a <code>CLAUDE.md</code> that
+                only makes sense in one repo. It wins over every other place for a launch
+                in that repo, and doesn't exist anywhere else.
+              </p>
+            </div>
+          </div>
+          <div class="layer-row">
+            <span class="layer-row__n">2</span>
+            <div>
+              <h3>Private</h3>
+              <code class="path">~/.codesense/users/&lt;you&gt;/scratch/orgs/&lt;org&gt;/</code>
+              <p class="rule">
+                <b>Who sees it:</b> only you, only in this org. A local-only git repo
+                CodeSense initializes for history; never pushed, never shared. A private
+                file wins over the team's at the same path, for you only, with two
+                exceptions: you can switch off "Use my private items in ‹Team›" for a team, and a single
+                private file can be set to "Use team's". Its sibling
+                <code>scratch/all-orgs/</code> comes right after it and carries inert items
+                (skills, prompts, snippets, templates) into every org you open. See
+                <a href="./private-and-all-orgs.html">Private &amp; All-orgs</a>.
+              </p>
+            </div>
+          </div>
+          <div class="layer-row">
+            <span class="layer-row__n">3</span>
+            <div>
+              <h3>Team content</h3>
+              <code class="path">&lt;org&gt;/&lt;team&gt;/content/</code>
+              <p class="rule">
+                <b>Who sees it:</b> the team and every child team. It lives in the context
+                repo's own git tree and is pushed and pulled with the org's remote. The
+                shared-truth layer: specs, stories, team decisions, the skills you want
+                everyone to carry.
+              </p>
+            </div>
+          </div>
+          <div class="layer-row">
+            <span class="layer-row__n">4</span>
+            <div>
+              <h3>Parent teams</h3>
+              <code class="path">&lt;org&gt;/&lt;parent&gt;/content/</code>, then its parent, and so on
+              <p class="rule">
+                <b>Who sees it:</b> every team below them in the
+                <a href="./teams.html">chain</a>, for the files the parent shares in
+                <code>config/sharing.yml</code> (for example <code>share: ['content/**']</code>; see
+                <a href="./teams.html">Teams</a>). With no file, a parent shares nothing. A child
+                team inherits each shared file it doesn't hold itself; the nearest parent wins
+                when two of them hold the same path. In the left nav, inherited files carry a quiet marker.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Launch rule =============== -->
+      <section data-search="What an agent launch copies: the agent's context" id="launch">
+        <h2>What a launch copies</h2>
+        <p>
+          The stack says <em>where</em> a file comes from. The agent decides <em>which</em>
+          files: its <code>context</code> list in <code>agent.yaml</code> names folders and
+          files, and an agent without one gets its runtime's default (for Claude,
+          <code>CLAUDE.md</code> plus <code>.claude/commands</code>, <code>hooks</code>,
+          <code>agents</code> and <code>skills</code>; for Codex, <code>AGENTS.md</code>
+          and <code>.agents/skills</code>). An agent launched in a team workspace (a team's own
+          workspace, not a code repo) defaults to <code>.claude/commands</code> and
+          <code>.claude/skills</code> instead; its files are staged into a separate worker
+          folder that isn't a git repo, so no git exclude is written. A
+          per-repo override, saved with the agent, can add or remove paths for one repo.
+        </p>
+        <ol>
+          <li>
+            <strong>Prepare once.</strong> At launch CodeSense resolves that list through the
+            stack, compares the result with what the worktree already has, and copies what
+            is missing, plus newer versions of files it copied earlier, in one batch. It never
+            overwrites a file the repo tracks or a copy you edited; those are kept and listed
+            in the launch report. The copied paths go into the clone's
+            <code>.git/info/exclude</code> (shared by all worktrees of that clone), so they
+            never show up in <code>git status</code>.
+          </li>
+          <li>
+            <strong>Then nothing moves on its own.</strong> Editing team content doesn't
+            touch a running worktree, and editing a file in a worktree doesn't touch the
+            team. No background sync, no folder that "belongs" to a team.
+          </li>
+          <li>
+            <strong>Agents ask explicitly.</strong> <code>hydrate_worktree</code> and
+            <code>hydrate_story</code> bring more context in;
+            <code>reverse_sync_worktree</code> (after
+            <code>preview_reverse_sync_worktree</code>) and
+            <code>route_file_to_context</code> send an edit back. Wrap them in
+            <a href="../arc-k-sync/write-your-own-sync-skill.html">your own sync skill</a>
+            if you want a routine.
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Who sees what matrix =============== -->
+      <section data-search="Who sees what across layers" id="matrix">
+        <h2>Who sees what</h2>
+        <p>
+          The same four places against the audiences, and whether a file there is pushed
+          with the context repo.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin: 10px 0 0; font-size: 14px">
+          <thead>
+            <tr style="background: color-mix(in oklab, var(--cs-surface) 92%, var(--cs-inset))">
+              <th style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: left">Place</th>
+              <th style="border: 1px solid var(--cs-border); padding: 8px 10px">You</th>
+              <th style="border: 1px solid var(--cs-border); padding: 8px 10px">Team</th>
+              <th style="border: 1px solid var(--cs-border); padding: 8px 10px">Child teams</th>
+              <th style="border: 1px solid var(--cs-border); padding: 8px 10px">Pushed to remote?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px">1 · Repo content</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ in that repo</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ in that repo</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">—</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ via org remote</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px">2 · Private (and all-orgs)</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">—</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">—</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">—</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px">3 · Team content</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ inherited if shared</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ via org remote</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px">4 · Parent teams</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ inherited if shared</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ inherited if shared</td>
+              <td style="border: 1px solid var(--cs-border); padding: 8px 10px; text-align: center">✓ via org remote</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- =============== Editing inherited files =============== -->
+      <section data-search="Editing an inherited file and Copy into team" id="inherited">
+        <h2>Editing an inherited file</h2>
+        <p>
+          An inherited file is still the parent team's file. Open it from a child team and
+          the viewer says so: <em>"This file comes from ‹Parent›. Changes you make here
+          update it for ‹Parent› and every team that inherits from it."</em> While you
+          edit, the toolbar reads <em>From ‹Parent› — edits save to ‹Parent›</em>. Deleting,
+          renaming or moving an inherited file asks you to confirm first, because it
+          happens in the parent team.
+        </p>
+        <p>
+          To change it for your team only, choose <strong>Copy into ‹team›</strong> on the
+          file. That writes a copy into your team's own content. Your copy is now
+          the closest one, so it wins for your team and its children; the parent and its
+          other children keep the original.
+        </p>
+      </section>
+
+      <!-- =============== Picking a layer =============== -->
+      <section data-search="How to pick a layer when saving a file" id="pick">
+        <h2>Picking a place when you save something</h2>
+        <ul>
+          <li>
+            <strong>Will this ship with the team?</strong> → <em>Team content</em>. It is
+            pushed with the org remote and teammates get it on their next pull.
+          </li>
+          <li>
+            <strong>Should several teams share it?</strong> → the <em>parent team</em>
+            they all inherit from.
+          </li>
+          <li>
+            <strong>Is this only useful in one source repo?</strong> → <em>Repo
+            content</em> under that <code>(host, owner, repo)</code>.
+          </li>
+          <li>
+            <strong>Is this a personal experiment or shortcut, scoped to one org?</strong>
+            → <em>Private</em>. Never pushed.
+          </li>
+          <li>
+            <strong>Is this an inert skill / prompt / snippet / template you want in
+            every org?</strong> → <em>All-orgs</em>. Refuses non-inert kinds on save.
+          </li>
+        </ul>
+        <p>
+          Wherever it lives, a file reaches an agent only when that agent's
+          <code>context</code> asks for its path. If you're not sure where it goes, start
+          at Private and share it later with <strong>Share with ‹Team›…</strong>: see
+          <a href="./private-and-all-orgs.html#promote">Promoting a private file to the team</a>.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — inspect your layers" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge which layer this page comes from (<code>team</code>,
+          <code>private</code> or <code>all-orgs</code>) and the folder that layer lives in.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Inspect this page's layer"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to see where each file of a launch comes from via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            <code>agent_preview</code> resolves an agent's context through this stack
+            without copying anything, and names the place each file came from:
+          </p>
+          <pre><code>codesense.invoke('agent_preview', { agent: 'reviewer', repo: 'acme/payments' })
+// → each resolved file with its tier: repo, personal, or team (and which team)</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema in
+            <a href="../mcp-explorer.html#tool/agent_preview">mcp-explorer</a>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./teams.html">← Teams</a> ·
+        <a href="./source-repos.html">Source repos →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Content layers</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="list-checks" />
+    <title>CodeSense — Task records</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/tasks">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="start" data-search="task records goal type targets outcome parent review label tamper task_start task_update task_list task_read">
+        <h1>Judge agent work by task, not by run.</h1>
+        <p>One run often holds many tasks, and what counts as good depends on the kind of task. Supported local launches
+          get a task record: a plain goal, a type, a parent, targets and, when it ends, an outcome
+          that sits next to those targets. CodeSense records the facts and never scores the agent.</p>
+        <p>Remote managed launches are not supported by task records yet.</p>
+      </section>
+      <section id="example" data-search="example review task relates_to reviews artifact task_start task_update task_read label good">
+        <h2>One working example</h2>
+        <p>A lead builds a story, then asks a second pass to review the design. The lead starts the review as a
+          task of its own, relates it to the build and links the review file:</p>
+        <pre><code>task_start {
+  "sessionId": "&lt;your $CODESENSE_TAB_SESSION_ID&gt;",
+  "goal": "Review the task store design against the story",
+  "type": "review",
+  "subject": "design",
+  "parent": "&lt;the build task's taskId&gt;",
+  "links": [
+    {"kind": "relates_to:reviews", "target": "&lt;the build task's taskId&gt;"},
+    {"kind": "artifact", "target": "design/DEMO-30/review-r1.md"}
+  ]
+}</code></pre>
+        <p>When the review is finished, the lead closes it and records a verdict for the Steward to be
+          calibrated against:</p>
+        <pre><code>task_update {
+  "sessionId": "&lt;your $CODESENSE_TAB_SESSION_ID&gt;",
+  "taskId": "&lt;the review's taskId&gt;",
+  "acceptanceMet": true,
+  "label": {"verdict": "good", "why": "found the real defect, no noise"},
+  "status": "done"
+}</code></pre>
+        <p><code>task_read</code> on the build task now shows <code>outcome.reviewRounds: 1</code> and the review
+          task below it. A review is just a task of type <code>review</code>: there are no review-specific
+          fields, so a design review, a doc review, a code review and a research pass all read the same.</p>
+        <p>A reviewer launched with <code>open_workspace {target: "story", role: "reviewer"}</code> (or a saved
+          agent whose queue role or name is a reviewer) gets a <code>review</code> task at launch, with
+          <code>typeSource</code> <code>role</code> or <code>agent</code>. Pass <code>reviews: &lt;the dev task
+          id&gt;</code> to link it exactly (only a task of the same story and team links exactly); without it
+          the task links the story's latest open task of its team and <code>fieldSources.reviews</code> says
+          <code>associated</code>. A restored reviewer keeps the target, and the basis, of the review it
+          continues. A launch that names <code>reviews</code> but whose task is not a review links nothing
+          and says why in <code>unavailable.reviews</code>. A delta round run in the same reviewer
+          session is its own review task: one <code>task_start {"type": "review"}</code> per round, linked
+          <code>relates_to:reviews</code> to the dev task.</p>
+      </section>
+      <section id="capture" data-search="captured launch brief goal routine story purpose parent launcher story root skill">
+        <h2>What is captured for you</h2>
+        <p>Every launch path writes the session's task once, from what it already knows. Nothing needs to be
+          typed.</p>
+        <ul>
+          <li><strong>Goal.</strong> The brief's first lines (at most 280 characters, secrets removed). A brief
+            that only points at one <code>.md</code> file ("Read X and follow it") takes its goal from that file's
+            first lines. A routine's goal is its name, then the first line of its task. A story's root task takes
+            the story's title and the first sentence of its Purpose.</li>
+          <li><strong>Type.</strong> The first rule that matches: a <code>Task-Type:</code> line in the brief (or
+            <code>type</code> in <code>task_start</code>); a routine; the team policy's skill-to-type map for the
+            task's main skill; the story's <code>type</code> (<code>bug</code> is bugfix, <code>spike</code> is
+            exploratory, <code>story</code> is feature). A story launch whose role or saved agent is a reviewer is
+            <code>review</code> unless its brief or routine says otherwise. Otherwise <code>unclassified</code>,
+            with the reason in <code>unavailable</code>.</li>
+          <li><strong>Story.</strong> The launch's own story (<code>fieldSources.story: launch</code>), else the
+            story of the task it continues (<code>continues</code>), else the story of the story worktree it runs
+            in (<code>workspace</code>). Nothing else is guessed: a launch outside a story workspace has none.</li>
+          <li><strong>Parent.</strong> The task of the session that launched it (resolved to its session id once, at
+            reservation, so a reused handle never re-parents it). With no launcher, the story's root task
+            <code>story:&lt;id&gt;</code>. <code>parentSource</code> says which, and a fallback says why. A
+            restore relaunch (<code>launchedBy: "CodeSense restore"</code>, after a terminal-server restart) keeps
+            its story and team and the parent of the task it continues (<code>parentSource: continues</code>), and
+            links <code>relates_to:continues</code> to that task.</li>
+          <li><strong>Main skill.</strong> The first skill the brief names (<code>$x</code>, <code>/x</code> or the
+            bare name) that the launch provides.</li>
+          <li><strong>Layer versions.</strong> Copied once at launch: every skill the launch provides with the hash
+            of that skill's own files, the source worktree's commit and the context checkout's commit.
+            <code>task_start</code> copies a named skill's version from the session's launch snapshot.
+            A missing one says <code>unavailable</code> with its reason.</li>
+          <li><strong>Agent layer.</strong> <code>task_read.agentLayers.sessions</code> joins each linked
+            session's <code>sessionId</code>, <code>agent</code> (<code>key@revision</code>) and
+            <code>manifestHash</code> from its recorded launch. Missing records or fields give an
+            <code>unavailable</code> reason. With no session links, <code>agentLayers.unavailable</code>
+            explains why this layer cannot be read. These facts are joined, not copied onto the task.</li>
+          <li><strong>Other skills.</strong> <code>task_read.otherSkills.skills</code> lists additional skills
+            invoked in the indexed session conversation. Session root tasks read the whole session;
+            other tasks read only invocations within their own interval. Missing evidence says why.</li>
+          <li><strong>Playbook.</strong> <code>task_read</code> returns a top-level <code>playbook</code> with
+            <code>skill</code> and <code>hash</code> from the parent's immutable launch snapshot. It says
+            <code>pending</code> while the parent's task is still being captured, or <code>unavailable</code>
+            when there is no parent, the parent names no main skill, or that skill has no launch hash.</li>
+        </ul>
+        <p>The ids are the identities that already exist: a launched session's task is its session id, a routine
+          run's task is its run id, a story's root task is <code>story:&lt;id&gt;</code>. A task made without a
+          story can be given one later with <code>task_update</code>; it then moves under that story's root.</p>
+        <p><code>fieldSources</code> records where goal, story and subject came from, alongside
+          <code>typeSource</code>, <code>parentSource</code> and <code>targets.source</code>.
+          Late capture fills provisional facts and preserves explicit <code>task_update</code> refinements.</p>
+      </section>
+      <section id="targets" data-search="targets policy tasks/task-types.yml wall_minutes cost_usd review_rounds tamper_globs skill_types override Targets line">
+        <h2>Targets are your team's policy</h2>
+        <p>Defaults live in your team's content, in <code>tasks/task-types.yml</code>. They are policy, not engine
+          limits, and a task copies them when it is made, so editing the file never rewrites history.</p>
+        <pre><code>types:
+  feature:     { targets: { wall_minutes: 240, cost_usd: 25, review_rounds: 3 } }
+  exploratory: { targets: { wall_minutes: 480, cost_usd: 60 } }
+  routine:     { targets: { wall_minutes: 10,  cost_usd: 2 } }
+skill_types:
+  bmad-code-review: { type: review, subject: code }
+tamper_globs: ["**/tests/**", "**/*.test.*", ".github/**"]</code></pre>
+        <p>A brief overrides them with a line such as <code>Targets: wall_minutes=60 cost_usd=5</code>, and
+          <code>task_update</code> can too. <code>targets.source</code> says which won: <code>default</code>,
+          <code>brief</code>, <code>task_start</code> or <code>task_update</code>. With no policy file, targets say
+          why they are unavailable.</p>
+      </section>
+      <section id="outcome" data-search="outcome time cost models review rounds acceptance tamper flag signal_done close abandoned superseded scope rework">
+        <h2>The outcome, as facts</h2>
+        <p>A task closes when its session calls <code>signal_done</code> (<code>success</code> is done; any other
+          verdict is abandoned and the raw verdict is kept), when a headless process exits without signaling,
+          when its routine run ends, or through
+          <code>task_update</code> with <code>done</code>, <code>abandoned</code> or <code>superseded</code>. The
+          first close stands. <code>task_read</code> then returns, next to the targets:</p>
+        <ul>
+          <li><strong>outcome.scope:</strong> <code>session</code> covers the whole linked session, including
+            its subtasks. <code>interval</code> covers every other task's start-to-close interval, including a routine wake on a reused session;</li>
+          <li><strong>time:</strong> wall, active and idle, from the linked sessions' turns. An interval task
+            counts only its own interval and stops growing when closed;</li>
+          <li><strong>cost and models:</strong> from the same usage <code>session_usage</code> shows.
+            All native conversations attributed to the launch count, including work after
+            <code>/clear</code>. An interval task uses only model calls timestamped inside its interval. Missing timing or
+            attributable usage says <code>unavailable</code> with a reason;</li>
+          <li><strong>review rounds:</strong> the review tasks that relate to this one;</li>
+          <li><strong>acceptance:</strong> whatever the lead set with <code>acceptanceMet</code>;</li>
+          <li><strong>tamper:</strong> whether files matching the policy's <code>tamper_globs</code> were edited
+            between the commit the task started at and the end of the task, committed or not. The files are
+            listed. While evidence is being captured, <code>unavailable.tamper</code> gives a pending
+            reason. If the app stops before capture finishes, that reason remains pending;</li>
+          <li><strong>planned vs actual scope and rework:</strong> <code>outcome.plannedVsActual</code> compares the task's commit files with the story's Touchpoints; note session ids link exactly, otherwise commits within its interval are associated. If a selected commit’s note cannot be read locally, interval files remain visible with unknown basis and an attribution-unavailable reason.
+            <code>outcome.rework</code> gives commits and files changed after its first closed review that touch files the task changed. Missing evidence says why in <code>unavailable</code>. Both <code>task_read</code> and <code>task_list</code> return these live facts. <code>outcome.scope</code> remains the time-attribution scope (<code>session</code> or <code>interval</code>).
+            This change-scope evidence is separate from the time/cost coverage in <code>outcome.scope</code>.</li>
+        </ul>
+        <p>A <code>label</code> (good or bad, with why, who and when) is kept for calibration. Judging the work,
+          and finding patterns across reviews, belongs to the agent design team, not to CodeSense.</p>
+      </section>
+    </main>
+  </body>
+</html>

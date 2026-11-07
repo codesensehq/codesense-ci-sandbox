@@ -1,0 +1,7 @@
+{
+  "name": "guard-fixture-e",
+  "private": true,
+  "dependencies": {
+    "vt100": "0.0.0"
+  }
+}

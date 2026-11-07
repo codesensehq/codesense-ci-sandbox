@@ -1,0 +1,373 @@
+{
+  "schema": 1,
+  "families": [
+    {
+      "id": "records",
+      "title": "Folder collections",
+      "tools": ["records_collections", "records_list", "records_read", "records_search", "records_history", "records_read_at", "records_create", "records_write", "records_set_fields", "records_delete", "records_restore"],
+      "docs": "arc-i-dashboard-primitives/records.html",
+      "searchTerms": ["folder", "collections"],
+      "calls": [{"tool": "records_collections", "arguments": {}}]
+    },
+    {
+      "id": "local-setup",
+      "title": "Local organizations and setup",
+      "tools": ["create_local_organization", "attach_context_repository", "list_context_attachments", "detach_context_repository", "commit_registry_edit_local", "save_source_repo_attachment", "describe_setup", "list_orgs_teams", "set_active_team"],
+      "docs": "arc-b-model/orgs.html",
+      "searchTerms": ["local", "organizations", "setup"],
+      "calls": [{"tool": "list_orgs_teams", "arguments": {}}]
+    },
+    {
+      "id": "routine-authoring",
+      "title": "Routine trigger authoring",
+      "tools": ["routine_create", "routine_update"],
+      "docs": "arc-g-routines/trigger-cookbook.html",
+      "searchTerms": ["routine", "events", "triggers"],
+      "calls": [{"tool": "routine_create", "arguments": {"name": "Review mail", "agent": "default", "task": "Read reviewer mail and report the result.", "events": [{"kind": "role_pending", "role": "reviewer"}], "dryRun": true}}]
+    },
+    {
+      "id": "routines",
+      "title": "Routines and private dashboard results",
+      "tools": ["routine_list", "routine_set_enabled", "routine_run_now", "routine_runs", "routine_cancel"],
+      "docs": "arc-g-routines/index.html",
+      "searchTerms": ["routines", "private", "dashboard", "results"],
+      "calls": [{"tool": "routine_list", "arguments": {}}, {"tool": "routine_cancel", "arguments": {"runId": "<run_id from routine_runs>"}}]
+    },
+    {
+      "id": "routines-routine-yml",
+      "title": "Routine reading and results",
+      "tools": ["routine_get", "routine_delete", "routine_context", "routine_publish_result", "routine_result", "routine_arm_on"],
+      "docs": "arc-g-routines/routine-yml.html",
+      "searchTerms": ["routine", "reading", "results"],
+      "calls": [{"tool": "routine_get", "arguments": {"id": "<id from routine_list>"}}]
+    },
+    {
+      "id": "discovery",
+      "title": "Finding tools",
+      "tools": ["codesense_search_tools", "codesense_get_tool_schema", "codesense_call_tool"],
+      "docs": "mcp-explorer.html",
+      "searchTerms": ["finding", "tools"],
+      "calls": [{"tool": "codesense_search_tools", "arguments": {"query": "dashboard"}}]
+    },
+    {
+      "id": "inbox",
+      "title": "Inbox and messages",
+      "tools": ["send_message", "reply", "send_role_message", "claim_role_messages"],
+      "docs": "arc-f-inboxes-and-triage/index.html",
+      "searchTerms": ["inbox", "messages"],
+      "calls": [{"tool": "send_message", "arguments": {"to": "human", "text": "Status update"}}]
+    },
+    {
+      "id": "inbox-messages",
+      "title": "Reading inbox mail",
+      "tools": ["read_messages", "inbox_list", "react"],
+      "docs": "arc-f-inboxes-and-triage/messages.html",
+      "searchTerms": ["reading", "inbox", "mail"],
+      "calls": [{"tool": "read_messages", "arguments": {}}]
+    },
+    {
+      "id": "machines",
+      "title": "Remote machines",
+      "tools": ["list_machines"],
+      "docs": "arc-d-terminals-and-machines/index.html",
+      "searchTerms": ["remote", "machines"],
+      "calls": [{"tool": "list_machines", "arguments": {"orgSlug": "example/team-context"}}]
+    },
+    {
+      "id": "machines-remote-workspaces",
+      "title": "Remote workspaces",
+      "tools": ["prepare_remote_workspace", "move_workspace", "remote_workspace_fetch"],
+      "docs": "arc-d-terminals-and-machines/remote-workspaces.html",
+      "searchTerms": ["remote", "workspaces"],
+      "calls": [{"tool": "prepare_remote_workspace", "arguments": {"machineId": "<machineId from list_machines>", "teamKey": "acme:engineering", "workspaceId": "<workspace id>", "sourceRepo": {"owner": "acme", "repo": "app"}, "requestId": "6f1c2e0a-8f55-4a3e-9d57-0b6a1b0f6c11", "baseRef": "main", "branch": "feature/example", "repoPath": "/home/dev/repos/app", "worktreePath": "/home/dev/worktrees/app-example"}}]
+    },
+    {
+      "id": "stories",
+      "title": "Stories and planning",
+      "tools": ["get_story_format", "validate_story", "list_source_repos", "read_epic_repos", "set_epic_repos"],
+      "docs": "arc-h-pipelines-and-sdlc/runs-and-stories.html",
+      "searchTerms": ["stories", "planning"],
+      "calls": [{"tool": "get_story_format", "arguments": {}}]
+    },
+    {
+      "id": "workspaces",
+      "title": "Workspaces and terminals",
+      "tools": ["open_workspace"],
+      "docs": "arc-c-workspaces-and-worktrees/index.html",
+      "searchTerms": ["workspaces", "terminals"],
+      "calls": [{"tool": "open_workspace", "arguments": {"story_id": "DEMO-13"}}]
+    },
+    {
+      "id": "workspaces-workspace-and-tab-lifecycle",
+      "title": "Terminal tab control",
+      "tools": ["send_to_session", "open_terminal_tab", "run_in_terminal_tab", "read_terminal_tab"],
+      "docs": "arc-c-workspaces-and-worktrees/workspace-and-tab-lifecycle.html",
+      "searchTerms": ["terminal", "tab", "control"],
+      "calls": [{"tool": "read_terminal_tab", "arguments": {"handle": "tab-handle"}}]
+    },
+    {
+      "id": "agent",
+      "title": "Talking to the user",
+      "tools": ["ask_user", "signal_progress", "signal_done", "post_agent_message"],
+      "docs": "arc-e-agents/mcp-only-agents.html",
+      "searchTerms": ["talking", "user"],
+      "calls": [{"tool": "signal_progress", "arguments": {"sessionId": "your-session-id", "phase": "dev"}}]
+    },
+    {
+      "id": "feedback",
+      "title": "Feedback",
+      "tools": ["feedback_send"],
+      "docs": "arc-n-reference/troubleshooting.html",
+      "searchTerms": ["feedback"],
+      "calls": [{"tool": "feedback_send", "arguments": {"kind": "idea", "text": "Show the active team beside the tool search."}}]
+    },
+    {
+      "id": "context",
+      "title": "Hydrate and reverse sync",
+      "tools": ["hydrate_story", "hydrate_worktree", "preview_reverse_sync_worktree", "reverse_sync_worktree"],
+      "docs": "arc-k-sync/index.html",
+      "searchTerms": ["hydrate", "reverse", "sync"],
+      "calls": [{"tool": "preview_reverse_sync_worktree", "arguments": {"target": {"kind": "local", "codeRepoPath": "/Users/me/worktrees/app-example", "sessionId": "<your $CODESENSE_TAB_SESSION_ID>"}}}]
+    },
+    {
+      "id": "context-content-files",
+      "title": "Content files and search",
+      "tools": ["query_context", "move_content_file", "delete_content_file"],
+      "docs": "arc-k-sync/file-tools.html",
+      "searchTerms": ["content", "files", "search"],
+      "calls": [{"tool": "query_context", "arguments": {"where": {"teams": ["parent"]}}}]
+    },
+    {
+      "id": "context-moving-between-contexts",
+      "title": "Sync state",
+      "tools": ["list_hydrated", "get_sync_status", "route_file_to_context", "unroute_file_from_context"],
+      "docs": "arc-k-sync/moving-between-contexts.html",
+      "searchTerms": ["sync", "state"],
+      "calls": [{"tool": "list_hydrated", "arguments": {"target": {"kind": "local", "codeRepoPath": "/Users/me/worktrees/app-example", "sessionId": "<your $CODESENSE_TAB_SESSION_ID>"}}}]
+    },
+    {
+      "id": "context-layer-tools",
+      "title": "Legacy sense_sync",
+      "tools": ["sense_sync_list_layers", "sense_sync_read_layer_file", "sense_sync_read_lockfile", "sense_sync_adopt", "sense_sync_move_layer"],
+      "docs": "arc-k-sync/layer-tools.html",
+      "searchTerms": ["legacy", "sense_sync"],
+      "calls": [{"tool": "sense_sync_list_layers", "arguments": {}}]
+    },
+    {
+      "id": "worktrees",
+      "title": "Worktree config",
+      "tools": ["read_worktree_config", "write_worktree_config"],
+      "docs": "arc-c-workspaces-and-worktrees/index.html",
+      "searchTerms": ["worktree", "config"],
+      "calls": [{"tool": "read_worktree_config", "arguments": {"repoPath": "/path/to/repository"}}]
+    },
+    {
+      "id": "dashboards",
+      "title": "Pages, dashboards and panes",
+      "tools": ["pane_write", "create_dashboard", "get_live_data_contract", "pane_list", "pane_open", "publish_dashboard", "share_dashboard", "unpublish_dashboard", "validate_live_data_doc"],
+      "docs": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "searchTerms": ["dashboard", "pane", "page", "publish"],
+      "calls": [{"tool": "pane_write", "arguments": {"id": "hello", "html": "<!doctype html><html><body><h1>Hello</h1></body></html>"}}]
+    },
+    {
+      "id": "canvas",
+      "title": "Canvases",
+      "tools": ["apply_canvas", "render_canvas"],
+      "docs": "arc-i-dashboard-primitives/calling-codesense.html",
+      "searchTerms": ["canvases"],
+      "calls": [{"tool": "render_canvas", "arguments": {"path": "/path/to/diagram.excalidraw"}}]
+    },
+    {
+      "id": "app",
+      "title": "App state",
+      "tools": ["health_ping", "get_viewer_state", "set_viewer_state"],
+      "docs": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "searchTerms": ["state"],
+      "calls": [{"tool": "health_ping", "arguments": {}}]
+    },
+    {
+      "id": "arc-d",
+      "title": "Machine declarations",
+      "tools": ["set_machine_remote_mcp_control", "list_ssh_sources", "test_machine_connection", "save_machine", "resolve_machine_identity", "set_machine_hidden", "set_machine_auto_connect", "unshare_machine", "remove_machine", "connect_machine", "disconnect_machine", "retry_machine", "capture_machine_passphrase"],
+      "docs": "arc-d-terminals-and-machines/machine-tools.html",
+      "searchTerms": ["machine", "declarations"],
+      "calls": [{"tool": "set_machine_remote_mcp_control", "arguments": {"machineId": "<machineId from list_machines>", "enabled": false}}]
+    },
+    {
+      "id": "arc-d-terminal-servers",
+      "title": "Terminal servers",
+      "tools": ["install_terminal_server", "prepare_machine_terminal_server_replacement", "restart_machine_terminal_server", "list_out_of_date_terminal_servers", "update_terminal_servers", "terminal_server_status", "stop_terminal_server", "start_terminal_server", "restart_terminal_server", "end_unowned_terminal_session"],
+      "docs": "arc-d-terminals-and-machines/terminal-servers.html",
+      "searchTerms": ["terminal", "servers"],
+      "calls": [{"tool": "terminal_server_status", "arguments": {}}]
+    },
+    {
+      "id": "agents",
+      "title": "Saved agents and avatars",
+      "tools": ["agent_list", "agent_get", "agent_preview", "agent_create", "agent_update", "agent_delete", "agent_restore", "agent_unarchive", "avatar_list", "avatar_add", "avatar_share"],
+      "docs": "arc-e-agents/agent-design.html",
+      "searchTerms": ["agent", "avatar", "saved", "permission", "context"],
+      "calls": [{"tool": "agent_list", "arguments": {}}]
+    },
+    {
+      "id": "arc-c",
+      "title": "Worktrees",
+      "tools": ["list_worktrees"],
+      "docs": "arc-c-workspaces-and-worktrees/index.html",
+      "searchTerms": ["worktrees"],
+      "calls": [{"tool": "list_worktrees", "arguments": {}}]
+    },
+    {
+      "id": "arc-c-workspace-and-tab-lifecycle",
+      "title": "Workspace and tab lifecycle",
+      "tools": ["open_remote_tab", "list_move_intents", "update_workspace_base", "list_sessions", "rename_terminal_tab", "close_terminal_tab", "close_workspace", "workspace_group_list", "workspace_group_create", "workspace_group_rename", "workspace_group_set_members", "workspace_group_add", "workspace_group_remove", "workspace_group_delete", "rename_workspace"],
+      "docs": "arc-c-workspaces-and-worktrees/workspace-and-tab-lifecycle.html",
+      "searchTerms": ["workspace", "tab", "lifecycle"],
+      "calls": [{"tool": "workspace_group_list", "arguments": {}}]
+    },
+    {
+      "id": "arc-a",
+      "title": "Getting started and identity",
+      "tools": ["codesense_overview", "update_codesense_docs", "who_am_i"],
+      "docs": "arc-a-first-touch/identity-menu-and-switcher.html",
+      "searchTerms": ["getting", "started", "and", "identity"],
+      "calls": [{"tool": "codesense_overview", "arguments": {}}]
+    },
+    {
+      "id": "arc-i",
+      "title": "Commands and rendered documents",
+      "tools": ["reorder_workspace", "command_list", "command_run", "read_rendered_document"],
+      "docs": "arc-i-dashboard-primitives/calling-codesense.html",
+      "searchTerms": ["commands", "and", "rendered", "documents"],
+      "calls": [{"tool": "command_list", "arguments": {}}]
+    },
+    {
+      "id": "arc-k",
+      "title": "Context repo status",
+      "tools": ["context_repo_status", "report_context_sync"],
+      "docs": "arc-k-sync/index.html",
+      "searchTerms": ["context", "repo", "status"],
+      "calls": [{"tool": "context_repo_status", "arguments": {}}]
+    },
+    {
+      "id": "arc-k-moving-between-contexts",
+      "title": "Moving between contexts",
+      "tools": ["forget_missing_workspace", "context_operation_status", "cancel_context_operation", "context_repo_history", "move_between_contexts", "copy_between_contexts", "remove_from_context", "remove_source_repo"],
+      "docs": "arc-k-sync/moving-between-contexts.html",
+      "searchTerms": ["moving", "between", "contexts"],
+      "calls": [{"tool": "forget_missing_workspace", "arguments": {"machineId": "<machineId from list_machines>", "workspaceHandle": "<workspaceHandle from get_sync_status>"}}]
+    },
+    {
+      "id": "arc-k-content-files",
+      "title": "Content files",
+      "tools": ["read_content_file", "create_content_file", "refresh_frontmatter_cache", "list_context_content"],
+      "docs": "arc-k-sync/file-tools.html",
+      "searchTerms": ["content", "files"],
+      "calls": [{"tool": "read_content_file", "arguments": {"path": "stories/example.md"}}]
+    },
+    {
+      "id": "arc-l",
+      "title": "Notes and team management",
+      "tools": ["notes_list", "notes_read", "notes_create", "notes_write", "notes_search", "notes_history", "notes_read_at", "notes_restore", "get_publish_set", "set_private_items_use", "create_team", "rename_team", "archive_team", "delete_team", "set_team_parent", "set_team_starter_page", "add_source_repo", "attach_source_repo_path"],
+      "docs": "arc-l-factory/team-and-notes-tools.html",
+      "searchTerms": ["notes", "and", "team", "management"],
+      "calls": [{"tool": "notes_list", "arguments": {}}]
+    },
+    {
+      "id": "arc-e",
+      "title": "Agent evidence and usage",
+      "tools": ["report_step_result", "report_artifact", "session_usage", "session_read", "wv_spawn_worker", "wv_report_handoff", "wv_report_cycle", "dismiss_agent_mark"],
+      "docs": "arc-e-agents/mcp-only-agents.html",
+      "searchTerms": ["agent", "evidence", "and", "usage"],
+      "calls": [{"tool": "session_usage", "arguments": {}}]
+    },
+    {
+      "id": "attribution",
+      "title": "Committed line attribution",
+      "tools": ["why_line", "refresh_history"],
+      "docs": "arc-e-agents/mcp-only-agents.html",
+      "searchTerms": ["attribution", "line", "why", "git-ai", "commit", "session", "squash", "shallow", "fetch", "history", "refresh"],
+      "calls": [{"tool": "why_line", "arguments": {"repo": "acme/api", "story": "DEMO-19", "path": "src/lib.rs", "start": 40, "end": 60}}, {"tool": "refresh_history", "arguments": {"repo": "acme/api", "storyId": "DEMO-19"}}]
+    },
+    {
+      "id": "story-contributions",
+      "title": "Story contributions and task outcomes",
+      "tools": ["story_changes", "story_totals"],
+      "docs": "arc-e-agents/mcp-only-agents.html",
+      "searchTerms": ["story", "sessions", "cost", "time", "reviews", "commits", "files", "planned", "task", "outcome", "interval", "lines", "ai share", "human", "merged", "totals", "batch", "index", "pending"],
+      "calls": [{"tool": "story_changes", "arguments": {"storyId": "DEMO-29", "limit": 50, "include": ["ranges"]}}, {"tool": "story_totals", "arguments": {"storyIds": ["DEMO-29", "DEMO-140"]}}]
+    },
+    {
+      "id": "tasks",
+      "title": "Task records",
+      "tools": ["task_start", "task_update", "task_list", "task_read"],
+      "docs": "arc-e-agents/tasks.html",
+      "searchTerms": ["task", "goal", "targets", "outcome", "review", "label", "tamper"],
+      "calls": [{"tool": "task_list", "arguments": {"sessionId": "your-session-id", "status": "open"}}, {"tool": "task_read", "arguments": {"sessionId": "your-session-id", "taskId": "<taskId from task_list>"}}]
+    },
+    {
+      "id": "arc-g",
+      "title": "Routine runs and scheduled wakeups",
+      "tools": ["routine_run", "schedule_wakeup"],
+      "docs": "arc-g-routines/index.html",
+      "searchTerms": ["routine", "runs", "scheduled", "wakeups"],
+      "calls": [{"tool": "schedule_wakeup", "arguments": {"sessionId": "your-session-id", "prompt": "Check the build", "in": "20m"}}]
+    },
+    {
+      "id": "arc-g-routine-yml",
+      "title": "Routine run and wakeup tools",
+      "tools": ["routine_refresh_on_machine", "routine_handover_release", "routine_done", "list_wakeups", "cancel_wakeup"],
+      "docs": "arc-g-routines/routine-yml.html",
+      "searchTerms": ["routine", "run", "wakeup", "tools"],
+      "calls": [{"tool": "list_wakeups", "arguments": {"sessionId": "your-session-id"}}]
+    },
+    {
+      "id": "arc-h",
+      "title": "Agent runs",
+      "tools": ["list_runs", "list_run_events", "read_run", "read_run_evidence", "read_run_work_product"],
+      "docs": "arc-h-pipelines-and-sdlc/runs-and-stories.html",
+      "searchTerms": ["agent", "runs"],
+      "calls": [{"tool": "list_runs", "arguments": {}}]
+    },
+    {
+      "id": "arc-h-weft-coordination",
+      "title": "Weft coordination",
+      "tools": ["wv_write_decision", "wv_retire_decision", "wv_write_approval", "wv_classify_action", "wv_settle_approval", "wv_check_t2_window", "wv_close_t2_window", "wv_pause_t2_windows", "wv_resume_t2_windows", "wv_read_posture", "wv_set_posture", "wv_upsert_watermark", "wv_upsert_attention", "wv_post_assertion", "wv_scope_state", "wv_watch_list", "wv_write_dispatch", "wv_dispatch_state", "wv_verify_done", "wv_handoff_state", "wv_read_recent", "wv_wait", "wv_enqueue", "wv_claim_queue", "wv_resolve_queue", "wv_mark_dispatched", "wv_close_task", "wv_queue_list", "wv_coord_read", "wv_peer_read_file", "wv_escalate", "wv_audit_query", "wv_audit_prune", "wv_list_overdue_harvests", "wv_open_t2_window"],
+      "docs": "arc-h-pipelines-and-sdlc/weft-coordination.html",
+      "searchTerms": ["weft", "coordination"],
+      "calls": [{"tool": "wv_write_decision", "arguments": {"date": "2026-10-23", "decision": "Docs pages describe mechanisms only", "constrains": "codesense-docs reference pages", "endsWhen": "The docs policy is replaced"}}]
+    },
+    {
+      "id": "arc-f",
+      "title": "Role registration and claims",
+      "tools": ["register_role", "accept_role_message", "ack_role_message"],
+      "docs": "arc-f-inboxes-and-triage/index.html",
+      "searchTerms": ["role", "registration", "claims"],
+      "calls": [{"tool": "register_role", "arguments": {"team": {"org": "example/team-context", "team": "engineering"}, "role": "reviewer"}}]
+    },
+    {
+      "id": "arc-f-messages",
+      "title": "Roles and workspace chat",
+      "tools": ["roles_list", "role_save", "inbox_post", "release_role", "get_human_status", "mark_unread", "role_state", "workspace_chat_send", "workspace_chat_read"],
+      "docs": "arc-f-inboxes-and-triage/messages.html",
+      "searchTerms": ["roles", "workspace", "chat"],
+      "calls": [{"tool": "roles_list", "arguments": {"teamKey": "example/team-context:engineering"}}]
+    },
+    {
+      "id": "accounts",
+      "title": "Remote tasks and model prices",
+      "tools": ["enroll_private_machine_account", "start_remote_agent_task", "read_remote_agent_task", "cancel_remote_agent_task", "model_rates", "set_model_rate", "list_agent_updates"],
+      "docs": "arc-e-agents/spend-caps.html",
+      "searchTerms": ["model", "price", "rate", "remote task"],
+      "calls": [{"tool": "model_rates", "arguments": {}}]
+    },
+    {
+      "id": "agent-accounts",
+      "title": "Agent accounts",
+      "tools": ["list_agent_accounts", "get_active_agent_account", "resolve_agent_account", "set_active_agent_account"],
+      "docs": "arc-e-agents/agent-accounts.html",
+      "searchTerms": ["account", "login", "active", "claude", "codex"],
+      "calls": [{"tool": "list_agent_accounts", "arguments": {}}]
+    }
+  ]
+}

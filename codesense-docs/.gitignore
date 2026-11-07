@@ -1,0 +1,14 @@
+# What CodeSense or your agents keep here on your machine stays out of git, so
+# updating the docs never touches it.
+.DS_Store
+_codesense/
+_org/
+.weft/
+.weft-local/
+*.sqlite3
+*.sqlite3-*
+*/install/
+*/libraries/
+*/repos/
+*/baseline/
+*/content/designations.yml

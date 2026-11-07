@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		For codesense-emulator only (scripts/build-emulator.sh signs it with
+		this file). The worker is a compiled Bun: JavaScriptCore needs MAP_JIT
+		under the hardened runtime, and without this entitlement Bun still
+		starts but silently runs with its JIT off, about 35x slower. The app
+		binary and the other sidecars carry no entitlements.
+	-->
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+</dict>
+</plist>

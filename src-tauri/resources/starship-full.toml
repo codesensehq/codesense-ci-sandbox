@@ -1,0 +1,32 @@
+format = "$directory$git_branch$git_status$nodejs$rust$cmd_duration$character"
+
+[character]
+success_symbol = "[❯](bold blue)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+style = "bold white"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "yellow"
+format = "[$all_status$ahead_behind]($style)"
+
+[nodejs]
+style = "bold green"
+format = "[$symbol($version)]($style) "
+detect_files = ["package.json"]
+
+[rust]
+style = "bold red"
+format = "[$symbol($version)]($style) "
+
+[cmd_duration]
+style = "bright-black"
+min_time = 2000
+format = "[$duration]($style) "

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Massively parallel workers</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-edge.is-trigger {
+        stroke: var(--cs-accent, var(--role-triager));
+        stroke-dasharray: 3 3;
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      pre code {
+        font-size: 12px;
+      }
+
+      .arcf-props {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .arcf-prop {
+        padding: 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+      }
+      .arcf-prop h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-prop p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/parallel">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Massively parallel — N builders off one queue" id="hero">
+        <h1>N builders. One queue.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A triager fans story deliveries across N shards; each shard is a worker claiming off its own role queue."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- triager head -->
+            <g class="glyph-node" data-role="triager" transform="translate(40 150)">
+              <rect width="140" height="60" rx="8" />
+              <text x="70" y="30" text-anchor="middle">manager</text>
+              <text x="70" y="46" text-anchor="middle" class="sub">dispatches by story</text>
+            </g>
+
+            <!-- 6 builder shards -->
+            <g class="glyph-node" data-role="builder" transform="translate(260 40)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">builder-DEMO-1</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(260 86)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">builder-DEMO-2</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(260 132)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">builder-DEMO-3</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(260 178)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">builder-DEMO-4</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(260 224)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">builder-DEMO-5</text>
+            </g>
+            <g class="glyph-node" data-role="reviewer" transform="translate(260 270)">
+              <rect width="200" height="34" rx="4" />
+              <text x="100" y="22" text-anchor="middle">reviewer</text>
+            </g>
+
+            <!-- fan-out edges -->
+            <path class="glyph-edge" d="M180 170 L 260 56" />
+            <path class="glyph-edge" d="M180 174 L 260 102" />
+            <path class="glyph-edge" d="M180 178 L 260 148" />
+            <path class="glyph-edge" d="M180 184 L 260 194" />
+            <path class="glyph-edge" d="M180 188 L 260 240" />
+            <path class="glyph-edge" d="M180 194 L 260 286" />
+
+            <!-- machine badges -->
+            <g transform="translate(490 46)">
+              <rect
+                width="100"
+                height="24"
+                rx="4"
+                fill="color-mix(in srgb, var(--role-builder) 20%, var(--cs-surface))"
+                stroke="var(--role-builder)"
+              />
+              <text x="50" y="16" text-anchor="middle" class="glyph-mbadge">mac-A</text>
+            </g>
+            <g transform="translate(490 92)">
+              <rect
+                width="100"
+                height="24"
+                rx="4"
+                fill="color-mix(in srgb, var(--role-builder) 20%, var(--cs-surface))"
+                stroke="var(--role-builder)"
+              />
+              <text x="50" y="16" text-anchor="middle" class="glyph-mbadge">mac-B</text>
+            </g>
+            <g transform="translate(490 138)">
+              <rect
+                width="100"
+                height="24"
+                rx="4"
+                fill="color-mix(in srgb, var(--role-builder) 20%, var(--cs-surface))"
+                stroke="var(--role-builder)"
+              />
+              <text x="50" y="16" text-anchor="middle" class="glyph-mbadge">mac-A</text>
+            </g>
+            <g transform="translate(490 184)">
+              <rect
+                width="100"
+                height="24"
+                rx="4"
+                fill="color-mix(in srgb, var(--role-builder) 20%, var(--cs-surface))"
+                stroke="var(--role-builder)"
+              />
+              <text x="50" y="16" text-anchor="middle" class="glyph-mbadge">remote</text>
+            </g>
+            <g transform="translate(490 230)">
+              <rect
+                width="100"
+                height="24"
+                rx="4"
+                fill="color-mix(in srgb, var(--role-builder) 20%, var(--cs-surface))"
+                stroke="var(--role-builder)"
+              />
+              <text x="50" y="16" text-anchor="middle" class="glyph-mbadge">remote</text>
+            </g>
+
+            <!-- trigger -->
+            <path class="glyph-edge is-trigger" d="M20 180 C 2 180, 2 150, 40 170" />
+            <text x="12" y="140" class="glyph-mbadge">inbox_idle · 2m</text>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              One role per story. One session per role. Any machine. Any count.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Why one role per story scales" id="why">
+        <p>
+          Here's the "massively parallel" claim made concrete. You've got a 50-story epic. You want
+          five Claudes building five stories at once, each in its own worktree, each wired to its
+          own role queue, scattered across however many Macs you have plugged in. CodeSense lets you
+          shard a single <strong>builder</strong> dispatch by giving every story its own role name
+          (<code>builder-DEMO-1</code>, <code>builder-DEMO-2</code>, …), binding one session
+          per role, and letting <code>inbox_idle</code> wake whichever one has mail. No central
+          scheduler, no shared mutable state, no polling.
+        </p>
+      </section>
+
+      <section data-search="Four properties that make it scale" id="props">
+        <h2>Why it scales</h2>
+        <div class="arcf-props">
+          <div class="arcf-prop">
+            <h3>One holder per role</h3>
+            <p>
+              <code>exclusive: true</code> gives each shard a dedicated inbox. Zero contention; no
+              "which builder picked it up" ambiguity.
+            </p>
+          </div>
+          <div class="arcf-prop">
+            <h3>Queue persistence</h3>
+            <p>
+              A builder session dies — the queue is intact. The next
+              <code>register_role</code> resumes with <code>acceptedUnacked</code> in hand.
+            </p>
+          </div>
+          <div class="arcf-prop">
+            <h3>Machine-agnostic</h3>
+            <p>
+              A role lives in the team workspace, not on a machine. Launch the holding session on
+              <em>any</em> Mac — <code>open_workspace {machineId}</code>.
+            </p>
+          </div>
+          <div class="arcf-prop">
+            <h3>Reactive, not polled</h3>
+            <p>
+              A wake routine on <code>inbox_idle</code> wakes its agent's session that has the mail.
+              Idle shards cost nothing.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="How to shard a dispatch across N builders" id="shard">
+        <h2>Sharding the builder role</h2>
+        <ol>
+          <li>
+            <strong>Pick a shard key.</strong> Story ID is the easiest and makes dashboards legible:
+            <code>builder-DEMO-1</code>, <code>builder-DEMO-2</code>, …
+          </li>
+          <li>
+            <strong>Launch one worker per shard.</strong> The Manager's loop does this on dispatch:
+            <code
+              >open_workspace {target: "story", story_id, name: "builder-DEMO-1", agent:
+              "builder"}</code
+            >. The worker registers the matching role on startup.
+          </li>
+          <li>
+            <strong>Address each shard by name.</strong> The Manager sends the brief with
+            <code>send_role_message {team, role: "builder-DEMO-1", text, replyTo: "role:manager"}</code>.
+            The thread's replies loop back to the manager's queue.
+          </li>
+          <li>
+            <strong>Wake only the ones that need waking.</strong> Give the Builder agent a <code>role_pending</code> routine whose task checks
+            <code>role_state</code> and claims its shard queue. That event is broad, without a role
+            filter, so the task must choose its queue. Use <code>inbox_idle</code> only for mail
+            addressed directly to a session. See the <a href="../arc-g-routines/trigger-cookbook.html#role_pending">role-pending recipe</a>.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Dispatch routine seed sketch" id="seed">
+        <h2>Routine &amp; agent — matching snippet</h2>
+        <pre><code># agent.yaml — one Builder definition reused across shards
+id: builder
+name: Builder
+description: Builds a single story end-to-end, holds a per-story role queue, reports back.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/bmad-build/
+default_prompt: /bmad-build
+revision: 1
+
+---
+
+# config/agents/builder/routines/builder-wake/routine.yml — wakes the shard with mail
+id: builder-wake
+name: Wake the builder
+owner: codesense
+mode: wake
+task: |
+  Unread mail on your builder shard. Call claim_role_messages for your
+  role and resume /bmad-build.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: inbox_idle
+policy:
+  max_runtime: 30m
+runs_on: each_mac
+revision: 1</code></pre>
+      </section>
+
+      <section data-search="Dashboards that visualize parallel work" id="dashboards">
+        <h2>Dashboards that show the shards</h2>
+        <ul>
+          <li>
+            <strong><a href="../mcp-explorer.html">agent-dag</a></strong> — one node per session,
+            grouped under the Manager that launched it. Live state (running, idle, needs-you).
+          </li>
+          <li>
+            <strong><a href="../inbox-flows.html">inbox-flows</a></strong> — the dispatch card
+            renders your N builders as live chips; the detail sheet shows the actual seed thread for
+            a chosen shard.
+          </li>
+          <li>
+            <strong><a href="../factory-playbook.html">factory-playbook</a></strong> — Phase 8
+            (Build, parallel) is the braid animation that captures this shape at full tilt.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — list builder shards" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List every <code>builder-*</code> session in your editable context repo. This is the view
+          the manager uses to decide who to brief next.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "list_sessions", "args": {"rolePrefix": "builder-"}}'
+          label="List builder shards"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Launch one shard per story
+for (const story of stories) {
+  codesense.invoke('open_workspace', {
+    target: 'story',
+    story_id: story.id,
+    name: `builder-${story.id}`,
+    agent: 'builder',
+    machine_id: pickMachine(story),
+    launched_by: managerSessionId,
+  })
+}
+
+// Dispatch each brief addressed to the shard's role name
+for (const story of stories) {
+  codesense.invoke('send_role_message', {
+    team, role: `builder-${story.id}`,
+    text: brief(story),
+    sender: managerSessionId,
+    replyTo: 'role:manager',
+  })
+}</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./patterns.html">← Patterns</a> · Next:
+        <a href="./flexibility.html">Build your own →</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> ·
+        <a href="../mcp-explorer.html#tool/list_sessions">list_sessions</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Massively parallel</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

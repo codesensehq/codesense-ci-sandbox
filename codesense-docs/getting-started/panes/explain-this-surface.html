@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="scan-text" />
+    <title>Explain this surface · CodeSense</title>
+
+    <!-- Shared chrome (lands with the arc shell). -->
+
+    <script>
+      window.__codesenseThemeAware = true;
+    </script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+      }
+
+      /* ---------------- Pane shell (becomes .cs-pane in cs-docs.css) ---------------- */
+
+      .pane {
+        display: flex; flex-direction: column;
+        max-width: 360px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+
+      .pane__header {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        height: 36px;
+        padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--cs-accent);
+        flex: 0 0 auto;
+      }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title {
+        margin: 0; font-size: var(--cs-text-base); font-weight: 600;
+        letter-spacing: -0.005em;
+      }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg);
+        width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer;
+        padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs);
+        line-height: 1.5;
+        color: var(--cs-muted-fg);
+        font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px;
+        border-radius: var(--cs-radius-sm);
+        color: var(--cs-fg);
+        font-style: normal;
+      }
+
+      .pane__body {
+        padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3);
+        flex: 1;
+      }
+      .pane__body[data-state="loading"] { opacity: 0.5; }
+
+      /* Cross-fade: transition between context states. Honor reduced motion. */
+      .pane__body {
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .pane__body { transition: none; }
+      }
+
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+
+      .pane__label {
+        display: block;
+        font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+
+      .pane__h {
+        margin: 0 0 var(--cs-space-2);
+        font-size: var(--cs-text-base);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+      }
+
+      .pane__p { margin: 0 0 var(--cs-space-2); color: var(--cs-fg); }
+      .pane__p:last-child { margin-bottom: 0; }
+      .pane__p--muted { color: var(--cs-muted-fg); }
+
+      /* ---------------- CTA row ---------------- */
+      .pane__ctas {
+        display: flex; flex-wrap: wrap; gap: var(--cs-space-2);
+        padding: 0 var(--cs-space-4) var(--cs-space-4);
+      }
+      .cta {
+        appearance: none; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px;
+        font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm);
+        border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta:active { transform: translateY(0.5px); }
+      .cta--primary {
+        background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent);
+      }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta--ghost { border-color: transparent; padding-left: 4px; padding-right: 4px; }
+      .cta svg { width: 14px; height: 14px; }
+
+      /* ---------------- Provenance strip ---------------- */
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4);
+        border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot {
+        width: 4px; height: 4px; border-radius: 50%;
+        background: var(--cs-muted-fg);
+      }
+      .pane__prov a {
+        color: inherit; text-decoration: none;
+        border-bottom: 1px dotted var(--cs-muted-fg);
+      }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local: this pane's chrome ---------------- */
+
+      .arc-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+        color: var(--cs-fg);
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        letter-spacing: -0.005em;
+        margin-bottom: var(--cs-space-3);
+      }
+      .arc-chip .letter {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+      }
+
+      .tldr {
+        font-size: var(--cs-text-base);
+        line-height: 1.55;
+        color: var(--cs-fg);
+      }
+
+      .surface-fact {
+        display: grid; grid-template-columns: 70px 1fr;
+        gap: var(--cs-space-1) var(--cs-space-3);
+        font-size: var(--cs-text-sm); line-height: 1.5;
+      }
+      .surface-fact dt {
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+      .surface-fact dd {
+        margin: 0; color: var(--cs-fg);
+      }
+      .surface-fact dd code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px;
+        border-radius: var(--cs-radius-sm);
+      }
+
+      .mini-steps {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--cs-space-2);
+        counter-reset: step;
+      }
+      /* Use padding + absolute-positioned counter rather than CSS grid: a grid
+         LI makes every inline child (text node, <code>, text node) its own
+         grid item, which pushes any <code> onto a new auto-row and visually
+         overlaps the counter column. Keeping the LI inline-flow lets the step
+         text wrap naturally around <code> tokens. */
+      .mini-steps li {
+        counter-increment: step;
+        position: relative;
+        padding-left: calc(18px + var(--cs-space-2));
+        min-height: 18px;
+        font-size: var(--cs-text-sm); line-height: 1.5;
+        color: var(--cs-fg);
+      }
+      .mini-steps li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0; top: 0;
+        font: 500 var(--cs-text-xs)/16px var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        text-align: center;
+        border: 1px solid var(--cs-border);
+        border-radius: 50%;
+        width: 18px; height: 18px;
+        box-sizing: border-box;
+      }
+      .mini-steps code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px;
+        border-radius: var(--cs-radius-sm);
+        color: var(--cs-fg);
+      }
+
+      /* Loading skeleton for the body before the first slot context arrives. */
+      .skeleton {
+        display: flex; flex-direction: column; gap: var(--cs-space-2);
+      }
+      .skeleton .bar {
+        height: 10px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-radius-sm);
+        border: 1px solid var(--cs-border);
+      }
+      .skeleton .bar.w-60 { width: 60%; }
+      .skeleton .bar.w-85 { width: 85%; }
+      .skeleton .bar.w-45 { width: 45%; }
+    </style>
+  </head>
+
+  <body>
+    <aside
+      class="pane"
+      role="complementary"
+      aria-labelledby="pane-title"
+      data-pane-id="explain-this-surface"
+    >
+      <!-- Header ------------------------------------------------------------- -->
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: scan-text (14px, stroke-1.75) -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+          <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+          <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <path d="M7 8h8"/><path d="M7 12h10"/><path d="M7 16h6"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Explain this surface</h2>
+        <span class="spacer" aria-hidden="true"></span>
+        <button
+          class="pane__collapse"
+          type="button"
+          aria-expanded="true"
+          aria-controls="pane-body"
+          title="Collapse (C)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse pane</span>
+        </button>
+      </header>
+
+      <!-- Why you're seeing me ---------------------------------------------- -->
+      <p class="pane__why" id="pane-why" aria-live="polite">
+        You're reading <strong>factory-playbook.html</strong> — the arc that walks
+        the 14 phases from idea to ship.
+      </p>
+
+      <!-- Body (context-driven) --------------------------------------------- -->
+      <section
+        class="pane__body"
+        id="pane-body"
+        aria-labelledby="pane-title"
+        data-state="ready"
+      >
+        <!-- Section 1: context chip + TL;DR -->
+        <div class="pane__section">
+          <span class="arc-chip">
+            <span class="letter">L</span>
+            <span>The factory</span>
+          </span>
+          <p class="tldr" id="tldr">
+            Many agents, many worktrees, many machines, one coherent crank-turn.
+            Phase 8 is where parallel work happens; Phase 9 is where humans
+            un-stick it. Everything else sequences around those two.
+          </p>
+        </div>
+
+        <!-- Section 2: a tiny fact table -->
+        <div class="pane__section">
+          <span class="pane__label">On this page</span>
+          <dl class="surface-fact">
+            <dt>Arc</dt>
+            <dd>L · The factory</dd>
+            <dt>Mode</dt>
+            <dd>Training (narrative + visuals)</dd>
+            <dt>Live</dt>
+            <dd>Phase-8 braid animation</dd>
+            <dt>MCP</dt>
+            <dd><code>roles</code>, <code>inbox</code>, <code>runs</code></dd>
+          </dl>
+        </div>
+
+        <!-- Section 3: 60-second summary as steps -->
+        <div class="pane__section">
+          <span class="pane__label">60-second summary</span>
+          <ol class="mini-steps">
+            <li>A pipeline enters Phase 8 with stories ready to build.</li>
+            <li>Each ready story wakes one <code>builder</code> agent in its own worktree.</li>
+            <li>Stuck agents escalate to the <code>resolver</code> role (Phase 9).</li>
+            <li>Phase 10 reviewers run while builders are still working elsewhere.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- CTAs -------------------------------------------------------------- -->
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="open-deeper">
+          <!-- book-open -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Deeper dive
+        </button>
+        <button type="button" class="cta" data-cta="open-arc-index">
+          <!-- list -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Arc L index
+        </button>
+      </div>
+
+      <!-- Provenance -------------------------------------------------------- -->
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane</span>
+        <span>·</span>
+        <a href="#" data-nav="docs-org">docs org</a>
+      </footer>
+    </aside>
+
+    <!-- Pane logic:
+         - subscribes to context changes
+         - renders the body for 5+ surface shapes (viewer:html/md, agents:detail,
+           inbox:thread, viewer:excalidraw)
+         - handles collapse (click + 'C' hotkey) with per-surface persistence
+         - honors reduced motion
+         - degrades gracefully when the bridge is unavailable (file:// / baseline).
+    -->
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const header = pane.querySelector('.pane__header');
+        const body = pane.querySelector('.pane__body');
+        const why = pane.querySelector('.pane__why');
+        const title = pane.querySelector('.pane__title');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // ---------- Explanation lookup table ---------------------------------
+        // Shape: match on {surface, filename?, arc?, role?} → explanation payload.
+        // Everything is a fallback chain; the first match wins. The real
+        // registration lives in the arc index JSON — this is the
+        // mock payload the comp uses to show every path.
+        const EXPLAIN = [
+          {
+            match: { surface: 'viewer:html', filename: /factory-playbook/ },
+            why: `You're reading <strong>factory-playbook.html</strong> — the arc that walks the 14 phases from idea to ship.`,
+            arcLetter: 'L', arcName: 'The factory',
+            tldr: `Many agents, many worktrees, many machines, one coherent crank-turn. Phase 8 is where parallel work happens; Phase 9 is where humans un-stick it. Everything else sequences around those two.`,
+            facts: [
+              ['Arc', 'L · The factory'],
+              ['Mode', 'Training (narrative + visuals)'],
+              ['Live', 'Phase-8 braid animation'],
+              ['MCP', '<code>roles</code>, <code>inbox</code>, <code>runs</code>'],
+            ],
+            steps: [
+              'A pipeline enters Phase 8 with stories ready to build.',
+              'Each ready story wakes one <code>builder</code> agent in its own worktree.',
+              'Stuck agents escalate to the <code>resolver</code> role (Phase 9).',
+              'Phase 10 reviewers run while builders are still working elsewhere.',
+            ],
+            ctas: [
+              { label: 'Deeper dive', primary: true, action: { kind: 'open', path: './arc-l-factory/index.html' } },
+              { label: 'Arc L index', primary: false, action: { kind: 'open', path: './arc-l-factory/index.html' } },
+            ],
+          },
+          {
+            match: { surface: 'viewer:html', filename: /inbox-flows/ },
+            why: `You're reading <strong>inbox-flows.html</strong> — how threads and roles route work.`,
+            arcLetter: 'F', arcName: 'Inboxes, triage, workers',
+            tldr: `Inboxes are message-driven queues. Every message carries a role; every agent subscribes to roles; the <code>inbox_idle</code> trigger wakes a worker when a role has work and no one's doing it.`,
+            facts: [
+              ['Arc', 'F · Inboxes'],
+              ['Shape', 'Thread → role → agent'],
+              ['Trigger', '<code>inbox_idle</code>'],
+              ['MCP', '<code>inbox</code>, <code>postMessage</code>, <code>roles</code>'],
+            ],
+            steps: [
+              'Pick a role (<code>builder</code>, <code>reviewer</code>, …).',
+              'Add an agent that subscribes to that role.',
+              'Point a routine at <code>inbox_idle</code> on that role.',
+              'Messages posted to the role wake the agent.',
+            ],
+            ctas: [
+              { label: 'Deeper dive', primary: true, action: { kind: 'open', path: './arc-f-inboxes-and-triage/index.html' } },
+              { label: 'Try the composer', primary: false, action: { kind: 'open', path: './inbox-flows.html#composer' } },
+            ],
+          },
+          {
+            match: { surface: 'agents:detail' },
+            why: ctx => `You're looking at <strong>${ctx.agentName || ctx.agentId || 'an agent'}</strong> — this is its contract.`,
+            arcLetter: 'E', arcName: 'Agents',
+            tldr: `Agents are a <code>agent.yaml</code> file plus skills, plus a CLAUDE.md that primes behavior. Launching an agent resolves its context, copies those files into its workspace, and starts a session.`,
+            facts: ctx => [
+              ['Key', `<code>${ctx.agentId || 'builder-example'}</code>`],
+              ['Role', ctx.role || 'builder'],
+              ['Runtime', ctx.runtime || 'claude-opus-4-7'],
+              ['Team', ctx.team || 'docs-org'],
+            ],
+            steps: [
+              'The agent subscribes to its <code>role</code>.',
+              'A routine with <code>inbox_idle</code> trigger wakes it on messages.',
+              'The agent opens the story\'s worktree via <code>openWorkspace</code>.',
+              'It writes to its own branch; a reviewer picks up the result.',
+            ],
+            ctas: [
+              { label: 'Open agent.yaml', primary: true, action: { kind: 'open', path: 'agent.yaml' } },
+              { label: 'Role recipe', primary: false, action: { kind: 'open', path: './arc-e-agents/designing-for-a-role.html' } },
+            ],
+          },
+          {
+            match: { surface: 'inbox:thread' },
+            why: ctx => `You're reading an inbox thread assigned to <strong>${ctx.role || 'a role'}</strong>.`,
+            arcLetter: 'F', arcName: 'Inboxes',
+            tldr: `This thread is live. Reply with <code>replyAsHuman</code> to answer the agent, or <code>postMessage</code> to add work for its role.`,
+            facts: ctx => [
+              ['Role', ctx.role || 'builder'],
+              ['Messages', ctx.messageCount ?? '—'],
+              ['Last at', ctx.lastAt || '—'],
+              ['Thread', `<code>${ctx.threadId || '—'}</code>`],
+            ],
+            steps: [
+              'Read the latest message in the thread.',
+              'If the agent asked a question, <code>replyAsHuman</code>.',
+              'If you have new work, <code>postMessage</code> to the role.',
+              'Watch the role queue — the next worker will pick it up.',
+            ],
+            ctas: [
+              { label: 'Reply', primary: true, action: { kind: 'focus-composer' } },
+              { label: 'Role recipe', primary: false, action: { kind: 'open', path: './arc-f-inboxes-and-triage/roles.html' } },
+            ],
+          },
+          {
+            match: { surface: 'viewer:markdown' },
+            why: ctx => `You're reading a markdown doc: <code>${ctx.filename || 'unknown.md'}</code>.`,
+            arcLetter: 'I', arcName: 'Dashboards & primitives',
+            tldr: `Markdown docs are planning artifacts (stories, specs, architecture). They are not shipped end-user surfaces — those are HTML. Switch to the matching <code>.html</code> for the user-facing training.`,
+            facts: ctx => [
+              ['Kind', 'planning doc'],
+              ['Path', `<code>${ctx.filename || '—'}</code>`],
+              ['Writable', ctx.isDocsOrg ? 'no (docs org)' : 'yes'],
+              ['MCP', '<code>readWorkspace</code>, <code>setField</code>'],
+            ],
+            steps: [
+              'If this is a story, check <code>status</code> and <code>depends_on</code>.',
+              'If this is a spec, check <code>canonical</code> fields and companions.',
+              'If this is architecture, check the invariants section first.',
+            ],
+            ctas: [
+              { label: 'Open HTML sibling', primary: false, action: { kind: 'open', path: 'sibling.html' } },
+            ],
+          },
+          {
+            match: { surface: 'viewer:excalidraw' },
+            why: ctx => `You're looking at an Excalidraw canvas: <strong>${ctx.filename || 'a diagram'}</strong>.`,
+            arcLetter: 'M', arcName: 'Diagrams-as-code',
+            tldr: `Excalidraw sources ship next to their rendered PNG. Edits here are MCP-driven via <code>apply_canvas</code> / <code>render_canvas</code>. The HTML doc that embeds this diagram will re-render on save.`,
+            facts: [
+              ['Format', '<code>.excalidraw</code>'],
+              ['MCP', '<code>apply_canvas</code>, <code>render_canvas</code>'],
+              ['Renders to', '<code>./*.excalidraw.png</code>'],
+            ],
+            steps: [
+              'Edit the canvas directly or ask an agent to <code>apply_canvas</code>.',
+              'The PNG regenerates on save.',
+              'The embedding HTML doc hot-swaps the sibling image.',
+            ],
+            ctas: [
+              { label: 'Open the embedder', primary: false, action: { kind: 'open', path: 'host-doc.html' } },
+            ],
+          },
+        ];
+
+        // ---------- Render -----------------------------------------------------
+        function pickExplanation(ctx) {
+          for (const row of EXPLAIN) {
+            const m = row.match || {};
+            if (m.surface && m.surface !== ctx.surface) continue;
+            if (m.filename && !m.filename.test(ctx.filename || '')) continue;
+            return row;
+          }
+          return null;
+        }
+
+        function renderBody(row, ctx) {
+          const facts = typeof row.facts === 'function' ? row.facts(ctx) : row.facts;
+          const steps = row.steps || [];
+          const ctas  = row.ctas  || [];
+
+          const html = `
+            <div class="pane__section">
+              <span class="arc-chip">
+                <span class="letter">${row.arcLetter}</span>
+                <span>${row.arcName}</span>
+              </span>
+              <p class="tldr">${typeof row.tldr === 'function' ? row.tldr(ctx) : row.tldr}</p>
+            </div>
+            <div class="pane__section">
+              <span class="pane__label">On this surface</span>
+              <dl class="surface-fact">
+                ${facts.map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}
+              </dl>
+            </div>
+            ${steps.length ? `
+              <div class="pane__section">
+                <span class="pane__label">60-second summary</span>
+                <ol class="mini-steps">
+                  ${steps.map(s => `<li>${s}</li>`).join('')}
+                </ol>
+              </div>
+            ` : ''}
+          `;
+          body.innerHTML = html;
+
+          const ctaRow = pane.querySelector('.pane__ctas');
+          ctaRow.innerHTML = ctas.map((c, i) => `
+            <button type="button"
+                    class="cta ${c.primary ? 'cta--primary' : ''}"
+                    data-cta-idx="${i}">
+              ${c.label}
+            </button>
+          `).join('');
+          ctaRow.querySelectorAll('button').forEach((btn, i) => {
+            btn.addEventListener('click', () => runCta(ctas[i]));
+          });
+        }
+
+        function renderWhy(row, ctx) {
+          why.innerHTML = typeof row.why === 'function' ? row.why(ctx) : row.why;
+        }
+
+        function runCta(cta) {
+          const act = cta.action || {};
+          if (act.kind === 'open' && window.codesense && window.codesense.openFile) {
+            window.codesense.openFile({ path: act.path, newTab: true });
+          } else if (act.kind === 'focus-composer') {
+            window.postMessage({ type: 'codesense:focus-composer' }, '*');
+          }
+        }
+
+        // ---------- Subscribe to context --------------------------------------
+        // Use the host selection; standalone previews keep a representative context.
+        function applyContext(ctx) {
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            const row = pickExplanation(ctx);
+            if (!row) {
+              body.innerHTML = `
+                <div class="pane__section">
+                  <p class="pane__p pane__p--muted">
+                    I don't have a specific explanation for this surface yet.
+                    Open an HTML doc, an agent, or an inbox thread and I'll fill in.
+                  </p>
+                </div>`;
+            } else {
+              renderWhy(row, ctx);
+              renderBody(row, ctx);
+            }
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        if (window.codesense?.onSlotContext) {
+          window.CodeSenseDocsPane.onContext(applyContext);
+        } else {
+          // Standalone preview: a representative context.
+          applyContext({
+            surface: 'viewer:html',
+            filename: 'factory-playbook.html',
+          });
+        }
+
+        // ---------- Collapse --------------------------------------------------
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => {
+          setCollapsed(pane.dataset.collapsed !== 'true');
+        });
+        pane.addEventListener('keydown', (e) => {
+          if (e.key === 'c' || e.key === 'C') {
+            if (e.target === document.activeElement && e.target.tagName !== 'INPUT') {
+              setCollapsed(pane.dataset.collapsed !== 'true');
+            }
+          }
+        });
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,368 @@
+{
+  "examples": [
+    {
+      "kind": "schedule",
+      "title": "Weekday review",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "morning-review",
+        "name": "Weekday review",
+        "task": "Review the relevant stories and report the result.",
+        "when": "weekdays 09:00",
+        "tz": "UTC"
+      },
+      "yaml": {
+        "id": "morning-review",
+        "name": "Weekday review",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "Review the relevant stories and report the result.",
+        "triggers": [
+          {
+            "schedule": {
+              "cron": "0 9 * * 1-5",
+              "tz": "UTC"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "metadata_change",
+      "title": "Story moves to review",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "story-review",
+        "name": "Story moves to review",
+        "task": "Review the relevant stories and report the result.",
+        "metadataTriggers": [
+          {
+            "selection": {
+              "where": {
+                "kinds": [
+                  "story"
+                ]
+              }
+            },
+            "target": {
+              "key": "status",
+              "op": "eq",
+              "value": "review"
+            },
+            "previous": {
+              "key": "status",
+              "op": "eq",
+              "value": "in-progress"
+            }
+          }
+        ]
+      },
+      "yaml": {
+        "id": "story-review",
+        "name": "Story moves to review",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "Review the relevant stories and report the result.",
+        "triggers": [
+          {
+            "event": {
+              "kind": "metadata_change",
+              "metadata": {
+                "selection": {
+                  "where": {
+                    "kinds": [
+                      "story"
+                    ]
+                  }
+                },
+                "target": {
+                  "key": "status",
+                  "op": "eq",
+                  "value": "review"
+                },
+                "previous": {
+                  "key": "status",
+                  "op": "eq",
+                  "value": "in-progress"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "inbox_idle",
+      "title": "Unread mail at an idle prompt",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "inbox-idle",
+        "name": "Unread mail at an idle prompt",
+        "task": "Inspect the idle sessions {{trigger.sessions}} and read their pending inbox messages. Report any work needing attention.",
+        "events": [
+          {
+            "kind": "inbox_idle"
+          }
+        ]
+      },
+      "yaml": {
+        "id": "inbox-idle",
+        "name": "Unread mail at an idle prompt",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "Inspect the idle sessions {{trigger.sessions}} and read their pending inbox messages. Report any work needing attention.",
+        "triggers": [
+          {
+            "event": {
+              "kind": "inbox_idle"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "agent_done",
+      "title": "Agent finishes",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "agent-done",
+        "name": "Agent finishes",
+        "task": "Inspect the completion of {{trigger.agent}}: {{trigger.status}} / {{trigger.summary}}. Review the result and report findings.",
+        "events": [
+          {
+            "kind": "agent_done",
+            "from_agent": "default"
+          }
+        ]
+      },
+      "yaml": {
+        "id": "agent-done",
+        "name": "Agent finishes",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "Inspect the completion of {{trigger.agent}}: {{trigger.status}} / {{trigger.summary}}. Review the result and report findings.",
+        "triggers": [
+          {
+            "event": {
+              "kind": "agent_done",
+              "from_agent": "default"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "role_pending",
+      "title": "Role mail arrives",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "role-pending",
+        "name": "Role mail arrives",
+        "task": "Call role_state for the reviewer queue. If it has pending work, register_role for reviewer, then claim_role_messages. Before doing the work, call accept_role_message with disposition kind work; after finishing, call ack_role_message with its receiptId and the claim details. If an existingReceipt is returned, finish that accepted work and acknowledge its receipt instead of accepting again. Ignore other queues.",
+        "events": [
+          {
+            "kind": "role_pending",
+            "role": "reviewer"
+          }
+        ]
+      },
+      "yaml": {
+        "id": "role-pending",
+        "name": "Role mail arrives",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "Call role_state for the reviewer queue. If it has pending work, register_role for reviewer, then claim_role_messages. Before doing the work, call accept_role_message with disposition kind work; after finishing, call ack_role_message with its receiptId and the claim details. If an existingReceipt is returned, finish that accepted work and acknowledge its receipt instead of accepting again. Ignore other queues.",
+        "triggers": [
+          {
+            "event": {
+              "kind": "role_pending",
+              "role": "reviewer"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "command",
+      "title": "Metadata review command",
+      "mcp": {
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "review-command",
+        "name": "Metadata review command",
+        "action": "command",
+        "command": [
+          "python3",
+          "-c",
+          "import sys; print(sys.argv[1])",
+          "{{trigger.path}}"
+        ],
+        "metadataTriggers": [
+          {
+            "selection": {
+              "where": {
+                "kinds": [
+                  "story"
+                ]
+              }
+            },
+            "target": {
+              "key": "status",
+              "op": "eq",
+              "value": "review"
+            },
+            "previous": {
+              "key": "status",
+              "op": "eq",
+              "value": "in-progress"
+            }
+          }
+        ]
+      },
+      "yaml": {
+        "id": "review-command",
+        "name": "Metadata review command",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m",
+          "overlap": "queue"
+        },
+        "revision": 1,
+        "action": "command",
+        "command": [
+          "python3",
+          "-c",
+          "import sys; print(sys.argv[1])",
+          "{{trigger.path}}"
+        ],
+        "triggers": [
+          {
+            "event": {
+              "kind": "metadata_change",
+              "metadata": {
+                "selection": {
+                  "where": {
+                    "kinds": [
+                      "story"
+                    ]
+                  }
+                },
+                "target": {
+                  "key": "status",
+                  "op": "eq",
+                  "value": "review"
+                },
+                "previous": {
+                  "key": "status",
+                  "op": "eq",
+                  "value": "in-progress"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "after",
+      "title": "Agent follows the command",
+      "mcp": {
+        "agent": "default",
+        "mode": "fresh",
+        "maxRuntime": "5m",
+        "enabled": false,
+        "dryRun": true,
+        "id": "review-agent",
+        "name": "Agent follows the command",
+        "task": "The upstream result names the changed story: {{trigger.result_text}}. Open that path, review the story and report your findings.",
+        "after": {
+          "routine": "review-command",
+          "on": "succeeded"
+        }
+      },
+      "yaml": {
+        "id": "review-agent",
+        "name": "Agent follows the command",
+        "owner": "codesense",
+        "where": {
+          "kind": "team_workspace"
+        },
+        "policy": {
+          "max_runtime": "5m"
+        },
+        "revision": 1,
+        "agent": "default",
+        "mode": "fresh",
+        "task": "The upstream result names the changed story: {{trigger.result_text}}. Open that path, review the story and report your findings.",
+        "after": {
+          "routine": "review-command",
+          "on": "succeeded"
+        }
+      }
+    }
+  ]
+}

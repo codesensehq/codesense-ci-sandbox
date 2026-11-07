@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file-code" />
+    <title>CodeSense — codesense_get_tool_schema</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/reading-a-schema"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-j-mcp/reading-a-schema"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/reading-a-schema"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      .arcj-step {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 10px 14px;
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 12px 0;
+      }
+      .arcj-step__n {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+        font-family: var(--cs-font-mono);
+      }
+      .arcj-step h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+      .arcj-step p {
+        margin: 0 0 6px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/reading-a-schema">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="codesense_get_tool_schema — full description plus input JSON schema for one tool"
+        id="hero"
+      >
+        <h1>Hand it a name. Get the contract.</h1>
+        <p class="lede">
+          Search found a tool. Before you call it, you want to know what it takes.
+          <code>codesense_get_tool_schema</code> hands back the full description plus the input JSON
+          schema — the shape <code>tools/list</code> carries for it, which a host that loads schemas
+          lazily hasn't shown the agent yet. Required fields, allowed values, nested objects, examples.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A single name on the left — add_source_repo — produces the full description and input schema on the right."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-s"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <g transform="translate(30 130)">
+              <rect
+                width="220"
+                height="100"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="110"
+                y="30"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                codesense_get_tool_schema
+              </text>
+              <text
+                x="110"
+                y="58"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                name:
+              </text>
+              <text
+                x="110"
+                y="78"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                "add_source_repo"
+              </text>
+            </g>
+
+            <path
+              d="M254 180 L 290 180"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.5"
+              fill="none"
+              marker-end="url(#arcj-arrow-s)"
+            />
+
+            <g transform="translate(300 30)">
+              <rect
+                width="310"
+                height="300"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                {
+              </text>
+              <text
+                x="26"
+                y="42"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                name: "add_source_repo",
+              </text>
+              <text
+                x="26"
+                y="60"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                description: "Add a source repo…",
+              </text>
+              <text
+                x="26"
+                y="80"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                inputSchema: {
+              </text>
+              <text
+                x="38"
+                y="98"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                type: "object",
+              </text>
+              <text
+                x="38"
+                y="116"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                required: ["org", "team"],
+              </text>
+              <text
+                x="38"
+                y="134"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                properties: {
+              </text>
+              <text
+                x="50"
+                y="152"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                org: { type: "string" },
+              </text>
+              <text
+                x="50"
+                y="170"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                team: { type: "string" },
+              </text>
+              <text
+                x="50"
+                y="188"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                url: { type: "string" },
+              </text>
+              <text
+                x="50"
+                y="206"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                path: { type: "string" }
+              </text>
+              <text
+                x="38"
+                y="224"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                },
+              </text>
+              <text
+                x="38"
+                y="242"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                oneOf: [
+              </text>
+              <text
+                x="50"
+                y="260"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                { required: ["url"] },
+              </text>
+              <text
+                x="50"
+                y="278"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                { required: ["path"] }
+              </text>
+              <text
+                x="38"
+                y="294"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                ]
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section
+        data-search="The contract — what the tool returns and when it says unknown"
+        id="contract"
+      >
+        <h2>The contract</h2>
+        <p>
+          <strong>Input:</strong> <code>{ name: string }</code>. The name you got from
+          <code>codesense_search_tools</code>, or one you already know.
+        </p>
+        <p>
+          <strong>Returns:</strong>
+          <code>{ name, description, inputSchema }</code>. Three fields, every time. The description
+          is the exact text the explorer shows; the <code>inputSchema</code> is the exact JSON
+          schema the server will validate against when the tool runs.
+        </p>
+        <p>
+          <strong>Unknown name:</strong> you get back <code>{ status: "unknown", name }</code> —
+          nothing throws, nothing errors. A no-match on a typo is a plain answer, not an exception;
+          your agent can retry a search without special-casing.
+        </p>
+      </section>
+
+      <section
+        data-search="How to interpret the shape — reading a JSON schema in four moves"
+        id="interpret"
+      >
+        <h2>How to read the shape</h2>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">1</span>
+          <div>
+            <h3>Start at <code>required</code></h3>
+            <p>
+              Everything in <code>required</code> you have to pass. Nothing else is strictly needed
+              to make the call — defaults kick in. If <code>required</code> is empty, the tool takes
+              <code>{}</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">2</span>
+          <div>
+            <h3>Look at <code>properties</code></h3>
+            <p>
+              Each key names a field. <code>type</code> narrows what you can pass —
+              <code>"string"</code>, <code>"integer"</code>, <code>"boolean"</code>,
+              <code>"object"</code>, <code>"array"</code>. Nested objects have their own
+              <code>properties</code> block the same shape. <code>enum</code> narrows to a fixed set
+              (<code>["foreground", "headless"]</code>).
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">3</span>
+          <div>
+            <h3>Watch for <code>oneOf</code> / <code>anyOf</code></h3>
+            <p>
+              <code>add_source_repo</code> takes <em>exactly one</em> of <code>url</code> or
+              <code>path</code> — a <code>oneOf</code> on required fields. Pass both and the server
+              rejects it. The description usually says this out loud; the schema makes it provable.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">4</span>
+          <div>
+            <h3>Read the description for the <em>reply</em> shape</h3>
+            <p>
+              The input schema says what goes <em>in</em>. The reply shape lives in the
+              <code>description</code> field as prose — CodeSense returns
+              <code>{ status: "ok", data: {…} }</code> on success and
+              <code>{ status: "validation", message }</code>
+              on bad input, consistently across tools.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Worked example — add_source_repo schema" id="example">
+        <h2>Worked example</h2>
+        <p>Call:</p>
+        <pre><code>codesense.invoke('codesense_get_tool_schema', {
+  name: 'add_source_repo'
+})</code></pre>
+        <p>Reply (abridged for shape):</p>
+        <pre><code>{
+  "name": "add_source_repo",
+  "description": "Add a source repo to a team. Pass `org` (owner/repo) and `team`, plus
+    exactly one of `url` (a remote — https://…, git@…, host/owner/repo, or GitHub
+    shorthand owner/repo — tracked on the team) or `path` (the absolute path of a
+    folder on this machine, which is then bound as the repo's local clone) …
+    Returns { status:\"ok\", data:{ owner, repo, provider, host, remoteKey,
+    localPath, remoteName, remoteUrl } }; unknown or archived team returns
+    { status:\"unauthorizedTeam\" }; a bad URL or folder, a duplicate, or invalid
+    source identity returns { status:\"validation\", message }.",
+  "inputSchema": {
+    "type": "object",
+    "required": ["org", "team"],
+    "properties": {
+      "org":  { "type": "string", "description": "Team's org handle." },
+      "team": { "type": "string", "description": "Team slug." },
+      "url":  { "type": "string", "description": "A remote URL or owner/repo shorthand." },
+      "path": { "type": "string", "description": "Absolute path on this machine." }
+    },
+    "oneOf": [
+      { "required": ["url"] },
+      { "required": ["path"] }
+    ]
+  }
+}</code></pre>
+        <p>Reading it:</p>
+        <ul>
+          <li><code>org</code> and <code>team</code> are always needed.</li>
+          <li>Pass exactly one of <code>url</code> / <code>path</code>.</li>
+          <li>
+            Reply shape (from the description): <code>{status: "ok", data: {owner, repo, …}}</code>
+            on success, named error statuses on failure.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Edge — an unknown name" id="edge">
+        <h2>Edge: unknown name</h2>
+        <pre><code>codesense.invoke('codesense_get_tool_schema', { name: 'add-source-repo' })
+// → { status: "unknown", name: "add-source-repo" }</code></pre>
+        <p>
+          Underscores, not hyphens. Nothing throws; you get a shape your agent can branch on and
+          retry a search with.
+        </p>
+      </section>
+
+      <section data-search="Try this now — read the add_source_repo schema" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Fetch the schema for <code>add_source_repo</code>. Read-only; nothing writes. The "Try
+          this" sheet pretty-prints the schema.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_get_tool_schema", "args": {"name": "add_source_repo"}}'
+          label="Read add_source_repo's schema"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Always pair with a search first — don't guess names.
+const { tools } = await codesense.invoke('codesense_search_tools', {
+  query: 'add source repo'
+})
+const schema = await codesense.invoke('codesense_get_tool_schema', {
+  name: tools[0].name
+})
+
+// Unknown name is a plain reply, not a throw.
+const r = await codesense.invoke('codesense_get_tool_schema', { name: 'nope' })
+if (r.status === 'unknown') { /* retry search */ }</code></pre>
+          <p>
+            Deep-link into the explorer:
+            <a href="../mcp-explorer.html#tool/codesense_get_tool_schema"
+              >mcp-explorer#tool/codesense_get_tool_schema</a
+            >.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./finding-a-tool.html">codesense_search_tools</a> · Next:
+        <a href="./calling-by-name.html">codesense_call_tool</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · codesense_get_tool_schema</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

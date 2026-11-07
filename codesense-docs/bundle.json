@@ -1,0 +1,9 @@
+{
+  "slug": "codesense/docs",
+  "displayName": "CodeSense Docs",
+  "team": "getting-started",
+  "readme": "getting-started/content/README.html",
+  "branch": "main",
+  "committedAt": 1790812800,
+  "author": "CodeSense <docs@codesense.ai>"
+}

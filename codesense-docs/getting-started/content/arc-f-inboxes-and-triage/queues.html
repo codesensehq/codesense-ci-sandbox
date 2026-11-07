@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="list" />
+    <title>CodeSense — Queues</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="inbox"] {
+        --role-color: var(--cs-muted-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arcf-states {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .arcf-state {
+        padding: 14px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+      }
+      .arcf-state code {
+        display: inline-block;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        color: var(--cs-fg);
+      }
+      .arcf-state[data-state="pending"] code {
+        background: color-mix(in srgb, var(--cs-muted-fg) 20%, var(--cs-surface));
+      }
+      .arcf-state[data-state="claimed"] code {
+        background: color-mix(in srgb, var(--role-triager) 24%, var(--cs-surface));
+      }
+      .arcf-state[data-state="accepted"] code {
+        background: color-mix(in srgb, var(--role-builder) 24%, var(--cs-surface));
+      }
+      .arcf-state[data-state="acked"] code {
+        background: color-mix(in srgb, var(--role-reviewer) 24%, var(--cs-surface));
+      }
+      .arcf-state p {
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/queues">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="A role queue — FIFO ladder from pending to acked" id="hero">
+        <h1>Four states, one ladder.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Deliveries climb through pending, claimed, accepted, acked."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              Pending → claimed → accepted → acked. Each hop is a tool call.
+            </text>
+
+            <!-- 4 columns, each with a stack -->
+            <g transform="translate(40 110)">
+              <text x="60" y="-8" text-anchor="middle" class="glyph-mbadge">pending</text>
+              <g class="glyph-node" data-role="inbox">
+                <rect width="120" height="30" rx="4" />
+                <text x="60" y="20" text-anchor="middle">msg #1</text>
+              </g>
+              <g class="glyph-node" data-role="inbox" transform="translate(0 40)">
+                <rect width="120" height="30" rx="4" />
+                <text x="60" y="20" text-anchor="middle">msg #2</text>
+              </g>
+              <g class="glyph-node" data-role="inbox" transform="translate(0 80)">
+                <rect width="120" height="30" rx="4" />
+                <text x="60" y="20" text-anchor="middle">msg #3</text>
+              </g>
+            </g>
+
+            <g transform="translate(200 110)">
+              <text x="60" y="-8" text-anchor="middle" class="glyph-mbadge">claimed</text>
+              <g class="glyph-node" data-role="analyst">
+                <rect width="120" height="30" rx="4" />
+                <text x="60" y="20" text-anchor="middle">msg #1 · token</text>
+              </g>
+            </g>
+
+            <g transform="translate(360 110)">
+              <text x="60" y="-8" text-anchor="middle" class="glyph-mbadge">accepted</text>
+              <g class="glyph-node" data-role="builder">
+                <rect width="120" height="30" rx="4" />
+                <text x="60" y="20" text-anchor="middle">msg #1 · receipt</text>
+              </g>
+            </g>
+
+            <g transform="translate(520 110)">
+              <text x="60" y="-8" text-anchor="middle" class="glyph-mbadge">acked</text>
+              <g class="glyph-node" data-role="builder">
+                <rect width="100" height="30" rx="4" />
+                <text x="50" y="20" text-anchor="middle">done</text>
+              </g>
+            </g>
+
+            <!-- transition arrows -->
+            <path class="glyph-edge" d="M160 125 L 200 125" />
+            <text x="180" y="118" text-anchor="middle" class="glyph-mbadge">claim</text>
+            <path class="glyph-edge" d="M320 125 L 360 125" />
+            <text x="340" y="118" text-anchor="middle" class="glyph-mbadge">accept</text>
+            <path class="glyph-edge" d="M480 125 L 520 125" />
+            <text x="500" y="118" text-anchor="middle" class="glyph-mbadge">ack</text>
+
+            <!-- backpressure note -->
+            <path
+              class="glyph-edge is-trigger"
+              d="M100 320 C 300 300, 400 300, 580 320"
+              style="stroke: var(--role-resolver); stroke-dasharray: 3 3"
+            />
+            <text x="320" y="340" text-anchor="middle" class="glyph-mbadge">
+              StaleClaim · another holder can re-claim an expired delivery
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a queue is" id="why">
+        <p>
+          Every role carries one queue. Deliveries land <strong>pending</strong>, a holder
+          <strong>claims</strong> a batch, decides whether to work it and
+          <strong>accepts</strong> each one, then <strong>acks</strong> when it's handled. The queue
+          is the memory: a fresh session can register, claim what's already accepted-but-not-acked,
+          and pick up exactly where the last holder stopped.
+        </p>
+      </section>
+
+      <section data-search="Four queue states" id="states">
+        <h2>The four states</h2>
+        <div class="arcf-states">
+          <div class="arcf-state" data-state="pending">
+            <code>pending</code>
+            <p>
+              Just landed. Nobody has claimed it. Visible in <code>role_state.counts.pending</code>.
+            </p>
+          </div>
+          <div class="arcf-state" data-state="claimed">
+            <code>claimed</code>
+            <p>
+              A holder pulled it off with <code>claim_role_messages</code>; they have a
+              <code>claimToken</code> and a short time window to decide.
+            </p>
+          </div>
+          <div class="arcf-state" data-state="accepted">
+            <code>accepted</code>
+            <p>
+              <code>accept_role_message</code> promises to handle it. Returns a
+              <code>receiptId</code>. Survives a session restart.
+            </p>
+          </div>
+          <div class="arcf-state" data-state="acked">
+            <code>acked</code>
+            <p>
+              <code>ack_role_message</code> with the receipt. Delivery leaves the queue; the thread
+              stays in <code>inbox_list</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Ordering, batches, backpressure" id="mechanics">
+        <h2>Ordering, batches, backpressure</h2>
+        <ul>
+          <li>
+            <strong>Order.</strong> Pending deliveries come back in send order; a claim is a FIFO
+            cut of the first <code>limit</code> items.
+          </li>
+          <li>
+            <strong>Batches.</strong> One <code>claim_role_messages</code> yields a bundle of
+            <code>deliveryId</code> + <code>claimToken</code> + <code>messageId</code> triples. You
+            accept each one independently with its own disposition (<code>work</code>, or
+            <code>no_work</code> with a reason for FYIs and dupes).
+          </li>
+          <li>
+            <strong>Backpressure.</strong> If a holder claims and goes dark, the claim expires — a
+            later call returns <code>StaleClaim</code> and another holder can re-claim. Nothing is
+            lost; the delivery lives in the queue, not in a session.
+          </li>
+          <li>
+            <strong>Resumption.</strong> On <code>register_role</code>,
+            <code>acceptedUnacked</code> hands back previously-accepted work. The new holder
+            inspects state (via <code>list_sessions</code>, <code>inbox_list</code>), finishes or
+            re-dispatches, and acks.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — look at a role queue's state" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Peek at the <code>builder</code> queue in your editable context repo: counts by state, who
+          holds the role right now.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "role_state", "args": {"role": "builder"}}'
+          label="Look at the builder queue"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Peek: counts.pending, counts.claimed, live registrations
+codesense.invoke('role_state', { team, role: 'builder' })
+
+// Full loop
+let { deliveries } = codesense.invoke('claim_role_messages', {
+  team, role: 'builder', instanceId, generation, limit: 10,
+})
+for (const d of deliveries) {
+  const full = codesense.invoke('inbox_list', { role: 'builder', messageId: d.messageId })
+  const { receiptId } = codesense.invoke('accept_role_message', {
+    team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation,
+    disposition: { kind: 'work' },
+  })
+  // … do the work, reply, launch a worker, whatever …
+  codesense.invoke('ack_role_message', {
+    team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, receiptId,
+  })
+}</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./roles.html">← Roles</a> · Next: <a href="./triggers.html">Triggers →</a> · Edge
+        cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/claim_role_messages">claim_role_messages</a> ·
+        <a href="../mcp-explorer.html#tool/accept_role_message">accept_role_message</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Queues</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

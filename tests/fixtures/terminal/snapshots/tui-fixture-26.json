@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 26,
+ "snapshot": {
+  "cols": 60,
+  "rows": 20,
+  "seq": 8222,
+  "resize_gen": 2,
+  "scrollback": 5000,
+  "vt": "\u001b[1mtui-fixture 100x30 frame 8-----------------------------------\u001b[1D\u001b[1X\u001b[A\u001b[26C\u001b[34X\u001b[26D\u001b[B\u001b[39C\u001b[0m|\r\n----------------------------------------------------------------------------------------------------\r\nframe grid line parse grid 端末 kernel 漢字\r\ngrid alpha parse kernel height bravo echo\r\nscroll height 端末\r\n表示 端末 delta\r\nparse query grid node 漢字 query\r\ndelta 漢字 echo 画面\r\nmargin delta query bravo index height\r\nnode bravo cursor cursor line echo jolt bravo\r\n\u001b[4Cwidthset parse grid node\r\nkernel alpha index node\r\n画面 jolt line scroll 表示 index\r\nregion echo offset kernel parse 表示\r\ntile echo 幅広\r\nline kernel alpha 画面\r\nnode cursor height 幅広 width region cursor query\r\nwidth delta grid index region echo\r\nheight tile delta\r\ncursor tile 端末 scroll kernel parse\r\njolt bravo jolt\r\nframe line index cursor\r\nwidth 画面 region scroll\r\nscroll 表示 frame delta scroll parse query\r\ntile bravo kernel 漢字 line parse\r\n画面 index 漢字 offset height kernel\r\n\r\n\r\n----------------------------------------------------------------------------------------------------\r\n[100x30] update 8\u001b[0m\u001b[?1049h\u001b[H\u001b[0m\u001b[1mtui-fixture 60x20 frame 12\u001b[33C\u001b[0m|\r\n------------------------------------------------------------\r\nquery 幅広 tile jolt jolt\r\ngrid index 表示 cursor delta 漢字\r\nscroll tile 画面 alpha jolt\r\n表示 margin bravo height node offset\r\nregion margin delta\r\ncursor line echo\r\nmargin frame scroll\r\nframe 表示 漢字 offset node\r\nline node offset jolt 画面 kernel line\r\nheight width query bravo echo jolt margin echo\r\nwidth margin parse index tile 漢字 query echo\r\ndelta parse cursor region delta delta\r\nbravo 漢字 region query index\r\noffset frame 端末 jolt bravo region\r\n漢字 画面 width offset\r\nnode index 漢字 漢字 幅広 index 幅広 jolt\r\n------------------------------------------------------------\r\n[60x20] resized\u001b[?25l\u001b[20;16H"
+ }
+}

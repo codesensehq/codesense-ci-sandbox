@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="bell-ring" />
+    <title>CodeSense — The Claude notify hook</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 24px 28px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arce-hero p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--cs-muted-fg);
+      }
+      code.arce-path {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .arce-callout {
+        margin: 16px 0;
+        padding: 14px 18px;
+        border-left: 3px solid var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 8%, var(--cs-surface));
+        border-radius: 6px;
+      }
+      .arce-callout p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/notify-hook">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="The Claude notify hook — CodeSense owns it, no per-team override" id="hero">
+        <figure class="cs-docs-card arce-hero">
+          <p>
+            CodeSense installs <code>codesense-notify.sh</code> with itself,
+            beside its activity helper, and Claude Code runs it as
+            <code>$CODESENSE_ACTIVITY_HOST/codesense-notify.sh</code>.
+            The hook posts Claude Code lifecycle events (session start, tool
+            wait, idle) to the running CodeSense app. It is the older of two
+            ways a terminal's status dot hears from Claude Code; the
+            activity observer below is the main one. Nothing is written into
+            your workspaces or your team's content, and your team ships no
+            hook file.
+          </p>
+        </figure>
+      </section>
+
+      <section data-search="Status dot activity observer Claude Code Codex hand-typed remote" id="status-dot">
+        <h2>Where the status dot comes from</h2>
+        <p>
+          In a CodeSense terminal tab, the shell runs <code>claude</code> and
+          <code>codex</code> through CodeSense's activity helper, whether a
+          saved agent launched them or you typed them, on this Mac or on a
+          machine. The helper adds CodeSense's status hooks to a private copy
+          of the CLI's settings (your own <code>--settings</code> are kept),
+          or passes them to Codex as <code>-c hooks.*</code>, and the dot
+          follows those events. When the helper can't attach, the CLI runs
+          as normal with no status. The status dot is still in Beta.
+        </p>
+        <p>
+          The notify hook on this page is Claude Code only. Where the activity
+          observer sees a session, its reports win, so the hook matters only
+          for a <code>claude</code> the observer missed. Codex has no notify
+          hook.
+        </p>
+      </section>
+
+      <section data-search="What ships — the embedded reference hook" id="what-ships">
+        <h2>What ships</h2>
+        <p>
+          The CodeSense binary carries the reference hook as embedded bytes.
+          Each time CodeSense starts, it writes the hook into its own
+          activity root, beside <code>activity-helper</code>, with mode
+          <code>0o755</code>. On a machine, the session server does the same
+          in its own install. Every CodeSense terminal tab exports
+          <code>$CODESENSE_ACTIVITY_HOST</code>, the path to that root, so the
+          hook command finds the script there. Your worktrees and team content
+          get no copy, so there is nothing to keep out of git or to publish.
+        </p>
+        <p>
+          The settings that run it are in the worktree's
+          <code>.claude/settings.local.json</code> for a hand-typed
+          <code>claude</code>, kept out of git, and in a private per-session
+          settings file for a launched agent. Your repo's
+          <code>.claude/settings.json</code> is never written. The hook runs
+          no matter how <code>claude</code> ends up running in a CodeSense tab:
+        </p>
+        <ul>
+          <li>
+            Saved-agent launch (<code>open_workspace</code> with an agent
+            name) &mdash; the normal path.
+          </li>
+          <li>
+            Plain terminal tab (<code>open_terminal_tab</code>) + hand-typed
+            <code>claude</code>, through the shell or as
+            <code>command claude</code> &mdash; the tab points at the
+            installed hook, so Claude Code finds it on the first run.
+          </li>
+          <li>
+            Remote tab (<code>open_remote_tab</code>) + hand-typed
+            <code>claude</code> on the remote machine &mdash; the machine's
+            session server installs the hook the same way.
+          </li>
+          <li>
+            Any <code>claude</code> re-run after an agent exits, or one that
+            outlived an app restart &mdash; the installed hook stays put.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Secret-file guard — PreToolUse deny for .env and key files" id="secret-guard">
+        <h2>The secret-file guard</h2>
+        <p>CodeSense ships a second hook beside the status hook, <code>codesense-secret-guard.sh</code>, and merges it
+          wherever the status hooks go: one <code>PreToolUse</code> group scoped to <code>Read</code>, <code>Grep</code>,
+          <code>Glob</code> and <code>Bash</code>. It stops an agent reading a credential-shaped file into its
+          transcript. One list of protected families drives both the hook and Claude's own
+          <code>permissions.deny</code> rules, so they cannot drift apart:</p>
+        <ul>
+          <li><code>.env</code> and <code>.env.*</code></li>
+          <li><code>*.pem</code> and <code>*.key</code></li>
+          <li><code>id_rsa*</code> and <code>id_ed25519*</code></li>
+          <li>anything under <code>~/.config/codesense-mcp/</code></li>
+        </ul>
+        <p>The hook lets the templates through (<code>.env.example</code>, <code>.env.sample</code>,
+          <code>.env.template</code>, <code>.env.dist</code>) and the public halves (<code>*.pub</code>), and checks a Bash
+          command for what it <em>reads</em>: copying a template to <code>.env</code>, deleting <code>.env</code> or
+          echoing into it only writes, so it is allowed. On a match the call is denied with a reason the agent can
+          pass on to you.</p>
+        <p><strong>The native rules are broader than the hook.</strong> A deny rule has no exceptions, so
+          <code>Read</code>, <code>Grep</code> and <code>Glob</code> also refuse the templates and the <code>.pub</code>
+          files. They stay readable through Bash (<code>cat .env.example</code>), which the hook allows. The native
+          rules are what keep a directory search from walking into a credential file, which the hook cannot see.</p>
+        <p>The guard is a convenience that keeps credential files out of an agent's ordinary reads. It is not a
+          sandbox: it guards reads only, and only for Claude. To keep an agent away from your secrets, run it with
+          sandboxed permissions. See <a href="https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents">How CodeSense trusts agents</a>.</p>
+      </section>
+
+      <section data-search="No per-team override — teams don't ship this file" id="no-override">
+        <h2>No per-team override</h2>
+        <div class="arce-callout">
+          <p>
+            <strong>Teams don't ship this file.</strong> The hook comes with
+            CodeSense, so your context repo needs no hook file and no hook
+            wiring in <code>.claude/settings.json</code>. A file your team
+            keeps at <code class="arce-path">.claude/hooks/codesense-notify.sh</code>
+            is ordinary team content: CodeSense never runs it, and deleting
+            it is safe.
+          </p>
+        </div>
+        <p>
+          The hook is wire-level infrastructure, like the MCP bridge
+          registration: CodeSense's own code depends on exactly what it
+          posts to exactly which endpoint, so a drifted team copy would
+          silently break status reporting. Keeping ownership centralized
+          means every CodeSense install speaks the same contract.
+        </p>
+        <p>
+          If you need custom status reporting (quieter notifications, an
+          extra endpoint, event filtering), <strong>file a feature
+          request</strong>. The current design doesn't take per-team
+          overrides, but we can add a configuration seam if there's demand.
+        </p>
+      </section>
+
+      <section data-search="What the hook does — endpoint, graceful degradation, logging" id="behavior">
+        <h2>What the hook does</h2>
+        <ul>
+          <li>
+            Reads the Claude Code hook event from <code>stdin</code> and
+            posts it as JSON to the local CodeSense API
+            (<code>CODESENSE_API_PORT</code>, or
+            <code>CODESENSE_STATUS_URL</code> when the agent runs on a
+            remote machine).
+          </li>
+          <li>
+            Degrades gracefully. When the CodeSense app isn't running the
+            hook writes one legible line to <code>stderr</code> and exits
+            <code>0</code>, so the Claude lifecycle event never stalls.
+          </li>
+          <li>
+            Logs post failures to
+            <code class="arce-path"
+              >~/.codesense/logs/notify-hook.log</code
+            >
+            (capped at 512 KB) so a missed status dot is diagnosable
+            without turning on anything extra.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Where the source lives — repo and embed" id="source">
+        <h2>Where the source lives</h2>
+        <p>
+          The reference bytes are at
+          <code class="arce-path">scripts/codesense-notify.reference.sh</code>
+          in the CodeSense source repo. The app binary includes them at
+          compile time via Rust's <code>include_str!</code>, so an upgrade
+          to a new CodeSense version with a different hook body is picked
+          up the next time CodeSense starts: the installed file is compared
+          with the embedded bytes and rewritten if it differs.
+        </p>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> &middot; See also →
+        <a href="../arc-f-inboxes-and-triage/index.html">Arc F — inboxes and triage</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Notify hook</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

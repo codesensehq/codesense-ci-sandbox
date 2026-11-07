@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 37,
+ "snapshot": {
+  "cols": 120,
+  "rows": 32,
+  "seq": 12613,
+  "resize_gen": 3,
+  "scrollback": 5000,
+  "vt": "\r\n\r\nscroll offset index scroll height 端末 scroll jolt\r\ngrid jolt query\r\ngrid height parse 画面 height margin\r\ntile echo 幅広 漢字 grid tile cursor\r\necho jolt index\r\nalpha delta node 表示 grid\r\noffset 漢字 query 端末\r\n画面 delta 漢字 端末 height index node\r\nalpha node width delta 幅広\r\n表示 height node region width offset 幅広\r\nscroll query 幅広 tile parse 表示 jolt\r\n画面 margin tile scroll frame 画面 jolt\r\nline delta bravo 幅広 margin 漢字 cursor echo\r\n幅広 cursor delta parse grid margin line node\r\nframe index height grid delta 表示 o\u001b[?25l\u001b[31;18H\u001b[0m\u001b7\u001b[17;37H\u001b[0m"
+ }
+}

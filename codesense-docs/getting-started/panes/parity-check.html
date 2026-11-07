@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="scale" />
+    <title>Local ⇄ Remote parity · CodeSense</title>
+
+    <script>window.__codesenseThemeAware = true;</script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg); color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased; min-height: 100vh;
+      }
+
+      /* Shared pane shell */
+      .pane { display: flex; flex-direction: column; max-width: 360px; margin: 0 auto; min-height: 100vh; }
+      .pane__header {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        height: 36px; padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-accent); flex: 0 0 auto; }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title { margin: 0; font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.005em; }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg); width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer; padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-muted-fg); font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono); background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm); color: var(--cs-fg); font-style: normal;
+      }
+      .pane__body { padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3); flex: 1;
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) { .pane__body { transition: none; } }
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+      .pane__label {
+        display: block; font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .pane__ctas { display: flex; flex-wrap: wrap; gap: var(--cs-space-2); padding: 0 var(--cs-space-4) var(--cs-space-4); }
+      .cta {
+        appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px; font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm); border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface); color: var(--cs-fg); text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta--primary { background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent); }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta svg { width: 14px; height: 14px; }
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4); border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono); color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cs-muted-fg); }
+      .pane__prov a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--cs-muted-fg); }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local chrome ---------------- */
+
+      /* Segmented axis selector: which parity dimension are we comparing? */
+      .seg {
+        display: inline-flex; padding: 2px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        background: var(--cs-inset);
+      }
+      .seg button {
+        appearance: none; cursor: pointer;
+        padding: 4px 10px;
+        border: 0; background: transparent;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+        border-radius: 4px;
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--cs-surface); color: var(--cs-fg);
+        box-shadow: var(--cs-shadow);
+      }
+      .seg button:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      /* The twin column: Local on the left, Remote on the right. */
+      .twin {
+        display: grid; grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      .twin__col { padding: var(--cs-space-3); }
+      .twin__col + .twin__col {
+        border-left: 1px solid var(--cs-border);
+      }
+      .twin__h {
+        display: flex; align-items: center; gap: 6px;
+        margin: 0 0 var(--cs-space-2);
+        font: 600 var(--cs-text-xs)/1 var(--cs-font-mono);
+        letter-spacing: 0.04em; text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .twin__h .dot {
+        width: 6px; height: 6px; border-radius: 50%;
+      }
+      .twin__col[data-side="local"]  .twin__h .dot { background: var(--cs-success); }
+      .twin__col[data-side="remote"] .twin__h .dot { background: var(--cs-accent); }
+      .twin__body { font-size: var(--cs-text-sm); line-height: 1.5; }
+      .twin__body code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm);
+        display: inline-block; margin: 1px 0;
+      }
+      .twin__body p { margin: 0 0 var(--cs-space-2); }
+      .twin__body p:last-child { margin-bottom: 0; }
+
+      /* Match/gap row at the bottom of the comparison. */
+      .verdict {
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px 10px;
+        border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        background: var(--cs-inset);
+      }
+      /* WCAG 2.1 AA: the "match" verdict on --cs-inset needs
+       * a brighter green to clear 4.5:1 on dark surfaces. */
+      .verdict[data-state="match"]  { color: var(--cs-success); }
+      .verdict[data-state="warn"]   { color: var(--cs-warning); }
+      .verdict svg { width: 12px; height: 12px; }
+
+      /* Parity gap callout: honest about where the shapes diverge. */
+      .gap {
+        padding: var(--cs-space-3);
+        border: 1px solid var(--cs-border-control);
+        border-radius: var(--cs-radius-sm);
+        background: color-mix(in srgb, var(--cs-warning) 8%, transparent);
+      }
+      .gap__title {
+        display: flex; align-items: center; gap: 6px;
+        margin: 0 0 var(--cs-space-2);
+        font: 600 var(--cs-text-sm)/1.3 var(--cs-font-sans);
+        color: var(--cs-fg);
+      }
+      .gap__title svg { width: 14px; height: 14px; color: var(--cs-warning); }
+      .gap__body {
+        margin: 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-fg);
+      }
+      .gap[hidden] { display: none; }
+
+      /* Machine chip (small, used to show which machine Remote resolves to). */
+      .machine {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 1px 6px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-mono);
+        border-radius: 999px;
+        border: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="pane" role="complementary" aria-labelledby="pane-title" data-pane-id="parity-check">
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: scale -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+          <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+          <path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Local ⇄ Remote parity</h2>
+        <span class="spacer"></span>
+        <button class="pane__collapse" type="button" aria-expanded="true"
+                aria-controls="pane-body" title="Collapse (C)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse</span>
+        </button>
+      </header>
+
+      <p class="pane__why" id="pane-why">
+        You're looking at something that behaves differently on remote machines.
+        Here it is <strong>side by side</strong>.
+      </p>
+
+      <section class="pane__body" id="pane-body" aria-labelledby="pane-title">
+        <!-- Section 1: axis selector -->
+        <div class="pane__section">
+          <span class="pane__label">Compare</span>
+          <div class="seg" role="group" aria-label="Parity dimension">
+            <button type="button" aria-pressed="true"  data-axis="command">Command</button>
+            <button type="button" aria-pressed="false" data-axis="path">Path</button>
+            <button type="button" aria-pressed="false" data-axis="auth">Auth</button>
+          </div>
+        </div>
+
+        <!-- Section 2: the twin columns -->
+        <div class="pane__section">
+          <span class="pane__label">Side by side</span>
+          <div class="twin" id="twin">
+            <div class="twin__col" data-side="local">
+              <h3 class="twin__h">
+                <span class="dot" aria-hidden="true"></span>
+                Local
+              </h3>
+              <div class="twin__body" id="twin-local">
+                <p><code>open_workspace { target, agent: 'builder' }</code></p>
+                <p>Runs in your Mac's user context. Reaches worktrees under <code>~/.codesense/</code>.</p>
+              </div>
+            </div>
+            <div class="twin__col" data-side="remote">
+              <h3 class="twin__h">
+                <span class="dot" aria-hidden="true"></span>
+                Remote
+                <span class="machine" id="twin-machine" style="margin-left:auto;">mac-2</span>
+              </h3>
+              <div class="twin__body" id="twin-remote">
+                <p><code>open_remote_tab</code> on mac-2</p>
+                <p>Over SSH, with the key saved for that machine; same worktree layout.</p>
+              </div>
+            </div>
+          </div>
+          <div class="verdict" id="verdict" data-state="match">
+            <!-- check -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Parity holds — same shape, different runner.</span>
+          </div>
+        </div>
+
+        <!-- Section 3: honest gap callout, only shown when a known gap applies. -->
+        <div class="pane__section">
+          <div class="gap" id="gap">
+            <h3 class="gap__title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Parity gap
+            </h3>
+            <p class="gap__body" id="gap-body">
+              Local and remote work the same way here; only the machine differs.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="flip-context">
+          <!-- arrow-left-right -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m16 3 4 4-4 4"/><path d="M20 7H4"/>
+            <path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>
+          </svg>
+          Flip to Remote
+        </button>
+        <button type="button" class="cta" data-cta="machines">Machines</button>
+      </div>
+
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane · I-3</span>
+        <span>·</span>
+        <a href="#" data-nav="arc-d">arc D · machines</a>
+      </footer>
+    </aside>
+
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const body = pane.querySelector('.pane__body');
+        const localEl = pane.querySelector('#twin-local');
+        const remoteEl = pane.querySelector('#twin-remote');
+        const verdictEl = pane.querySelector('#verdict');
+        const gap = pane.querySelector('#gap');
+        const gapBody = pane.querySelector('#gap-body');
+        const why = pane.querySelector('.pane__why');
+        const seg = pane.querySelector('.seg');
+        const machineEl = pane.querySelector('#twin-machine');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // Context → parity payload (surface + axis).
+        const PARITY = {
+          'launch': {
+            why: `You're looking at <strong>open_workspace</strong>. Here's what it does on each side.`,
+            command: {
+              local:  { code: "open_workspace { target, agent: 'builder' }", desc: 'Runs in your Mac\'s user context. Reaches worktrees under <code>~/.codesense/</code>.' },
+              remote: { code: 'open_remote_tab (mac-2)', desc: 'Over SSH, with the key saved for that machine; same worktree layout.' },
+              match: true,
+            },
+            path: {
+              local:  { code: '~/.codesense/<user>/orgs/<org>/', desc: 'Resolved via <code>$HOME</code>.' },
+              remote: { code: '/home/<user>/.codesense/<user>/orgs/<org>/', desc: 'Resolved via SSH\'d <code>$HOME</code>; identical shape.' },
+              match: true,
+            },
+            auth: {
+              local:  { code: 'your Mac user', desc: 'Runs as you.' },
+              remote: { code: 'saved machine', desc: 'The SSH key you saved for the machine (<code>save_machine</code>).' },
+              match: true,
+            },
+            gap: null,
+          },
+          'agent-detail': {
+            why: ctx => `This agent runs on <strong>${ctx.machineLabel || 'the local Mac'}</strong>. Here's the remote equivalent.`,
+            command: {
+              local:  { code: "open_workspace { target, agent: 'builder' }", desc: 'Launches the agent on this Mac.' },
+              remote: { code: 'open_remote_tab (builder, mac-2)', desc: 'Launches it over SSH on the saved machine.' },
+              match: true,
+            },
+            path: {
+              local:  { code: '~/.codesense/.../worktrees/<story>', desc: 'Worktree lives under your home.' },
+              remote: { code: '/home/<user>/.codesense/.../worktrees/<story>', desc: 'Remote home; same relative structure.' },
+              match: true,
+            },
+            auth: {
+              local:  { code: 'your Mac user', desc: 'Runs as you.' },
+              remote: { code: 'saved machine', desc: 'The SSH key you saved for the machine.' },
+              match: true,
+            },
+            gap: null,
+          },
+          'terminal': {
+            why: `You're looking at a terminal session. Local and remote use the same shape.`,
+            command: {
+              local:  { code: 'bash', desc: 'A login shell as your user.' },
+              remote: { code: 'ssh mac-2', desc: 'Same shell, forwarded over SSH. Survives app relaunch via roster.' },
+              match: true,
+            },
+            path: {
+              local:  { code: 'cwd: $HOME', desc: 'Default cwd.' },
+              remote: { code: 'cwd: $HOME', desc: 'Resolved on the remote.' },
+              match: true,
+            },
+            auth: {
+              local:  { code: '—', desc: 'No credential needed.' },
+              remote: { code: 'saved machine', desc: 'The SSH key you saved for the machine.' },
+              match: false,
+            },
+            gap: null,
+          },
+          'worktree': {
+            why: `This worktree exists on both sides. Here's how CodeSense creates it on each.`,
+            command: {
+              local:  { code: 'open_workspace { story_id }', desc: 'Creates it under local <code>$HOME</code>.' },
+              remote: { code: 'prepare_remote_workspace (mac-2)', desc: 'Creates it under the remote <code>$HOME</code> over SSH.' },
+              match: true,
+            },
+            path: {
+              local:  { code: '~/.codesense/<org>/wt/<story>', desc: 'Local path.' },
+              remote: { code: '/home/<user>/.codesense/<org>/wt/<story>', desc: 'Same relative; different root.' },
+              match: true,
+            },
+            auth: {
+              local:  { code: 'your git identity', desc: 'Writes attributed to the local user.' },
+              remote: { code: 'the machine\'s git identity', desc: 'Writes attributed to the remote user as configured.' },
+              match: false,
+            },
+            gap: null,
+          },
+        };
+
+        let currentAxis = 'command';
+        let currentKey  = 'launch';
+        let currentCtx  = null;
+
+        function render() {
+          const entry = PARITY[currentKey] || PARITY['launch'];
+          const row = entry[currentAxis];
+          why.innerHTML = typeof entry.why === 'function' ? entry.why(currentCtx || {}) : entry.why;
+
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            localEl.innerHTML  = `<p><code>${row.local.code}</code></p><p>${row.local.desc}</p>`;
+            remoteEl.innerHTML = `<p><code>${row.remote.code}</code></p><p>${row.remote.desc}</p>`;
+
+            if (row.match) {
+              verdictEl.dataset.state = 'match';
+              verdictEl.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Parity holds — same shape, different runner.</span>
+              `;
+            } else {
+              verdictEl.dataset.state = 'warn';
+              verdictEl.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                  <path d="M12 8v4"/><path d="M12 16h.01"/>
+                </svg>
+                <span>Different auth path — same action.</span>
+              `;
+            }
+
+            if (entry.gap) {
+              gapBody.innerHTML = entry.gap.body;
+              gap.hidden = false;
+            } else {
+              gap.hidden = true;
+            }
+
+            if (currentCtx && currentCtx.machineLabel) {
+              machineEl.textContent = currentCtx.machineLabel;
+            }
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        // Context → key resolution
+        function pickKey(ctx) {
+          if (ctx.surface === 'agents:detail')    return 'agent-detail';
+          if (ctx.surface === 'terminals:detail') return 'terminal';
+          if (ctx.surface === 'worktrees:detail') return 'worktree';
+          if (ctx.surface === 'viewer:html' && /launch|getting-started/.test(ctx.filename || '')) return 'launch';
+          return 'launch';
+        }
+
+        function applyContext(ctx) {
+          currentCtx = ctx;
+          currentKey = pickKey(ctx);
+          render();
+        }
+        if (window.codesense?.onSlotContext) {
+          window.CodeSenseDocsPane.onContext(applyContext);
+        } else {
+          applyContext({ surface: 'agents:detail', machineLabel: 'local-mbp' });
+        }
+
+        // Axis selector
+        seg.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+            btn.setAttribute('aria-pressed', 'true');
+            currentAxis = btn.dataset.axis;
+            render();
+          });
+        });
+
+        // CTAs
+        pane.querySelector('[data-cta="flip-context"]').addEventListener('click', () => {
+          // Flip the whole-app Local/Remote context toggle via a message to the host.
+          window.parent?.postMessage({ type: 'codesense:toggle-context' }, '*');
+        });
+        pane.querySelector('[data-cta="machines"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './arc-d-terminals-and-machines/machines.html', newTab: true });
+        });
+
+        // Collapse
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => setCollapsed(pane.dataset.collapsed !== 'true'));
+        pane.addEventListener('keydown', (e) => {
+          if ((e.key === 'c' || e.key === 'C') && e.target.tagName !== 'INPUT') {
+            setCollapsed(pane.dataset.collapsed !== 'true');
+          }
+        });
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

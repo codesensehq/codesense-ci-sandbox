@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="cloud-cog" />
+    <title>CodeSense — Remote agents</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arce-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arce-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arce-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arce-cmp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-cmp th,
+      .arce-cmp td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-cmp th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-cmp code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/remote-agents">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Remote agents — same agent.yaml, same resolver, your remote Unix account launches" id="hero">
+        <h1>Same file. A different machine's login.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="agent.yaml in the shared context repo. Local launch opens on your Mac with your Mac login. Remote launch opens on remote-01 with your remote Unix account's login. Nothing in the file changes."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Center: one file -->
+            <g transform="translate(240 48)">
+              <rect
+                width="160"
+                height="90"
+                rx="10"
+                fill="var(--cs-inset-strong, var(--cs-inset))"
+                stroke="var(--cs-border)"
+              />
+              <text x="80" y="24" text-anchor="middle" style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 12px">
+                story-builder
+              </text>
+              <text x="80" y="42" text-anchor="middle" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                agent.yaml
+              </text>
+              <text x="80" y="62" text-anchor="middle" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-ui)">
+                runtime: claude
+              </text>
+              <text x="80" y="76" text-anchor="middle" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-ui)">
+                launch: headless
+              </text>
+            </g>
+
+            <!-- Branches -->
+            <path d="M240 94 L 140 170" stroke="var(--cs-muted-fg)" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />
+            <path d="M400 94 L 500 170" stroke="var(--cs-muted-fg)" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />
+
+            <!-- Local -->
+            <g transform="translate(40 180)">
+              <rect
+                width="200"
+                height="150"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                Local launch
+              </text>
+              <text x="14" y="40" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Mac — your account
+              </text>
+              <text x="14" y="60" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                claude --session …
+              </text>
+              <text x="14" y="78" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Context copied in at launch
+              </text>
+              <text x="14" y="92" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                ~/.codesense/sessions/…
+              </text>
+              <text x="14" y="112" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Login: your Mac's claude CLI
+              </text>
+              <text x="14" y="128" style="fill: var(--cs-muted-fg); font-size: 11px">
+                MCP bridge: UDS to this app
+              </text>
+            </g>
+
+            <!-- Remote -->
+            <g transform="translate(400 180)">
+              <rect
+                width="200"
+                height="150"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                Remote launch
+              </text>
+              <text x="14" y="40" style="fill: var(--cs-muted-fg); font-size: 11px">
+                remote-01 — your Unix user
+              </text>
+              <text x="14" y="60" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                ssh host; claude --session …
+              </text>
+              <text x="14" y="78" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Context staged over SSH to
+              </text>
+              <text x="14" y="92" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                ~/.codesense/sessions/…
+              </text>
+              <text x="14" y="112" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Login: that user's claude CLI
+              </text>
+              <text x="14" y="128" style="fill: var(--cs-muted-fg); font-size: 11px">
+                MCP bridge: TCP via tunnel
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a remote agent is" id="why">
+        <p>
+          A "remote agent" is just an agent whose session happens on a
+          different machine. The file in <code>config/agents/</code> doesn't
+          change — nothing in it binds a machine. What changes is the
+          <strong>launcher</strong>: open the agent on a tab belonging to a
+          remote-connected machine, or point a routine at it, and CodeSense
+          starts the CLI on that machine instead of yours. The team chain
+          resolves the same way; the files land on the remote under
+          <code>~/.codesense/sessions/</code>; the runtime starts with the
+          <em>remote</em> user's own <code>claude</code> or <code>codex</code>
+          login.
+        </p>
+      </section>
+
+      <section data-search="How the launch happens — five steps the host does for you" id="launch">
+        <h2>The launch, step by step</h2>
+
+        <div class="arce-step">
+          <span class="arce-step__n">1</span>
+          <div>
+            <h3>You pick a machine</h3>
+            <p>
+              Open the agent from a terminal tab bound to a remote machine,
+              or set <code>machine:</code> on the routine task. Local is the
+              default; naming a remote is one field. See
+              <a href="../arc-d-terminals-and-machines/machines.html"
+                >arc D → machines</a
+              >
+              for how machines are declared.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">2</span>
+          <div>
+            <h3>CodeSense opens an SSH session</h3>
+            <p>
+              Over your pinned host key, as your Unix user on that box. Your
+              private key never leaves your Mac — see
+              <a
+                href="../arc-d-terminals-and-machines/remote-private-account.html"
+                >remote (private account)</a
+              >
+              for the full posture.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">3</span>
+          <div>
+            <h3>The context resolver runs — on the remote host</h3>
+            <p>
+              The team-chain walk and the <code>startup</code> resolve happen
+              on the remote machine, against the context repo that lives
+              there (same org, same team, same files). CodeSense never diffs
+              the two sides — if a file resolves, it was present on the box
+              when the session started.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">4</span>
+          <div>
+            <h3>The CLI runs under the remote account</h3>
+            <p>
+              The <code>claude</code> or <code>codex</code> binary on the
+              remote box starts, with that user's own login — their keyring,
+              their config, their rate limit. Nothing in your
+              <code>agent.yaml</code> carries a token. Each teammate on the
+              same host launches under <em>their</em> account.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">5</span>
+          <div>
+            <h3>The MCP bridge comes along</h3>
+            <p>
+              The CodeSense MCP server reaches your app from the remote
+              session through the terminal-server's reverse channel. The
+              bridge is still "unlisted" — the agent never names it in
+              <code>mcp.servers</code> — but a remote launch is where the
+              bridge really earns its keep: no port exposure on the remote,
+              no shared secret, just the ongoing SSH session.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Local vs remote — same file, two differences" id="local-vs-remote">
+        <h2>Local vs remote, side by side</h2>
+        <table class="arce-cmp">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Local on your Mac</th>
+              <th>Remote (private account)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>agent.yaml</code> fields</td>
+              <td>unchanged</td>
+              <td>unchanged — no <code>machine:</code> or <code>host:</code> on the file</td>
+            </tr>
+            <tr>
+              <td>Who picks the machine</td>
+              <td>the launching tab</td>
+              <td>the launching tab or routine task's <code>machine:</code></td>
+            </tr>
+            <tr>
+              <td>Where the resolver runs</td>
+              <td>on your Mac</td>
+              <td>on the remote host</td>
+            </tr>
+            <tr>
+              <td>Which <code>claude</code>/<code>codex</code> runs</td>
+              <td>your Mac's binary</td>
+              <td>the remote user's binary</td>
+            </tr>
+            <tr>
+              <td>Which account is signed in</td>
+              <td>your Mac's CLI login</td>
+              <td>the remote user's CLI login</td>
+            </tr>
+            <tr>
+              <td>Writes</td>
+              <td>your Mac's filesystem</td>
+              <td>the remote user's home</td>
+            </tr>
+            <tr>
+              <td>CodeSense MCP bridge</td>
+              <td>UDS, same host</td>
+              <td>TCP over the SSH reverse channel</td>
+            </tr>
+            <tr>
+              <td>Headless (<code>launch: headless</code>)</td>
+              <td>runs under terminal server</td>
+              <td>runs under terminal server on the remote</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Posture gotchas — paths, approvals, startup files" id="gotchas">
+        <h2>What usually trips people up</h2>
+        <ul>
+          <li>
+            <strong>No absolute paths in <code>startup</code>.</strong>
+            Absolute paths from your Mac won't exist on a remote. The
+            validator refuses them already — this is just the reason it
+            does.
+          </li>
+          <li>
+            <strong>Give headless remote Codex an approval policy.</strong>
+            A <code>launch: headless</code> agent with no
+            <code>permissions.codex.approval_policy</code> gets
+            <code>never</code> added for you — otherwise it would hang on an
+            approval nobody sees. See
+            <a href="./agent-yaml.html#optional">agent.yaml</a>.
+          </li>
+          <li>
+            <strong>CLI login per teammate.</strong> If a teammate's own
+            <code>claude</code> isn't signed in on the remote, the launch
+            fails on their side with the CLI's own error. CodeSense never
+            copies logins across users.
+          </li>
+          <li>
+            <strong>The host-agent exception.</strong> A couple of workspace
+            setup tools (<code>create_local_organization</code>,
+            <code>attach_context_repository</code>) only work on the
+            account's own Mac. See
+            <a href="../arc-d-terminals-and-machines/parity-matrix.html"
+              >arc D → parity matrix</a
+            >
+            for the full list.
+          </li>
+          <li>
+            <strong>Permissions pass through.</strong> The CLI on the remote
+            enforces <code>permissions.claude</code> /
+            <code>permissions.codex</code> itself. CodeSense doesn't double-
+            check. If your remote has a different CLI version with a
+            different allowlist dialect, the CLI's own error points at the
+            bad key.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — list remote machines before launch" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          See every remote machine this app knows about. Each one is a
+          target you can open an agent on. Read-only call; nothing changes.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "list_machines", "args": {}}'
+          label="List reachable machines"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// List machines you can launch on. Local shows as a machine too.
+codesense.invoke('list_machines', {})
+
+// Open an agent on a specific remote (same agent.yaml you'd launch locally).
+codesense.invoke('open_remote_tab', { machineId, agentId })
+
+// Routine-driven launches set `machine:` on the task; see arc K.
+// For headless Codex remote agents, make sure approval_policy is set.
+codesense.invoke('agent_preview', {
+  name, runtime: 'codex', launch: 'headless',
+  permissions: { codex: { approval_policy: 'never', sandbox_mode: 'workspace-write' } },
+})</code></pre>
+          <p>
+            See <a href="../arc-d-terminals-and-machines/index.html"
+              >arc D — terminals &amp; machines</a
+            >
+            for the machine model and
+            <a href="../mcp-explorer.html">mcp-explorer</a> for every tool.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Previous: <a href="./designing-for-a-role.html">Designing for a role</a> ·
+        Next: <a href="./bundled-example.html">Bundled example →</a> ·
+        Edge cases &amp; reference →
+        <a href="../arc-d-terminals-and-machines/parity-matrix.html"
+          >arc D · parity matrix</a
+        >
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Remote agents</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

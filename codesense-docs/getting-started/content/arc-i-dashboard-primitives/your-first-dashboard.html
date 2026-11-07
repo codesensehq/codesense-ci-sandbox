@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="rocket" />
+    <title>CodeSense — Your first dashboard</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-i-dashboard-primitives/your-first-dashboard"] .tutorial-mock {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      body[data-page="arc-i-dashboard-primitives/your-first-dashboard"] .tutorial-mock .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        background: var(--cs-inset);
+        font: 500 13px/1.4 var(--cs-font-mono);
+      }
+      body[data-page="arc-i-dashboard-primitives/your-first-dashboard"] .tutorial-mock .row .n {
+        color: var(--cs-accent);
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/your-first-dashboard">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Your first dashboard 10 minute tutorial" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · Tutorial · 10 min</span>
+        <h1>A working dashboard in ten minutes.</h1>
+        <p class="lede">
+          You will finish this page with a real HTML file open as a centre tab, querying your
+          context through the CodeSense bridge, re-rendering when the data changes, and respecting the theme. <strong>No
+          build step. No framework. No install.</strong> If you want to see the finished file
+          before the walkthrough, it's the <a href="#full-source">full source</a> block at the
+          bottom — copy it, drop it under <code>dashboards/</code> in your team's content folder, open it.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="Six steps along a horizontal track: create file, HTML skeleton, add script, query, subscribe, watch it update."
+          >
+            <title>Your first dashboard — six-step track</title>
+            <desc>Six small circled numbers connected by a horizontal line, each labelled.</desc>
+
+            <!-- Track line -->
+            <path class="i-acc" d="M30 110 L610 110" />
+
+            <!-- Step dots -->
+            <g>
+              <circle cx="50" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="50" y="114" text-anchor="middle">1</text>
+              <text class="i-mut" x="50" y="150" text-anchor="middle">create file</text>
+            </g>
+            <g>
+              <circle cx="162" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="162" y="114" text-anchor="middle">2</text>
+              <text class="i-mut" x="162" y="150" text-anchor="middle">HTML skeleton</text>
+            </g>
+            <g>
+              <circle cx="274" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="274" y="114" text-anchor="middle">3</text>
+              <text class="i-mut" x="274" y="150" text-anchor="middle">&lt;script&gt;</text>
+            </g>
+            <g>
+              <circle cx="386" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="386" y="114" text-anchor="middle">4</text>
+              <text class="i-mut" x="386" y="150" text-anchor="middle">query</text>
+            </g>
+            <g>
+              <circle cx="498" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="498" y="114" text-anchor="middle">5</text>
+              <text class="i-mut" x="498" y="150" text-anchor="middle">subscribe</text>
+            </g>
+            <g>
+              <circle cx="590" cy="110" r="14" class="i-surf" />
+              <text class="i-txt" x="590" y="114" text-anchor="middle">6</text>
+              <text class="i-mut" x="590" y="150" text-anchor="middle">watch it</text>
+            </g>
+
+            <!-- Start / end labels -->
+            <text class="i-mut" x="30" y="80" text-anchor="start">empty file</text>
+            <text class="i-mut" x="610" y="80" text-anchor="end">live dashboard</text>
+          </svg>
+          <figcaption id="hero-cap">
+            Six steps · each with a code block you can paste
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="Six tutorial steps for first dashboard" id="walkthrough">
+        <h2>Walkthrough</h2>
+        <ol class="steps">
+          <li>
+            <h3>Make a file</h3>
+            <p>
+              In your team's content folder, in an editable context repo (not the CodeSense
+              docs org, which is read-only), create a folder <code>dashboards/</code> and a file
+              inside it:
+            </p>
+            <pre tabindex="0"><code>dashboards/stories-in-flight.html</code></pre>
+            <p>
+              CodeSense recognises <code>.html</code> files in the content tree. Open the file
+              from the left nav, or press ⌘P and type its name: it renders in the dashboard
+              viewer with the bridge already wired.
+            </p>
+          </li>
+
+          <li>
+            <h3>Drop in the HTML skeleton</h3>
+            <p>
+              The viewer injects everything it needs into a plain <code>&lt;html&gt;</code>
+              document: the bridge, the theme tokens, the dashboard kit and the link interceptor.
+              Put <code>class="cs-app"</code> on <code>&lt;body&gt;</code> to take the app's font,
+              colours and background, and style anything else with the
+              <code>--cs-*</code> tokens.
+            </p>
+            <pre tabindex="0"><code>&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
+    &lt;title&gt;Stories in flight&lt;/title&gt;
+    &lt;style&gt;
+      body { margin: 0; padding: 24px; }
+      h1   { margin: 0 0 12px; font-size: 20px; }
+      .row { padding: 8px 12px; border: 1px solid var(--cs-border);
+             border-radius: 6px; margin: 6px 0; background: var(--cs-surface); }
+      .empty { color: var(--cs-muted-fg); font-style: italic; }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body class="cs-app"&gt;
+    &lt;h1&gt;Stories in flight&lt;/h1&gt;
+    &lt;div id="out" class="empty"&gt;Loading…&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            <p>
+              Save it. The open tab reloads whenever the file changes on disk. You should see the
+              heading and a <em>Loading…</em> placeholder on the app's theme.
+            </p>
+          </li>
+
+          <li>
+            <h3>Add a <code>&lt;script&gt;</code></h3>
+            <p>
+              Everything after this point goes inside one <code>&lt;script&gt;</code> at the end
+              of the body. You don't need to import anything: the bridge is injected before your
+              script runs, and <code>window.codesense</code> is already defined.
+            </p>
+            <pre tabindex="0"><code>&lt;script&gt;
+  (function () {
+    const out = document.getElementById("out");
+
+    function render(rows) {
+      out.innerHTML = "";
+      rows.forEach((r) =&gt; {
+        const div = document.createElement("div");
+        div.className = "row";
+        div.textContent = r.title + " · " + r.fields.status;
+        out.appendChild(div);
+      });
+    }
+  })();
+&lt;/script&gt;</code></pre>
+            <p>
+              Nothing happens yet: you've defined <code>render</code> and taken a reference to
+              the output div. The next step gives it something to render.
+            </p>
+          </li>
+
+          <li>
+            <h3>Query your context</h3>
+            <p>
+              <code>codesense.queryContext(q)</code> finds context files by their metadata and
+              returns a <code>Promise</code> of <code>{total, rows}</code>. This query asks for
+              stories that are in progress or in review, with their <code>status</code>:
+            </p>
+            <pre tabindex="0"><code>const q = {
+  where: { kinds: ["story"] },
+  filters: [{ key: "status", op: "in", value: ["in-progress", "review"] }],
+  select: ["status"],
+  sort: ["status"],
+};
+
+codesense.queryContext(q).then((result) =&gt; render(result.rows));</code></pre>
+            <p>
+              Save again. The <em>Loading…</em> placeholder is replaced with one row per story:
+            </p>
+            <div class="tutorial-mock" aria-hidden="true">
+              <div class="row"><span>Refund button · in-progress</span><span class="n">●</span></div>
+              <div class="row"><span>Payment intents · review</span><span class="n">●</span></div>
+            </div>
+            <p>
+              Team content is read across every synced org unless you narrow it. To keep to this
+              page's own team, read <code>const {org, team} = await codesense.context()</code> and
+              add <code>orgs: [org], teams: [team]</code> to <code>where</code>.
+            </p>
+          </li>
+
+          <li>
+            <h3>Re-render when the context changes</h3>
+            <p>
+              A dashboard that reads once and freezes is a report. Swap
+              <code>queryContext</code> for <code>subscribeContext</code>: it runs the same query
+              now and again whenever the context changes (an agent moves a story, a file lands),
+              and returns a function that stops it.
+            </p>
+            <pre tabindex="0"><code>const off = codesense.subscribeContext(q, (result, err) =&gt; {
+  if (err) {
+    out.textContent = "Query failed: " + err.message;
+    return;
+  }
+  render(result.rows);
+});</code></pre>
+            <p>
+              You don't poll and you don't manage sockets. The handler gets each new result.
+            </p>
+          </li>
+
+          <li>
+            <h3>Tell the host it's ready</h3>
+            <p>
+              Once the page has painted its first useful state, and after you've registered your
+              handlers, call <code>codesense.ready()</code>. The host waits for it before it treats
+              the pane as live.
+            </p>
+            <pre tabindex="0"><code>render([]);        // first paint
+codesense.ready(); // now the host knows the page is up</code></pre>
+            <p>
+              A first <code>codesense.subscribe(...)</code> also counts, but
+              <code>subscribeContext</code> does not, so always call <code>ready()</code> yourself. If neither arrives within 30 seconds, the
+              pane shows <em>"It didn't finish starting within 30 seconds"</em> and falls back. See
+              <a href="lifecycle-and-liveness.html">Lifecycle and liveness</a> for the full rule.
+            </p>
+          </li>
+
+          <li>
+            <h3>Watch it update</h3>
+            <p>
+              With the file open as a centre tab, change a story's <code>status</code> to
+              <code>review</code> (in the story's metadata, or have an agent do it). The list
+              updates without a reload.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Full source =============== -->
+      <section data-search="Full source copy paste first dashboard" id="full-source">
+        <h2>The whole file</h2>
+        <p>
+          Everything above, in one block. Paste it into
+          <code>dashboards/stories-in-flight.html</code> in your team's content folder.
+        </p>
+        <pre tabindex="0"><code>&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
+    &lt;title&gt;Stories in flight&lt;/title&gt;
+    &lt;style&gt;
+      body { margin: 0; padding: 24px; }
+      h1   { margin: 0 0 12px; font-size: 20px; }
+      .row { padding: 8px 12px; border: 1px solid var(--cs-border);
+             border-radius: 6px; margin: 6px 0; background: var(--cs-surface); }
+      .empty { color: var(--cs-muted-fg); font-style: italic; }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body class="cs-app"&gt;
+    &lt;h1&gt;Stories in flight&lt;/h1&gt;
+    &lt;div id="out" class="empty"&gt;Loading…&lt;/div&gt;
+
+    &lt;script&gt;
+      (function () {
+        const out = document.getElementById("out");
+        const q = {
+          where: { kinds: ["story"] },
+          filters: [{ key: "status", op: "in", value: ["in-progress", "review"] }],
+          select: ["status"],
+          sort: ["status"],
+        };
+
+        function render(rows) {
+          out.className = rows.length ? "" : "empty";
+          out.innerHTML = "";
+          if (!rows.length) {
+            out.textContent = "Nothing in progress or in review.";
+            return;
+          }
+          rows.forEach((r) =&gt; {
+            const div = document.createElement("div");
+            div.className = "row";
+            div.textContent = r.title + " · " + r.fields.status;
+            out.appendChild(div);
+          });
+        }
+
+        codesense.subscribeContext(q, (result, err) =&gt; {
+          if (err) {
+            out.className = "empty";
+            out.textContent = "Query failed: " + (err.message || err);
+            return;
+          }
+          render(result.rows);
+        });
+        codesense.ready();
+      })();
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        <p>
+          About <strong>50 lines</strong>. One query, one subscription, one
+          <code>render</code>. The viewer handles everything else.
+        </p>
+      </section>
+
+      <!-- =============== What next =============== -->
+      <section data-search="What to try next after first dashboard session usage cost per story" id="next">
+        <h2>What to try next</h2>
+        <ul>
+          <li>
+            Show what each story cost. <code>codesense.sessionUsage({story: "DEMO-1"})</code>
+            returns the tokens and cost of every agent session CodeSense launched for that
+            story; without <code>story</code>, each session carries its own
+            <code>story {id, title, status, epic}</code>, so you can group cost by story or epic
+            and set it beside the stories that reached <code>done</code>.
+          </li>
+          <li>
+            Add a button that runs an action (<code>openWorkspace</code>,
+            <code>setStatus</code>). See <a href="./calling-codesense.html">calling CodeSense</a>.
+          </li>
+          <li>
+            Theme without authoring colours: use the <code>cs-*</code> classes and tokens, and
+            the page follows the app's light and dark themes.
+            <a href="./theme-and-tokens.html">Theme &amp; tokens</a>.
+          </li>
+          <li>
+            Link to another doc with a plain <code>&lt;a href="…/story.md"&gt;</code>. The bridge
+            routes the click; ⌘-click opens a new tab. See <a href="./linking.html">linking</a>.
+          </li>
+          <li>
+            Iterate without rebuilding: edit the file and watch the tab reload. See
+            <a href="./testing.html">testing</a>.
+          </li>
+        </ul>
+        <p>
+          For worked examples that go further (inboxes, agent cards, routine dashboards),
+          browse <a href="../recipes-gallery.html">recipes-gallery</a>.
+        </p>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP agent builds a dashboard" id="via-mcp">
+        <h2>How an agent does this</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            An agent launched from CodeSense reads the page SDK, writes the same file into the
+            team's content folder with its own file tools, and checks it. The outcome is the
+            same: an HTML file in the context repo that CodeSense opens as a live page.
+          </p>
+          <pre tabindex="0"><code># 1. Read the page SDK: verbs, query shape, theme tokens
+get_live_data_contract {}
+
+# 2. Write dashboards/stories-in-flight.html in the team's content folder
+
+# 3. Check it, and fix any blocking findings
+validate_live_data_doc { "path": "&lt;absolute path of the file&gt;" }</code></pre>
+        </details>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#kit/codesense.queryContext"
+          >queryContext</a
+        >
+        ·
+        <a href="../primitives-explorer.html#kit/codesense.subscribeContext"
+          >subscribeContext</a
+        >
+        ·
+        <a href="../recipes-gallery.html">recipes-gallery</a>
+        ·
+        <a href="../primitives-explorer.html#invoke/sessionUsage">sessionUsage</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Your first dashboard</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

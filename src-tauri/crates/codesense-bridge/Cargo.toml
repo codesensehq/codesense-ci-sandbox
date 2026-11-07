@@ -1,0 +1,23 @@
+[package]
+name = "codesense-bridge"
+version = "0.1.0"
+description = "MCP stdio-to-UDS bridge for CodeSense"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "codesense-bridge"
+path = "src/main.rs"
+
+[dependencies]
+codesense-host-proto = { path = "../codesense-host-proto" }
+tokio = { version = "1", features = ["io-util", "io-std", "net", "rt-multi-thread", "macros", "sync", "time"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "5"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["test-util"] }

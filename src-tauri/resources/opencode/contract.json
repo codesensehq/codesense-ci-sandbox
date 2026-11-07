@@ -1,0 +1,34 @@
+{
+  "events": [
+    "form.cancelled",
+    "form.created",
+    "form.replied",
+    "permission.asked",
+    "permission.replied",
+    "session.created",
+    "session.deleted",
+    "session.execution.failed",
+    "session.execution.interrupted",
+    "session.execution.started",
+    "session.execution.succeeded",
+    "session.step.ended",
+    "session.step.started"
+  ],
+  "hooks": [
+    "session.prompt",
+    "shell.create.before",
+    "tool.execute.after",
+    "tool.execute.before"
+  ],
+  "client": [
+    "app.version",
+    "event.subscribe",
+    "session.get",
+    "session.hook",
+    "session.list",
+    "session.prompt",
+    "shell.hook",
+    "tool.hook"
+  ],
+  "http": []
+}

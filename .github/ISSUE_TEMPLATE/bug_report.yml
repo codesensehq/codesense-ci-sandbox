@@ -1,0 +1,72 @@
+name: Bug report
+description: Something in CodeSense doesn't work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Search the open issues first.
+        Security problems don't go here: report them privately, as described in [SECURITY.md](https://github.com/codesensehq/codesense/blob/main/SECURITY.md).
+  - type: input
+    id: codesense-version
+    attributes:
+      label: CodeSense version
+      description: CodeSense → About CodeSense.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      description: Apple menu → About This Mac.
+      placeholder: "macOS 26.1"
+    validations:
+      required: true
+  - type: input
+    id: mac-model
+    attributes:
+      label: Mac model and chip
+      placeholder: "MacBook Pro 14-inch, M3 Pro"
+    validations:
+      required: true
+  - type: input
+    id: agent-cli
+    attributes:
+      label: Agent CLI and version
+      description: The agent the bug happened with, and its version (for example `claude --version`, `codex --version` or `opencode --version`).
+      placeholder: "Claude Code 2.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Click …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: |
+        The app log is `~/Library/Logs/ai.codesense/CodeSense.log`. Paste only the lines around the problem.
+        **Remove secrets first:** tokens, keys, passwords, private repository names and anything else you don't want public.
+      render: text
+    validations:
+      required: false

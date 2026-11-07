@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest something CodeSense could do.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Search the open issues first. For an open-ended idea or a question, [start a discussion](https://github.com/codesensehq/codesense/discussions) instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you'd like
+      description: How you'd like CodeSense to help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: Anything you've tried or considered.
+    validations:
+      required: false

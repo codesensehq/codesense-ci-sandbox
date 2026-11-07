@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="cs:type" content="dashboard">
+<title>Routine snapshot</title></head><body>
+<h1>Routine snapshot</h1><p id="status">Loading cached result…</p>
+<button id="refresh" type="button">Refresh routine</button><pre id="result"></pre>
+<script>
+// Replace with your routine key.
+const key = "team:example";
+const status = document.getElementById("status");
+const result = document.getElementById("result");
+async function readSnapshot() {
+  if (!window.codesense) { status.textContent = "Open this dashboard in CodeSense to read routine results."; return; }
+  try {
+    const value = await window.codesense.act("routineResult", {key});
+    result.textContent = JSON.stringify(value, null, 2);
+    status.textContent = "Cached routine result";
+  } catch (error) { status.textContent = String(error); }
+}
+document.getElementById("refresh").addEventListener("click", async () => {
+  if (!window.codesense) return;
+  try { await window.codesense.act("routineRefresh", {key}); status.textContent = "Refresh requested; reopen or read the result after completion."; }
+  catch (error) { status.textContent = String(error); }
+});
+readSnapshot(); // Read only: page load never launches a routine.
+window.codesense?.ready?.(); // The shell is rendered; cached data hydrates asynchronously.
+</script></body></html>

@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 24,
+ "snapshot": {
+  "cols": 60,
+  "rows": 20,
+  "seq": 7315,
+  "resize_gen": 2,
+  "scrollback": 5000,
+  "vt": "\u001b[1mtui-fixture 100x30 frame 8-----------------------------------\u001b[1D\u001b[1X\u001b[A\u001b[26C\u001b[34X\u001b[26D\u001b[B\u001b[39C\u001b[0m|\r\n----------------------------------------------------------------------------------------------------\r\nframe grid line parse grid 端末 kernel 漢字\r\ngrid alpha parse kernel height bravo echo\r\nscroll height 端末\r\n表示 端末 delta\r\nparse query grid node 漢字 query\r\ndelta 漢字 echo 画面\r\nmargin delta query bravo index height\r\nnode bravo cursor cursor line echo jolt bravo\r\n\u001b[4Cwidthset parse grid node\r\nkernel alpha index node\r\n画面 jolt line scroll 表示 index\r\nregion echo offset kernel parse 表示\r\ntile echo 幅広\r\nline kernel alpha 画面\r\nnode cursor height 幅広 width region cursor query\r\nwidth delta grid index region echo\r\nheight tile delta\r\ncursor tile 端末 scroll kernel parse\r\njolt bravo jolt\r\nframe line index cursor\r\nwidth 画面 region scroll\r\nscroll 表示 frame delta scroll parse query\r\ntile bravo kernel 漢字 line parse\r\n画面 index 漢字 offset height kernel\r\n\r\n\r\n----------------------------------------------------------------------------------------------------\r\n[100x30] update 8\u001b[0m\u001b[?1049h\u001b[H\u001b[0mecho line margin line 漢字 region\r\n端末 端末 region delta jolt\r\n端末 line node query node\r\nbravo 幅広 表示 frame kernel jolt bravo 幅広\r\nbravo width 画面\r\nmargin margin delta\r\n\u001b[46Cnode\r\ncursor kernel cursor width offset 表示 幅広 line\r\n端末 delta tile echo bravo tile echo scroll\r\n漢字 scroll height 表示 margin line echo bravo\r\nquery 画面 幅広 index width\r\nwidth query region kernel\r\nparse 端末 width offset 端末 index\r\ntile height node kernel delta kernel\r\n\r\ngrid bravo 幅広 grid index height\r\nwidth 画面 表示 grid 幅広 端末 delta\r\n画面 offset bravo frame\r\n------------------------------------------------------------\r\n[100x30] scroll 11\u001b[?25l\u001b[20;19H"
+ }
+}

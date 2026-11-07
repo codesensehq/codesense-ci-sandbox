@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="link" />
+    <title>CodeSense — Links &amp; navigation</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/linking">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Linking navigation codesense navigate deep links" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · Linking</span>
+        <h1>A plain <code>&lt;a&gt;</code> tag knows where to go.</h1>
+        <p class="lede">
+          Links inside a dashboard are plain <code>&lt;a href="…"&gt;</code> tags. The viewer
+          intercepts clicks on anything that looks like a doc path, routes same-tab by default,
+          opens a new tab on <strong>⌘-click</strong>, and shells out to the OS for
+          <code>http(s)://</code> and <code>mailto:</code>. You almost never call a navigation
+          verb by hand — the link interceptor does the right thing. This page lists what the
+          interceptor recognises, when to reach past it with the bridge, and how to deep-link
+          into the explorers.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="A link element inside a doc fans out into four routing lanes: same-tab doc link, meta-click new tab, external URL to OS, deep link to explorer anchor."
+          >
+            <title>Link routing — four lanes</title>
+
+            <defs>
+              <marker id="ln-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <g transform="translate(30 85)">
+              <rect class="i-surf" width="140" height="50" rx="6" />
+              <text class="i-txt" x="70" y="22" text-anchor="middle">&lt;a href="…"&gt;</text>
+              <text class="i-mut" x="70" y="40" text-anchor="middle">in your doc</text>
+            </g>
+
+            <!-- lanes -->
+            <g>
+              <path class="i-acc" d="M170 100 L440 30" marker-end="url(#ln-arrow)" />
+              <text class="i-mut" x="455" y="34" text-anchor="start">doc path · same tab</text>
+            </g>
+            <g>
+              <path class="i-acc" d="M170 108 L440 88" marker-end="url(#ln-arrow)" />
+              <text class="i-mut" x="455" y="92" text-anchor="start">⌘-click · new tab</text>
+            </g>
+            <g>
+              <path class="i-acc" d="M170 118 L440 148" marker-end="url(#ln-arrow)" />
+              <text class="i-mut" x="455" y="152" text-anchor="start">http(s) · OS handler</text>
+            </g>
+            <g>
+              <path class="i-acc" d="M170 125 L440 200" marker-end="url(#ln-arrow)" />
+              <text class="i-mut" x="455" y="204" text-anchor="start">#anchor · deep link</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            one link element · four lanes · the host sorts them for you
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== What the interceptor handles =============== -->
+      <section data-search="What the link interceptor handles file types" id="handled">
+        <h2>What the interceptor recognises</h2>
+        <p>
+          The bridge injects a script before your doc runs that attaches a global click
+          listener. It emits <code>codesense:navigate</code> for any link whose <code>href</code>
+          ends in a known doc extension; the host receives the event and opens the file in the
+          right place:
+        </p>
+        <table class="cmp">
+          <thead>
+            <tr><th>Link</th><th>What happens</th><th>Who routes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>href="./notes.md"</code></td>
+              <td>Open the doc in the same tab.</td>
+              <td>Interceptor → <code>codesense:navigate</code></td>
+            </tr>
+            <tr>
+              <td><code>href="./notes.md"</code> + ⌘-click</td>
+              <td>Open the doc in a new tab.</td>
+              <td>Interceptor sends <code>metaKey:true</code></td>
+            </tr>
+            <tr>
+              <td><code>href="./dashboards/x.html"</code></td>
+              <td>Open the HTML as a centre tab.</td>
+              <td>Interceptor</td>
+            </tr>
+            <tr>
+              <td><code>href="./x.htm"</code></td>
+              <td>Same as <code>.html</code>.</td>
+              <td>Interceptor</td>
+            </tr>
+            <tr>
+              <td><code>href="https://example.com"</code></td>
+              <td>Open in the OS browser via
+                  <code>codesense:external-link</code>.</td>
+              <td>Interceptor</td>
+            </tr>
+            <tr>
+              <td><code>href="mailto:you@…"</code></td>
+              <td>OS mail handler.</td>
+              <td>Interceptor</td>
+            </tr>
+            <tr>
+              <td><code>href="#section-id"</code></td>
+              <td>In-page anchor jump, no interception.</td>
+              <td>Browser default</td>
+            </tr>
+            <tr>
+              <td><code>href="./x.png"</code> (image)</td>
+              <td>Nothing — unknown extension, link opens inside the frame.</td>
+              <td>Browser default</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          If you want to force a new tab without relying on the user holding ⌘, reach past the
+          interceptor and call the bridge explicitly:
+        </p>
+        <pre><code>// Same tab
+codesense.openFile({ path: "docs/notes.md" });
+
+// New tab
+codesense.openFile({ path: "docs/notes.md", newTab: true });</code></pre>
+        <p>Put a fragment in <code>path</code> to target a route or section, for example
+          <code>codesense.openFile({path: "docs/notes.html#section", newTab: true})</code>.
+          It is separated before file validation and delivered to the HTML or Markdown viewer,
+          including when that file is already open or belongs to another team. HTML file routes
+          are retained with their tab view state across viewer eviction and remount.</p>
+      </section>
+
+      <!-- =============== Deep links into the explorers =============== -->
+      <section data-search="Deep links into explorers primitives mcp" id="deep">
+        <h2>Deep links into the explorers</h2>
+        <p>
+          The three reference dashboards — <a href="../primitives-explorer.html"
+          >primitives-explorer</a>, <a href="../mcp-explorer.html">mcp-explorer</a>,
+          <a href="../schema-browser.html">schema-browser</a> — all parse the URL hash into
+          a <code>&lt;tab&gt;/&lt;name&gt;</code> pair and open that detail pane on load. Which
+          means a dashboard, or any content page, can link <em>straight to the right row</em>
+          without a search step:
+        </p>
+        <table class="cmp">
+          <thead>
+            <tr><th>Explorer</th><th>Hash grammar</th><th>Example</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>primitives-explorer</td>
+              <td><code>#&lt;tab&gt;/&lt;name&gt;</code></td>
+              <td><code>#invoke/queryContext</code> ·
+                  <code>#classes/cs-sidebar-item</code> ·
+                  <code>#tokens/--cs-accent</code> ·
+                  <code>#events/codesense:theme</code> ·
+                  <code>#contexts/right-pane</code></td>
+            </tr>
+            <tr>
+              <td>mcp-explorer</td>
+              <td><code>#tool/&lt;name&gt;</code></td>
+              <td><code>#tool/codesense_overview</code></td>
+            </tr>
+            <tr>
+              <td>schema-browser</td>
+              <td><code>#&lt;schema-slug&gt;</code></td>
+              <td><code>#agent-yaml</code> · <code>#routine-yml</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          A link into another explorer is the right call whenever a sentence in your dashboard
+          names a specific primitive. The explorer's filter box is a good fallback, but a
+          direct hash link lets a reader land exactly where you meant.
+        </p>
+      </section>
+
+      <!-- =============== Cross-doc navigation inside your context repo =============== -->
+      <section data-search="Cross doc navigation inside context repo" id="cross-doc">
+        <h2>Linking inside your context repo</h2>
+        <p>
+          Content paths resolve <strong>relative to the file that holds the link</strong>, same
+          as any filesystem link. From a dashboard at
+          <code>dashboards/validator.html</code>:
+        </p>
+        <pre><code>&lt;!-- another dashboard in the same repo --&gt;
+&lt;a href="./agent-dag.html"&gt;Agent DAG&lt;/a&gt;
+
+&lt;!-- a story file one directory up --&gt;
+&lt;a href="../stories/DEMO-20.md"&gt;DEMO-20&lt;/a&gt;
+
+&lt;!-- the shipped docs org (always available alongside yours) --&gt;
+&lt;a href="codesense-docs/getting-started/content/arc-i-dashboard-primitives/index.html"
+   &gt;Arc I primitives&lt;/a&gt;</code></pre>
+        <p>
+          The host resolves against the <strong>context root</strong> for the active team, so a
+          link that works in your workspace works in a teammate's workspace too — their copy of
+          the file lives at the same relative path, just under a different user prefix on disk.
+        </p>
+      </section>
+
+      <!-- =============== Writing your own navigate verb =============== -->
+      <section data-search="Writing a navigate verb custom link routing" id="custom">
+        <h2>When you need custom routing</h2>
+        <p>
+          The interceptor is intentionally minimal. If your dashboard needs to route a click
+          through a condition — "open the story if the agent is idle, otherwise open the inbox
+          thread" — do the branch in JavaScript and call the matching navigation verb:
+        </p>
+        <pre><code>document.getElementById("story-link").addEventListener("click", async (e) =&gt; {
+  e.preventDefault();
+  const agents = await codesense.invoke("agents", {});
+  const target = agents.some((a) =&gt; a.state === "running")
+    ? { verb: "openFile", args: { path: "stories/DEMO-20.md" } }
+    : { verb: "gotoAgent", args: { agentId: "amelia-primary" } };
+  codesense.invoke(target.verb, target.args);
+});</code></pre>
+        <p>
+          Keep the fallback <em>href</em> populated — a user who ⌘-clicks the link should get a
+          plain file open even if your script hasn't attached yet.
+        </p>
+      </section>
+
+      <section id="agent-list-actions" data-search="Agent list workspaceOrder drag moveWorkspace launchUnder openAgentInbox gotoAgent preserveFocus showPopover openLauncher keyboard Quick view">
+        <h2>Agent-list actions</h2>
+        <p>
+          Use <code>codesense.act</code> for the same actions as the native agent list.
+          Handles come from <code>codesense.sessions()</code>; workspace ids and team keys come
+          from <code>agentList</code>.
+        </p>
+        <p>
+          Keep live list rows as plain objects with stable <code>id</code> values. Pass a
+          <code>layoutKey(row)</code> describing their markup and captured controls to
+          <code>kit.virtualList</code>; patch live text, status, counts and tooltips with
+          <code>update(element, row, index)</code>. Initialize those same fields in
+          <code>render</code>. Heartbeats then keep the row, hover and focus intact, and inserts
+          do not rebuild the rows below them. Event handlers that use live fields should read
+          the current row stored by the updater.
+        </p>
+        <pre><code>&lt;div id="agent-list" style="height:240px;overflow:auto"&gt;&lt;/div&gt;
+&lt;script src="/kit/v1/kit.js"&gt;&lt;/script&gt;
+&lt;script src="/kit/v1/virtual-list.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+const kit = codesense.kit;
+function patchAgent(el, row) {
+  el.session = row;
+  el.querySelector(".name").textContent = row.displayName || row.id;
+  el.querySelector(".status").textContent = row.effectiveStatus || row.state;
+}
+const list = kit.virtualList({
+  container: document.getElementById("agent-list"), rows: [], rowHeight: 28,
+  layoutKey: row =&gt; row.id, // This example always has the same two spans.
+  render(row) {
+    const el = kit.h("button", {type: "button"},
+      kit.h("span", {class: "name"}), " · ", kit.h("span", {class: "status"}));
+    el.onclick = () =&gt; codesense.act("gotoAgent", {agentId: el.session.handle});
+    patchAgent(el, row);
+    return el;
+  },
+  update: patchAgent
+});
+codesense.subscribe("sessions", {onChange: snapshot =&gt; list.setRows(snapshot.snapshot)});
+codesense.ready();
+&lt;/script&gt;</code></pre>
+        <p>
+          If a row's shape changes, include that shape in its layout key, for example
+          <code>JSON.stringify([row.id, row.kind, row.hasActions])</code>. Omit
+          <code>layoutKey</code> to rebuild on any payload change. The
+          <a href="../examples/panes/agent-list.html">built-in agent-list source</a> shows the
+          full layout signature and per-row updater, including pinned copies and workspace
+          tallies. The <a href="custom-pane-live-list.html#stable-rows">stable live-list recipe</a>
+          covers local rows, hub windows and keyed lists. No non-enumerable properties or
+          separate patch pass are needed.
+        </p>
+        <p>
+          Agent rows use click for the terminal; Enter, Space, Q and Option-click for Quick view;
+          and M or the Messages button for the inbox chat. Offline rows keep Enter/Space for
+          showing the agent; Q and Option-click do nothing. M still opens their inbox.
+          Use the host popover and return focus to the row when it closes:
+        </p>
+        <p>
+          Hover or focus a row to replace its state word with Quick view and Messages actions.
+          At dock widths of 260px or more, Pin/Unpin appears alongside them. A pinned row’s
+          pin also unpins it at narrower widths.
+          An amber messages badge counts unread messages from that agent that need you; open it
+          to read the conversation. It does not add to the number of agents waiting on you.
+        </p>
+        <p>
+          Working covers running, thinking and tool use. A parent with active subagents stays
+          Working with a subagent count, even while its own turn is idle or stalled. Needs-you,
+          crashed, offline and ended states take precedence. Blocked agents count as needs-you.
+          Needs-you appears in place; it does not move a row ahead of its crew or manual pins.
+        </p>
+        <p>
+          The waiting and working tallies filter the list. These filters, search, arrangement,
+          manual pins, folds and hidden teams persist in the shared <code>ui:dock</code> state
+          and restore when the app reopens.
+        </p>
+        <pre><code>// Give the row a stable id and its main button data-cs-focus-key="main".
+codesense.onFocusReturn(({anchorId}) =&gt; {
+  document.getElementById(anchorId)?.querySelector('[data-cs-focus-key="main"]')
+    ?.focus({preventScroll: true});
+});
+const rect = row.getBoundingClientRect();
+await codesense.showPopover({
+  kind: "agent-quick-send", // "agent-inbox-chat" for M or Messages
+  sessionId, anchorId: row.id,
+  anchorRect: {x: rect.x, y: rect.y, width: rect.width, height: rect.height}
+});
+// Team/workspace + controls open the existing launch sheet.
+await codesense.openLauncher({team: "web", task: ""});</code></pre>
+        <p>
+          Pass <code>{org: "beta", team: "ops", task: ""}</code> to launch in that admitted team; team-only uses the active org, unknown or unadmitted teams reject, and Launch does not preselect a workspace.
+          Role chips stay inert; use Role in the host row menu to edit them.
+        </p>
+        <pre><code>await codesense.act("moveWorkspace", {teamKey, workspaceId, before: otherWorkspaceId});
+await codesense.act("launchUnder", {handle, task: "Review the change"});
+await codesense.act("openAgentInbox", {handle});
+await codesense.act("gotoAgent", {agentId: handle, preserveFocus: true});</code></pre>
+        <p>
+          <code>moveWorkspace</code> takes exactly one of <code>before</code> or <code>after</code>
+          and returns <code>{moved: boolean}</code>. An unknown id or unchanged placement returns
+          false; the new order arrives through the existing <code>agentList</code> update. Its MCP
+          twin is <code>reorder_workspace</code>. The separate <code>move_workspace</code> tool
+          moves a workspace between machines.
+        </p>
+        <p>
+          For card drag or Option+↑ / Option+↓, read the state row's
+          <code>pane.workspaceOrder[teamKey]</code>: workspace ids in the tray's resolved order,
+          delivered only for teams the frame may see. An id in this list has a tray pill and can
+          be a move anchor. Keep cards without pills in their slots; never anchor on one.
+          Move only in By team with no search, status, workspace, group or agent filter:
+          hidden cards make the drop position ambiguous. A single movable card has nowhere to go.
+        </p>
+        <pre><code>const state = snapshot.snapshot.find(row =&gt; row.rowType === "state");
+const movable = state.pane.workspaceOrder[teamKey] || [];
+if (movable.includes(workspaceId) &amp;&amp; movable.includes(otherWorkspaceId)) {
+  const {moved} = await codesense.act("moveWorkspace", {
+    teamKey, workspaceId, before: otherWorkspaceId
+  });
+  if (!moved) announce("This card couldn't move. Its place in the order may have changed.");
+  // Architecture: wait for agentList to deliver the new order before reordering cards.
+}</code></pre>
+        <p>
+          Use full row heights, including undrawn virtual rows, to pick a gap by card-block
+          midpoints. Keep the drop in its team. Show a lifted preview, placeholder and drop line;
+          announce refusals and successful moves. Capture the pointer on a stable container and
+          clear the gesture on Escape, pointer cancellation, capture loss, blur or teardown.
+          Escape during a drag is handled; otherwise the SDK returns to the terminal.
+          After a keyboard move, follow the card only while it retains focus. Cancel pending
+          focus restoration when focus leaves the card or frame, including Escape to the terminal.
+        </p>
+        <p>
+          Put <code>data-codesense-row</code> on agent rows and workspace cards and omit menu
+          declarations to get the standard host menu. Give each row and card a stable anchor id.
+          Quick view, Launch under and Stop run in the host; Stop's confirmation cannot be
+          answered by the pane. On focus return, restore
+          the row's control or card's heading, or the first visible control when the anchor has gone.
+        </p>
+        <p>
+          <code>launchUnder</code> opens the launch sheet with that running agent's team, manager
+          and story. The optional task fills the sheet; the person still clicks Launch.
+          An unknown handle rejects with <code>unavailable: no such agent</code>.
+          <code>openAgentInbox</code> reveals a running agent and opens its inbox rail, or rejects
+          with <code>unavailable: agent is not running</code>. Both return
+          <code>{opened: true}</code> when opened.
+        </p>
+        <p>
+          <code>gotoAgent</code> accepts a handle or bare agent definition id and returns
+          <code>{located, outcome}</code>. Set <code>preserveFocus: true</code> to select and reveal
+          the terminal tab while keeping keyboard focus in your frame. Omit it to focus the terminal.
+        </p>
+      </section>
+
+      <section id="file-tree" data-search="Build a file tree pane files-tree file-nav rename delete tree keyboard">
+        <h2>Build a file tree pane</h2>
+        <p>Declare <code>file-nav right-pane</code> slots. Subscribe to <code>files</code> with
+          <code>{scope: "team"}</code> (or <code>private</code>, <code>story</code> with
+          <code>storyId</code>, <code>agent</code> with <code>agentId</code>). Subscribe to a folder
+          with <code>dir</code>; follow each snapshot's cursor with <code>page("files", cursor, options)</code>.
+          Use <code>ui:file-nav</code> for expanded paths, scope and selection. The host supplies
+          recent story and team agent choices in <code>sources</code>.</p>
+        <p><code>codesense.kit.virtualList({container, rows, tree: true, rowHeight: 24, render,
+          expanded, onExpandedChange, onActivate})</code> accepts nested <code>children</code> and
+          reuses the list's windowing. It supplies tree ARIA, indentation, roving focus, arrows,
+          Home/End, PageUp/PageDown and type-ahead. <code>setExpanded</code>, <code>toggle</code>,
+          <code>focus</code> and <code>reveal</code> control its tree state.</p>
+        <p>Use <code>onRangeChange(rows)</code> to subscribe only to expanded folders in the
+          rendered window. Keep their last listings when unsubscribing; persist a bounded cache
+          and scroll position in <code>ui:file-nav</code> so a reloaded pane can paint before its
+          live subscriptions reconcile. Prefetch one level below expanded folders with
+          <code>files.list</code>, without retaining offscreen subscriptions. Keep cached rows
+          visible on a failed refresh and put a Retry action under the affected folder.
+          Await <code>codesense.unsubscribe(...)</code> before reopening that subscription;
+          it resolves after the host has released the old backend subscription.</p>
+        <pre><code>codesense.onCommand(command =&gt; {
+  if (command.id !== "nav.reveal-file") return;
+  const path = command.args.path;
+  // Clear a local filter, load and expand the path's ancestors, then:
+  tree.reveal(path);
+});</code></pre>
+        <p>The host writes the selected path to <code>ui:file-nav.selected</code> and sends
+          <code>nav.reveal-file</code> for the same native tab-header action, even when the path
+          is already selected. A pane should restore its saved scroll position on reload and
+          reveal again only for a changed selection or this explicit command.</p>
+        <pre><code>const row = {kind: "file", path: file.path}; // also "story" or "epic"
+element.dataset.codesenseRow = JSON.stringify(row);
+// No custom context-menu handler: the host opens the native file menu.
+element.onclick = () =&gt; codesense.openFile({path: file.path, preview: true});
+element.ondblclick = () =&gt; codesense.openFile({path: file.path, preview: false});
+// F2 / Delete: run the same host action, with the native dialog and inherited warning.
+await codesense.showMenu({builtinAction: "builtin:rename", row, anchorRect});
+await codesense.showMenu({builtinAction: "builtin:delete", row, anchorRect});</code></pre>
+        <p>Those built-ins can also appear in <code>items</code>. The per-team file-actions owner
+          serves both native navigation and dashboard rows, including inherited paths. Folder rows
+          use kind <code>file</code>; story and epic rows use their respective kinds. A deleted row
+          carries no menu tag. Drag to a folder with <code>files.move({from, to})</code>.</p>
+        <p>Use <code>data-surface="sidebar"</code> and semantic <code>--cs-bg</code>,
+          <code>--cs-fg</code>, <code>--cs-selected</code>, <code>--cs-git-*</code> and
+          <code>--cs-story-&lt;status&gt;</code> tokens. Theme updates apply live. Declare
+          <strong>Collapse all folders</strong> without a default chord; handle the existing
+          <code>nav.focus-left-search</code> command to focus the filter. Escape calls
+          <code>focusTerminal()</code>. A meta-click can send the path without Enter through
+          <code>sendPrompt({handle: "active", text: file.path, submit: false})</code>.</p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now open file navigation" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the primitives-explorer straight to the <code>subscribeContext</code> row via a
+          hash deep link. One click, one landing — the explorer's hash router does the rest:
+        </p>
+        <p>
+          <a class="cs-docs-btn cs-docs-btn--primary"
+             href="../primitives-explorer.html#kit/codesense.subscribeContext"
+             >Jump to <code>subscribeContext</code> in the explorer</a>
+        </p>
+
+        <p style="margin-top: 20px">
+          For an openFile round-trip against your own context repo:
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "README.html"}'
+          label="Open README.html in the active repo"
+          confirm="Open README.html as a centre tab?"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP open file deep link" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            Agents don't click links. There is no MCP tool that opens a file in a centre tab;
+            an agent can place one of the team's right panes and reveal it:
+          </p>
+          <pre><code>pane_list {}
+pane_open { id: "validator" }</code></pre>
+        </details>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#events/codesense:navigate"
+          >codesense:navigate</a>
+        ·
+        <a href="../primitives-explorer.html#events/codesense:external-link"
+          >codesense:external-link</a>
+        ·
+        <a href="../primitives-explorer.html#kit/codesense.openFile"
+          >codesense.openFile</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Linking</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

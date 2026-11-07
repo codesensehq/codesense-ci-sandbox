@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="wand" />
+    <title>CodeSense — Build your own flow</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arcf-shape {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+        background: var(--cs-surface);
+        margin: 16px 0;
+      }
+      @media (max-width: 720px) {
+        .arcf-shape {
+          grid-template-columns: 1fr;
+        }
+      }
+      .arcf-shape figure {
+        margin: 0;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow: hidden;
+      }
+      .arcf-shape figure svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcf-shape h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-shape p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/flexibility">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Flexibility — compose the kit into any shape" id="hero">
+        <h1>Compose any shape.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Three novel shapes composed from the same four primitives: fan-in triage, round-robin pool, review-then-ship."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              Three shapes we don't ship — composed from the same four primitives in minutes.
+            </text>
+
+            <!-- fan-in triage -->
+            <g transform="translate(24 80)">
+              <text x="0" y="-6" class="glyph-mbadge">fan-in triage</text>
+              <g class="glyph-node" data-role="scout">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">scout-A</text>
+              </g>
+              <g class="glyph-node" data-role="scout" transform="translate(0 28)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">scout-B</text>
+              </g>
+              <g class="glyph-node" data-role="scout" transform="translate(0 56)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">scout-C</text>
+              </g>
+              <g class="glyph-node" data-role="analyst" transform="translate(90 24)">
+                <rect width="60" height="30" rx="4" />
+                <text x="30" y="20" text-anchor="middle">analyst</text>
+              </g>
+              <path class="glyph-edge" d="M40 9 L 90 32" />
+              <path class="glyph-edge" d="M40 37 L 90 40" />
+              <path class="glyph-edge" d="M40 65 L 90 48" />
+            </g>
+
+            <!-- round-robin pool -->
+            <g transform="translate(240 80)">
+              <text x="0" y="-6" class="glyph-mbadge">round-robin pool</text>
+              <g class="glyph-node" data-role="triager">
+                <rect width="60" height="26" rx="3" />
+                <text x="30" y="18" text-anchor="middle">dispatcher</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(100 -10)">
+                <circle cx="12" cy="12" r="12" />
+                <text x="12" y="16" text-anchor="middle">w1</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(140 10)">
+                <circle cx="12" cy="12" r="12" />
+                <text x="12" y="16" text-anchor="middle">w2</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(100 42)">
+                <circle cx="12" cy="12" r="12" />
+                <text x="12" y="16" text-anchor="middle">w3</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(140 62)">
+                <circle cx="12" cy="12" r="12" />
+                <text x="12" y="16" text-anchor="middle">w4</text>
+              </g>
+              <path class="glyph-edge" d="M60 10 L 100 4" />
+              <path class="glyph-edge" d="M60 14 L 140 22" />
+              <path class="glyph-edge" d="M60 18 L 100 54" />
+              <path class="glyph-edge" d="M60 22 L 140 74" />
+            </g>
+
+            <!-- review-then-ship -->
+            <g transform="translate(440 80)">
+              <text x="0" y="-6" class="glyph-mbadge">review-then-ship</text>
+              <g class="glyph-node" data-role="builder">
+                <rect width="50" height="22" rx="3" />
+                <text x="25" y="15" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(70 0)">
+                <rect width="50" height="22" rx="3" />
+                <text x="25" y="15" text-anchor="middle">reviewer</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(0 50)">
+                <rect width="50" height="22" rx="3" />
+                <text x="25" y="15" text-anchor="middle">deploy</text>
+              </g>
+              <path class="glyph-edge" d="M50 11 L 70 11" />
+              <path class="glyph-edge" d="M95 22 L 25 50" />
+              <path class="glyph-edge" d="M50 72 C 140 72, 140 11, 120 11" />
+              <text x="60" y="90" class="glyph-mbadge">green only</text>
+            </g>
+
+            <!-- primitives footer -->
+            <text x="320" y="320" text-anchor="middle" class="glyph-mbadge" style="font-size: 13px">
+              inbox messages · role queues · routines · inbox_idle
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Why the kit is a kit" id="why">
+        <p>
+          The four shapes we ship are the common ones, not the only ones. The claim is stronger:
+          anything that fits "something sends a thing, somebody holds a role, something fires when a
+          queue goes quiet" fits in CodeSense's kit. On this page we'll sketch three shapes we don't
+          ship, show the <code>routine.yml</code> + <code>agent.yaml</code> each one takes, and
+          point you at the composer in <a href="../inbox-flows.html">inbox-flows</a> that will emit
+          the same config for whatever you build.
+        </p>
+      </section>
+
+      <!-- Shape A · fan-in -->
+      <section data-search="Fan-in triage" id="fan-in">
+        <h2>Shape A · Fan-in triage</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="a1"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="scout" transform="translate(20 30)">
+                <rect width="90" height="26" rx="4" />
+                <text x="45" y="18" text-anchor="middle">scout-user-voice</text>
+              </g>
+              <g class="glyph-node" data-role="scout" transform="translate(20 76)">
+                <rect width="90" height="26" rx="4" />
+                <text x="45" y="18" text-anchor="middle">scout-metrics</text>
+              </g>
+              <g class="glyph-node" data-role="scout" transform="translate(20 122)">
+                <rect width="90" height="26" rx="4" />
+                <text x="45" y="18" text-anchor="middle">scout-errors</text>
+              </g>
+              <g class="glyph-node" data-role="analyst" transform="translate(180 76)">
+                <rect width="120" height="40" rx="6" />
+                <text x="60" y="22" text-anchor="middle">analyst</text>
+                <text x="60" y="35" text-anchor="middle" class="sub">digests · once a day</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a1);
+                "
+                d="M110 42 L 180 90"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a1);
+                "
+                d="M110 90 L 180 96"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a1);
+                "
+                d="M110 134 L 180 100"
+              />
+            </svg>
+          </figure>
+          <div>
+            <h3>Three scouts, one analyst</h3>
+            <p>
+              Separate scouts collect user-voice, metrics, and errors; all three send into one
+              <code>analyst</code> role queue. The analyst drains once a day and files a digest. Any
+              time a scout wants to escalate individually, it bypasses the queue and sends to
+              <code>human</code> directly.
+            </p>
+            <pre><code># routine.yml — the daily analyst wake
+id: analyst-daily-digest
+triggers:
+  - schedule: { cron: "0 9 * * *", tz: UTC }
+  - event: { kind: inbox_idle }   # also wake on urgent-looking spikes
+task: |
+  claim_role_messages {role: "analyst", limit: 50}
+  Group by scout, summarize, send_message to "human".</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shape B · round-robin -->
+      <section data-search="Round-robin worker pool" id="round-robin">
+        <h2>Shape B · Round-robin worker pool</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="a2"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="triager" transform="translate(20 76)">
+                <rect width="80" height="30" rx="4" />
+                <text x="40" y="20" text-anchor="middle">dispatcher</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(160 20)">
+                <circle cx="20" cy="20" r="20" />
+                <text x="20" y="25" text-anchor="middle">w1</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(240 50)">
+                <circle cx="20" cy="20" r="20" />
+                <text x="20" y="25" text-anchor="middle">w2</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(160 100)">
+                <circle cx="20" cy="20" r="20" />
+                <text x="20" y="25" text-anchor="middle">w3</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(240 130)">
+                <circle cx="20" cy="20" r="20" />
+                <text x="20" y="25" text-anchor="middle">w4</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a2);
+                "
+                d="M100 86 L 160 36"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a2);
+                "
+                d="M100 90 L 240 66"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a2);
+                "
+                d="M100 94 L 160 116"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a2);
+                "
+                d="M100 98 L 240 146"
+              />
+            </svg>
+          </figure>
+          <div>
+            <h3>Dispatcher + idempotent workers</h3>
+            <p>
+              A dispatcher holds a <code>dispatch</code> role queue. Four workers share a single
+              <code>worker-pool</code> role (non-exclusive). Each incoming job gets handed to the
+              first <code>idle</code> worker — <code>role_state</code> tells the dispatcher who's
+              free. When a job's done it posts back to <code>role:dispatch</code>, closing the loop.
+            </p>
+            <pre><code># agent.yaml — non-exclusive pool holder
+id: worker
+runtime: claude
+default_prompt: /work-one
+# worker's /work-one skill ends with:
+#   release_role {role: "worker-pool", instance}
+# so a sibling can claim the next job.</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shape C · review-then-ship -->
+      <section data-search="Review-then-ship" id="review-then-ship">
+        <h2>Shape C · Review-then-ship</h2>
+        <div class="arcf-shape">
+          <figure>
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="a3"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+                </marker>
+              </defs>
+              <g class="glyph-node" data-role="builder" transform="translate(30 50)">
+                <rect width="80" height="30" rx="4" />
+                <text x="40" y="20" text-anchor="middle">builder</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(140 50)">
+                <rect width="80" height="30" rx="4" />
+                <text x="40" y="20" text-anchor="middle">reviewer</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(140 120)">
+                <rect width="80" height="30" rx="4" />
+                <text x="40" y="20" text-anchor="middle">deploy</text>
+              </g>
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a3);
+                "
+                d="M110 65 L 140 65"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a3);
+                "
+                d="M180 80 L 180 120"
+              />
+              <path
+                style="
+                  fill: none;
+                  stroke: var(--cs-muted-fg);
+                  stroke-width: 1.2;
+                  marker-end: url(#a3);
+                "
+                d="M140 135 C 50 135, 50 65, 110 65"
+              />
+              <text x="30" y="150" class="glyph-mbadge">on red: back to builder</text>
+            </svg>
+          </figure>
+          <div>
+            <h3>SDLC + a deploy valve</h3>
+            <p>
+              Same bones as the SDLC pipeline, with a <code>deploy</code> role on the end that only
+              fires on reviewer <strong>green</strong>. On red, the reviewer bounces the thread back
+              to the builder; the deploy role never sees the delivery. The valve is a disposition
+              check inside the deploy agent's <code>accept_role_message</code>
+              — not a scheduler, not a new primitive.
+            </p>
+            <pre><code># deploy's /ship skill, in two lines of pseudo
+if (parentReviewVerdict !== "green") {
+  accept_role_message { disposition: {kind: "no_work", noteOrReason: "not green"} }
+  return
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="How to build your own shape" id="how">
+        <h2>How to build your own</h2>
+        <ol>
+          <li>
+            <strong>Name the roles.</strong> One name per seat. Exclusive if it holds state,
+            non-exclusive if it's a pool.
+          </li>
+          <li>
+            <strong>Draw the edges.</strong> Who sends to whom. An edge is a
+            <code>send_message {to: "role:X"}</code> or a
+            <code>reply {messageId, replyTo: "role:X"}</code>.
+          </li>
+          <li>
+            <strong>Pick the triggers.</strong> One <code>inbox_idle</code> wake routine per role
+            that has sleeping holders. One <code>cron</code> routine for anything that needs
+            liveness without a queue (e.g. CI polls).
+          </li>
+          <li>
+            <strong>Open the composer.</strong> <a href="../inbox-flows.html">inbox-flows</a>'s
+            Build-your-own card has a visual palette for roles and edges, and exports matching
+            <code>routine.yml</code> + <code>agent.yaml</code> you drop into your editable context
+            repo.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Try this now — open the composer" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the composer, pick a shape (or start blank), and export the configs into your editable
+          context repo.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "inbox-flows.html#composer"}'
+          label="Open the composer"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            There is no "shape" primitive. A shape is <code>agent.yaml</code> files (<code
+              >agent_create</code
+            >), <code>routine.yml</code> files (<code>routine_create</code>), and the sessions that
+            <code>register_role</code>. Compose by writing those three.
+          </p>
+          <pre><code>codesense.invoke('agent_create', { name: 'worker', runtime: 'claude' })
+codesense.invoke('routine_create', { name: 'Wake the worker', agent: 'worker', mode: 'wake', task: '…' })
+codesense.invoke('open_workspace', { target: 'team-workspace', name: 'worker', agent: 'worker' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./parallel.html">← Massively parallel</a> · Next:
+        <a href="./decisions-and-escalation.html">Decisions &amp; escalation →</a> · Edge cases
+        &amp; reference →
+        <a href="../inbox-flows.html">inbox-flows composer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Build your own</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

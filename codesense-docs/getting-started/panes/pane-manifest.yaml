@@ -1,0 +1,126 @@
+# pane-manifest.yaml — ambient right-pane registration for the docs org.
+#
+# Shape:
+#   version:   schema version (bumped when the viewer changes the registration contract).
+#   panes[].id:                 stable key; used in localStorage for collapse state.
+#   panes[].title:              shown in the pane's own header AND the pane-picker chip.
+#   panes[].html:               filename inside this `panes/` dir, relative to the manifest.
+#   panes[].icon:               Lucide name; the pane's inline <script> uses the same key.
+#   panes[].showsOn:            CodeSense pane-context taxonomy. "*" = always; otherwise one
+#                               or more of: viewer:html, viewer:markdown, viewer:excalidraw,
+#                               agents:detail, agents:list, inbox:thread, inbox:list,
+#                               pipeline:story, pipeline:epic, pipeline:sprint,
+#                               terminals:detail, routines:detail, routines:run,
+#                               worktrees:detail, pane:*.
+#   panes[].priority:           lower = closer to the top of the stack. ties broken by id.
+#   panes[].collapsedByDefault: start folded; the user expands when they want it.
+#   panes[].reactsTo:           optional, lists subscribeContext payload keys the pane
+#                               actively watches (purely informational — enables build-time
+#                               lint and the primitives-explorer "which panes care about
+#                               this surface?" view). Must be a subset of what
+#                               window.codesense.kit publishes.
+#
+# Build-time lints:
+#   - every pane entry has a matching HTML file under getting-started/panes/.
+#   - every pane HTML passes the primitives inventory check (allowlisted bridge verbs only).
+#   - every showsOn key resolves against the registered pane-context taxonomy.
+#   - priorities are unique within a showsOn bucket.
+
+version: 1
+
+panes:
+  # Always-on, folded. Opens on demand; the lowest-noise entrypoint.
+  - id: tutor
+    title: "Tutor"
+    html: tutor.html
+    icon: graduation-cap
+    showsOn: ["*"]
+    priority: 100
+    collapsedByDefault: true
+    reactsTo: [surface, workspace, team, selection]
+
+  # The headline "what am I looking at" pane. Pinned near the top on every viewer surface.
+  - id: explain-this-surface
+    title: "Explain this surface"
+    html: explain-this-surface.html
+    icon: scan-text
+    showsOn:
+      - viewer:markdown
+      - viewer:html
+      - viewer:excalidraw
+      - agents:detail
+      - inbox:thread
+    priority: 10
+    collapsedByDefault: false
+    reactsTo: [surface, filepath, agentId, messageId]
+
+  # MCP tools relevant to the current surface, with inline Try-it that opens the explorer.
+  - id: related-mcp
+    title: "Related MCP tools"
+    html: related-mcp.html
+    icon: hammer
+    showsOn:
+      - viewer:markdown
+      - viewer:html
+      - agents:detail
+      - inbox:thread
+      - pipeline:story
+      - pipeline:epic
+      - routines:detail
+    priority: 20
+    collapsedByDefault: false
+    reactsTo: [surface, filepath, agentId, arc]
+
+  # Contextual next-move list, tied to the SDLC phase.
+  - id: try-these-next
+    title: "Try these next"
+    html: try-these-next.html
+    icon: arrow-right-to-line
+    showsOn: ["*"]
+    priority: 30
+    collapsedByDefault: false
+    reactsTo: [surface, sdlcPhase, storyStatus]
+
+  # Click-a-term definition pane. Low priority — stays out of the way until invoked.
+  - id: glossary-lookup
+    title: "Glossary"
+    html: glossary-lookup.html
+    icon: book-open-text
+    showsOn:
+      - viewer:markdown
+      - viewer:html
+      - viewer:excalidraw
+      - pane:*
+    priority: 40
+    collapsedByDefault: true
+    reactsTo: [glossaryClick, selection]
+
+  # Local ⇄ Remote parity panel. Only interesting when a parity dimension exists.
+  - id: parity-check
+    title: "Local ⇄ Remote parity"
+    html: parity-check.html
+    icon: scale
+    showsOn:
+      - viewer:html
+      - agents:detail
+      - pipeline:story
+      - terminals:detail
+      - worktrees:detail
+    priority: 50
+    collapsedByDefault: true
+    reactsTo: [surface, machine, agentId, workspaceId]
+
+  # Recipe matcher. Picks the best recipe for the current intent and offers it in one click.
+  - id: recipe-for-this
+    title: "Recipe for this"
+    html: recipe-for-this.html
+    icon: book-marked
+    showsOn:
+      - viewer:html
+      - viewer:markdown
+      - agents:detail
+      - pipeline:story
+      - pipeline:epic
+    priority: 60
+    collapsedByDefault: true
+    reactsTo: [surface, filepath, agentId, sdlcPhase]

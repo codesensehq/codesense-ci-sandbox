@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="keyboard" />
+    <title>CodeSense — Keyboard shortcuts</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .cs-main {
+        max-width: 1080px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] h1 {
+        font-size: clamp(28px, 3.6vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 66ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        padding: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-inset);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 180px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] figure.hero figcaption {
+        padding: 10px 14px;
+        border-top: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      /* Toolbar: search and count. */
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-search {
+        flex: 1 1 240px;
+        min-width: 200px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-search input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        font-family: var(--cs-font-sans);
+        font-size: 13px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-search input:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 1px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-count {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-count strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-group {
+        margin: var(--cs-docs-space-5) 0;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-group h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-group p.scope {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb th,
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb td {
+        padding: 9px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 55%, transparent);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb thead th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb td.id {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--cs-muted-fg);
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb td.chord {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--cs-fg);
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] table.kb td.menu {
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-empty {
+        padding: 24px;
+        text-align: center;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .kb-loading {
+        padding: 20px;
+        text-align: center;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/keyboard-shortcuts"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/keyboard-shortcuts">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Keyboard shortcuts reference" id="hero">
+        <span class="cs-docs-eyebrow">Arc N · Shortcuts</span>
+        <h1>Every chord CodeSense fires, grouped by scope.</h1>
+        <p class="lede">
+          CodeSense binds <data-count id="shortcuts">67</data-count> keyboard shortcuts across four
+          scopes: <strong>global</strong> (fire anywhere), <strong>team</strong> (fire inside a
+          team), <strong>workspace</strong> (fire with a story workspace focused), and
+          <strong>terminal</strong> (fire inside the terminal pane). The chord resolves against the
+          smallest matching scope, so a workspace chord wins over the same global one. Rebind
+          anything in <strong>Settings → Shortcuts</strong>; the table below reflects the ship
+          defaults.
+        </p>
+        <p>
+          The <strong>Toggle Terminal</strong> chord is focus-aware: from another view it reveals
+          the existing CLI and focuses it, even when the terminal is already visible; from the CLI
+          itself it hides the terminal. With no workspace open there's nothing to focus, so it
+          hides the terminal. Rebinding keeps the same behavior, and the divider handle still
+          toggles normally.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 160"
+            role="img"
+            aria-label="Four concentric rings labelled Global, Team, Workspace, Terminal, with a chord resolving to the smallest matching ring."
+          >
+            <title>Shortcut scope resolution</title>
+            <desc>
+              Four concentric rings labelled from outside in: Global, Team, Workspace, Terminal. A
+              chord enters from the right and lands on the innermost matching ring.
+            </desc>
+            <style>
+              .k-ring {
+                fill: none;
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1.4;
+              }
+              .k-ring-active {
+                stroke: var(--cs-accent, #7aa2ff);
+              }
+              .k-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .k-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+            </style>
+            <circle class="k-ring" cx="200" cy="80" r="68" />
+            <circle class="k-ring" cx="200" cy="80" r="52" />
+            <circle class="k-ring" cx="200" cy="80" r="36" />
+            <circle class="k-ring k-ring-active" cx="200" cy="80" r="20" />
+            <text class="k-mut" x="200" y="22" text-anchor="middle">Global</text>
+            <text class="k-mut" x="200" y="40" text-anchor="middle">Team</text>
+            <text class="k-mut" x="200" y="60" text-anchor="middle">Workspace</text>
+            <text class="k-txt" x="200" y="84" text-anchor="middle">Terminal</text>
+            <!-- chord enters -->
+            <g font-family="ui-monospace, SFMono-Regular, monospace">
+              <text class="k-txt" x="340" y="60">a key event</text>
+              <text class="k-mut" x="340" y="78">↓</text>
+              <text class="k-mut" x="340" y="96">resolves to the</text>
+              <text class="k-mut" x="340" y="112">smallest matching</text>
+              <text class="k-mut" x="340" y="128">scope.</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            Scope resolution — the innermost matching ring wins.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="Shortcuts toolbar and table" id="catalog">
+        <h2>The full table</h2>
+        <div class="kb-tools">
+          <label class="kb-search">
+            <span class="cs-visually-hidden">Filter shortcuts</span>
+            <input
+              type="search"
+              id="kb-filter"
+              placeholder="Filter by label, chord, or id…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <span class="kb-count"
+            >Showing <strong id="kb-visible">0</strong> of
+            <strong id="kb-total">0</strong> shortcuts</span
+          >
+        </div>
+        <div id="kb-root" class="kb-loading">Loading shortcut manifest…</div>
+      </section>
+
+      <section data-search="Rebinding and conflicts" id="rebind">
+        <h2>Rebinding and conflicts</h2>
+        <p>
+          Every entry above is a default. Open <strong>Settings → Shortcuts</strong> to rebind. When
+          a chord collides with a reserved host chord — the browser's <code>⌘⇧T</code> "Reopen
+          Closed Tab", for example — CodeSense refuses the override and surfaces the collision
+          inline. Terminal chords honor <code>macCmdOnly</code>: on macOS they fire only with
+          <kbd>⌘</kbd>, never <kbd>Ctrl</kbd>, so your shell's <code>⌃D</code> and friends stay with
+          the PTY. The group labels in the table above tell you which scope each shortcut lives in;
+          narrower scopes shadow wider ones.
+        </p>
+      </section>
+
+      <section data-search="How to list shortcuts via MCP" id="mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary>Read every registered shortcut from an agent</summary>
+          <p>
+            There is no MCP tool for shortcuts. An agent reads the same list this page renders
+            from: <code>generated/shortcuts.json</code> in the docs context repo, keyed by action id.
+          </p>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../ui-mcp-crossref.html">UI ↔ MCP crossref</a>
+        ·
+        <a href="./index.html">back to Arc N</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · Keyboard shortcuts</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      // =========================================================================
+      // keyboard-shortcuts.html — render from ../generated/shortcuts.json.
+      // Falls back to an inline manifest for file:// previews. The generator
+      // emits totalCount; this page uses it to resolve <data-count id="shortcuts">.
+      // =========================================================================
+      (function () {
+        var root = document.getElementById("kb-root");
+        var filterInput = document.getElementById("kb-filter");
+        var visibleEl = document.getElementById("kb-visible");
+        var totalEl = document.getElementById("kb-total");
+        var countEl = document.querySelector('[id="shortcuts"]');
+
+        var data = null;
+
+        filterInput.addEventListener("input", render);
+
+        function render() {
+          if (!data) return;
+          var q = (filterInput.value || "").trim().toLowerCase();
+          var total = 0;
+          var visible = 0;
+          var out = [];
+          data.groups.forEach(function (g) {
+            var rows = [];
+            g.shortcuts.forEach(function (s) {
+              total++;
+              var matches =
+                !q ||
+                s.label.toLowerCase().indexOf(q) >= 0 ||
+                s.id.toLowerCase().indexOf(q) >= 0 ||
+                (s.mac || "").toLowerCase().indexOf(q) >= 0;
+              if (!matches) return;
+              visible++;
+              var macCh = escapeHtml(s.mac || "—");
+              rows.push(
+                '<tr><td class="id">' +
+                  escapeHtml(s.id) +
+                  "</td><td>" +
+                  escapeHtml(s.label) +
+                  '</td><td class="chord">' +
+                  macCh +
+                  '</td><td class="menu">' +
+                  escapeHtml(s.menu || "") +
+                  "</td></tr>",
+              );
+            });
+            if (rows.length === 0) return;
+            out.push(
+              '<section class="kb-group" data-group="' +
+                escapeHtml(g.slug) +
+                '">' +
+                "<h3>" +
+                escapeHtml(g.label) +
+                "</h3>" +
+                '<p class="scope">' +
+                escapeHtml(g.scope || "") +
+                "</p>" +
+                '<table class="kb"><thead><tr>' +
+                "<th>Action id</th>" +
+                "<th>Label</th>" +
+                "<th>Shortcut</th>" +
+                "<th>Menu</th>" +
+                "</tr></thead><tbody>" +
+                rows.join("") +
+                "</tbody></table>" +
+                "</section>",
+            );
+          });
+          if (out.length === 0) {
+            root.innerHTML =
+              '<div class="kb-empty">No shortcut matches "<strong>' +
+              escapeHtml(filterInput.value) +
+              "</strong>.</div>";
+          } else {
+            root.className = "";
+            root.innerHTML = out.join("");
+          }
+          visibleEl.textContent = String(visible);
+          totalEl.textContent = String(total);
+          if (countEl && !countEl.dataset.resolved) {
+            countEl.textContent = String(total);
+            countEl.dataset.resolved = "1";
+          }
+        }
+
+        function escapeHtml(s) {
+          return String(s || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        function loadManifest() {
+          fetch("../generated/shortcuts.json", { cache: "no-cache" })
+            .then(function (r) {
+              if (!r.ok) throw new Error("http " + r.status);
+              return r.json();
+            })
+            .then(function (json) {
+              data = json;
+              render();
+            })
+            .catch(function () {
+              // Minimal fallback — just render an empty-state message that
+              // still resolves the data-count placeholder from the bundled
+              // manifest copy below.
+              data = INLINE_FALLBACK;
+              render();
+            });
+        }
+
+        // Tiny inline fallback so a file:// preview isn't blank. In the
+        // shipped bundle, fetch succeeds and this is unused.
+        var INLINE_FALLBACK = {
+          totalCount: 0,
+          groups: [
+            {
+              slug: "offline",
+              label: "Shortcut manifest unavailable",
+              scope:
+                "Open this page inside CodeSense (or run the dev server) to load the full table from generated/shortcuts.json.",
+              shortcuts: [],
+            },
+          ],
+        };
+
+        loadManifest();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Arc I · Dashboard primitives</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-main {
+        max-width: 1080px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-main::before {
+        content: "";
+        position: fixed;
+        inset: var(--cs-docs-nav-height) 0 0 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 48px 48px;
+        opacity: 0.26;
+        mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-main > * {
+        position: relative;
+        z-index: 1;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] h1 {
+        font-size: clamp(34px, 4.6vw, 54px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+        max-width: 22ch;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 64ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+
+      body[data-page^="arc-i-dashboard-primitives/"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 260px;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] figure.hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms,
+          box-shadow 160ms,
+          border-color 160ms;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card:hover,
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card .step {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--cs-fg);
+        margin: 2px 0;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-card .hook {
+        font-size: 13.5px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+
+      body[data-page^="arc-i-dashboard-primitives/"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] h3 {
+        font-size: 17px;
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-2);
+        font-weight: 600;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] p {
+        max-width: 68ch;
+        line-height: 1.6;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] ul {
+        max-width: 68ch;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+        border: 1px solid var(--cs-border);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] :not(pre) > code {
+        padding: 1px 5px;
+        background: var(--cs-inset);
+        border-radius: 4px;
+        font-size: 12.5px;
+      }
+
+      body[data-page^="arc-i-dashboard-primitives/"] details.mcp {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: var(--cs-docs-space-3) 0;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] details.mcp[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] details.mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] details.mcp pre {
+        margin-top: 10px;
+      }
+
+      body[data-page^="arc-i-dashboard-primitives/"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page^="arc-i-dashboard-primitives/"] .ref a {
+        color: var(--cs-accent);
+      }
+
+      /* Hero animation */
+      body[data-page="arc-i-dashboard-primitives/index"] .i-surf {
+        fill: var(--cs-surface, #161b22);
+        stroke: var(--cs-border, #262c38);
+        stroke-width: 1;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-ins {
+        fill: var(--cs-inset, #11161e);
+        stroke: var(--cs-border, #262c38);
+        stroke-width: 1;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-acc {
+        stroke: var(--cs-accent, #7aa2ff);
+        stroke-width: 1.5;
+        fill: none;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-txt {
+        fill: var(--cs-fg, #e6edf3);
+        font: 500 11px -apple-system, system-ui, sans-serif;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-mut {
+        fill: var(--cs-muted-fg, #a3abbb);
+        font: 10px -apple-system, system-ui, sans-serif;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-dot {
+        fill: var(--cs-accent, #7aa2ff);
+        opacity: 0.9;
+      }
+      body[data-page="arc-i-dashboard-primitives/index"] .i-pulse {
+        animation: iPulse 3s ease-in-out infinite;
+        transform-origin: center;
+      }
+      @keyframes iPulse {
+        0%, 100% { opacity: 0.35; }
+        50% { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body[data-page="arc-i-dashboard-primitives/index"] .i-pulse {
+          animation: none;
+          opacity: 0.9;
+        }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Arc I dashboard primitives overview SDK" id="hero">
+        <span class="cs-docs-eyebrow">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2 L2 7 L12 12 L22 7 Z" />
+            <path d="M2 17 L12 22 L22 17" />
+            <path d="M2 12 L12 17 L22 12" />
+          </svg>
+          Arc I · Dashboard primitives
+        </span>
+
+        <h1>Your HTML file is a first-class pane.</h1>
+        <p class="lede">
+          A CodeSense dashboard is a single <code>.html</code> file. In your team's
+          <code>content/</code> it opens as a centre tab; in the team's <code>panes/</code> folder
+          it's a custom right pane; sent with <code>send_message</code> and
+          <code>contentType: "html"</code> it renders live in an Inbox message —
+          <strong>same page, three shapes</strong>. The viewer injects
+          <code>window.codesense</code>, applies the theme as CSS tokens, and routes clicks to the
+          app. There is no build step, no bundler, no framework required. If you can write a
+          <code>&lt;script&gt;</code> tag, you can ship a dashboard.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="One HTML file fans out into three panes: centre tab, right pane, and inbox message. The CodeSense bridge, theme tokens, and link routing feed all three."
+          >
+            <title>Arc I — one HTML file, three pane shapes</title>
+            <desc>
+              Left: an HTML file icon. Center: three parallel pane cards labelled centre-tab,
+              right-pane, inbox-message. Right: three bridge primitives (invoke, subscribeContext,
+              onTheme) feeding the pane cards.
+            </desc>
+
+            <defs>
+              <marker
+                id="i-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Left: HTML file -->
+            <g transform="translate(30 70)">
+              <rect class="i-surf" width="110" height="80" rx="8" />
+              <text class="i-txt" x="55" y="30" text-anchor="middle">my-dashboard.html</text>
+              <text class="i-mut" x="55" y="48" text-anchor="middle">one file</text>
+              <text class="i-mut" x="55" y="62" text-anchor="middle">in your context repo</text>
+            </g>
+
+            <!-- Three pane cards -->
+            <g transform="translate(220 20)">
+              <rect class="i-ins" width="180" height="52" rx="6" />
+              <text class="i-txt" x="12" y="22">centre-tab</text>
+              <text class="i-mut" x="12" y="40">full bridge · snapshot band · ⌘W</text>
+              <circle class="i-dot i-pulse" cx="166" cy="26" r="4" />
+            </g>
+            <g transform="translate(220 84)">
+              <rect class="i-ins" width="180" height="52" rx="6" />
+              <text class="i-txt" x="12" y="22">right-pane</text>
+              <text class="i-mut" x="12" y="40">docked · theme always applied</text>
+              <circle class="i-dot i-pulse" cx="166" cy="26" r="4" style="animation-delay:.4s" />
+            </g>
+            <g transform="translate(220 148)">
+              <rect class="i-ins" width="180" height="52" rx="6" />
+              <text class="i-txt" x="12" y="22">inbox-message</text>
+              <text class="i-mut" x="12" y="40">inline · auto-sized by content</text>
+              <circle class="i-dot i-pulse" cx="166" cy="26" r="4" style="animation-delay:.8s" />
+            </g>
+
+            <!-- Links file → panes -->
+            <path class="i-acc" d="M140 110 L220 46" marker-end="url(#i-arrow)" />
+            <path class="i-acc" d="M140 110 L220 110" marker-end="url(#i-arrow)" />
+            <path class="i-acc" d="M140 110 L220 174" marker-end="url(#i-arrow)" />
+
+            <!-- Right: three primitives -->
+            <g transform="translate(440 36)">
+              <rect class="i-surf" width="170" height="30" rx="6" />
+              <text class="i-txt" x="10" y="20">codesense.invoke(verb, args)</text>
+            </g>
+            <g transform="translate(440 94)">
+              <rect class="i-surf" width="170" height="30" rx="6" />
+              <text class="i-txt" x="10" y="20">codesense.subscribeContext()</text>
+            </g>
+            <g transform="translate(440 152)">
+              <rect class="i-surf" width="170" height="30" rx="6" />
+              <text class="i-txt" x="10" y="20">codesense.onTheme(fn)</text>
+            </g>
+            <path class="i-acc" d="M400 46 L440 50" />
+            <path class="i-acc" d="M400 110 L440 108" />
+            <path class="i-acc" d="M400 174 L440 166" />
+          </svg>
+          <figcaption id="hero-cap">
+            One HTML file · three pane shapes · one bridge
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== What this arc teaches =============== -->
+      <section data-search="What arc I teaches dashboard SDK" id="why">
+        <h2>What this arc teaches</h2>
+        <p>
+          Enough to write a working dashboard in ten minutes and understand why it works. We walk
+          through the three pane shapes, the <code>window.codesense</code> bridge, how to react to
+          app state, how to theme without authoring colours, how to deep-link between docs, and
+          how to iterate on your file inside the app. The exhaustive reference —
+          every verb, every token, every event — lives in the
+          <a href="../primitives-explorer.html">primitives-explorer</a>. These pages teach the
+          story the explorer sorts.
+        </p>
+
+        <h3>You will not need</h3>
+        <ul>
+          <li>A build step. The viewer loads your <code>.html</code> as-is.</li>
+          <li>A framework. Vanilla <code>&lt;script&gt;</code> works; so does React in a CDN tag.</li>
+          <li>A theme file. CodeSense pushes <code>--cs-*</code> tokens; you consume them.</li>
+          <li>Service credentials. Declare the capabilities your pane needs; the host grant
+          and slot ceiling bound every call. Rate guards stop runaway loops.</li>
+        </ul>
+      </section>
+
+      <!-- =============== The authoring pages =============== -->
+      <section data-search="Pages in arc I" id="pages">
+        <h2>The authoring pages</h2>
+        <div class="cs-docs-grid" role="list">
+          <a class="cs-docs-card" href="./customize-built-in-panes.html" role="listitem">
+            <span class="step">Recipe</span>
+            <span class="title">Customize the built-in panes</span>
+            <span class="hook">Fork the Inbox pane, Notes or agent list pane with live worked changes.</span>
+          </a>
+          <a class="cs-docs-card" href="./your-first-dashboard.html" role="listitem">
+            <span class="step">Tutorial · 10 min</span>
+            <span class="title">Your first dashboard</span>
+            <span class="hook"
+              >An HTML file, a <code>&lt;script&gt;</code>, one <code>invoke</code> call. Live
+              inside the app at the end.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./pane-shapes.html" role="listitem">
+            <span class="step">Shapes</span>
+            <span class="title">Slots and pane shapes</span>
+            <span class="hook"
+              >Right pane and dock, slot context, narrow widths and team binding.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./calling-codesense.html" role="listitem">
+            <span class="step">Bridge</span>
+            <span class="title">Calling CodeSense</span>
+            <span class="hook"
+              ><code>window.codesense.invoke</code> and the read-vs-write allowlist. One call,
+              structured errors.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./reacting-to-state.html" role="listitem">
+            <span class="step">State</span>
+            <span class="title">Reacting to state</span>
+            <span class="hook"
+              ><code>subscribeContext</code> and the <code>on*</code> helpers. Push nudges, your
+              handler re-reads.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./theme-and-tokens.html" role="listitem">
+            <span class="step">Theme</span>
+            <span class="title">Theme &amp; tokens</span>
+            <span class="hook"
+              >The <code>cs-*</code> classes and <code>--cs-*</code> tokens. Live swatches so
+              you can see dark and light at once.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./linking.html" role="listitem">
+            <span class="step">Linking</span>
+            <span class="title">Links &amp; navigation</span>
+            <span class="hook"
+              ><code>codesense:navigate</code>, deep links, meta-click opens a new tab. The
+              bridge routes it for you.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./testing.html" role="listitem">
+            <span class="step">Loop</span>
+            <span class="title">Testing &amp; iterating</span>
+            <span class="hook"
+              >Load the file, inspect the bridge, standalone preview from
+              <code>file://</code>. The dev loop.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="../primitives-explorer.html" role="listitem">
+            <span class="step">Reference</span>
+            <span class="title">primitives-explorer</span>
+            <span class="hook"
+              >The exhaustive catalogue — every verb, class, token, event, context. Searchable.
+              Live schemas.</span
+            >
+          </a>
+<a class="cs-docs-card" href="./commands-and-menus.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Commands, chords and menus</span></a>
+<a class="cs-docs-card" href="./lifecycle-and-liveness.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Lifecycle and liveness</span></a>
+<a class="cs-docs-card" href="./records.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Records</span></a>
+<a class="cs-docs-card" href="./getting-data-into-a-dashboard.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Getting data into a dashboard</span></a>
+<a class="cs-docs-card" href="./fast-light-dashboards.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Fast, light dashboards</span></a>
+<a class="cs-docs-card" href="./testing-and-conformance.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Testing and conformance for agents</span></a>
+<a class="cs-docs-card" href="./custom-pane-live-list.html" role="listitem"><span class="step">Pane authoring</span><span class="title">Add a live pane in five steps</span></a>
+        </div>
+      </section>
+
+      <p>For conversation links, match a live session's optional <code>sessionId</code>
+        to the stored CodeSense or native session identity; <code>id</code> and <code>handle</code>
+        are reusable terminal handles. Published dashboards keep their existing field allowlist.</p>
+      <section id="story-trail" data-search="Story trail built-in task tree sessions cost basis">
+        <h2>Story trail</h2>
+        <p>The bundled <code>story-trail</code> dashboard is a tab-only file, listed by
+          <code>pane_list</code> as built-in. It declares no slots, so slot menus and pickers do not offer it. It reads
+          <code>storyChanges({storyId})</code> and shows a keyboard-accessible task tree,
+          sessions in time order or grouped by task, timing spans and totals split by basis.
+          Unknown prices stay unknown; Set a rate uses <code>setModelRate</code>.</p>
+        <p>Right-click a story and choose <strong>Trail</strong>. Select a session to open
+          its facts and recent turns, then choose <strong>Open conversation</strong> or a
+          recorded turn link. The conversation has earlier/later paging, tool disclosures,
+          redaction markers and a live-terminal action only while that session is running.
+          Pages contain up to twenty turns, aligned within each retained contiguous interval
+          and split at dropped turns. A jump highlights its turn on that aligned page. Earlier
+          moves one page back; Later follows only the reader's returned cursor.</p>
+        <p>The page routes <code>#story/&lt;id&gt;</code> and
+          <code>#session/&lt;id&gt;?from=&lt;first&gt;[&amp;turn=N]</code>. File fragments reach HTML viewers on
+          first open and when reopening an existing tab, including across teams. A verified
+          bundled page may reopen its exact own file; all other paths retain normal admission.</p>
+        <pre><code>// Inside the bundled story-trail page:
+codesense.openFile({path: "story-trail.html#session/SESSION_ID?from=20&amp;turn=37", newTab: true});</code></pre>
+        <p>Missing conversation states and lookup misses show the reader's reason. Fields the
+          CLI did not record are omitted. Task rows show each task's recorded outcome from the
+          shared read. File-and-line chips, changed-file rows and commit SHAs open a read-only
+          diff through <code>openDiff</code>; line ownership arrives in a later change.</p>
+        <p>The private <code>storyChanges</code> reader returns file
+          <code>lines: {added, removed} | null</code> with <code>linesReason</code>.
+          Stacked branch ranges count once. After a PR lands, counts describe lines changed
+          by this story’s merged PRs, comparing each merged commit with its first parent once.
+          Branches with no single final tree keep counts unknown; binary files and missing
+          local objects have explicit reasons. The same selected diff supplies actual file
+          paths and the file total, including after a squash or deleted branch. Commit
+          history availability remains separate. Commit rows include the recorded author;
+          PR URLs and merge times use local origin and commit metadata, with reasons when
+          unavailable. Published dashboards retain their existing field allowlist.</p>
+        <p>Live reads patch a stable route skeleton. Lists use <code>codesense.kit.keyed</code>
+          with structural versions and fact updates, keeping unchanged rows, form drafts,
+          selection and scroll in place. While a primary pointer gesture is active,
+          the whole passive refresh waits, so neither reparenting nor growing facts
+          move the pressed target. Native click, auxiliary click and drag completion
+          release it; pointer-up uses one macrotask so the click lands first. Leaving
+          the frame, cancellation and window blur also release it. Keyboard focus
+          keeps row-scoped structural deferral. Loading uses <code>kit.skeleton</code>.
+          Async completions respect a later move to another control or the host.
+          Pricing confirmation updates the owning story and request even while its
+          route is away. An explicit route, fragment or turn target wins over saved reading
+          positions; otherwise the displayed page restores its own position, or starts at the top.
+          Reading positions use the returned session, first and last turn indices, independently
+          of the request and highlight. Remove highlight keeps that page without a new read.
+          The page focus helper owns conversation thread and rail restoration. The HTML host
+          yields to fragments and restores document scroll only when there is no fragment.</p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Arc I try this now context dashboard bridge" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          The simplest thing a dashboard can do: ask CodeSense where it lives. Save this as
+          <code>hello.html</code> in your team's <code>content/</code> and open it.
+        </p>
+        <pre><code>&lt;pre id="out"&gt;&lt;/pre&gt;
+&lt;script&gt;
+  codesense.context().then((where) =&gt; {
+    // { org, team, layer, contentRoot } (team is null in your private space)
+    document.getElementById("out").textContent = JSON.stringify(where, null, 2);
+  });
+&lt;/script&gt;</code></pre>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="Arc I how to inspect primitives via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            Dashboards use the browser bridge; agents use MCP tools. Both resolve to the same
+            underlying Tauri commands — the UI↔MCP cross-reference is enforced by the generator
+            that renders <a href="../ui-mcp-crossref.html">ui-mcp-crossref</a>.
+          </p>
+          <pre><code># What's going on: org and team, sessions, agents, routines, inbox
+mcp.call("codesense_overview", {})
+
+# How to write a live page, then lint it before saving
+mcp.call("get_live_data_contract", {})
+mcp.call("validate_live_data_doc", { ... })
+
+# Write a custom right pane and show it
+mcp.call("pane_write", { id: "sprint-board", html: "..." })
+mcp.call("pane_open", { id: "sprint-board" })</code></pre>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html">primitives-explorer</a>
+        ·
+        <a href="../primitives-explorer.html#contexts">pane shapes</a>
+        ·
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+        ·
+        <a href="../README.html">back to home</a>
+      </p>
+      <section id="file-tree">
+        <h2>File tree panes</h2>
+        <p><a href="linking.html#file-tree">Build a file tree pane</a> with the kit's windowed
+          tree, <code>files</code> and <code>ui:file-nav</code>. Tag file, story and epic rows
+          with <code>data-codesense-row</code> for the native menu. Use
+          <code>builtin:rename</code> and <code>builtin:delete</code> for its native dialogs,
+          including inherited-team warnings.</p>
+      </section>
+      <section aria-labelledby="authoring-references">
+        <h2 id="authoring-references">Pane and SDK references</h2>
+        <p>Generated from the app source. Use these when building a pane without a source checkout.</p>
+        <ul>
+          <li><a href="../generated/page-sdk.md">Page SDK</a> · <a href="../generated/page-sdk.json">JSON</a> · <a href="../generated/codesense.d.ts">TypeScript declarations</a></li>
+          <li><a href="../generated/pane-declarations.md">Pane declarations</a> · <a href="../generated/pane-declaration.schema.json">Manifest JSON Schema</a></li>
+          <li><a href="../generated/capabilities.md">Capabilities and grant ceilings</a> · <a href="../generated/capabilities.json">JSON</a></li>
+          <li><a href="../generated/slots.md">Slots</a> · <a href="../generated/slots.json">JSON</a></li>
+          <li><a href="../generated/live-hub.md">LiveHub topics and rows</a> · <a href="../generated/live-hub.json">JSON</a></li>
+          <li><a href="../generated/tokens.md">Light and dark tokens</a> · <a href="../generated/tokens.json">JSON</a></li>
+          <li><a href="../generated/live-data-contract.json">Live-data authoring contract</a> · <a href="../generated/live-data-contract.inputs.json">Source freshness manifest</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Dashboard primitives</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

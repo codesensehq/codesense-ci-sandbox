@@ -1,0 +1,14 @@
+id: docs-helper
+name: Docs helper
+description: Keeps the CodeSense docs up to date and answers questions about CodeSense.
+created_by: codesense
+runtime: claude
+launch: headless
+permissions:
+  claude:
+    allow:
+      - Read
+      - Skill(update-codesense-docs)
+      - mcp__codesense__codesense_overview
+      - mcp__codesense__update_codesense_docs
+revision: 2

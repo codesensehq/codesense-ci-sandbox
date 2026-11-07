@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="archive" />
+    <title>CodeSense — Legacy sense_sync tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/layer-tools">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Legacy sense_sync tools">
+        <span class="cs-docs-eyebrow">Arc K · Sync</span>
+        <h1>Legacy sense_sync tools</h1>
+        <p class="lede">
+          Reference for the five <code>sense_sync_*</code> tools. They are legacy: they belong to the retired automatic projection, and each entry names its current replacement.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>There is one content layer left, team content (<code>TeamProjection</code>). For new work use <code>move_content_file</code>, <code>create_content_file</code>, <code>read_content_file</code>, <code>list_hydrated</code> and the publish pair <code>preview_reverse_sync_worktree</code> and <code>reverse_sync_worktree</code>.</p>
+      </section>
+      <section id="legacy" data-search="Legacy tools">
+        <h2>Legacy tools</h2>
+        <h3 id="tool-sense_sync_adopt"><code>sense_sync_adopt</code></h3>
+        <p>Legacy. Writes <code>content</code> to <code>logicalName</code> in team content (<code>targetLayer: &quot;TeamProjection&quot;</code>, the only layer). Only that team file changes; nothing is copied into a workspace. <code>expectedLayerHash</code> refuses overwriting a team file that changed. To publish edits made in a workspace, prefer <code>preview_reverse_sync_worktree</code> then <code>reverse_sync_worktree</code>.</p>
+        <pre data-tool-example="sense_sync_adopt"><code>{
+  &quot;tool&quot;: &quot;sense_sync_adopt&quot;,
+  &quot;arguments&quot;: {
+    &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+    &quot;codeRepoSlug&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    },
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;,
+    &quot;targetLayer&quot;: &quot;TeamProjection&quot;,
+    &quot;content&quot;: &quot;# Plan\n&quot;
+  }
+}</code></pre>
+        <h3 id="tool-sense_sync_list_layers"><code>sense_sync_list_layers</code></h3>
+        <p>Legacy. Lists the content layers with their <code>writable</code> and <code>backed</code> flags. Today there is one: team content. Read-only.</p>
+        <pre data-tool-example="sense_sync_list_layers"><code>{
+  &quot;tool&quot;: &quot;sense_sync_list_layers&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-sense_sync_move_layer"><code>sense_sync_move_layer</code></h3>
+        <p>Legacy. Moves a file between content layers and returns a move outcome. A target that already exists is refused. With one layer left there is rarely a move to make; to rename a team file call <code>move_content_file</code>.</p>
+        <pre data-tool-example="sense_sync_move_layer"><code>{
+  &quot;tool&quot;: &quot;sense_sync_move_layer&quot;,
+  &quot;arguments&quot;: {
+    &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+    &quot;codeRepoSlug&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    },
+    &quot;fromLayer&quot;: &quot;TeamProjection&quot;,
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;,
+    &quot;toLayer&quot;: &quot;TeamProjection&quot;
+  }
+}</code></pre>
+        <h3 id="tool-sense_sync_read_layer_file"><code>sense_sync_read_layer_file</code></h3>
+        <p>Legacy. Reads one team content file's text from a layer. Returns <code>{contentUtf8}</code>, or <code>{error:&quot;binary&quot;}</code> when the bytes are not UTF-8. Read-only. For a current read, use <code>read_content_file</code>.</p>
+        <pre data-tool-example="sense_sync_read_layer_file"><code>{
+  &quot;tool&quot;: &quot;sense_sync_read_layer_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;layerId&quot;: &quot;TeamProjection&quot;,
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-sense_sync_read_lockfile"><code>sense_sync_read_lockfile</code></h3>
+        <p>Legacy. Reads the v3 lockfile for <code>(org, team, code_repo)</code>, which records what the retired automatic projection wrote; an empty lockfile when none exists. For what CodeSense copied into a workspace now, call <code>list_hydrated</code>. Read-only.</p>
+        <pre data-tool-example="sense_sync_read_lockfile"><code>{
+  &quot;tool&quot;: &quot;sense_sync_read_lockfile&quot;,
+  &quot;arguments&quot;: {
+    &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+    &quot;codeRepoSlug&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    }
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc K pages</a> ·
+        <a href="./file-tools.html">Content file tools</a> ·
+        <a href="./moving-between-contexts.html">Moving between contexts</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc K · Sync</div>
+    </footer>
+  </body>
+</html>

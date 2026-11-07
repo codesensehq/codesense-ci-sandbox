@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="list-checks" />
+    <title>CodeSense — Routine tasks</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      .arcg-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcg-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcg-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .arcg-contract {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 12px 16px;
+        margin: var(--cs-docs-sp-4, 16px) 0;
+        padding: 16px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arcg-contract dt {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+        padding-top: 2px;
+      }
+      .arcg-contract dd {
+        margin: 0;
+        font-size: var(--cs-docs-text-sm, 13px);
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        margin: 0;
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arcg-flow rect {
+        fill: var(--cs-surface);
+        stroke: var(--cs-border);
+        stroke-width: 1.2;
+      }
+      .arcg-flow .active rect {
+        stroke: var(--cs-accent);
+        fill: color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface));
+      }
+      .arcg-flow text {
+        fill: var(--cs-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .arcg-flow .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 9px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-g-routines/tasks">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Task shape — template, args, exit contract" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="G">Arc G · Routines</span>
+        </p>
+        <h1>Tasks.</h1>
+        <figure class="cs-docs-card arcg-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            class="arcg-flow"
+            aria-label="A task runs in five steps: trigger fires, context substitutes, session spawns, agent works, signal_done exits."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="34" class="arcg-mbadge" style="font-size: 14px">
+              A task is a prompt template, a context substitution, and an exit contract.
+            </text>
+
+            <g transform="translate(24 90)">
+              <rect width="110" height="60" rx="8" />
+              <text x="55" y="26" text-anchor="middle">1 · trigger</text>
+              <text x="55" y="42" text-anchor="middle" class="sub">fires with context</text>
+            </g>
+            <g transform="translate(154 90)">
+              <rect width="110" height="60" rx="8" />
+              <text x="55" y="26" text-anchor="middle">2 · substitute</text>
+              <text x="55" y="42" text-anchor="middle" class="sub">{{trigger.*}}</text>
+            </g>
+            <g transform="translate(284 90)" class="active">
+              <rect width="110" height="60" rx="8" />
+              <text x="55" y="26" text-anchor="middle">3 · session</text>
+              <text x="55" y="42" text-anchor="middle" class="sub">agent spawns</text>
+            </g>
+            <g transform="translate(414 90)">
+              <rect width="110" height="60" rx="8" />
+              <text x="55" y="26" text-anchor="middle">4 · work</text>
+              <text x="55" y="42" text-anchor="middle" class="sub">MCP calls</text>
+            </g>
+            <g transform="translate(544 90)">
+              <rect width="76" height="60" rx="8" />
+              <text x="38" y="26" text-anchor="middle">5 · exit</text>
+              <text x="38" y="42" text-anchor="middle" class="sub">signal_done</text>
+            </g>
+
+            <path
+              d="M134 120 L 154 120"
+              fill="none"
+              stroke="var(--cs-muted-fg)"
+              marker-end="url(#arrow)"
+            />
+            <path
+              d="M264 120 L 284 120"
+              fill="none"
+              stroke="var(--cs-muted-fg)"
+              marker-end="url(#arrow)"
+            />
+            <path
+              d="M394 120 L 414 120"
+              fill="none"
+              stroke="var(--cs-muted-fg)"
+              marker-end="url(#arrow)"
+            />
+            <path
+              d="M524 120 L 544 120"
+              fill="none"
+              stroke="var(--cs-muted-fg)"
+              marker-end="url(#arrow)"
+            />
+
+            <text x="320" y="200" text-anchor="middle" class="arcg-mbadge" style="font-size: 13px">
+              The agent decides when it's done. The engine kills on policy.max_runtime.
+            </text>
+            <text x="320" y="222" text-anchor="middle" class="arcg-mbadge" style="font-size: 12px">
+              Stdout / tool-call history is captured and surfaced on the routines console.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a task is" id="why">
+        <p>
+          The <code>task:</code> block is the prompt the agent session receives on each fire. It's a
+          short, well-structured instruction — not a program. The engine substitutes
+          <code>{{trigger.*}}</code> placeholders, hands the resulting text to the agent as its
+          opening message, and watches for the agent to call <code>signal_done</code>. There are no
+          return values and no RPC — the agent's observable effects are the MCP calls it makes and
+          the files it writes.
+        </p>
+      </section>
+
+      <section data-search="Task template shape and args" id="shape">
+        <h2>Task shape</h2>
+        <ol>
+          <li>
+            <strong>Template body</strong> — a markdown block (YAML's <code>|</code> literal) that
+            reads like a short memo. State the trigger, enumerate the steps, name the signal_done
+            payload. Keep it under ~40 lines; longer tasks drift.
+          </li>
+          <li>
+            <strong>Trigger-context placeholders</strong> — anywhere the body says
+            <code>{{trigger.X}}</code>, a fresh run substitutes the matching field on the trigger
+            event (table below). Unknown keys stay literal — the agent will mention them in its
+            reply and you'll notice. A <strong>wake</strong> fills in only <code>{{date}}</code> and
+            <code>{{timestamp}}</code>: the text is typed into a live session, so it carries no
+            run-specific data.
+          </li>
+          <li>
+            <strong>MCP calls</strong> — the agent works via its allowlisted MCP servers (declared
+            in its <code>agent.yaml</code>). The seeded tasks lean on <code>read_messages</code>,
+            <code>claim_role_messages</code>, <code>role_state</code> and
+            <code>routine_done</code>. A task never wakes another agent with
+            <code>send_to_session</code>: give that agent its own wake routine.
+          </li>
+          <li>
+            <strong>Scope</strong> — the task body never names the context repo path explicitly; the
+            engine spawns the session with the right <code>where</code> and the agent uses its MCP
+            tools against that scope. Portable across workspaces for free.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Trigger-context fields" id="context">
+        <h2>Trigger context, by trigger shape</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px">
+          <thead>
+            <tr>
+              <th
+                style="
+                  text-align: left;
+                  padding: 8px 12px;
+                  background: var(--cs-inset);
+                  color: var(--cs-muted-fg);
+                  font-size: 12px;
+                  border-bottom: 1px solid var(--cs-border);
+                "
+              >
+                Trigger
+              </th>
+              <th
+                style="
+                  text-align: left;
+                  padding: 8px 12px;
+                  background: var(--cs-inset);
+                  color: var(--cs-muted-fg);
+                  font-size: 12px;
+                  border-bottom: 1px solid var(--cs-border);
+                "
+              >
+                Available placeholders
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>inbox_idle</code>
+              </td>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>{{trigger.sessions}}</code> (JSON list of <code>{handle, name, unread, oldest_unread_at}</code>), <code>{{trigger.count}}</code>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>agent_done</code>
+              </td>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>{{trigger.session_id}}</code>, <code>{{trigger.status}}</code>, <code>{{trigger.summary}}</code>, <code>{{trigger.agent}}</code>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>cron</code> / manual
+              </td>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                none beyond the always-on ones
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                always (fresh)
+              </td>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>{{date}}</code>, <code>{{timestamp}}</code>, <code>{{last_run_at}}</code>, <code>{{last_run_summary}}</code>, declared <code>{{variables}}</code>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                always (wake)
+              </td>
+              <td style="padding: 8px 12px; border-bottom: 1px solid var(--cs-border)">
+                <code>{{date}}</code>, <code>{{timestamp}}</code> only
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Exit contract — signal_done" id="exit">
+        <h2>Exit contract</h2>
+        <dl class="arcg-contract">
+          <dt>routine_done (wake)</dt>
+          <dd>
+            A woken session gets the task headed <code>[routine: &lt;name&gt; | run &lt;id&gt;]</code>.
+            It calls <code>routine_done</code> with that run id, an outcome and a summary: the run
+            ends, the session keeps working. Without it the run is recorded <strong>delivered</strong>.
+            Never <code>signal_done</code> for a wake: that ends the session's whole task.
+          </dd>
+          <dt>signal_done (start a new)</dt>
+          <dd>
+            The agent calls <code>signal_done</code> with a one-line summary. The engine logs the
+            run as <strong>ok</strong> and tears the session down. The routines console shows the
+            summary; the next trigger fires on its own timeline.
+          </dd>
+          <dt>no-op</dt>
+          <dd>
+            "Nothing to do" is a valid outcome. The agent still calls <code>signal_done</code>
+            with a short rationale ("manager queue empty"). A tick that fires and signals no-op is
+            cheap and leaves a scannable breadcrumb in run history.
+          </dd>
+          <dt>timeout</dt>
+          <dd>
+            If the agent exceeds <code>policy.max_runtime</code>, the engine kills the session and
+            logs the run as <strong>timeout</strong>. The routines console shows the partial
+            transcript. Fix: shorten the task, tighten the MCP calls, or raise
+            <code>max_runtime</code>.
+          </dd>
+          <dt>overlap: skip</dt>
+          <dd>
+            With <code>policy.overlap: skip</code>, a tick that fires while the previous run is
+            still in flight is logged as <strong>skipped</strong> and does nothing. Use this for
+            idempotent cron routines where overlap would mean duplicate work.
+          </dd>
+          <dt>fail</dt>
+          <dd>
+            An unhandled error inside the agent's runtime (crash, bridge rejection) is logged as
+            <strong>fail</strong> with a short reason. The next scheduled tick fires normally;
+            CodeSense doesn't back off automatically.
+          </dd>
+        </dl>
+      </section>
+
+      <section data-search="A full task body you can copy" id="example">
+        <h2>Worked example — a wake task with a no-op branch</h2>
+        <p>
+          The seeded <code>manager-ensure</code> routine wakes the Manager every hour. Its task
+          is written to the Manager itself — it is typed into the Manager's session — and every
+          branch ends quietly. If no Manager is running, the same text starts one.
+        </p>
+        <pre><code>mode: wake
+task: |
+  Check the manager queue. Call role_state with role "manager".
+  If anything is pending, claim it with claim_role_messages and carry on
+  with /manage-team. If nothing is pending, say "manager queue empty" in
+  one line and wait.</code></pre>
+      </section>
+
+      <section data-search="Try this now — dry-run a routine" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Check a routine without saving it: <code>routine_create</code> with
+          <code>dryRun: true</code> validates the schedule, the agent and the mode, and reports
+          warnings such as a <code>/command</code> the agent doesn't start with.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "routine_create", "args": {"name": "Morning triage", "agent": "manager", "mode": "wake", "when": "weekdays 09:00", "task": "Triage new mail.", "dryRun": true}}'
+          label="Dry-run a routine"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Check without writing
+codesense.invoke('routine_create', { name: '…', agent: 'manager', mode: 'wake', task: '…', dryRun: true })
+
+// Live fire
+codesense.invoke('routine_run_now', { id: 'manager-wake' })
+
+// Inside a woken session: finish this run, keep the session
+codesense.invoke('routine_done', { sessionId, runId, outcome: 'success', summary: '…' })
+
+// Tail the run (routines-console does this live)
+codesense.subscribeContext({ topic: 'routines.runs', id: 'manager-wake' }, (ev) =&gt; { … })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./triggers.html">← Triggers</a> · Next: <a href="./storage.html">Storage →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/routine_done">routine_done</a> ·
+        <a href="../mcp-explorer.html#tool/signal_done">signal_done</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc G · Tasks</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

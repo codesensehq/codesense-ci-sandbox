@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — The factory, as a kit</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/index"] .cs-docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      body[data-page="arc-l-factory/index"] .cs-docs-grid .cs-docs-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px 18px;
+        text-decoration: none;
+      }
+      body[data-page="arc-l-factory/index"] .cs-docs-grid .cs-docs-card .title {
+        font-weight: 600;
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-l-factory/index"] .cs-docs-grid .cs-docs-card .hook {
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+      body[data-page="arc-l-factory/index"] figure.hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="The factory as a kit" id="hero">
+        <h1>The factory, as a kit</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch; margin-top: 4px">
+          Arc L is the capstone. The primitives you've met across the earlier arcs — worktrees,
+          agents, inboxes, routines, dashboards — compose into a running agentic software factory.
+          Massively parallel. Local, remote, or both. On your Mac tonight.
+        </p>
+      </section>
+
+      <section data-search="What this arc teaches" id="why">
+        <h2>What this arc teaches</h2>
+        <p>
+          Six roles — <strong>Builder</strong>, <strong>Scout</strong>, <strong>Resolver</strong>,
+          <strong>Reviewer</strong>, <strong>Triager</strong>, <strong>Analyst</strong> — compose
+          into recipes you copy-paste into your own context repo and run. You pick a distribution
+          shape (one Mac? home + remote mini? your whole team?) and dial up the number of agents
+          until the inbox backs up or the DAG goes green. That's the factory.
+        </p>
+        <p>
+          Every page here cross-links to the live
+          <a href="../factory-playbook.html#phase-8">factory-playbook — Phase 8 (Build parallel)</a
+          >, to the <a href="../inbox-flows.html">inbox flow kit</a>, and to the
+          <a href="../recipes-gallery.html">recipes gallery</a>. Nothing in Arc L is new primitive —
+          it's new composition.
+        </p>
+      </section>
+
+      <section data-search="Pages in this arc" id="pages">
+        <h2>Pages in this arc</h2>
+        <div class="cs-docs-grid">
+          <a class="cs-docs-card" href="./patterns.html">
+            <span class="title">Role patterns</span>
+            <span class="hook"
+              >Builder · Scout · Resolver · Reviewer · Triager · Analyst — what each role is for and
+              when to reach for it.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./massively-parallel.html">
+            <span class="title">Massively parallel</span>
+            <span class="hook"
+              >N worktrees, N agents, inbox dispatch. The core shape that scales the whole thing
+              out.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./local-only.html">
+            <span class="title">Local-only</span>
+            <span class="hook"
+              >All on one Mac. No network, no remote accounts. The simplest factory that
+              ships.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./solo-with-remote.html">
+            <span class="title">Solo with remote</span>
+            <span class="hook"
+              >Your Mac plus one or two remote Macs via private-account. Nights without battery
+              drain.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./multi-mac-distributed.html">
+            <span class="title">Multi-mac distributed</span>
+            <span class="hook"
+              >Several developers' Macs cooperating on one team context repo. One triager, many
+              hands.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./running-overnight.html">
+            <span class="title">Running overnight</span>
+            <span class="hook"
+              >Hands-off loop with inbox_idle wake routines. Wake up to a morning summary and 5 open
+              PRs.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./auditing-the-factory.html">
+            <span class="title">Auditing the factory</span>
+            <span class="hook"
+              >agent-dag and pipeline-graph as factory monitors. What is each agent doing right now,
+              and is it stuck?</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./failure-modes.html">
+            <span class="title">Failure modes</span>
+            <span class="hook"
+              >What happens when an agent dies, a machine goes offline, or an escalation gets stuck.
+              The expected answers.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./team-and-notes-tools.html">
+            <span class="title">Team, source repo and notes tools</span>
+            <span class="hook"
+              >Create and organise teams, bind source repos, read the publish set, and keep private
+              notes.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./composition-recipes.html">
+            <span class="title">10 composition recipes</span>
+            <span class="hook"
+              >Copy-paste production shapes. Each recipe is a validating agent.yaml + routine.yml
+              pair you can drop into your context repo.</span
+            >
+          </a>
+        </div>
+      </section>
+
+      <section data-search="Primitives this arc leans on" id="primitives">
+        <h2>Primitives this arc leans on</h2>
+        <ul>
+          <li>
+            <strong>Worktrees</strong> — one per story, isolated git checkouts. See
+            <a href="../concepts/">concepts</a>.
+          </li>
+          <li>
+            <strong>Agents</strong> — immutable identity + runtime + skills. See
+            <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a>.
+          </li>
+          <li>
+            <strong>Inbox roles</strong> — <code>builder</code>, <code>reviewer</code>,
+            <code>resolver</code>, <code>scout</code>, <code>triager</code>, <code>analyst</code>.
+            Claim-and-ack serializes work.
+          </li>
+          <li>
+            <strong>Routines</strong> — a schedule, or an event (<code>role_pending</code>,
+            <code>inbox_idle</code>, <code>agent_done</code>),
+            starts or wakes agents without a human in the loop. See
+            <a href="../schema-browser.html#schema/routine-yml">routine.yml</a>.
+          </li>
+          <li>
+            <strong>Private-account mode</strong> — remote Macs under the same account cooperate
+            without SSH gymnastics. See the <a href="../concepts/">concepts</a> on remote execution.
+          </li>
+          <li>
+            <strong>agent-dag</strong> + <strong>pipeline-graph</strong> — the two factory monitors.
+            See <a href="./auditing-the-factory.html">auditing</a>.
+          </li>
+        </ul>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html">MCP explorer</a> ·
+        <a href="../schema-browser.html">schema browser</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Factory</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

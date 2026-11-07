@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sample pane</title>
+  </head>
+  <body class="cs-app">
+    <h1 class="cs-h3">Agents</h1>
+    <p id="intent" class="cs-muted"></p>
+    <ul id="agents" class="cs-stack"></ul>
+    <p id="saved" hidden>Saved</p>
+    <p id="greeting"></p>
+    <p id="count"></p>
+    <p id="mail"></p>
+    <script src="lib/greeting.js"></script>
+    <script>
+      // @ts-check
+      /// <reference path="../../../src-tauri/src/http/routes/dashboard_kit/codesense.d.ts" />
+      const list = /** @type {HTMLElement} */ (document.getElementById("agents"));
+      /** @param {CodesenseSdk.HubSnapshot} snapshot */
+      function render(snapshot) {
+        list.replaceChildren(
+          ...snapshot.snapshot.map((row) => {
+            const item = document.createElement("li");
+            const name = String(/** @type {any} */ (row).rowNames?.primary ?? row.id);
+            const open = document.createElement("button");
+            open.className = "cs-btn";
+            open.textContent = name;
+            open.onclick = () => codesense.gotoAgent({ agentId: String(row.handle) });
+            const stop = document.createElement("button");
+            stop.className = "cs-btn";
+            stop.textContent = "Stop";
+            stop.setAttribute("aria-label", `Stop ${name}`);
+            // has() is advisory: it hides what this frame's grant would refuse.
+            stop.disabled = !codesense.has("stopSession");
+            stop.onclick = () => codesense.stopSession({ handle: String(row.handle) });
+            item.append(open, stop);
+            return item;
+          }),
+        );
+      }
+      codesense.onIntent((intent) => {
+        const note = /** @type {{note?: string}} */ (intent).note;
+        /** @type {HTMLElement} */ (document.getElementById("intent")).textContent = note ?? "";
+      });
+      codesense.onVisibility((visible) => (document.body.dataset.visible = String(visible)));
+      codesense.onFlush(() => {
+        /** @type {HTMLElement} */ (document.getElementById("saved")).hidden = false;
+      });
+      codesense.onSessions((rows) => {
+        /** @type {HTMLElement} */ (document.getElementById("count")).textContent =
+          `${rows ? rows.length : 0} sessions`;
+      });
+      codesense.inbox({ limit: 10 }).then((/** @type {any} */ view) => {
+        /** @type {HTMLElement} */ (document.getElementById("mail")).textContent =
+          `${view.messages.length} messages, ${view.humanUnread} unread`;
+      });
+      codesense
+        .subscribe("sessions", { onChange: render })
+        .then(render)
+        .then(() => codesense.ready());
+    </script>
+  </body>
+</html>

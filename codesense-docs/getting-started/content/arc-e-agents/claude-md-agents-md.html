@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="scroll-text" />
+    <title>CodeSense — CLAUDE.md &amp; AGENTS.md</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arce-chain-row rect {
+        fill: color-mix(in srgb, var(--cs-fg) 6%, var(--cs-surface));
+        stroke: var(--cs-border);
+        stroke-width: 1.2;
+      }
+      .arce-chain-row rect.has-md {
+        fill: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        stroke: var(--cs-accent);
+      }
+      .arce-chain-row text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .arce-chain-row text.sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .arce-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+      }
+      .arce-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arce-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arce-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/claude-md-agents-md">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="CLAUDE.md and AGENTS.md — how instructions get injected along the team chain" id="hero">
+        <h1>Instructions ride the team chain.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Team chain: Auth team → Backend team → root. Each layer looks for CLAUDE.md; the first hit wins and loads as the agent's team-root instructions."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="36" class="arce-chain-row">
+              <tspan style="fill: var(--cs-muted-fg); font-size: 13px">
+                startup lists <tspan style="font-family: var(--cs-font-mono)">CLAUDE.md</tspan>.
+                Resolver walks the team chain, first hit wins.
+              </tspan>
+            </text>
+
+            <!-- Row 1: Auth team -->
+            <g class="arce-chain-row" transform="translate(24 68)">
+              <rect width="200" height="60" rx="8" />
+              <text x="14" y="22">Auth team</text>
+              <text x="14" y="40" class="sub">config/.claude/CLAUDE.md</text>
+              <text x="14" y="54" class="sub" style="fill: var(--cs-danger)">— missing</text>
+            </g>
+
+            <!-- Row 2: Backend team (parent) -->
+            <g class="arce-chain-row" transform="translate(24 148)">
+              <rect width="200" height="60" rx="8" class="has-md" />
+              <text x="14" y="22">Backend team (parent)</text>
+              <text x="14" y="40" class="sub">config/.claude/CLAUDE.md</text>
+              <text x="14" y="54" class="sub" style="fill: var(--cs-success)">
+                ✓ loaded as team root
+              </text>
+            </g>
+
+            <!-- Row 3: Root team -->
+            <g class="arce-chain-row" transform="translate(24 228)">
+              <rect width="200" height="60" rx="8" />
+              <text x="14" y="22">Root (org)</text>
+              <text x="14" y="40" class="sub">config/.claude/CLAUDE.md</text>
+              <text x="14" y="54" class="sub">(not checked — first hit won)</text>
+            </g>
+
+            <!-- Edges down the chain -->
+            <path class="arce-edge" d="M124 128 L 124 148" marker-end="url(#arrow)" />
+            <path class="arce-edge" d="M124 208 L 124 228" marker-end="url(#arrow)" />
+
+            <!-- Right side: the agent -->
+            <g transform="translate(300 100)">
+              <rect
+                width="310"
+                height="160"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="26" style="fill: var(--cs-fg); font-size: 13px">
+                agent · <tspan style="font-family: var(--cs-font-mono)">docs-helper</tspan>
+              </text>
+              <text x="14" y="48" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                startup:
+              </text>
+              <text x="30" y="64" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - CLAUDE.md         ← resolves to Backend/CLAUDE.md
+              </text>
+              <text x="30" y="80" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - .claude/skills/triage/
+              </text>
+              <text x="14" y="110" style="fill: var(--cs-fg); font-size: 11px">
+                If no team on the chain has CLAUDE.md →
+              </text>
+              <text x="14" y="126" class="sub" style="fill: var(--cs-muted-fg); font-size: 11px">
+                the agent simply starts without it, like the starters.
+              </text>
+              <text x="14" y="146" style="fill: var(--cs-fg); font-size: 11px">
+                Codex agents follow the same walk for AGENTS.md.
+              </text>
+            </g>
+
+            <path class="arce-edge" d="M224 178 L 300 180" marker-end="url(#arrow)" />
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Why team-root instructions exist" id="why">
+        <p>
+          CodeSense ships no "system prompt" of its own. The agent's posture
+          comes from your team's root instructions file: <code>CLAUDE.md</code>
+          for Claude agents, <code>AGENTS.md</code> for Codex. One place to put
+          "we review every PR before merging", "never force-push", "the house
+          style is Rust 2024 edition" — and every agent you launch picks it up.
+          You never list it on each agent; <code>agent.yaml</code> names it
+          once in <code>startup:</code> and the resolver finds it.
+        </p>
+      </section>
+
+      <section data-search="Four moves — list it, team chain lookup, codex twin, missing is fine" id="moves">
+        <h2>How it gets in</h2>
+
+        <div class="arce-step">
+          <span class="arce-step__n">1</span>
+          <div>
+            <h3>List it first in <code>startup:</code></h3>
+            <p>
+              Just the bare name. The resolver treats
+              <code>CLAUDE.md</code> and <code>AGENTS.md</code> as team-chain
+              paths — never a file in your working directory, never an absolute
+              path. Listing it first keeps the posture ahead of per-skill
+              rules.
+            </p>
+            <pre><code>startup:
+  - CLAUDE.md          # claude agents
+  - .claude/skills/triage/</code></pre>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">2</span>
+          <div>
+            <h3>Team-chain walk</h3>
+            <p>
+              Teams can have a <code>parent_team:</code>. At preview and launch
+              time CodeSense builds the chain
+              <code>[self, parent, grandparent, …, root]</code> (up to 64
+              levels, no cycles) and the resolver reads the first match it
+              finds. A sub-team can add its own <code>CLAUDE.md</code> to
+              shadow the parent's — <strong>first hit wins</strong>, no merge.
+              Rewriting <code>parent_team</code> at the sub-team level is how
+              you specialize.
+            </p>
+            <pre><code># teams.yml
+- name: Backend
+  parent_team: null         # root instructions live here
+- name: Auth
+  parent_team: Backend      # inherits unless Auth adds its own CLAUDE.md</code></pre>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">3</span>
+          <div>
+            <h3>Codex twin</h3>
+            <p>
+              Codex agents follow the exact same walk for
+              <code>AGENTS.md</code>. The two files are twins, not synonyms —
+              <code>startup:</code> for a <code>claude</code> agent should
+              list <code>CLAUDE.md</code>; a <code>codex</code> agent should
+              list <code>AGENTS.md</code>.
+              <code>agent_preview</code> warns when the pair is crossed.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">4</span>
+          <div>
+            <h3>Missing is fine</h3>
+            <p>
+              A path no content layer has is normally a manifest error, but
+              <code>CLAUDE.md</code> and <code>AGENTS.md</code> are the one
+              exception: if no team on the chain has one, the agent simply
+              starts without it — same posture as the shipped starters. You
+              get a warning the first time, not a refusal.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="What goes in CLAUDE.md" id="good">
+        <h2>What goes in it</h2>
+        <p>
+          Think "team norms", not "task instructions":
+        </p>
+        <ul>
+          <li>
+            <strong>House style.</strong> "Rust 2024 edition. Prefer
+            <code>?</code> over <code>.unwrap()</code>."
+          </li>
+          <li>
+            <strong>Review posture.</strong> "Every PR gets a human
+            <code>reviewer</code> role before merge."
+          </li>
+          <li>
+            <strong>Hard rules.</strong> "Never force-push to
+            <code>main</code>. Rebase feature branches with
+            <code>--force-with-lease</code>."
+          </li>
+          <li>
+            <strong>Where things live.</strong> "Story files live in
+            <code>_bmad-output/&lt;epic&gt;/stories/</code>."
+          </li>
+          <li>
+            <strong>Who to ask.</strong> "Decisions and escalations go to the
+            <code>resolver</code> role via <code>bmad-loop-resolve</code>."
+          </li>
+        </ul>
+        <p>
+          Keep per-task knowledge in the skills (<code>SKILL.md</code>) the
+          agent picks up for that job. The team root is the thing you want
+          <em>every</em> session to know.
+        </p>
+      </section>
+
+      <section data-search="How much is too much" id="warnings">
+        <h2>How much is too much</h2>
+        <p>
+          CodeSense doesn't cap <code>CLAUDE.md</code>, but
+          <code>agent_preview</code> and <code>agent_create</code> return a
+          <code>manifest.totals</code> with the byte count the agent will load.
+          A 50 KB <code>CLAUDE.md</code> gets a warning, not a refusal; the
+          user decides. Rule of thumb: team norms fit comfortably in 5–10 KB.
+          Everything project-specific goes in skills.
+        </p>
+      </section>
+
+      <section data-search="Try this now — read the team's CLAUDE.md" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Resolve <code>CLAUDE.md</code> against the active team's chain. The
+          dry-run shows which team the file came from — or that no team on the
+          chain has one. Read-only.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Chain probe", "runtime": "claude", "startup": ["CLAUDE.md"]}}'
+          label="Resolve CLAUDE.md against the team chain"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Which team on the chain has CLAUDE.md? Preview is the honest answer —
+// it runs the same resolver as a real launch.
+codesense.invoke('agent_preview', {
+  name: 'probe', runtime: 'claude', startup: ['CLAUDE.md'],
+})
+// → { manifest: { entries: [{ path: 'CLAUDE.md', source: 'teams/backend/...', bytes: 4821 }] } }
+
+// The chain itself (which teams, in order): describe_setup lists each team and its parent.
+codesense.invoke('describe_setup', {})</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./agent-yaml.html">← agent.yaml</a> ·
+        Next: <a href="./skills.html">Skills →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a> ·
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · CLAUDE.md &amp; AGENTS.md</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

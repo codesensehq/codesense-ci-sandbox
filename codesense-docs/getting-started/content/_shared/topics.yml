@@ -1,0 +1,521 @@
+{
+  "version": 1,
+  "topics": [
+    "reference",
+    "examples",
+    "concepts",
+    "first-touch",
+    "model",
+    "workspaces",
+    "machines",
+    "agents",
+    "inboxes",
+    "routines",
+    "sdlc",
+    "panes",
+    "mcp",
+    "sync",
+    "factory"
+  ],
+  "defaults": {
+    "type": "content",
+    "topic": [
+      "reference"
+    ],
+    "task": [],
+    "tools": [],
+    "audience": [
+      "agents",
+      "humans"
+    ]
+  },
+  "rules": [
+    {
+      "glob": "**"
+    },
+    {
+      "glob": "arc-a-first-touch/**",
+      "topic": [
+        "first-touch"
+      ]
+    },
+    {
+      "glob": "arc-b-model/**",
+      "topic": [
+        "model"
+      ]
+    },
+    {
+      "glob": "arc-c-workspaces-and-worktrees/**",
+      "topic": [
+        "workspaces"
+      ]
+    },
+    {
+      "glob": "arc-d-terminals-and-machines/**",
+      "topic": [
+        "machines"
+      ]
+    },
+    {
+      "glob": "arc-e-agents/**",
+      "topic": [
+        "agents"
+      ]
+    },
+    {
+      "glob": "arc-f-inboxes-and-triage/**",
+      "topic": [
+        "inboxes"
+      ]
+    },
+    {
+      "glob": "arc-g-routines/**",
+      "topic": [
+        "routines"
+      ]
+    },
+    {
+      "glob": "arc-h-pipelines-and-sdlc/**",
+      "topic": [
+        "sdlc"
+      ]
+    },
+    {
+      "glob": "arc-i-dashboard-primitives/**",
+      "topic": [
+        "panes"
+      ]
+    },
+    {
+      "glob": "arc-j-mcp/**",
+      "topic": [
+        "mcp"
+      ]
+    },
+    {
+      "glob": "arc-k-sync/**",
+      "topic": [
+        "sync"
+      ]
+    },
+    {
+      "glob": "arc-l-factory/**",
+      "topic": [
+        "factory"
+      ]
+    },
+    {
+      "glob": "arc-n-reference/**"
+    },
+    {
+      "glob": "arc-d-terminals-and-machines/machine-tools.html",
+      "tools": [
+        "list_ssh_sources",
+        "test_machine_connection",
+        "capture_machine_passphrase",
+        "save_machine",
+        "unshare_machine",
+        "remove_machine",
+        "connect_machine",
+        "retry_machine",
+        "disconnect_machine",
+        "set_machine_auto_connect",
+        "set_machine_hidden",
+        "set_machine_remote_mcp_control",
+        "resolve_machine_identity"
+      ]
+    },
+    {
+      "glob": "arc-d-terminals-and-machines/remote-workspaces.html",
+      "tools": [
+        "prepare_remote_workspace",
+        "remote_workspace_fetch",
+        "move_workspace"
+      ]
+    },
+    {
+      "glob": "arc-d-terminals-and-machines/terminal-servers.html",
+      "tools": [
+        "terminal_server_status",
+        "start_terminal_server",
+        "stop_terminal_server",
+        "restart_terminal_server",
+        "end_unowned_terminal_session",
+        "list_out_of_date_terminal_servers",
+        "update_terminal_servers",
+        "install_terminal_server",
+        "prepare_machine_terminal_server_replacement",
+        "restart_machine_terminal_server"
+      ]
+    },
+    {
+      "glob": "arc-h-pipelines-and-sdlc/runs-and-stories.html",
+      "tools": [
+        "list_runs",
+        "read_run",
+        "read_run_evidence",
+        "read_run_work_product",
+        "list_run_events",
+        "get_story_format",
+        "validate_story",
+        "list_source_repos",
+        "read_epic_repos",
+        "set_epic_repos"
+      ]
+    },
+    {
+      "glob": "arc-h-pipelines-and-sdlc/weft-coordination.html",
+      "tools": [
+        "wv_enqueue",
+        "wv_queue_list",
+        "wv_claim_queue",
+        "wv_mark_dispatched",
+        "wv_resolve_queue",
+        "wv_close_task",
+        "wv_escalate",
+        "wv_write_dispatch",
+        "wv_dispatch_state",
+        "wv_handoff_state",
+        "wv_verify_done",
+        "wv_read_recent",
+        "wv_wait",
+        "wv_coord_read",
+        "wv_peer_read_file",
+        "wv_classify_action",
+        "wv_write_approval",
+        "wv_settle_approval",
+        "wv_post_assertion",
+        "wv_open_t2_window",
+        "wv_check_t2_window",
+        "wv_close_t2_window",
+        "wv_pause_t2_windows",
+        "wv_resume_t2_windows",
+        "wv_write_decision",
+        "wv_retire_decision",
+        "wv_list_overdue_harvests",
+        "wv_upsert_attention",
+        "wv_upsert_watermark",
+        "wv_scope_state",
+        "wv_watch_list",
+        "wv_audit_query",
+        "wv_audit_prune",
+        "wv_read_posture",
+        "wv_set_posture"
+      ]
+    },
+    {
+      "glob": "arc-k-sync/file-tools.html",
+      "tools": [
+        "create_content_file",
+        "read_content_file",
+        "move_content_file",
+        "delete_content_file",
+        "list_context_content",
+        "query_context",
+        "refresh_frontmatter_cache"
+      ]
+    },
+    {
+      "glob": "arc-k-sync/layer-tools.html",
+      "tools": [
+        "sense_sync_adopt",
+        "sense_sync_list_layers",
+        "sense_sync_move_layer",
+        "sense_sync_read_layer_file",
+        "sense_sync_read_lockfile"
+      ]
+    },
+    {
+      "glob": "arc-k-sync/moving-between-contexts.html",
+      "tools": [
+        "move_between_contexts",
+        "copy_between_contexts",
+        "remove_from_context",
+        "route_file_to_context",
+        "unroute_file_from_context",
+        "context_operation_status",
+        "cancel_context_operation",
+        "get_sync_status",
+        "list_hydrated",
+        "forget_missing_workspace",
+        "context_repo_history",
+        "remove_source_repo"
+      ]
+    },
+    {
+      "glob": "arc-c-workspaces-and-worktrees/workspace-and-tab-lifecycle.html",
+      "tools": [
+        "list_sessions",
+        "open_terminal_tab",
+        "open_remote_tab",
+        "read_terminal_tab",
+        "run_in_terminal_tab",
+        "send_to_session",
+        "rename_terminal_tab",
+        "close_terminal_tab",
+        "close_workspace",
+        "rename_workspace",
+        "update_workspace_base",
+        "list_move_intents",
+        "workspace_group_list",
+        "workspace_group_create",
+        "workspace_group_rename",
+        "workspace_group_delete",
+        "workspace_group_add",
+        "workspace_group_remove",
+        "workspace_group_set_members"
+      ]
+    },
+    {
+      "glob": "arc-l-factory/team-and-notes-tools.html",
+      "tools": [
+        "create_team",
+        "rename_team",
+        "archive_team",
+        "delete_team",
+        "set_team_parent",
+        "set_team_starter_page",
+        "set_private_items_use",
+        "add_source_repo",
+        "attach_source_repo_path",
+        "get_publish_set",
+        "notes_list",
+        "notes_search",
+        "notes_read",
+        "notes_create",
+        "notes_write",
+        "notes_history",
+        "notes_read_at",
+        "notes_restore"
+      ]
+    },
+    {
+      "glob": "arc-e-agents/mcp-only-agents.html",
+      "tools": [
+        "ask_user",
+        "post_agent_message",
+        "signal_progress",
+        "signal_done",
+        "report_step_result",
+        "report_artifact",
+        "dismiss_agent_mark",
+        "session_usage",
+        "wv_spawn_worker",
+        "wv_report_cycle",
+        "wv_report_handoff"
+      ]
+    },
+    {
+      "glob": "arc-g-routines/routine-yml.html",
+      "tools": [
+        "routine_get",
+        "routine_result",
+        "routine_delete",
+        "routine_context",
+        "routine_done",
+        "routine_publish_result",
+        "routine_arm_on",
+        "routine_refresh_on_machine",
+        "routine_handover_release",
+        "list_wakeups",
+        "cancel_wakeup"
+      ]
+    },
+    {
+      "glob": "arc-f-inboxes-and-triage/messages.html",
+      "tools": [
+        "read_messages",
+        "inbox_list",
+        "inbox_post",
+        "mark_unread",
+        "react",
+        "get_human_status",
+        "roles_list",
+        "role_state",
+        "role_save",
+        "release_role",
+        "workspace_chat_read",
+        "workspace_chat_send"
+      ]
+    },
+    {
+      "glob": "arc-i-dashboard-primitives/calling-codesense.html",
+      "tools": [
+        "command_list",
+        "command_run",
+        "read_rendered_document",
+        "apply_canvas",
+        "render_canvas",
+        "reorder_workspace"
+      ]
+    },
+    {
+      "glob": "arc-a-first-touch/identity-menu-and-switcher.html",
+      "tools": [
+        "who_am_i",
+        "codesense_overview",
+        "update_codesense_docs"
+      ]
+    },
+    {
+      "glob": "examples/**",
+      "topic": [
+        "examples"
+      ]
+    },
+    {
+      "glob": "handbook/**",
+      "topic": [
+        "concepts"
+      ]
+    },
+    {
+      "glob": "concepts/**",
+      "topic": [
+        "concepts"
+      ],
+      "task": [
+        "understand-codesense"
+      ],
+      "tools": [
+        "codesense_overview"
+      ]
+    },
+    {
+      "glob": "setting-up-agents/mcp-access-per-agent.md",
+      "topic": [
+        "agents",
+        "mcp"
+      ],
+      "task": [
+        "configure-agent-mcp-access"
+      ],
+      "tools": [
+        "agent_preview",
+        "agent_create",
+        "agent_update"
+      ]
+    },
+    {
+      "glob": "arc-e-agents/agent-design.html",
+      "topic": [
+        "agents"
+      ],
+      "task": [
+        "design-agent-team"
+      ],
+      "tools": [
+        "agent_preview",
+        "agent_create",
+        "role_save"
+      ]
+    },
+    {
+      "glob": "arc-g-routines/index.html",
+      "task": ["cancel-run"],
+      "tools": ["routine_runs", "routine_cancel", "routine_run"]
+    },
+    {
+      "glob": "arc-g-routines/troubleshooting.html",
+      "task": ["cancel-run"],
+      "tools": ["routine_cancel"]
+    },
+    {
+      "glob": "arc-g-routines/trigger-cookbook.html",
+      "topic": [
+        "routines"
+      ],
+      "task": [
+        "metadata-trigger",
+        "event-trigger",
+        "role-queue-trigger"
+      ],
+      "tools": [
+        "routine_create",
+        "routine_update"
+      ]
+    },
+    {
+      "glob": "arc-g-routines/command-routines.html",
+      "topic": [
+        "routines"
+      ],
+      "task": [
+        "chain-routines"
+      ],
+      "tools": [
+        "routine_create",
+        "routine_runs"
+      ]
+    },
+    {
+      "glob": "arc-i-dashboard-primitives/customize-built-in-panes.html",
+      "topic": [
+        "panes"
+      ],
+      "task": [
+        "customize-inbox"
+      ],
+      "tools": [
+        "pane_write",
+        "pane_open"
+      ]
+    },
+    {
+      "glob": "arc-i-dashboard-primitives/pane-shapes.html",
+      "topic": [
+        "panes"
+      ],
+      "task": [
+        "build-pane"
+      ],
+      "tools": [
+        "pane_write",
+        "pane_open",
+        "get_live_data_contract"
+      ]
+    },
+    {
+      "glob": "arc-b-model/teams.html",
+      "topic": [
+        "model"
+      ],
+      "task": [
+        "nest-teams"
+      ],
+      "tools": [
+        "set_team_parent",
+        "list_orgs_teams"
+      ]
+    },
+    {
+      "glob": "arc-f-inboxes-and-triage/roles.html",
+      "topic": [
+        "inboxes"
+      ],
+      "task": [
+        "configure-roles"
+      ],
+      "tools": [
+        "role_save",
+        "roles_list",
+        "role_state"
+      ]
+    },
+    {
+      "glob": "arc-i-dashboard-primitives/records.html",
+      "topic": [
+        "panes"
+      ],
+      "task": [
+        "manage-records"
+      ],
+      "tools": [
+        "records_create",
+        "records_list",
+        "records_write"
+      ]
+    }
+  ]
+}

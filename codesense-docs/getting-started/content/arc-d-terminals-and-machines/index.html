@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="monitor" />
+    <title>CodeSense — Terminals & machines</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Terminals and machines — local vs remote mental model" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Terminals &amp; machines</span>
+        </p>
+        <h1>Local or remote, same CodeSense</h1>
+      </section>
+
+      <section data-search="One mental model for local and remote machines" id="why">
+        <p>
+          You can work on your Mac, on a beefier Linux box, or both at once. CodeSense
+          treats them the same: open a terminal tab, launch an agent, hydrate a worktree,
+          run a routine — the shortcuts, the inbox, the dashboards don't care whether
+          the shell is on <em>this</em> Mac or a remote host over SSH. This arc teaches
+          you the <strong>one</strong> mental model that spans both, and names the handful
+          of places where parity breaks on purpose.
+        </p>
+      </section>
+
+      <section data-search="The arc at a glance" id="pages">
+        <h2>What's in this arc</h2>
+        <ol>
+          <li>
+            <a href="./machines.html"><strong>Machines</strong></a> — the kinds of machines
+            CodeSense knows about and the two modes (private-account vs read-only).
+          </li>
+          <li>
+            <a href="./local-machine.html"><strong>Local machine</strong></a> — "this Mac":
+            the terminal shape, the host-agent, what's special about the Mac you run CodeSense on.
+          </li>
+          <li>
+            <a href="./remote-private-account.html"><strong>Remote (private account)</strong></a>
+            — SSH posture, the codesense terminal server, tabs that survive relaunch.
+          </li>
+          <li>
+            <a href="./setup-machine.html"><strong>Setup machine</strong></a> — walking
+            the <code>/setup-machine</code> skill, local or remote.
+          </li>
+          <li>
+            <a href="./add-machine-user.html"><strong>Add machine user</strong></a>
+            — authorize a teammate on a shared Mac or a private Unix account.
+          </li>
+          <li>
+            <a href="./terminal-tabs.html"><strong>Terminal tabs</strong></a> — tab
+            lifecycle, hibernation, resume.
+          </li>
+          <li>
+            <a href="./parity-matrix.html"><strong>Parity matrix</strong></a> — the
+            centerpiece: every workflow, local vs remote, with
+            <span class="cs-docs-chip cs-docs-chip--ok">✓ parity</span>
+            <span class="cs-docs-chip cs-docs-chip--warn">⚠ caveat</span>
+            <span class="cs-docs-chip cs-docs-chip--danger">✕ gap</span>
+            tags and rationale.
+          </li>
+          <li>
+            <strong>Tool reference</strong> —
+            <a href="./machine-tools.html">Machine tools</a> ·
+            <a href="./terminal-servers.html">Terminal server tools</a> ·
+            <a href="./remote-workspaces.html">Remote workspace tools</a>
+          </li>
+          <li>
+            <a href="./troubleshooting.html"><strong>Troubleshooting</strong></a>
+            — common SSH / posture / permissions issues.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="One tab shape — local or remote" id="one-tab">
+        <h2>One tab shape</h2>
+        <p>
+          A CodeSense terminal tab is a workspace-scoped shell. On your Mac it's a native
+          PTY. On a remote host it's a PTY on that host, framed over SSH by the
+          CodeSense <em>terminal server</em>. From the UI the tab looks the same, keys
+          work the same, scrollback is captured the same way, and the agent CLI
+          (<code>claude</code>, <code>codex</code>) launches the same way.
+        </p>
+        <p>
+          The MCP tools follow the same shape: <code>open_terminal_tab</code> for local,
+          <code>open_remote_tab</code> for remote; both take the same workspace handle
+          and launch argument.
+        </p>
+      </section>
+
+      <section data-search="Where parity breaks on purpose" id="gaps-at-a-glance">
+        <h2>Where parity breaks on purpose</h2>
+        <p>
+          Three things are not identical, and the docs are honest about it:
+        </p>
+        <ul>
+          <li>
+            <strong>The host-agent</strong> runs on the Mac that owns your CodeSense
+            account. Only one, and it has to be local. Everything else — tabs, agents,
+            worktrees — is reproducible on either side.
+          </li>
+          <li>
+            <strong>Native OS APIs</strong> (keychain, Finder reveal, system
+            notifications) use the local Mac. On the remote the equivalent is the
+            terminal server plus plain shell.
+          </li>
+          <li>
+            <strong>File watching</strong> is instant on your Mac (fsevents); remote
+            uses a 5–10 s poll by default, tightenable with <code>git fsmonitor</code>.
+          </li>
+        </ul>
+        <p>
+          Every other workflow is parity. The
+          <a href="./parity-matrix.html">parity matrix</a> enumerates them row by row.
+        </p>
+      </section>
+
+      <section data-search="Try this now — list my machines" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          See what machines CodeSense knows about in this workspace. Fresh installs
+          show just <em>this Mac</em>; once you've saved a remote it joins the list.
+        </p>
+        <cs-try-this
+          verb="machines"
+          args="{}"
+          label="List my machines"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to list machines via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>codesense.invoke('list_machines', {})</code></pre>
+          <p>
+            Returns each machine's id, label, host, port, and whether it has been
+            set up for the current user.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Docs home</a> ·
+        <a href="./machines.html">Machines →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_machines">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Terminals &amp; machines</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="book-open-text" />
+    <title>Glossary · CodeSense</title>
+
+    <script>window.__codesenseThemeAware = true;</script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg); color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased; min-height: 100vh;
+      }
+
+      /* Shared pane shell */
+      .pane { display: flex; flex-direction: column; max-width: 360px; margin: 0 auto; min-height: 100vh; }
+      .pane__header {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        height: 36px; padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-accent); flex: 0 0 auto; }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title { margin: 0; font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.005em; }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg); width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer; padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-muted-fg); font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono); background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm); color: var(--cs-fg); font-style: normal;
+      }
+      .pane__body { padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3); flex: 1;
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) { .pane__body { transition: none; } }
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+      .pane__label {
+        display: block; font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .pane__ctas { display: flex; flex-wrap: wrap; gap: var(--cs-space-2); padding: 0 var(--cs-space-4) var(--cs-space-4); }
+      .cta {
+        appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px; font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm); border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface); color: var(--cs-fg); text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta--primary { background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent); }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta svg { width: 14px; height: 14px; }
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4); border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono); color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cs-muted-fg); }
+      .pane__prov a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--cs-muted-fg); }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local chrome ---------------- */
+
+      /* Search field: a quiet input that both searches and reflects clicked terms. */
+      .search {
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        background: var(--cs-surface);
+        transition: border-color 120ms;
+      }
+      .search:focus-within { border-color: var(--cs-accent); }
+      .search svg { width: 14px; height: 14px; color: var(--cs-muted-fg); flex-shrink: 0; }
+      .search input {
+        flex: 1; appearance: none; border: 0; outline: 0; background: transparent;
+        font: 400 var(--cs-text-sm)/1.4 var(--cs-font-sans);
+        color: var(--cs-fg); min-width: 0;
+      }
+      .search input::placeholder { color: var(--cs-muted-fg); }
+      .search .kbd {
+        display: inline-flex; align-items: center;
+        font: 500 10px/1 var(--cs-font-mono);
+        padding: 2px 5px;
+        border: 1px solid var(--cs-border);
+        border-radius: 3px;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+      }
+
+      /* Definition card: the active term + its definition. */
+      .defn {
+        padding: var(--cs-space-3);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        background: var(--cs-surface);
+      }
+      .defn__term {
+        display: flex; align-items: baseline; gap: var(--cs-space-2);
+        margin: 0 0 6px;
+      }
+      .defn__term h3 {
+        margin: 0;
+        font: 600 var(--cs-text-base)/1.2 var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .defn__arc {
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase;
+        color: var(--cs-fg);
+        padding: 2px 6px;
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+        border-radius: 999px;
+      }
+      .defn__p {
+        font-size: var(--cs-text-sm); line-height: 1.55;
+        color: var(--cs-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .defn__p:last-child { margin-bottom: 0; }
+      .defn__p code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 5px; border-radius: var(--cs-radius-sm);
+      }
+      .defn__cross {
+        margin-top: var(--cs-space-3);
+        font-size: var(--cs-text-xs);
+        color: var(--cs-muted-fg);
+        display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      }
+      .term-chip {
+        display: inline-flex; padding: 2px 8px;
+        border: 1px solid var(--cs-border-control);
+        border-radius: 999px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        background: transparent;
+        cursor: pointer; appearance: none;
+        transition: border-color 120ms, color 120ms;
+      }
+      .term-chip:hover { color: var(--cs-fg); border-color: var(--cs-border-control); }
+      .term-chip:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      /* Recent chips (small, muted, horizontally scrollable if many). */
+      .recents {
+        display: flex; flex-wrap: wrap; gap: 6px;
+      }
+
+      /* Empty state */
+      .empty {
+        text-align: center;
+        padding: var(--cs-space-4) var(--cs-space-2);
+        color: var(--cs-muted-fg);
+      }
+      .empty svg { width: 24px; height: 24px; color: var(--cs-muted-fg); }
+      .empty p { font-size: var(--cs-text-sm); margin: var(--cs-space-2) 0 0; }
+      .empty strong { color: var(--cs-fg); font-weight: 500; }
+    </style>
+  </head>
+
+  <body>
+    <aside class="pane" role="complementary" aria-labelledby="pane-title" data-pane-id="glossary-lookup">
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: book-open-text -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 7v14"/>
+          <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
+          <path d="M6 8h2"/><path d="M6 12h2"/><path d="M16 8h2"/><path d="M16 12h2"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Glossary</h2>
+        <span class="spacer"></span>
+        <button class="pane__collapse" type="button" aria-expanded="true"
+                aria-controls="pane-body" title="Collapse (C)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse</span>
+        </button>
+      </header>
+
+      <p class="pane__why">
+        Click any <strong>underlined term</strong> in a doc — I'll slide its
+        definition in here. Or search below.
+      </p>
+
+      <section class="pane__body" id="pane-body" aria-labelledby="pane-title">
+        <!-- Section 1: search -->
+        <div class="pane__section">
+          <label class="search" for="glossary-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input id="glossary-search" type="search" placeholder="worktree, inbox_idle, role…" autocomplete="off" />
+            <span class="kbd">/</span>
+          </label>
+        </div>
+
+        <!-- Section 2: current definition -->
+        <div class="pane__section">
+          <span class="pane__label">Definition</span>
+          <div class="defn" id="defn">
+            <header class="defn__term">
+              <h3 id="defn-term">worktree</h3>
+              <span class="defn__arc" id="defn-arc">Arc C</span>
+            </header>
+            <p class="defn__p" id="defn-body">
+              A prepared copy of a repository, created on demand for a
+              story. Each story owns one worktree so parallel agents don't
+              step on each other. Managed by CodeSense; the agent never
+              <code>git clone</code>s manually.
+            </p>
+            <div class="defn__cross" id="defn-cross">
+              <span>See also:</span>
+              <button type="button" class="term-chip" data-term="hydration">hydration</button>
+              <button type="button" class="term-chip" data-term="story">story</button>
+              <button type="button" class="term-chip" data-term="session">session</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: recently seen -->
+        <div class="pane__section">
+          <span class="pane__label">Recently clicked</span>
+          <div class="recents" id="recents">
+            <button type="button" class="term-chip" data-term="role">role</button>
+            <button type="button" class="term-chip" data-term="inbox_idle">inbox_idle</button>
+            <button type="button" class="term-chip" data-term="depends_on">depends_on</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="full-glossary">
+          <!-- book-marked -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19.5 6.5L17 4h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7a2 2 0 0 0 2-2z"/>
+            <polyline points="10 2 10 10 13 7 16 10 16 2"/>
+          </svg>
+          Full glossary
+        </button>
+        <button type="button" class="cta" data-cta="arc-n">Arc N catalog</button>
+      </div>
+
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane</span>
+        <span>·</span>
+        <a href="#" data-nav="arc-n">arc N · catalog</a>
+      </footer>
+    </aside>
+
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const body = pane.querySelector('.pane__body');
+        const search = pane.querySelector('#glossary-search');
+        const defn = pane.querySelector('#defn');
+        const termEl = pane.querySelector('#defn-term');
+        const arcEl = pane.querySelector('#defn-arc');
+        const bodyEl = pane.querySelector('#defn-body');
+        const crossEl = pane.querySelector('#defn-cross');
+        const recentsEl = pane.querySelector('#recents');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // ---------- Mock glossary (production: read from arc-N/glossary.json) ----
+        const GLOSS = {
+          worktree: {
+            arc: 'C',
+            body: `A prepared copy of a repository, created on demand for a story. Each story owns one worktree so parallel agents don't step on each other. Managed by CodeSense; the agent never <code>git clone</code>s manually.`,
+            see: ['hydration', 'story', 'session'],
+          },
+          hydration: {
+            arc: 'C',
+            body: `An explicit copy from team content into a workspace. An agent's launch copies what its <code>context</code> asks for; after that an agent calls <code>hydrate_worktree</code> (paths or sets) or <code>hydrate_story</code> (a story's epic, widened by a policy). Never in the background.`,
+            see: ['worktree', 'selected-docs'],
+          },
+          story: {
+            arc: 'H',
+            body: `A frontmatter-driven work unit. Has a <code>status</code>, a <code>depends_on</code> graph, and a <code>stream</code> (frontend / fullstack / infra). Lives in an epic directory.`,
+            see: ['depends_on', 'epic', 'sprint'],
+          },
+          session: {
+            arc: 'C',
+            body: `A live agent process attached to a workspace. Started by <code>openWorkspace</code>; stopped by <code>closeWorkspace</code>. Survives app restart via the roster.`,
+            see: ['worktree', 'handle'],
+          },
+          role: {
+            arc: 'F',
+            body: `A named queue of work (<code>builder</code>, <code>reviewer</code>, <code>resolver</code>, …). Agents subscribe to roles; routines target roles; messages are addressed to roles.`,
+            see: ['inbox_idle', 'agent.yaml', 'postMessage'],
+          },
+          inbox_idle: {
+            arc: 'G',
+            body: `A trigger that fires when a role's queue has unread work and no agent is actively working on it. The canonical factory crank.`,
+            see: ['role', 'routine', 'triggers'],
+          },
+          depends_on: {
+            arc: 'H',
+            body: `Frontmatter field on a story: a list of story IDs this one needs completed first. The pipeline reads it.`,
+            see: ['story', 'sprint'],
+          },
+          epic: {
+            arc: 'H',
+            body: `A directory with an epic frontmatter file, holding one or more stories that share a goal and a canonical sprint sequence.`,
+            see: ['story', 'sprint'],
+          },
+          sprint: {
+            arc: 'H',
+            body: `A time-boxed execution of some stories within an epic. Status transitions here fire sprint-trigger automations.`,
+            see: ['epic', 'story'],
+          },
+          handle: {
+            arc: 'C',
+            body: `A string identifying a session, e.g. <code>DEMO-1#dev</code>. Used by <code>sendToSession</code>, <code>closeWorkspace</code>, <code>runPrompt</code>.`,
+            see: ['session'],
+          },
+          'selected-docs': {
+            arc: 'C',
+            body: `The docs <code>hydrate_story</code> copies for one story: its epic folder, widened by the optional policy <code>{referenceDepth, ancestryLevels, siblingBreadth, maxMembers}</code> to referenced epics, parent epics or the surrounding epic, up to a cap.`,
+            see: ['worktree', 'hydration'],
+          },
+          'agent.yaml': {
+            arc: 'E',
+            body: `The agent contract file: key, role, runtime, skills, CLAUDE.md pointer, scope. One agent per file.`,
+            see: ['role', 'skill'],
+          },
+          routine: {
+            arc: 'G',
+            body: `A saved agent's standing task: triggers + a task + where it runs. Triggers are a <code>schedule</code> or an event (<code>inbox_idle</code>, <code>role_pending</code>, <code>agent_done</code>); none means manual. <code>mode</code> is <code>wake</code> or <code>fresh</code>.`,
+            see: ['triggers', 'inbox_idle'],
+          },
+          triggers: {
+            arc: 'G',
+            body: `What fires a routine: a <code>schedule</code> (cron and time zone), or an <code>event</code> of kind <code>inbox_idle</code>, <code>role_pending</code>, <code>agent_done</code>. No triggers means manual only.`,
+            see: ['routine', 'inbox_idle'],
+          },
+          postMessage: {
+            arc: 'F',
+            body: `Page-bridge verb that posts a message to a role's inbox. Supports an <code>onClick</code> payload for actionable messages. Agents use <code>send_role_message</code>.`,
+            see: ['role', 'inbox_idle'],
+          },
+          skill: {
+            arc: 'E',
+            body: `A versioned package of prompt + metadata + optional scripts, installable per org or team. CodeSense agents call skills by name.`,
+            see: ['agent.yaml'],
+          },
+        };
+
+        // ---------- Render ----------
+        function renderDefn(term) {
+          const t = GLOSS[term];
+          if (!t) {
+            defn.innerHTML = `
+              <div class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p><strong>${escapeHtml(term)}</strong> isn't in the glossary yet.</p>
+              </div>`;
+            return;
+          }
+          defn.innerHTML = `
+            <header class="defn__term">
+              <h3>${escapeHtml(term)}</h3>
+              <span class="defn__arc">Arc ${t.arc}</span>
+            </header>
+            <p class="defn__p">${t.body}</p>
+            ${t.see && t.see.length ? `
+              <div class="defn__cross">
+                <span>See also:</span>
+                ${t.see.map(s => `<button type="button" class="term-chip" data-term="${s}">${escapeHtml(s)}</button>`).join('')}
+              </div>
+            ` : ''}
+          `;
+          defn.querySelectorAll('.term-chip').forEach(chip => {
+            chip.addEventListener('click', () => lookup(chip.dataset.term));
+          });
+        }
+
+        function pushRecent(term) {
+          const chips = Array.from(recentsEl.querySelectorAll('.term-chip'));
+          const existing = chips.find(c => c.dataset.term === term);
+          if (existing) existing.remove();
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'term-chip';
+          chip.dataset.term = term;
+          chip.textContent = term;
+          chip.addEventListener('click', () => lookup(term));
+          recentsEl.prepend(chip);
+          while (recentsEl.children.length > 6) {
+            recentsEl.removeChild(recentsEl.lastChild);
+          }
+        }
+
+        function lookup(term) {
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            renderDefn(term);
+            pushRecent(term);
+            search.value = term;
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        // ---------- Wire interactions ----------
+        search.addEventListener('input', (e) => {
+          const q = (e.target.value || '').trim().toLowerCase();
+          if (!q) return;
+          if (GLOSS[q]) lookup(q);
+        });
+
+        recentsEl.querySelectorAll('.term-chip').forEach(chip => {
+          chip.addEventListener('click', () => lookup(chip.dataset.term));
+        });
+
+        // Click-a-term wire: the viewer intercepts <span data-cs-term="X"> clicks
+        // and dispatches a window message to all registered panes.
+        window.addEventListener('message', (e) => {
+          const msg = e.data || {};
+          if (msg.type === 'codesense:glossary-click' && msg.term) {
+            lookup(String(msg.term));
+          }
+        });
+
+        function applyContext(ctx) {
+          const term = (ctx.filename || '').replace(/\.html$/, '');
+          if (GLOSS[term]) lookup(term);
+        }
+        window.CodeSenseDocsPane.onContext(applyContext);
+
+        // '/' focuses the search field (keyboard-first).
+        pane.addEventListener('keydown', (e) => {
+          if (e.key === '/' && document.activeElement !== search) {
+            e.preventDefault(); search.focus();
+          }
+          if ((e.key === 'c' || e.key === 'C') && e.target !== search && e.target.tagName !== 'INPUT') {
+            setCollapsed(pane.dataset.collapsed !== 'true');
+          }
+        });
+
+        // ---------- CTAs ----------
+        pane.querySelector('[data-cta="full-glossary"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './arc-n-reference/glossary.html', newTab: true });
+        });
+        pane.querySelector('[data-cta="arc-n"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './arc-n-reference/index.html', newTab: true });
+        });
+
+        // ---------- Collapse ----------
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => setCollapsed(pane.dataset.collapsed !== 'true'));
+
+        function escapeHtml(s) {
+          return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

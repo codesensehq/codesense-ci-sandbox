@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="rocket" />
+    <title>CodeSense — Publishing</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/publishing"] .cs-main {
+        max-width: 960px;
+      }
+      body[data-page="arc-k-sync/publishing"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/publishing"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/publishing"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/publishing"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/publishing"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/publishing"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/publishing"] figure.hero svg {
+        display: block;
+        width: 100%;
+        max-width: 820px;
+        margin: 0 auto;
+        height: auto;
+      }
+      body[data-page="arc-k-sync/publishing"] figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        text-align: center;
+      }
+      body[data-page="arc-k-sync/publishing"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/publishing"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 820px;
+      }
+      body[data-page="arc-k-sync/publishing"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/publishing"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/publishing"] .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/publishing"] table {
+        width: 100%;
+        max-width: 820px;
+        margin: 16px 0;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/publishing"] th,
+      body[data-page="arc-k-sync/publishing"] td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-k-sync/publishing"] th {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--cs-border-strong);
+      }
+      body[data-page="arc-k-sync/publishing"] details {
+        max-width: 820px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/publishing"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/publishing"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/publishing"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/publishing"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/publishing">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Publishing team context to GitHub publish set" id="hero">
+        <h1>Publishing — getting context to GitHub</h1>
+        <p class="lede">
+          Publishing has two halves. A workspace edit goes to <strong>team content</strong> on this
+          Mac (Publish, or <code>reverse_sync_worktree</code>). Team content goes to
+          <strong>GitHub</strong> when an agent commits and pushes the context repo. CodeSense does
+          the first and shows you the second; it never commits or pushes itself.
+        </p>
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 820 230"
+            role="img"
+            aria-label="The publish set at left goes to an agent in the middle, which commits and pushes it to the remote."
+          >
+            <title>Publishing — an agent commits and pushes</title>
+            <desc>
+              Left: a stack labelled "publish set" with four items. Middle: an agent chip.
+              Right: the remote, origin/main.
+            </desc>
+            <style>
+              .pb-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .pb-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .pb-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .pb-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .pb-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .pb-dash {
+                stroke-dasharray: 4 4;
+              }
+              .pb-pill {
+                fill: color-mix(in oklab, var(--cs-accent, #7aa2ff) 55%, transparent);
+              }
+            </style>
+            <defs>
+              <marker
+                id="pb-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Left: publish set -->
+            <g transform="translate(40 40)">
+              <rect class="pb-ins" width="220" height="150" rx="10" />
+              <text class="pb-mut" x="110" y="20" text-anchor="middle">publish set · 4 items</text>
+              <rect class="pb-pill" x="14" y="36" width="192" height="22" rx="4" />
+              <text class="pb-txt" x="20" y="51">stories/DEMO-1.md</text>
+              <rect class="pb-pill" x="14" y="66" width="192" height="22" rx="4" />
+              <text class="pb-txt" x="20" y="81">routines/review-nightly.yml</text>
+              <rect class="pb-pill" x="14" y="96" width="192" height="22" rx="4" />
+              <text class="pb-txt" x="20" y="111">agents/reviewer/AGENT.yaml</text>
+              <rect class="pb-pill" x="14" y="126" width="192" height="22" rx="4" />
+              <text class="pb-txt" x="20" y="141">retros/DEMO-retro.md</text>
+            </g>
+
+            <!-- Middle chip -->
+            <g transform="translate(310 90)">
+              <rect class="pb-surf" width="180" height="60" rx="12" />
+              <text class="pb-txt" x="90" y="26" text-anchor="middle">an agent</text>
+              <text class="pb-mut" x="90" y="44" text-anchor="middle">git commit · git push</text>
+            </g>
+            <path class="pb-acc" d="M262 120 L308 120" marker-end="url(#pb-arrow)" />
+
+            <!-- Remote + pointer -->
+            <g transform="translate(540 60)">
+              <ellipse class="pb-ins" cx="100" cy="60" rx="90" ry="40" />
+              <text class="pb-mut" x="100" y="50" text-anchor="middle">origin/main</text>
+                          </g>
+            <path class="pb-acc" d="M492 120 L556 110" marker-end="url(#pb-arrow)" />
+
+          </svg>
+          <figcaption id="hero-cap">
+            Publish set · an agent commits and pushes · CodeSense shows the result
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="What publishing means" id="what">
+        <h2>What publishing means</h2>
+        <ol>
+          <li>
+            <strong>Workspace → team content.</strong> An agent's edit in its worktree reaches
+            the team's content on this Mac with <code>preview_reverse_sync_worktree</code> then
+            <code>reverse_sync_worktree</code>. Edits waiting in workspaces show as the scope row's
+            <strong>N unsaved</strong> counter, with <strong>Publish</strong> and
+            <strong>Discard</strong> for each. Nothing is committed.
+          </li>
+          <li>
+            <strong>Team content → GitHub.</strong> You ask an agent ("commit and push the team
+            context"). It reads the publish set with <code>get_publish_set</code>, runs
+            <code>git</code> itself, and calls <code>report_context_sync</code> so the status
+            button shows how it went.
+          </li>
+        </ol>
+        <p>
+          The agent decides the commit message, the branch and whether to open a pull request,
+          the same way it would for source code. You can tell it how you want that done, or write
+          your own skill under <code>.claude/skills/</code>.
+        </p>
+      </section>
+
+      <section data-search="Publish set and the baseline" id="publish-set">
+        <h2>The publish set vs workspace edits</h2>
+        <p>
+          These two lists look similar; they aren't the same thing. Reading them side by side is
+          often the fastest way to see where you are:
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>List</th>
+              <th>Baseline</th>
+              <th>Scope</th>
+              <th>What clears it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Workspace edits (<code>preview_reverse_sync_worktree</code>, <strong>N unsaved</strong>)</td>
+              <td>Team content</td>
+              <td>Worktree</td>
+              <td><code>reverse_sync_worktree</code>, <strong>Publish</strong> or <strong>Discard</strong></td>
+            </tr>
+            <tr>
+              <td>Publish set (<code>get_publish_set</code>, the status button's ↑ count)</td>
+              <td><code>origin/main</code></td>
+              <td>Context repo</td>
+              <td>An agent commits and pushes</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          An empty <code>preview_reverse_sync_worktree</code> means your worktree's edits are in
+          team content. An empty publish set means the context repo matches GitHub. You're fully
+          in step only when both are empty.
+        </p>
+      </section>
+
+      <section data-search="A worked publish moment" id="worked">
+        <h2>A worked moment</h2>
+        <p>
+          You finished DEMO-1. <code>preview_reverse_sync_worktree</code> comes back empty; the
+          status button shows <strong>↑4</strong>.
+        </p>
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>Look first.</strong> Click the status button. The Changes view lists the four
+            files, each opening as a redline against the last pushed version.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>Ask an agent.</strong> "Commit and push the team context, one commit for
+            DEMO-1." The agent calls <code>get_publish_set</code>, writes the commit and pushes.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>It reports.</strong> The agent calls <code>report_context_sync</code> with
+            <code>state: 'ok'</code>. The ↑ count goes back to zero and the button reads
+            <strong>synced</strong>.
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Local vs remote publishing" id="local-vs-remote">
+        <h2>Local vs remote</h2>
+        <p>
+          The push runs wherever the context repo's clone is, usually your Mac. An agent on a
+          remote machine sends its workspace's edits back with <code>reverse_sync_worktree</code>,
+          which writes team content on this Mac; an agent here then commits and pushes. See also
+          <a href="../arc-h-pipelines-and-sdlc/13-ship.html">Arc H · 13 Ship</a>.
+        </p>
+      </section>
+
+      <section data-search="Publishing via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <pre><code>// What GitHub doesn't have yet. Read-only.
+get_publish_set {}
+// Then run git yourself: git add, git commit, git push.
+// Tell the status button how it went.
+report_context_sync { state: 'ok' }</code></pre>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/get_publish_set">get_publish_set</a>
+        ·
+        <a href="../mcp-explorer.html#tool/report_context_sync">report_context_sync</a>
+        ·
+        <a href="./index.html">← back to Arc K overview</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Publishing</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

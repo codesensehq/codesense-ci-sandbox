@@ -1,0 +1,112 @@
+# `allow-unpaired.yml` — intentional one-sided entries in the
+# UI ↔ MCP cross-reference. Owned by `scripts/generate-ui-mcp-crossref.mjs`.
+#
+# A command/tool listed here is still surfaced in the dashboard (under the
+# "UI-only" or "MCP-only" tab); its rationale explains WHY no mirror exists.
+# Entries not listed here show up as "unacknowledged" in the dashboard, which
+# flags them for a maintainer sweep but does not fail the build on its own.
+#
+# `ui_only` — Tauri commands that cannot or should not have an MCP mirror.
+#   Common reasons:
+#     * They implement a UI-side primitive (menu rebuild, window state) that
+#       is meaningless over an MCP transport.
+#     * They write app-local state (preferences, cached indices) that no
+#       agent should toggle.
+#
+# `mcp_only` — MCP tools that cannot or should not have a Tauri mirror.
+#   Common reasons:
+#     * They are agent-oriented meta-tools (progressive discovery of the
+#       other tools) with no UI surface.
+#     * They mirror UI actions that are implemented via a different seam
+#       (direct struct call, event dispatch) rather than a Tauri command.
+#
+# Start small — this seed covers the obvious cases. Future stories append.
+
+ui_only:
+  - name: spend_cap_set
+    rationale: >-
+      Native-only human Save writes and accepts the cap; MCP edits remain pending
+      when they loosen a cap. Embedded pages cannot call this command.
+
+  - name: spend_cap_accept
+    rationale: >-
+      Only a person in the native app can loosen the local accepted spend cap.
+      MCP and embedded pages may request a raise but cannot accept it.
+  - name: spend_rate_accept
+    rationale: >-
+      Only a person in the native app can apply a pending rate reduction or
+      price an unpriced model. Exposing acceptance to MCP defeats spend caps.
+  - name: rebuild_menu
+    rationale: >-
+      Rebuilds the macOS native menu bar after the active team changes. A
+      process-local UI primitive; nothing an MCP agent could usefully drive.
+
+  - name: save_app_state
+    rationale: >-
+      Persists the window-shaped frontend state blob (open tabs, split
+      sizes, focused pane) to disk. Pure UI housekeeping; agents never read
+      or write this blob.
+
+  - name: load_app_state
+    rationale: >-
+      Companion to save_app_state. The restore path is UI-only and runs
+      exactly once at startup.
+
+  - name: renderer_heartbeat
+    rationale: >-
+      Webview liveness ack: the FE pings the host every N seconds
+      so the renderer watchdog can detect a frozen webview. Not a user
+      action; an MCP mirror would be nonsensical.
+
+  - name: push_viewer_state
+    rationale: >-
+      The FE push half of the viewer-state subscription — the complement
+      of the MCP read/subscribe tools (get_viewer_state, set_viewer_state).
+      Agents stay on the MCP side of the seam.
+
+  - name: license_state
+    rationale: >-
+      Beta channels only. Reads this Mac's update state (the staged build and
+      whether it can be installed) for the Settings screen. Not an agent action.
+
+  - name: license_check_now
+    rationale: >-
+      Beta channels only. The Settings "check now" button for the update
+      check. Not an agent action.
+
+mcp_only:
+  - name: codesense_overview
+    rationale: >-
+      Progressive-discovery meta-tool: the agent's first call that returns
+      the shape of the setup, the active team, and pointers at other tools.
+      No UI equivalent — the UI is the overview.
+
+  - name: codesense_search_tools
+    rationale: >-
+      Meta-tool: searches the MCP tool catalog. The UI equivalent is the
+      Command palette (⌘K), which is a frontend widget, not a Tauri command.
+
+  - name: codesense_get_tool_schema
+    rationale: >-
+      Meta-tool: returns the args schema for a named MCP tool. UI surface
+      is the mcp-explorer dashboard, which reads the shipped
+      generated/mcp-tools.json manifest, not a live Tauri command.
+
+  - name: codesense_call_tool
+    rationale: >-
+      Meta-tool: invokes a named tool with validated args — the "runtime
+      bridge" over the whole catalog. No standalone UI; every tool a user
+      can invoke has its own concrete UI affordance.
+
+  - name: health_ping
+    rationale: >-
+      Liveness probe for the MCP transport itself. The UI equivalent is
+      process liveness (window still responsive); not reachable via a
+      Tauri command.
+
+  - name: get_live_data_contract
+    rationale: >-
+      Returns the live-data contract document agents need to understand
+      the kit primitives / bridge verbs. The UI equivalent is the shipped
+      primitives explorer which reads a generated manifest, not
+      a Tauri command.

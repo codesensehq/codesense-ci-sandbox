@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Slots and pane shapes</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/pane-shapes">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Slots and pane shapes">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Slots and pane shapes</h1>
+        <p class="lede">
+          Choose a right pane or the dock, then adapt to the slot context. The host owns the
+          surrounding chrome; your HTML owns its content.
+        </p>
+      </section>
+      <section id="slots" data-search="Two slots">
+        <h2>Two slots</h2>
+        <p>
+          The <strong>right-pane</strong> holds several panels beside the current surface. The
+          <strong>dock</strong> holds one dashboard in the Agents area. Both can appear docked or as
+          an overlay. Declare supported slots in HTML; the
+          <a href="../generated/slots.md">generated slot contract</a> names their current widths,
+          grant ceilings and host responsibilities.
+        </p>
+        <pre><code>&lt;meta name=&quot;codesense:slots&quot; content=&quot;right-pane dock&quot;&gt;
+&lt;meta name=&quot;codesense:capabilities&quot; content=&quot;sessions:read&quot;&gt;</code></pre>
+        <p>
+          <code>pane_write</code> creates a custom pane; <code>pane_open</code> reveals its
+          right-pane panel. Choosing a dock replacement currently requires the person's Settings. A
+          centre HTML tab and a rich inbox message are other rendering routes, not slot ids.
+          Historical baseline views have no live bridge.
+        </p>
+        <p>
+          <code>codesense.setBadge({ count: 3 })</code> publishes a pane badge;
+          <code>setBadge(null)</code> clears it. The closed right-pane edge shows the
+          last known count for default paused panes. Refresh and publish again when shown.
+          <strong>Architecture:</strong> to keep a badge fresh while hidden, declare
+          <code>&lt;meta name="codesense:badge" content="live"&gt;</code> and update only
+          the count in hidden callbacks. <strong>Policy:</strong> the built-in Inbox opts
+          in; other panes default off. Delivery is coalesced every 2 seconds for at most
+          4 hidden frames. See <a href="reacting-to-state.html#live-badge">live badges</a>
+          for the cost and Inbox example.
+        </p>
+      </section>
+      <section id="pane-manifest" data-search="Pane manifest">
+        <h2>Pane manifest</h2>
+        <p>Declare slots, surface, capabilities and commands in the pane's HTML head.
+          The <a href="../generated/pane-declarations.md">generated pane declaration reference</a>
+          lists every field; the <a href="../generated/slots.md">slot contract</a> lists supported slots.</p>
+      </section>
+      <section id="context" data-search="Read slot context">
+        <h2>Read slot context</h2>
+        <pre><code>const cs = window.codesense;
+cs.onSlotContext(context =&gt; {
+  document.body.dataset.narrow = String(context.narrow);
+  document.body.dataset.presentation = context.presentation;
+  const team = context.team; // {org, team} or null
+  // context.slotId is &quot;right-pane&quot; or &quot;dock&quot; in these slots.
+});
+cs.ready();</code></pre>
+        <p>
+          Every pane must call <code>ready()</code> once its first useful state is painted, or the
+          host reports that it didn't finish starting within 30 seconds; see
+          <a href="lifecycle-and-liveness.html">Lifecycle and liveness</a>.
+          Register <code>onSlotContext</code> before <code>ready()</code>. The host sends context
+          after readiness and again when width, presentation, selection or team changes. Use
+          <code>context.narrow</code> to hide secondary detail, wrap long labels and keep keyboard
+          targets usable; avoid a fixed page width. Read current fields in the
+          <a href="../generated/codesense.d.ts">SDK typings</a>.
+        </p>
+      </section>
+      <section id="team-binding" data-search="Team binding">
+        <h2>Team binding</h2>
+        <p>
+          A right pane keeps its team binding. The dock follows the active context: the host rebinds
+          its grant and the SDK resyncs subscribed topics when the team changes. Read the new
+          <code>context.team</code> for the binding and the snapshot's <code>viewKey</code> for the
+          data scope. Clear cached rows when that view changes. Under the Open policy the
+          <code>all</code> view can stay unchanged across team switches. LiveHub subscriptions
+          carry the permitted view, so do not poll or invent a team filter to bypass it.
+        </p>
+        <p>
+          Theme tokens arrive through the host. Use
+          <a href="../generated/tokens.md">the generated tokens</a> with standalone fallbacks, and
+          let the host own section headers, resize, drag and maximize controls.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a> ·
+        <a href="./getting-data-into-a-dashboard.html">Getting data into a dashboard</a>
+      </p>
+      <section id="file-nav">
+        <h2>File navigation panes</h2>
+        <p>A pane can declare <code>&lt;meta name="codesense:slots" content="file-nav"&gt;</code>
+          and <code>files:read</code> (plus <code>files:write</code> for mutations).
+          The file-nav slot has one body, follows the active team, and leaves width, resize
+          and collapse to the host. The native file list remains the default. When a compatible
+          pane is listed, Settings › General › “Use the classic file list” selects it.</p>
+        <p>Use <code>files.list</code> for a one-off read and <code>subscribe('files')</code> for
+          live rows. Subscribe once per directory or scope, keep the returned revision,
+          and render the current snapshot on change. The host feeds this from its existing
+          file watcher. Never poll, add a watcher, or refresh the whole pane after every delta.</p>
+        <pre><code>&lt;meta name="codesense:slots" content="file-nav"&gt;
+&lt;meta name="codesense:capabilities" content="files:read"&gt;
+&lt;ul id="files"&gt;&lt;/ul&gt;
+&lt;script type="module"&gt;
+const options = { scope: 'team', window: [0, 200] };
+function render(rows) {
+  document.querySelector('#files').replaceChildren(...rows.map(row =&gt; {
+    const item = document.createElement('li');
+    item.textContent = row.name;
+    return item;
+  }));
+}
+const first = await codesense.files.list({ scope: 'team' });
+render(first.rows);
+await codesense.subscribe('files', {
+  ...options, onChange: snapshot =&gt; render(snapshot.snapshot)
+});
+codesense.ready();
+&lt;/script&gt;</code></pre>
+        <p>Rows have <code>id</code>, <code>path</code>, <code>name</code> and
+          <code>kind: dir|file|story|epic</code>, with file size and mtime where available.
+          Pass <code>dir</code> to list a folder, <code>scope: 'private'</code> for your private space,
+          <code>scope: 'story', storyId</code> for the default hydration closure, or
+          <code>scope: 'agent', agentId</code> for an agent's full key and context want set.
+          Reads currently exclude parent-team content. A missing or denied path has the same
+          “File not found” result. A rename arrives as one remove and one upsert.</p>
+        <p>Views start with at most 200 rows; request more with
+          <code>codesense.page('files', snapshot.cursor, options)</code>. Stop with
+          <code>codesense.unsubscribe('files', callback, options)</code>.
+          <code>files.read({path,maxBytes?})</code> returns
+          <code>{text?,bytesUrl?,size,truncated,sha256}</code>; text is capped at 1.5 MB,
+          and a relative <code>/viewer/…</code> URL streams large or binary files in the frame.
+          Mutations are <code>files.create({path,content?,onCollision:'keep-both'|'fail'})</code>,
+          <code>files.move({from,to})</code> and <code>files.delete({path})</code>, using the
+          same Rust operations and results as their MCP twins.</p>
+        <p>Subscribe to <code>ui:file-nav</code> for the active team's
+          <code>{expanded,selected?,scope?}</code>. Save folder changes with
+          <code>codesense.setUiState('ui:file-nav', {expanded: paths})</code>.
+          The native file list and pane use one expansion store, so switching between them
+          keeps your place. This state belongs to each team; the pane choice belongs to the org profile.</p>
+
+        <h3>Native navigation model</h3>
+        <p><code>stories</code> is a windowed, team-wide topic. Its grant-derived
+          <code>team:</code> view includes story, epic, doc and main-doc rows, keyed by path.
+          Stories carry <code>storyId, title, status, role, label, ready, blockedBy,
+          dependencyCount, mark, sprint, metadataValid, metadataInvalidReason</code>.
+          <code>lensRole</code> preserves the native lens normalization separately from
+          the rail’s raw taxonomy role, including off-taxonomy statuses.
+          Titles are declared titles without a repeated id; absent values are null.
+          Epics carry recursive <code>total</code> and <code>done</code> counts and a rolled-up mark.
+          Docs and main docs carry <code>ownerPath</code>, so list order can match native.</p>
+        <p>The existing full-team scan and watcher feed the native graph, taxonomy,
+          marks and counts. Rust LiveHub delivers snapshots and deltas; do not poll.
+          <code>files</code> rows additionally carry <code>starterPage, mergeMarked,
+          shadows, overrides, installedSourceRepo, repoGlyph, repoTint</code>.
+          Installed groups retain their native <code>installed://</code> paths.</p>
+        <p><code>ui:file-nav</code> mirrors the native lens: <code>source</code>
+          (<code>{kind:'clone'|'private'}</code> or <code>{kind:'worktree',id}</code>),
+          <code>view</code> (files, changes, history), <code>lens</code> (everything, needs,
+          agents, ready, active, review, blocked, not_started, done), <code>arrange</code>
+          (folders, stage), <code>storiesOnly</code>, <code>doneOpen</code> and
+          <code>historyBranches</code>. The native viewer store owns these fields;
+          dashboard writes use its setter. Selection and expansion remain shared.</p>
+        <pre><code>const cs = window.codesense;
+const first = await cs.subscribe('stories', {
+  window: [0, 200], onChange: renderStories
+});
+// Use first.cursor with cs.page('stories', first.cursor) to load more.
+await cs.setUiState('ui:file-nav', {lens: 'ready', arrange: 'stage'});
+const rail = cs.kit.stageRail('not_started', true);
+const mark = cs.kit.statusMark('question');
+const file = cs.kit.fileKindIcon('dashboard');
+const picked = await cs.showMenu({anchorRect, items: [
+  {id: 'ready', label: 'Ready to start', count: 12, radioGroup: 'lens',
+   checked: true, icon: {kind: 'stageRail', role: 'not_started', ready: true}},
+  {id: 'needs', label: 'Needs you', count: 2, radioGroup: 'lens',
+   checked: false, icon: {kind: 'statusMark', mark: 'question'}},
+  {id: 'arrange', label: 'Arrange', segmented: [
+    {id: 'folders', label: 'Folders', checked: true},
+    {id: 'stage', label: 'Stage'}
+  ]}
+]});</code></pre>
+        <p>The kit's rail (18×14), mark (7×7) and file icon (14×14) are generated
+          from native renders. They include native animation, reduced-motion and ink classes,
+          <code>--cs-status-needs</code>, rail fill/empty tokens and
+          <code>--cs-sidebar-selected-text</code>. Menu icons accept a kit icon name or
+          a native glyph descriptor. Radio and segmented selections return the chosen
+          item's id through the ordinary menu result.</p>
+
+        <h3>Native menus, story opens and glyph options</h3>
+        <p>A file-nav pane can hand its View, Show stories and Arrange controls, a story's
+          status picker and the new-file dialog to the app instead of redrawing them. Pass
+          <code>type: 'native'</code> with <code>nativeSurface: 'nav-filter'</code>, or
+          <code>'nav-status'</code> with <code>row.path</code> naming the story. Run the
+          new-file dialog directly with <code>builtinAction: 'builtin:new-file'</code>; it opens at
+          the content root. Open a story's workspace with <code>openWorkspace</code> and
+          <code>target: {kind: 'story', path}</code>. That path form opens the visible workspace,
+          needs the <code>launch</code> grant and rejects <code>headed: false</code> before doing
+          anything; use <code>storyId</code> for a background open.</p>
+        <pre><code>const cs = window.codesense;
+filterButton.append(cs.kit.navGlyph('grouped'));
+filterButton.onclick = () =&gt; cs.showMenu({
+  type: 'native', nativeSurface: 'nav-filter',
+  anchorRect: filterButton.getBoundingClientRect()
+});
+statusDot.replaceChildren(cs.kit.statusMark('question', {size: 8, still: true}));
+statusDot.onclick = () =&gt; cs.showMenu({
+  type: 'native', nativeSurface: 'nav-status', row: {path: story.path},
+  anchorRect: statusDot.getBoundingClientRect()
+});
+newFileButton.onclick = () =&gt; cs.showMenu({
+  builtinAction: 'builtin:new-file',
+  anchorRect: newFileButton.getBoundingClientRect()
+});
+openButton.onclick = () =&gt; cs.openWorkspace({target: {kind: 'story', path: story.path}});</code></pre>
+        <p><code>kit.navGlyph</code> takes <code>changes</code>, <code>history</code> or
+          <code>grouped</code>. <code>kit.statusMark</code> takes <code>{size: 6|7|8, still}</code>;
+          a menu item's <code>{kind: 'statusMark'}</code> icon accepts the same options
+          (6 or 8). <code>still</code> drops the native motion.</p>
+      </section>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="codesense:capabilities" content="sessions:read accounts:manage context:read repo:read launch"><title>Story trail</title><style>
+/* SPDX-License-Identifier: MIT */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--cs-bg);accent-color:var(--cs-accent);scrollbar-color:var(--cs-border-control) transparent}
+body{margin:0;padding:12px var(--cs-space-5);font:var(--cs-text-base)/var(--cs-leading) var(--cs-font-sans);color:var(--cs-fg);background:var(--cs-bg);font-variant-numeric:tabular-nums}
+::selection{background:color-mix(in srgb,var(--cs-accent) 30%,transparent);color:var(--cs-fg)}
+/* Tree, text links and unboxed sort controls need a ring outside the kit controls. */
+:where(:not(.cs-btn):not(.cs-input):not(.cs-tab)):focus-visible{outline:2px solid var(--cs-focus-ring);outline-offset:2px}
+a{color:var(--cs-link);text-underline-offset:2px}
+h1{margin:0;font-size:var(--cs-text-xl);font-weight:600;line-height:1.3;text-wrap:balance}
+h2{margin:0 0 4px;font-size:var(--cs-text-lg);font-weight:600}
+h3{font-size:var(--cs-text-sm)}
+p{margin:4px 0 8px}.grow{flex:1;min-width:0}.muted,.sub{color:var(--cs-muted-fg)}
+.mono,.basis{font-family:var(--cs-font-mono)}.basis{font-size:var(--cs-text-xs);color:var(--cs-muted-fg)}
+.hd{display:flex;align-items:flex-start;gap:var(--cs-space-4);padding-bottom:var(--cs-space-2)}
+.intro{margin:2px 0 0;font-size:var(--cs-text-sm)}.meta{font-size:var(--cs-text-sm);color:var(--cs-muted-fg);margin-top:2px}
+.src{font-size:var(--cs-text-xs);color:var(--cs-muted-fg);text-align:right;white-space:nowrap}
+.sec{margin-bottom:var(--cs-space-4)}.sh{display:flex;align-items:baseline;gap:var(--cs-space-2);margin-bottom:4px}
+.tot{display:grid;grid-template-columns:1fr 1.6fr 1.4fr;border-block:1px solid var(--cs-border);margin:0 0 var(--cs-space-2)}
+.tot>div{padding:4px var(--cs-space-3);min-width:0;border-left:1px solid var(--cs-border)}
+.tot>div:nth-child(3n+1){border-left:0;padding-left:0}.tot>div:nth-child(-n+3){border-bottom:1px solid var(--cs-border)}
+.tot dt{font-size:var(--cs-text-xs);color:var(--cs-muted-fg)}.tot dd{margin:0;font-size:var(--cs-text-base);font-weight:600}
+.tot small{font-weight:400;color:var(--cs-muted-fg);font-size:var(--cs-text-xs)}
+.key{font-size:var(--cs-text-xs);color:var(--cs-muted-fg)}
+/* The approved dense table uses fixed columns, title-case headings and top-aligned wrapped facts. */
+.table-wrap{overflow:auto}.cs-app table.t{table-layout:fixed;min-width:960px}
+.cs-app .t th{padding:4px var(--cs-space-2);border-bottom-color:var(--cs-border-control);text-transform:none;letter-spacing:normal;white-space:normal}
+.cs-app .t td{padding:6px var(--cs-space-2);vertical-align:top;overflow-wrap:anywhere;line-height:1.35}
+/* Keep the approved closing rule beneath the last session. */
+.cs-app .t tr:last-child td{border-bottom:1px solid var(--cs-border)}
+.sessions{min-width:1150px}.sessions th:first-child{width:9%}.sessions th:nth-child(2){width:15%}.sessions th:nth-child(3){width:13%}.sessions th:nth-child(4){width:16%}.sessions th:nth-child(5){width:12%}.sessions th:nth-child(6){width:11%}.sessions th:nth-child(7){width:14%}.sessions th:nth-child(8){width:7%}.sessions th:last-child{width:5%}
+.t tr.sel td{background:color-mix(in srgb,var(--cs-accent) 9%,transparent)}.t tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--cs-accent)}
+.rowsel{cursor:pointer}
+.sub{display:block;font-size:var(--cs-text-xs);margin-top:2px}.det{color:var(--cs-muted-fg);text-align:right}
+.disc{font:inherit;font-weight:600;background:none;border:0;padding:0;color:var(--cs-link);text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left}
+.rate-link{font-size:var(--cs-text-xs);font-weight:400;display:block;margin-top:2px}
+.sortb{font:inherit;font-size:var(--cs-text-xs);font-weight:600;color:inherit;background:none;border:0;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.sort-icon{width:12px;height:12px;stroke:currentColor;stroke-width:1.2;fill:none}.sortb:hover,th[aria-sort] .sortb{color:var(--cs-fg)}
+/* Trail buttons use the approved transparent surface and stronger control border. */
+.cs-app .cs-btn{text-decoration:none}
+.cs-app .cs-btn:where(:not(.is-primary)){border-color:var(--cs-border-control)}
+.cs-app .cs-btn:where(:not(.is-primary)):not(:hover){background:transparent}
+/* aria-disabled keeps pending controls focusable while the read completes. */
+.cs-app .cs-btn[aria-disabled=true]{cursor:wait}
+.span-title{margin:0 0 3px;font-size:var(--cs-text-xs);color:var(--cs-muted-fg);font-weight:400}
+.span{display:grid;grid-template-columns:214px minmax(0,1fr);margin:0 0 6px;font-size:var(--cs-text-xs)}
+.rl{height:16px;line-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk{position:relative;height:16px;background:linear-gradient(to right,var(--cs-border) 1px,transparent 1px) 0 0/25% 100%;border-right:1px solid var(--cs-border)}
+.trk b{position:absolute;top:3px;height:10px;min-width:1px;border:1px solid var(--cs-border-control);background:color-mix(in srgb,var(--cs-fg) 16%,var(--cs-surface));border-radius:2px}.trk b.nl{border-style:dashed}
+.axis{display:flex;justify-content:space-between;height:16px;color:var(--cs-muted-fg)}
+.note{padding:var(--cs-space-3);border:1px solid var(--cs-border-control);border-radius:var(--cs-radius);background:var(--cs-surface);font-size:var(--cs-text-sm)}
+.fail{display:flex;align-items:center;gap:var(--cs-space-2);padding:6px var(--cs-space-2);border:1px solid var(--cs-danger);border-radius:var(--cs-radius);font-size:var(--cs-text-sm);margin-bottom:var(--cs-space-3)}.fail b{color:var(--cs-danger)}
+#drill-panel[hidden]{display:none}#drill-panel{position:fixed;inset:0 0 0 auto;width:min(580px,100%);background:var(--cs-bg);border-left:1px solid var(--cs-border-control);box-shadow:var(--cs-shadow);padding:52px var(--cs-space-5) var(--cs-space-4);overflow:auto}
+.pclose{position:absolute;top:10px;right:20px}
+#rate-form{display:flex;flex-wrap:wrap;align-items:end;gap:var(--cs-space-3)}#rate-form h2{flex-basis:100%}label{display:flex;flex-direction:column;gap:4px}
+/* The rate editor keeps the approved control border and accent caret. */
+.cs-app .cs-input{border-color:var(--cs-border-control);caret-color:var(--cs-accent)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){body{padding:12px}.hd{flex-wrap:wrap}.src{text-align:left}.tot{grid-template-columns:1fr 1fr}.tot>div{border:0!important;padding:4px!important}.span{grid-template-columns:130px minmax(0,1fr)}}
+.treewrap{overflow:auto}.treewrap>.tr,.tree{min-width:1100px}.tree,.tree ul{list-style:none;padding:0;margin:0}.tr{display:grid;grid-template-columns:minmax(240px,1.5fr) 120px 145px 165px 160px 170px minmax(130px,1fr);gap:8px;padding:5px 8px;border-bottom:1px solid var(--cs-border);font-size:var(--cs-text-sm);line-height:1.35}.tr>div{min-width:0;overflow-wrap:anywhere}.tr.thd{font-size:var(--cs-text-xs);font-weight:600;color:var(--cs-muted-fg);border-bottom-color:var(--cs-border-control)}.tg{display:flex;gap:4px;padding-left:calc(var(--lv,0)*16px)}.tog{width:14px;flex:none}.tog svg{width:12px;height:12px;stroke:currentColor;stroke-width:1.3;fill:none;transition:transform .12s}[role=treeitem][aria-expanded=true]>.tr .tog svg{transform:rotate(90deg)}[role=treeitem]:focus-visible{outline-offset:-2px}[role=treeitem]:hover>.tr{background:var(--cs-hover)}
+.gt{display:flex;gap:10px;font-size:var(--cs-text-xs)}.gt button{font:inherit;color:var(--cs-muted-fg);background:none;border:0;padding:3px 0;cursor:pointer}.gt [aria-pressed=true]{color:var(--cs-fg);font-weight:600;text-decoration:underline;text-underline-offset:3px}.cs-app .t .grp th{padding-top:9px;font-weight:600;color:var(--cs-fg);background:var(--cs-surface)}.grp .muted{font-weight:400}.cs-app .t .via td{color:var(--cs-muted-fg);font-size:var(--cs-text-xs);padding-left:22px}
+@media(prefers-reduced-motion:reduce){.tog svg{transition:none}}
+.panel-head{padding-right:65px}.panel-head .is-primary{margin-top:var(--cs-space-2)}#drill-panel h3{margin:var(--cs-space-3) 0 4px;font-size:var(--cs-text-sm)}
+.facts-grid{display:grid;grid-template-columns:80px 1fr 80px 1fr;gap:4px var(--cs-space-3);font-size:var(--cs-text-sm)}.facts-grid dt{color:var(--cs-muted-fg)}.facts-grid dd{margin:0}
+/* The approved session panel fits its facts tables inside the narrow drawer. */
+.cs-app table.t.model-facts{min-width:0;table-layout:auto}.excerpt{border:1px solid var(--cs-border);border-radius:var(--cs-radius);font-size:var(--cs-text-sm)}.excerpt>div{display:grid;grid-template-columns:64px minmax(0,1fr);gap:var(--cs-space-2);padding:6px var(--cs-space-2);border-bottom:1px solid var(--cs-border)}.excerpt>div:last-child{border-bottom:0}.excerpt .disc{font-size:var(--cs-text-xs)}
+.conversation-view{height:calc(100vh - 24px);display:flex;flex-direction:column;min-height:0}.conversation-head{border-bottom:1px solid var(--cs-border);padding-bottom:var(--cs-space-2)}.conversation-head p{font-size:var(--cs-text-sm)}.conversation-title{display:flex;align-items:flex-start;gap:var(--cs-space-3)}.conversation-body{flex:1;min-height:0;display:grid;grid-template-columns:150px minmax(0,1fr)}
+.turn-rail{border-right:1px solid var(--cs-border);overflow:auto;padding-top:6px}.turn-rail ol{list-style:none;margin:0;padding:0}.turn-rail a{display:flex;gap:8px;padding:3px 8px;font:var(--cs-text-xs) var(--cs-font-mono);text-decoration:none;color:var(--cs-muted-fg)}.turn-rail a span{font-family:var(--cs-font-sans)}.turn-rail a:hover{background:var(--cs-hover)}.turn-rail [aria-current=true]{color:var(--cs-fg);background:color-mix(in srgb,var(--cs-accent) 9%,transparent);box-shadow:inset 2px 0 0 var(--cs-accent)}
+.thread{overflow:auto;padding:var(--cs-space-2) var(--cs-space-4)}.turns-inner{max-width:800px;margin:0 auto}.turn{padding:8px 12px;border-left:3px solid transparent;margin-bottom:4px}.turn.highlight{border-left-color:var(--cs-accent);background:color-mix(in srgb,var(--cs-accent) 7%,var(--cs-bg))}.turn-head{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:var(--cs-text-sm)}.turn-head>span{font-size:var(--cs-text-xs)}.turn-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0;font-size:var(--cs-text-base);line-height:1.45}.request .turn-text{background:var(--cs-surface);border:1px solid var(--cs-border);border-radius:var(--cs-radius);padding:5px 10px}.origin-note{font-size:var(--cs-text-xs);color:var(--cs-muted-fg);display:flex;justify-content:space-between;gap:var(--cs-space-2);align-items:center}
+.tool{border:1px solid var(--cs-border);border-radius:var(--cs-radius);margin:4px 0;background:var(--cs-bg)}.tool summary{cursor:pointer;padding:4px 8px;display:flex;gap:8px;align-items:center;font-size:var(--cs-text-sm)}.tool summary:before{content:'+';color:var(--cs-muted-fg)}.tool[open] summary:before{content:'−'}.tool-input{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:var(--cs-text-xs) var(--cs-font-mono);color:var(--cs-muted-fg)}.tool-status{font-size:var(--cs-text-xs)}.tool-status.failed{color:var(--cs-danger);font-weight:600}.tool-output{margin:0;padding:6px 10px;max-height:350px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--cs-border);font:var(--cs-text-xs)/1.5 var(--cs-font-mono);background:var(--cs-inset)}
+.edit-chip{display:inline-block;border:1px solid var(--cs-border-control);border-radius:var(--cs-radius);padding:2px 8px;margin:2px 6px 2px 0;font-size:var(--cs-text-xs)}.rd{display:inline-block;padding:0 5px;border:1px dashed var(--cs-border-control);border-radius:var(--cs-radius-full);background:var(--cs-hover);color:var(--cs-fg);font:var(--cs-text-xs) var(--cs-font-mono)}.live{font-size:var(--cs-text-xs);font-weight:600;color:var(--cs-fg)}
+@media(max-width:700px){.conversation-body{grid-template-columns:95px minmax(0,1fr)}.thread{padding:8px}.conversation-title{flex-wrap:wrap}.turn{padding-inline:6px}.facts-grid{grid-template-columns:70px 1fr}}
+
+.treewrap,.table-wrap{padding-bottom:var(--cs-space-4)}
+
+.conversation-page{display:flex;flex-direction:column;flex:1;min-height:0}.facts-grid>div{display:contents}
+
+.changes-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--cs-space-5)}.changes-grid>section{min-width:0}.changes-grid h3{font-size:var(--cs-text-sm);margin:var(--cs-space-3) 0 var(--cs-space-1)}.change-pr{margin:var(--cs-space-2) 0;font-size:var(--cs-text-sm)}[data-untouched] ul{padding-left:18px;font-size:var(--cs-text-xs);overflow-wrap:anywhere}.commit-list{list-style:none;margin:0;padding:0}.commit-list>li{padding:var(--cs-space-2) 0;border-bottom:1px solid var(--cs-border);font-size:var(--cs-text-sm)}.commit-list .muted,.commit-list .disc{font-size:var(--cs-text-xs)}.commit-list .disc+.disc{margin-left:var(--cs-space-2)}.commit-paging{margin-top:var(--cs-space-3)}
+@media(max-width:900px){.changes-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* The approved two-column contribution area fits its file table within its own section. */
+.cs-app table.t.changed-files{min-width:0}
+/* Who changed these lines: the 2a/2b panel content inside the shared drawer. */
+.lines-form{display:flex;flex-wrap:wrap;align-items:end;gap:var(--cs-space-3);margin:var(--cs-space-3) 0}.lines-form .cs-input{width:9ch}.lines-diff{display:flex;align-items:center;gap:var(--cs-space-2);margin-bottom:var(--cs-space-3)}.lines-diff>[hidden]{display:none}
+.own{border:1px solid var(--cs-border);border-radius:var(--cs-radius);margin-top:var(--cs-space-2)}.own .oh{padding:5px var(--cs-space-3);border-bottom:1px solid var(--cs-border)}.own .oh b{font-weight:600}.own .oh small{display:block;font-size:var(--cs-text-xs);color:var(--cs-muted-fg)}
+.or{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:5px var(--cs-space-3);border-bottom:1px solid var(--cs-border);font-size:var(--cs-text-sm)}.or:last-child{border-bottom:0}
+</style></head><body class="cs-app"><main id="trail"></main><aside id="drill-panel" hidden></aside><script>(()=>{
+// SPDX-License-Identifier: MIT
+// Capture meaning before replacing DOM; every restoration uses the same fallback chain.
+function createFocusIntents({root,doc=root.ownerDocument,context=()=>({})}) {
+  let movement=0,restoring=false;
+  const attr=(name,value)=>`[${name}="${CSS.escape(String(value))}"]`;
+  const available=el=>el&&!el.disabled&&!el.closest('[hidden], [inert]');
+  const controls=row=>[...row.querySelectorAll('button,a[href],input,select,textarea,summary,[tabindex]')].filter(el=>available(el)&&el.tabIndex>=0);
+  const find=(scope,selector)=>selector?(scope.matches?.(selector)?scope:scope.querySelector(selector)):null;
+  function point(node,offset){
+    const parent=node.nodeType===1?node:node.parentElement;
+    const scope=parent?.closest('[data-row-focus],[id]')??root;
+    const key=scope.id?`#${CSS.escape(scope.id)}`:scope.dataset?.rowFocus?attr('data-row-focus',scope.dataset.rowFocus):null;
+    const path=[];for(let at=node;at!==scope;at=at.parentNode){if(!at.parentNode)return null;path.unshift([...at.parentNode.childNodes].indexOf(at));}
+    return {key,path,offset};
+  }
+  function textSelection(){
+    const selected=doc.getSelection();if(!selected||selected.isCollapsed||!root.contains(selected.anchorNode)||!root.contains(selected.focusNode))return null;
+    const range=selected.getRangeAt(0);
+    return {start:point(range.startContainer,range.startOffset),end:point(range.endContainer,range.endOffset),text:selected.toString(),forward:selected.anchorNode===range.startContainer&&selected.anchorOffset===range.startOffset};
+  }
+  function restoreSelection(saved){
+    if(!saved?.start||!saved.end)return;
+    const resolve=point=>{let node=point.key?root.querySelector(point.key):root;if(point.key&&root.matches?.(point.key))node=root;for(const i of point.path)node=node?.childNodes[i];return node&&point.offset<=(node.nodeType===3?node.length:node.childNodes.length)?node:null;};
+    const start=resolve(saved.start),end=resolve(saved.end);if(!start||!end)return;
+    const range=doc.createRange();range.setStart(start,saved.start.offset);range.setEnd(end,saved.end.offset);if(range.toString()!==saved.text)return;
+    const selected=doc.getSelection();if(saved.forward)selected.setBaseAndExtent(start,saved.start.offset,end,saved.end.offset);else selected.setBaseAndExtent(end,saved.end.offset,start,saved.start.offset);
+  }
+  function capture(element=doc.activeElement){
+    const selection=textSelection();
+    if(!element||element===doc.body||!root.contains(element))return {focused:false,selection};
+    const extra=context(element),row=element.closest('[data-row-focus]'),task=element.closest('[data-task]');
+    const rowId=extra.rowId??row?.dataset.rowFocus??(task?`task:${task.dataset.task}`:null);
+    const sectionId=extra.sectionId??element.closest('section')?.querySelector('h2[id]')?.id??(rowId?.startsWith('task:')?'tasks-title':rowId?.startsWith('session:')?'sessions-title':null);
+    const key=['data-focus-key','data-panel-key','data-sort','data-open','data-retry','data-flat','data-group','data-task','data-cancel-rate','data-close','data-conv-action','data-jump','data-lines-path','name'].find(name=>element.hasAttribute(name));
+    let controlId=key?attr(key,element.getAttribute(key)):element.id?`#${CSS.escape(element.id)}`:element.matches('button[type=submit]')?'#rate-form [type=submit]':null;
+    if(element.tagName==='SUMMARY'&&element.closest('[data-tool-key]'))controlId=`${attr('data-tool-key',element.closest('[data-tool-key]').dataset.toolKey)} summary`;
+    return {movement,selection,rowId,controlId,sectionId,position:row?Math.max(0,controls(row).indexOf(element)):0,element};
+  }
+  // Resolve before replacing DOM: a completion cannot override newer user intent.
+  function completion(intent,{since,reveal=false}={}){
+    const active=doc.activeElement;
+    if(!doc.hasFocus())return {intent:{...capture(),focused:false},reveal:false};
+    const allowed=since&&since.movement===movement&&(active===since.element||active===doc.body);
+    return {intent:allowed?intent:capture(),reveal:!!allowed&&reveal};
+  }
+  function restore(intent,{reveal=false,revealEl=null}={}){
+    if(!intent)return;
+    restoreSelection(intent.selection);if(intent.focused===false)return;
+    const rowNode=intent.rowId?root.querySelector(attr('data-row-focus',intent.rowId)):null;
+    const row=available(rowNode)?rowNode:null;
+    let target=available(intent.element)&&root.contains(intent.element)?intent.element:null;
+    target??=find(row??root,intent.controlId);
+    // Form and panel controls can live outside their originating row.
+    if(!available(target))target=null;
+    if(!target&&intent.controlId&&!intent.controlId.startsWith('[data-rate='))target=find(root,intent.controlId);
+    if(!available(target))target=null;
+    let fallback=false;
+    if(!target&&row){fallback=true;const candidates=controls(row);target=candidates[Math.min(intent.position??0,candidates.length-1)]??row;}
+    const sectionId=intent.sectionId??(intent.rowId?.startsWith('task:')?'tasks-title':intent.rowId?.startsWith('session:')?'sessions-title':null);
+    if(!target)fallback=true;
+    target??=(sectionId?doc.getElementById(sectionId):null)??root.querySelector('h1,h2');
+    if(target){if(target.tabIndex<0)target.setAttribute('tabindex','-1');restoring=true;try{target.focus({preventScroll:true});}finally{restoring=false;}if(reveal||fallback){const anchor=(typeof revealEl==='string'?target.querySelector(revealEl):revealEl)??target.querySelector(':scope > [data-row-label]')??target;anchor.scrollIntoView?.({block:'nearest'});}}
+  }
+  // Surviving controls keep their native focus; only explicit moves or loss restore.
+  function reconcile(intent,options={}){
+    if(intent?.focused===false)return;
+    if(options.reveal||intent&&(doc.activeElement===doc.body||!root.contains(intent.element)||!available(intent.element)))restore(intent,options);
+  }
+  function captureReading(scope){
+    return [...scope.querySelectorAll('[data-scroll-key]')].map(node=>({key:node.dataset.scrollKey,x:node.scrollLeft,y:node.scrollTop}));
+  }
+  function restoreReading(scope,{target=null,saved=[]}={}){
+    // Page targets reset outer scrollers; nested tool reading stays keyed to its page.
+    for(const node of scope.querySelectorAll('[data-scroll-key]')){
+      const position=target&&!node.closest('[data-tool-key]')?null:saved.find(item=>item.key===node.dataset.scrollKey);
+      node.scrollLeft=position?.x??0;node.scrollTop=position?.y??0;
+    }
+    if(target&&!target.hasAttribute('data-scroll-key'))target.scrollIntoView?.({block:'center'});
+  }
+  const view=doc.defaultView;
+  let lastIntent=null,guardianFrame=null;
+  const remember=event=>{const intent=capture(event.target);if(intent&&intent.focused!==false)lastIntent=intent;};
+  const guard=event=>{
+    if(event?.target)remember(event);
+    // Native date editors can omit focusin; focusout still names the destination.
+    if(event?.relatedTarget){if(root.contains(event.relatedTarget))remember({target:event.relatedTarget});return;}
+    if(guardianFrame!=null)return;
+    guardianFrame=view.requestAnimationFrame(()=>{
+      guardianFrame=null;
+      // A deliberate Tab/Escape into the host must remain outside this document.
+      if(lastIntent&&doc.hasFocus()&&(doc.activeElement===doc.body||!root.contains(doc.activeElement))){if(root.contains(lastIntent.element)&&available(lastIntent.element)){lastIntent=null;return;}restore({...lastIntent,selection:null});}
+    });
+  };
+  const entered=event=>{if(!restoring)movement++;remember(event);};
+  const pointed=event=>{if(!doc.activeElement?.contains(event.target))movement++;};
+  root.addEventListener('pointerdown',pointed,true);root.addEventListener('focusin',entered,true);root.addEventListener('focusout',guard,true);
+  // WebKit does not emit focusout when the focused node is removed.
+  const observer=new view.MutationObserver(()=>{if(lastIntent&&(!root.contains(lastIntent.element)||!available(lastIntent.element))&&doc.hasFocus()&&(doc.activeElement===doc.body||!root.contains(doc.activeElement)))guard();});
+  observer.observe(root,{childList:true,subtree:true});
+  function stop(){observer.disconnect();root.removeEventListener('pointerdown',pointed,true);root.removeEventListener('focusin',entered,true);root.removeEventListener('focusout',guard,true);if(guardianFrame!=null)view.cancelAnimationFrame(guardianFrame);lastIntent=null;}
+  return {capture,completion,restore,reconcile,captureReading,restoreReading,stop};
+}
+
+// SPDX-License-Identifier: MIT
+// Every view uses the same read ownership and coalescing rule.
+function createIntentReader({enabled=()=>true,capture=()=>undefined,read,commit,fail,settled=()=>{}}){
+  let intent=0,pending=false,queued=false,stopped=false;
+  const inFlight=new Set();
+  function schedule(){
+    if(stopped||queued||!pending||!enabled()||inFlight.has(intent))return;
+    queued=true;
+    Promise.resolve().then(()=>{
+      queued=false;
+      if(!stopped&&pending&&enabled()&&!inFlight.has(intent))run(intent);
+    });
+  }
+  function request(){if(stopped)return;pending=true;schedule();}
+  function ensureCurrent(){if(!stopped&&!inFlight.has(intent))run(intent);}
+  async function run(owner){
+    pending=false;inFlight.add(owner);
+    const context=capture();
+    let outcome;
+    try{outcome={data:await read(context)};}
+    catch(error){outcome={error};}
+    try{
+      if(owner===intent){
+        if('error' in outcome)fail(outcome.error,context);else commit(outcome.data,context);
+        settled(context);
+      }else ensureCurrent();
+    }finally{inFlight.delete(owner);schedule();}
+  }
+  return {
+    intent({read=false}={}){if(stopped)return;intent++;if(read)pending=true;schedule();},
+    request,resume:schedule,
+    stop(){stopped=true;intent++;pending=false;},
+  };
+}
+
+// SPDX-License-Identifier: MIT
+const newRateState = (rowId,model,requestToken) => ({rowId,model,requestToken,phase:'idle',notice:''});
+function transitionRate(state,event) {
+  if(event.requestToken!=null&&event.requestToken!==state.requestToken)return state;
+  if(event.type==='submit')return {...state,phase:'saving',notice:''};
+  if(event.type==='failed')return {...state,phase:'failed',notice:String(event.error)};
+  if(event.type==='retry')return state.phase==='pending-acceptance'?state:{...state,phase:'idle',notice:''};
+  if(event.type==='priced')return {...state,phase:'accepted',notice:''};
+  if(event.type==='resolved'){
+    // set_model_rate(params: SetModelRateParams) -> Result<usize, String>.
+    // The number counts changed usage costs. request_rate returns 0 both
+    // for queued approval and effective rates with no changed usage costs.
+    // This UI phase means confirmation is unobserved, not that native approval
+    // is known to be pending; only a priced read establishes the effective rate.
+    return event.changed>0 ? {...state,phase:'accepted',notice:'Rate saved.'}
+      : {...state,phase:'pending-acceptance',notice:'Rate requested. If acceptance is required, accept it in the affected agent’s or routine’s native Spend cap block, then Retry.'};
+  }
+  return state;
+}
+
+// SPDX-License-Identifier: MIT
+// Pure projections of the shared session/task reads. No DOM, reads or clocks.
+const money = value => value == null ? 'unknown' : `$${value.toFixed(2)}`;
+const duration = value => {
+  if (value == null) return '';
+  const seconds = Math.round(value / 1000);
+  if (value > 0 && seconds < 60) return `${seconds}s`;
+  const minutes = Math.round(value / 60000);
+  return minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ''}` : `${minutes}m`;
+};
+const sessionId = row => row.session?.sessionId ?? row.nativeSessionIds?.[0];
+const timing = row => row.session?.timing;
+const completeSum = (rows, value) => rows.length && rows.every(r => value(r) != null)
+  ? rows.reduce((sum, r) => sum + value(r), 0) : null;
+function spanRows(rows) {
+  return rows.filter(row => timing(row)?.startedAtMs != null && timing(row)?.wallMs != null)
+    .map(row => ({id: sessionId(row), label: sessionFacts(row).agent, basis: row.basis,
+      start: timing(row).startedAtMs, end: timing(row).startedAtMs + timing(row).wallMs}));
+}
+function basisTotals(data) {
+  const result = {};
+  for (const basis of ['exact', 'associated', 'unknown']) {
+    const rows = data.sessions.filter(row => (row.basis ?? 'unknown') === basis);
+    if (!rows.length) continue;
+    const spans = spanRows(rows);
+    const costUsd = completeSum(rows, r => r.cost?.totalUsd);
+    const allTimed = spans.length === rows.length;
+    result[basis] = {sessions: rows.length, costUsd,
+      reason: costUsd == null ? data.unavailable?.costUsd ?? rows.find(r => r.cost?.totalUsd == null)?.cost?.reason ?? 'not priced' : null,
+      timeMs: completeSum(rows, r => timing(r)?.wallMs),
+      activeMs: completeSum(rows, r => timing(r)?.activeMs),
+      wallMs: allTimed ? Math.max(...spans.map(s => s.end)) - Math.min(...spans.map(s => s.start)) : null,
+      timeReason: allTimed ? null : data.unavailable?.time ?? 'no observed timing for one or more sessions'};
+  }
+  return result;
+}
+function buildTree(tasks) {
+  const nodes = new Map(tasks.map(task => [task.taskId, {task, children: []}]));
+  const roots = [];
+  for (const node of nodes.values()) {
+    const parent = nodes.get(node.task.parentId);
+    if (parent) parent.children.push(node); else roots.push(node);
+  }
+  return roots;
+}
+const costSourceLabel = source => ({reported:'reported', rate_table:'from price list', mixed:'reported + price list'})[source] ?? '';
+function sessionFacts(row) {
+  const record = row.session;
+  const missing = row.cost?.totalUsd == null;
+  const modelNames = row.models?.map(m => m.model) ?? [];
+  const tools = row.tools?.used;
+  const outcome = row.run?.state === 'present' ? row.run.outcome?.outcome : null;
+  return {
+    id: sessionId(row), agent: record?.agent ?? record?.handle ?? 'hand-started',
+    cli: record?.cli, account: record?.account?.label,
+    model: [...new Set([...modelNames, ...(record?.model && !modelNames.length ? [record.model] : [])])].join(' · '),
+    link: record ? '' : `not linked · ${row.unavailable?.session ?? 'no session record'}`,
+    basis: row.basis ?? 'unknown', cost: money(row.cost?.totalUsd),
+    costSource: missing ? 'not priced' : costSourceLabel(row.cost?.source),
+    priceModels: missing ? (row.models ?? []).filter(m => m.costUsd == null || m.costSource == null).map(m => m.model) : [],
+    costReason: missing ? row.cost?.reason : null,
+    tools: tools == null ? row.tools?.usedReason ?? '' : tools.map(t => `${t.name} ${t.calls}`).join(' · '),
+    toolsReason: tools != null ? row.tools?.usedReason : null,
+    time: duration(timing(row)?.wallMs), active: duration(timing(row)?.activeMs),
+    outcome: outcome ? [outcome.status, outcome.summary].filter(v => typeof v === 'string').join(' · ') : row.run?.reason ?? '',
+  };
+}
+function compareTarget(actual, target, format = String) {
+  if (actual == null) return typeof target === 'number' ? `target ${format(target)}` : '';
+  const value = format(actual);
+  if (typeof target !== 'number') return value;
+  const diff = actual - target;
+  return `${value} · target ${format(target)} · ${diff === 0 ? 'same as target' : `${format(Math.abs(diff))} ${diff > 0 ? 'more' : 'less'} than target`}`;
+}
+function taskFacts(task, sessions) {
+  const rows = sessions.filter(s => s.tasks?.some(t => t.taskId === task.taskId));
+  const targets = task.targets?.values ?? {};
+  // Only task-scoped outcomes measure a task. Linked sessions identify its agent.
+  const unknown = (reason,target,format) => `unknown · ${reason}${typeof target==='number'?` · target ${format(target)}`:''}`;
+  const outcome=task.outcome;
+  const timeReason=outcome?.unavailable?.time ?? task.unavailable?.time ?? task.unavailable?.outcome ?? 'no task timing recorded';
+  const costReason=outcome?.unavailable?.cost ?? task.unavailable?.cost ?? task.unavailable?.costUsd ?? task.unavailable?.outcome ?? 'no task cost recorded';
+  const reviews = outcome?.reviewRounds ?? task.reviews?.length;
+  const unique = field => [...new Set(rows.map(r => sessionFacts(r)[field]).filter(Boolean))].join(' · ');
+  return {type: task.taskType === 'unclassified' || task.typeSource === 'unclassified'
+      ? `unclassified${task.unavailable?.type ? ` · ${task.unavailable.type}` : ''}` : task.taskType,
+    skill: task.mainSkill ?? '', agent: unique('agent'), model: outcome?.cost?.models?.length?outcome.cost.models.join(' · '):unique('model'),
+    time: outcome?.time?.wallMs!=null?compareTarget(outcome.time.wallMs,typeof targets.wall_minutes==='number'?targets.wall_minutes*60000:null,duration):unknown(timeReason,targets.wall_minutes,minutes=>duration(minutes*60000)),
+    active: outcome?.time?.activeMs!=null?compareTarget(outcome.time.activeMs,typeof targets.active_minutes==='number'?targets.active_minutes*60000:null,duration):typeof targets.active_minutes==='number'?unknown(timeReason,targets.active_minutes,minutes=>duration(minutes*60000)):'',
+    cost: outcome?.cost?.costUsd!=null?compareTarget(outcome.cost.costUsd,targets.cost_usd,money):unknown(costReason,targets.cost_usd,money),
+    rounds: reviews == null ? 'not tracked' : compareTarget(reviews, targets.review_rounds),
+  };
+}
+function pageState(data, error) {
+  if (!data) return error ? 'failed' : 'loading';
+  if (error) return 'stale';
+  return data.sessions.length ? 'ready' : 'empty';
+}
+function sessionsByTask(tasks, sessions) {
+  const seen = new Map(), groups = [];
+  const ordered=[...sessions].sort((a,b)=>{const x=timing(a)?.startedAtMs,y=timing(b)?.startedAtMs;return x==null?y==null?0:1:y==null?-1:x-y;});
+  const visit = nodes => {for (const node of nodes) {
+    const linked = ordered.filter(s => s.tasks?.some(t => t.taskId === node.task.taskId));
+    if (linked.length) groups.push({task:node.task, entries:linked.map(session=>{
+      const id=sessionId(session), first=seen.get(id);
+      if(!first) seen.set(id,node.task.goal);
+      return {session, sameAs:first ?? null};
+    })});
+    visit(node.children);
+  }};
+  visit(buildTree(tasks));
+  const unlinked=ordered.filter(s=>!seen.has(sessionId(s)));
+  if(unlinked.length)groups.push({task:null,entries:unlinked.map(session=>({session,sameAs:null}))});
+  return groups;
+}
+
+const localDate = ms => {const d=new Date(ms);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+
+function rateUsagePriced(request,sessions) {
+  const isSession=request.rowId.startsWith('session:');
+  const id=request.rowId.slice(isSession?'session:'.length:'task:'.length);
+  const rows=sessions.filter(row=>isSession?sessionId(row)===id:row.tasks?.some(task=>task.taskId===id));
+  const models=rows.flatMap(row=>row.models??[]).filter(model=>model.model===request.model);
+  return models.length>0 && models.every(model=>model.costUsd!=null);
+}
+
+// Rust session_usage::model_key: model.rsplit('/').next().unwrap_or(model).replace('.', "-")
+const modelRatePrefix = model => String(model).split('/').at(-1).replaceAll('.', '-');
+
+// Line ownership: why_line's span rule, the story's own ranges and the revision it reads.
+const LINE_LIMIT_REASON = 'span must be 1-based, inclusive, ordered, and end - start <= 2000';
+const lineRefusal = (start, end) => Number.isInteger(start) && Number.isInteger(end) && start >= 1 && start <= end && end - start <= 2000 ? null : LINE_LIMIT_REASON;
+function prefillLines(changes, path) {
+  const ranges = (changes?.commits ?? []).flatMap(commit => commit.ranges ?? []).filter(range => range.path === path);
+  if (!ranges.length) return null;
+  const start = Math.min(...ranges.map(r => r.start)), end = Math.max(...ranges.map(r => r.end));
+  return end - start <= 2000 ? {start, end} : {start: ranges[0].start, end: Math.min(ranges[0].end, ranges[0].start + 2000)};
+}
+// The line panel only reads and diffs files this story changed.
+const storyFile = (data, path) => !!data?.actual?.some(file => file.path === path);
+// The Files row's diff choices: the live story worktree, then commits (newest first), then merged PRs.
+function diffChoices(data, path) {
+  const choices = [...((data?.worktrees ?? []).some(row => row.state === 'live' && row.basis === 'exact') ? [{rev: 'WORKTREE', label: 'Worktree diff'}] : []),
+    ...(data?.commits ?? []).filter(commit => commit.files?.includes(path)).map(commit => ({rev: commit.sha, label: 'Diff ' + commit.sha.slice(0, 7)})),
+    ...(data?.prs ?? []).filter(pr => pr.mergedSha && pr.files?.includes(path)).map(pr => ({rev: pr.mergedSha, label: 'Diff ' + pr.mergedSha.slice(0, 7)}))];
+  return choices.filter((choice, index) => choices.findIndex(other => other.rev === choice.rev) === index);
+}
+// Merged work reads and diffs its merged sha; unmerged work reads the story's own local branch and diffs the Files row's first choice.
+function lineRevision(data, path) {
+  if (!storyFile(data, path)) return null;
+  const pr = (data?.prs ?? []).filter(pr => pr.mergedSha && pr.files?.includes(path)).sort((a, b) => (b.mergedAt ?? 0) - (a.mergedAt ?? 0))[0];
+  if (pr) return {rev: pr.mergedSha, diffRev: pr.mergedSha, label: `Reads the merged change (${pr.mergedSha.slice(0, 7)})`};
+  const branch = (data?.branches ?? []).find(row => row.basis === 'exact' && row.availability === 'local')?.name;
+  return branch ? {rev: branch, diffRev: diffChoices(data, path)[0]?.rev ?? null, label: `Reads branch ${branch}`} : null;
+}
+const lineSpan = ({start, end}) => start === end ? `Line ${start}` : `Lines ${start}–${end}`;
+// Only data-named sessions are claimed: exact linked ranges by session, a named runtime without a record as
+// "session unknown", associated ranges as their candidates, and every other range as text with its reason.
+function lineOwnership(result, storyId, sessions = []) {
+  const groups = new Map(), associated = [], other = [], candidates = new Set();
+  const agent = id => {const row = result.sessions?.[id] ?? sessions.find(s => sessionId(s) === id || s.nativeSessionIds?.includes(id));return row ? sessionFacts(row) : null;};
+  let changed = 0;
+  for (const range of result.ranges ?? []) {
+    const sha = range.commit?.slice(0, 7);
+    if (range.basis === 'associated') {associated.push(range);for (const id of range.candidateSessions ?? []) candidates.add(id);continue;}
+    if (range.basis !== 'exact' || range.tool === 'human' || !range.tool) {other.push({range, text: [lineSpan(range), sha, range.reason].filter(Boolean).join(' · ')});continue;}
+    const linked = range.link === 'linked' && range.sessionId;
+    if (linked && range.story === storyId) changed += range.end - range.start + 1;
+    const key = linked ? `session:${range.sessionId}` : `runtime:${range.tool}`;
+    if (!groups.has(key)) {const facts = linked ? agent(range.sessionId) : null;groups.set(key, {key, sessionId: linked ? range.sessionId : null, agent: linked ? facts?.agent ?? range.sessionId : range.tool, detail: [range.model ?? facts?.model, linked ? null : 'session unknown'].filter(Boolean).join(' · '), ranges: []});}
+    const turn = linked ? range.turn?.turn ?? null : null, turnReason = linked && turn == null ? range.unavailable?.turn ?? range.turn?.reason : null;
+    const elsewhere = linked && range.story !== storyId ? (range.story ? `another story (${range.story})` : 'story unknown') : null;
+    groups.get(key).ranges.push({key: `${range.start}:${range.end}:${range.commit}`, turn, text: [lineSpan(range), turn == null ? null : `${range.turn.basis === 'commit' ? 'Committed' : 'Written'} in turn ${turn}`, sha, 'exact', elsewhere, linked ? turnReason : range.reason].filter(Boolean).join(' · ')});
+  }
+  return {changed, groups: [...groups.values()], associated, candidates: [...candidates].map(id => ({id, agent: agent(id)?.agent ?? id})), other};
+}
+
+// SPDX-License-Identifier: MIT
+// kit.keyed owns reconciliation. This layer only postpones protected structure.
+function createPatches({root,kit,doc=root.ownerDocument}) {
+  const records=new WeakMap(),pending=new Map(),texts=new Map(),refreshes=new Map();
+  let gesturing=false,stopped=false,releaseTimer=null;
+  const key=(opts,item)=>String(opts.key(item));
+  const version=(opts,item)=>String(opts.version?.(item)??'row-v1');
+  function selected(node){const selection=doc.getSelection();if(!selection?.rangeCount||selection.isCollapsed||!node.isConnected)return false;return selection.getRangeAt(0).intersectsNode(node);}
+  function associated(node){const id=node?.closest?.('[data-row-id]')?.dataset.rowId;return id?root.querySelector('[data-row-focus="'+CSS.escape(id)+'"]'):null;}
+  function touching(node){const active=doc.hasFocus()?doc.activeElement:null;return !!(active&&(node.contains(active)||node.contains(associated(active)))||selected(node));}
+  function text(node,value){value=String(value??'');if(node.textContent===value){texts.delete(node);return;}if(selected(node)){texts.set(node,value);return;}if(node.childNodes.length===1&&node.firstChild.nodeType===3)node.firstChild.data=value;else node.textContent=value;texts.delete(node);}
+  function keyed(container,items,opts,passive=false){
+    const previous=records.get(container),incoming=new Map(items.map(item=>[key(opts,item),item]));
+    const order=items.map(item=>key(opts,item));
+    const structural=previous&&(order.join('\0')!==previous.order.join('\0')||items.some(item=>previous.versions.get(key(opts,item))!==version(opts,item)));
+    // A genuine deletion of the protected row is handled by the focus guardian.
+    const protectedRow=[...container.children].some(node=>incoming.has(node.dataset.key)&&touching(node));
+    let effective=items,versions=new Map(items.map(item=>[key(opts,item),version(opts,item)]));
+    if(passive&&structural&&protectedRow){
+      pending.set(container,{items,opts});effective=previous.items.map(item=>incoming.get(key(opts,item))??item);versions=previous.versions;
+    }else pending.delete(container);
+    kit.keyed(container,effective,{key:opts.key,version:item=>versions.get(key(opts,item))??version(opts,item),render:item=>{const node=opts.render(item);opts.update?.(node,item);return node;},update:opts.update});
+    records.set(container,{items:effective,order:effective.map(item=>key(opts,item)),versions});
+  }
+  // Gestures protect the whole page: even facts in another row can move a target.
+  // Refresh callbacks read current controller state when released, after the click.
+  function defer(owner,refresh){if(!gesturing)return false;refreshes.set(owner,refresh);return true;}
+  function flush(){if(stopped||gesturing)return;const work=[...refreshes.values()];refreshes.clear();for(const refresh of work)refresh();for(const [node,value]of texts){if(!node.isConnected)texts.delete(node);else if(!selected(node))text(node,value);}for(const [container,work]of [...pending]){if(container.isConnected)keyed(container,work.items,work.opts,true);else pending.delete(container);}}
+  const down=event=>{
+    if(event.button!==0||event.isPrimary===false)return;
+    if(releaseTimer!=null){clearTimeout(releaseTimer);releaseTimer=null;}
+    gesturing=true;
+  };
+  // The click handler consumes the held target before queued reads can patch it.
+  const end=()=>{if(releaseTimer!=null){clearTimeout(releaseTimer);releaseTimer=null;}gesturing=false;queueMicrotask(flush);};
+  const up=()=>{if(gesturing&&releaseTimer==null)releaseTimer=setTimeout(end,0);};
+  const exit=event=>{if(gesturing&&event.buttons&&!event.relatedTarget)end();};
+  const leave=()=>queueMicrotask(flush);
+  doc.addEventListener('pointerdown',down,true);doc.addEventListener('pointerup',up,true);doc.addEventListener('pointerleave',exit,true);doc.addEventListener('mouseleave',exit,true);doc.addEventListener('click',end);doc.addEventListener('auxclick',end,true);doc.addEventListener('dragend',end,true);doc.addEventListener('pointercancel',end,true);doc.addEventListener('focusout',leave,true);doc.addEventListener('selectionchange',leave);doc.defaultView.addEventListener('blur',end);
+  function stop(){stopped=true;end();pending.clear();texts.clear();refreshes.clear();doc.removeEventListener('pointerdown',down,true);doc.removeEventListener('pointerup',up,true);doc.removeEventListener('pointerleave',exit,true);doc.removeEventListener('mouseleave',exit,true);doc.removeEventListener('click',end);doc.removeEventListener('auxclick',end,true);doc.removeEventListener('dragend',end,true);doc.removeEventListener('pointercancel',end,true);doc.removeEventListener('focusout',leave,true);doc.removeEventListener('selectionchange',leave);doc.defaultView.removeEventListener('blur',end);}
+  return {keyed,text,defer,stop,flush};
+}
+
+// SPDX-License-Identifier: MIT
+
+function createTrailView({root,panel,kit,doc=root.ownerDocument,panelRenderer=null}) {
+  const h=kit.h,patch=createPatches({root:doc.body,kit,doc}),routes=new Map();
+  let active=null,state=null;
+  const set=(node,name,value)=>{if(value==null){if(node.hasAttribute(name))node.removeAttribute(name);}else if(node.getAttribute(name)!==String(value))node.setAttribute(name,String(value));};
+  const text=patch.text;
+  const controlBusy=(node,value)=>set(node,'aria-disabled',value?'true':null);
+  function retryControl(node,visible){node.hidden=!visible;set(node,'data-retry',visible?'':null);controlBusy(node,state.actionControl===node);}
+  const time=value=>value==null?'':new Date(value).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  function template(html){const node=doc.createElement('template');node.innerHTML=html;return node.content;}
+  function cell(tag='td',main=null){const node=h(tag,null,main??h('span'),h('span',{class:'sub'}),h('div'));node._main=node.children[0];node._sub=node.children[1];node._rates=node.children[2];return node;}
+  function facts(node,main,sub=''){text(node._main,main);text(node._sub,sub);node._sub.hidden=!sub;}
+  function rates(container,models,row){patch.keyed(container,[...new Set(models)].map(model=>({model,row})),{key:item=>item.model,version:()=> 'rate-button-v1',render:()=>h('button',{class:'disc rate-link'},'Set a rate',h('span',{class:'sr-only'})),update:(node,item)=>{set(node,'data-rate',item.model);set(node,'data-focus-key',item.row+':rate:'+item.model);text(node.lastChild,' for '+item.model);controlBusy(node,state.activeRate?.phase==='saving'&&state.activeRate.rowId===item.row&&state.activeRate.model===item.model);}},state.passive);}
+  function skeleton(id){
+    const content=template('<header class="hd"><div class="grow"><h1></h1><p class="intro">Who worked on this story, what it cost, and what changed. Select a session to see more.</p><div class="meta mono"></div><div class="meta" data-contribution-meta></div></div><div class="src"></div></header><p id="notice" role="status"><span></span><button class="cs-btn is-sm" data-focus-key="notice:retry" hidden>Retry</button></p><section data-loading aria-label="Loading story trail" aria-busy="true"><h2>Loading</h2></section><div class="fail" role="status" hidden><div class="grow"><b></b> <span></span></div><button class="cs-btn" data-focus-key="error:retry">Retry</button></div><section class="sec" aria-labelledby="totals-title" hidden><h2 id="totals-title">Totals</h2><dl class="tot"></dl><p class="key"><span class="basis">exact</span> = linked to this story · <span class="basis">associated</span> = ran in its worktree but wasn’t linked</p></section><section class="sec" aria-labelledby="tasks-title" hidden><div class="sh"><h2 id="tasks-title">Tasks</h2><span class="grow"></span><button class="cs-btn is-sm" data-flat aria-pressed="false">Flat time order</button></div><p class="muted" data-no-tasks></p><div class="treewrap" data-scroll-key="tasks"><div class="tr thd" aria-hidden="true"></div><ul class="tree"></ul></div></section><section class="sec" aria-labelledby="sessions-title" hidden><div class="sh"><h2 id="sessions-title">Sessions</h2><span class="grow"></span><div class="gt" role="group" aria-label="Group sessions"><button data-group="task" aria-pressed="false">By task</button><button data-group="time" aria-pressed="true">In time order</button></div></div><div class="note" data-no-sessions hidden><h2></h2><h3>No linked sessions</h3><p>Link a session to this story to see its trail here.</p></div><div data-span hidden><h3 class="span-title">When each session ran</h3><div class="span"><div></div><div class="axis"><span></span><span></span></div></div></div><div class="table-wrap" data-scroll-key="sessions"><table class="cs-table t sessions" aria-label="Sessions"><thead><tr></tr></thead><tbody></tbody></table></div></section><div class="sec" data-changes hidden></div><div data-rate-container></div>');
+    const nodes=[...content.childNodes],find=selector=>content.querySelector(selector);
+    const loading=find('[data-loading]');loading.append(kit.skeleton({rows:4}));
+    const labels=['Goal','Type','Main skill','Agent · model','Time','Cost','Review rounds'];for(const label of labels)find('.treewrap>.thd').append(h('div',{text:label}));
+    const columns=[['when','When'],['agent','Agent'],[null,'Model · account'],[null,'Tools used'],['cost','Cost'],[null,'Time · active'],[null,'Outcome'],[null,'Basis'],[null,'Details']];
+    for(const [key,label]of columns){const th=h('th');if(key){th._sort=h('button',{class:'sortb','data-sort-key':key},label,kit.s('svg',{viewBox:'0 0 12 12',class:'sort-icon','aria-hidden':'true'},kit.s('path',{d:'m3 5 3-3 3 3M3 7l3 3 3-3'})));th._plain=h('span',{text:label,hidden:true});th.append(th._sort,th._plain);}else if(label==='Details')th.append(h('span',{class:'sr-only',text:label}));else text(th,label);find('thead tr').append(th);}
+    const view={id,nodes,title:find('h1'),meta:find('.meta'),updated:find('.src'),notice:find('#notice'),loading,error:find('.fail'),totals:find('.tot'),tasks:find('[aria-labelledby=tasks-title]'),sessions:find('[aria-labelledby=sessions-title]'),tree:find('.tree'),rows:find('tbody'),span:find('[data-span]'),formHost:find('[data-rate-container]'),form:null,request:null};
+    view.changes=createChangesView({root:find('[data-changes]'),header:find('[data-contribution-meta]'),kit,patch,doc});
+    return view;
+  }
+  function mount(id){let view=routes.get(id);if(!view){view=skeleton(id);routes.set(id,view);}if(active!==view||!root.contains(view.title)){root.replaceChildren(...view.nodes);active=view;}return view;}
+  function totals(data){
+    const groups=Object.entries(basisTotals(data));
+    const metric=(id,label,field,format,reason)=>({id,label,values:groups.map(([basis,row])=>({basis,value:format(row[field]),reason:row[field]==null?row[reason]:''}))});
+    const metrics=[{id:'sessions',label:'Sessions',values:groups.map(([basis,row])=>({basis,value:row.sessions}))},metric('cost','Cost','costUsd',money,'reason'),metric('spent','Time spent','timeMs',value=>duration(value)||'unknown','timeReason'),metric('active','Active time','activeMs',value=>duration(value)||'unknown','timeReason'),metric('span','Span','wallMs',value=>duration(value)||'unknown','timeReason'),{id:'reviews',label:'Review rounds',values:[{basis:'',value:data.totals?.reviewRounds??'not tracked'}]}];
+    if(data.totals?.commits!=null)metrics.push({id:'commits',label:'Commits',values:[{basis:'',value:data.totals.commits}]});
+    if(data.totals?.files!=null){const files=data.actual??[],planned=Array.isArray(data.planned),inside=files.filter(file=>file.inPlanned).length;metrics.push({id:'files',label:'Files',values:[{basis:'',value:data.totals.files,reason:planned?`${inside} planned · ${files.length-inside} not planned`:''}]});}
+    for(const item of metrics)if(!item.values.length)item.values=[{basis:'',value:item.id==='sessions'?'0':'unknown',reason:item.id==='cost'?data.unavailable?.costUsd??'no linked sessions':''}];
+    patch.keyed(active.totals,metrics,{key:item=>item.id,version:()=> 'metric-v1',render:()=>h('div',null,h('dt'),h('dd')),update:(node,item)=>{text(node.firstChild,item.label);patch.keyed(node.lastChild,item.values.map((value,index)=>({...value,index})),{key:value=>value.basis,version:()=> 'basis-v1',render:()=>h('span',null,h('span'),h('small')),update:(part,value)=>{text(part.firstChild,(value.index?' · ':'')+value.value);const small=[value.basis,value.reason].filter(Boolean).join(' · ');text(part.lastChild,small?' '+small:'');}});}});
+  }
+  function taskRow(){const node=h('li');node._row=h('div',{class:'tr','data-row-label':'',tabindex:-1});node._cells=Array.from({length:7},()=>cell('div'));const goal=node._cells[0];goal.className='tg';goal._tog=h('span',{class:'tog','aria-hidden':'true'},kit.s('svg',{viewBox:'0 0 12 12'},kit.s('path',{d:'m4 2 4 4-4 4'})));goal.prepend(goal._tog);['Goal','Type','Main skill','Agent and model','Time','Cost','Review rounds'].forEach((label,index)=>{if(index)node._cells[index].prepend(h('span',{class:'sr-only',text:label+': '}));});node._row.append(...node._cells);node._children=h('ul',{role:'group'});node.append(node._row,node._children);return node;}
+  function tasks(data){
+    const view=active,empty=view.tasks.querySelector('[data-no-tasks]');text(empty,data.tasks.length?'':'No tasks recorded.');empty.hidden=!!data.tasks.length;view.tasks.querySelector('.treewrap').hidden=!data.tasks.length;
+    const ids=[];function collect(nodes){for(const node of nodes){ids.push(node.task.taskId);if(!state.collapsed.has(node.task.taskId))collect(node.children);}}const roots=buildTree(data.tasks);collect(roots);const first=ids.includes(state.focusedTask)?state.focusedTask:ids[0];
+    set(view.tree,'role',state.flat?null:'tree');set(view.tree,'aria-label',state.flat?'Tasks in time order':'Tasks for '+state.id);view.tree.classList.toggle('flat',state.flat);
+    function list(container,nodes,depth=0){patch.keyed(container,nodes.map((entry,index)=>({...entry,index,depth,size:nodes.length})),{key:entry=>entry.task.taskId,version:()=>state.flat?'flat-v1':'tree-v1',render:taskRow,update:(node,entry)=>{
+      const task=entry.task,f=taskFacts(task,data.sessions),tree=!state.flat;set(node,'role',tree?'treeitem':null);set(node,'data-task',tree?task.taskId:null);set(node,'aria-level',tree?entry.depth+1:null);set(node,'aria-posinset',tree?entry.index+1:null);set(node,'aria-setsize',tree?entry.size:null);set(node,'aria-expanded',tree&&entry.children.length?!state.collapsed.has(task.taskId):null);node.tabIndex=tree&&task.taskId===first?0:-1;set(node._row,'data-row-focus','task:'+task.taskId);node._row.style.setProperty('--lv',entry.depth);node._cells[0]._tog.hidden=!tree||!entry.children.length;
+      const values=[[task.goal,''],[f.type,''],[f.skill,''],[f.agent,f.model],[f.time,f.active?f.active+' active':''],[f.cost,''],[f.rounds,'']];values.forEach((value,i)=>facts(node._cells[i],...value));node._cells[2].className='mono';
+      rates(node._cells[5]._rates,data.sessions.filter(row=>row.tasks?.some(link=>link.taskId===task.taskId)).flatMap(row=>sessionFacts(row).priceModels),'task:'+task.taskId);
+      const children=tree&&!state.collapsed.has(task.taskId)?entry.children:[];node._children.hidden=!children.length;list(node._children,children,entry.depth+1);
+    }},state.passive);}
+    list(view.tree,state.flat?[...data.tasks].sort((a,b)=>a.createdAtMs-b.createdAtMs).map(task=>({task,children:[]})):roots);
+  }
+  function sessionRow(){const node=h('tr',{class:'rowsel',tabindex:-1});node._cells=Array.from({length:9},(_,index)=>cell('td',index===1?h('button',{class:'disc','aria-controls':'drill-panel'}):null));node.append(...node._cells);node._cells[7].className='basis';node._cells[8].className='det';set(node._cells[8],'aria-hidden','true');facts(node._cells[8],'Details ›');return node;}
+  function sessions(data){
+    const view=active,empty=view.sessions.querySelector('[data-no-sessions]');empty.hidden=!!data.sessions.length;text(empty.querySelector('h2'),!data.sessions.length&&!data.tasks.length?'No recorded work for '+state.id+' yet':'');view.sessions.querySelector('.table-wrap').hidden=!data.sessions.length;
+    for(const th of view.sessions.querySelectorAll('th'))if(th._sort){const key=th._sort.dataset.sortKey;th._sort.hidden=state.byTask;th._plain.hidden=!state.byTask;set(th._sort,'data-sort',state.byTask?null:key);set(th,'aria-sort',!state.byTask&&state.sort===key?state.direction===1?'ascending':'descending':null);}
+    const value=row=>state.sort==='agent'?sessionFacts(row).agent:state.sort==='cost'?row.cost?.totalUsd:timing(row)?.startedAtMs;
+    const rows=[...data.sessions].sort((a,b)=>{const av=value(a),bv=value(b);return av==null?bv==null?0:1:bv==null?-1:state.direction*(typeof av==='string'?av.localeCompare(bv):av-bv);});
+    const entries=state.byTask?sessionsByTask(data.tasks,data.sessions).flatMap(group=>[{key:'group:'+(group.task?.taskId??'none'),kind:'group',group},...group.entries.map(entry=>entry.sameAs?{key:'ref:'+(group.task?.taskId??'none')+':'+sessionFacts(entry.session).id,kind:'ref',entry}:{key:'session:'+sessionFacts(entry.session).id,kind:'session',row:entry.session})]):rows.map(row=>({key:'session:'+sessionFacts(row).id,kind:'session',row}));
+    patch.keyed(view.rows,entries,{key:entry=>entry.key,version:entry=>entry.kind+'-v1',render:entry=>entry.kind==='session'?sessionRow():h('tr',{class:entry.kind==='group'?'grp':'via'},h(entry.kind==='group'?'th':'td',{colspan:9})),update:(node,entry)=>{
+      if(entry.kind==='group'){const task=entry.group.task;text(node.firstChild,task?[task.goal,task.taskType,task.mainSkill].filter(Boolean).join(' · '):'Not linked to a task');return;}
+      if(entry.kind==='ref'){text(node.firstChild,'Same session as "'+entry.entry.sameAs+'" above ('+sessionFacts(entry.entry.session).agent+')');return;}
+      const row=entry.row,f=sessionFacts(row),t=timing(row),selected=state.selected===f.id;set(node,'data-row-focus','session:'+f.id);set(node,'data-session',f.id);set(node,'aria-selected',selected);node.classList.toggle('sel',selected);set(node._cells[1]._main,'data-open',f.id);set(node._cells[1]._main,'aria-expanded',selected);
+      const values=[[t?time(t.startedAtMs)+'–'+time(t.startedAtMs+t.wallMs):'',''],[f.agent,[f.cli,f.link].filter(Boolean).join(' · ')],[f.model,f.account],[f.tools,f.toolsReason],[f.cost,f.costSource],[f.time,f.active?f.active+' active':''],[f.outcome,''],[f.basis,'']];values.forEach((value,index)=>facts(node._cells[index],...value));rates(node._cells[4]._rates,f.priceModels,'session:'+f.id);
+      let reason=node._cells[4]._reason;if(!reason){reason=h('span',{class:'sub'});node._cells[4].append(reason);node._cells[4]._reason=reason;}text(reason,f.costReason);reason.hidden=!f.costReason;
+    }},state.passive);
+    const bars=spanRows(data.sessions);view.span.hidden=!bars.length;const first=bars.length?Math.min(...bars.map(row=>row.start)):0,last=bars.length?Math.max(...bars.map(row=>row.end)):0,width=last-first||1;const chart=view.span.querySelector('.span');text(chart.querySelector('.axis').firstChild,time(first));text(chart.querySelector('.axis').lastChild,time(last));
+    let list=chart.querySelector('[data-bars]');if(!list){list=h('div',{'data-bars':'',style:{display:'contents'}});chart.append(list);}patch.keyed(list,bars,{key:row=>row.id,version:()=> 'bar-v1',render:()=>h('div',{style:{display:'contents'}},h('div',{class:'rl'}),h('div',{class:'trk'},h('b'))),update:(node,row)=>{text(node.firstChild,row.label);const bar=node.lastChild.firstChild;bar.classList.toggle('nl',row.basis==='associated');bar.style.left=(row.start-first)/width*100+'%';bar.style.width=(row.end-row.start)/width*100+'%';bar.title=row.label+' · '+time(row.start)+'–'+time(row.end);}},state.passive);
+  }
+  function form(){const view=active,rate=state.activeRate;if(!rate){view.form?.remove();view.request=null;return;}if(!view.form){view.form=template('<form id="rate-form" class="note"><h2>Set a rate</h2><label>Model <input class="cs-input" name="modelPrefix" required></label><label>Effective from <input class="cs-input" name="effectiveFrom" type="date" required></label><label>Input per million tokens ($) <input class="cs-input" name="inputPerMtok" type="number" min="0" step="any" required></label><label>Output per million tokens ($) <input class="cs-input" name="outputPerMtok" type="number" min="0" step="any" required></label><button class="cs-btn" type="submit">Save rate</button><button class="cs-btn" type="button" data-cancel-rate>Cancel</button><p id="rate-error" role="status"></p></form>').firstChild;view.formHost.append(view.form);}const node=view.form;if(node.parentNode!==view.formHost)view.formHost.append(node);
+    if(view.request!==rate.requestToken){view.request=rate.requestToken;set(node,'data-request-token',rate.requestToken);set(node,'data-model',rate.model);set(node,'data-row-id',rate.rowId);node.elements.modelPrefix.value=modelRatePrefix(rate.model);node.elements.effectiveFrom.value=localDate(Math.min(...(state.data?.sessions.map(row=>timing(row)?.startedAtMs??row.session?.recordedAtMs).filter(Number.isFinite)??[]),Date.now()));node.elements.inputPerMtok.value='';node.elements.outputPerMtok.value='';}
+    const save=node.querySelector('[type=submit]');controlBusy(save,rate.phase==='saving');text(save,rate.phase==='saving'?'Saving rate…':'Save rate');text(node.querySelector('#rate-error'),rate.phase==='failed'?rate.notice:'');
+  }
+  function renderPanel(){panel.hidden=!state.selected;if(!state.selected)return;if(!panel.firstChild)panel.append(template('<button class="cs-btn pclose" data-close>Close</button><h2 id="panel-title">Session</h2><p class="mono" data-panel-session></p><p>Open the conversation to see this session in full.</p><a class="cs-btn">Open conversation</a>'));set(panel,'data-row-id','session:'+state.selected);set(panel,'role','complementary');set(panel,'aria-labelledby','panel-title');text(panel.querySelector('[data-panel-session]'),state.selected);set(panel.querySelector('a'),'href','#session/'+encodeURIComponent(state.selected));}
+  function render(next){state=next;mount(state.id);const view=active,data=state.data;text(view.title,data?.sessions.find(row=>row.story?.title)?.story.title??data?.tasks.find(task=>task.taskId==='story:'+state.id)?.goal??state.id);text(view.meta,state.id);text(view.updated,state.updated?'Updated '+new Date(state.updated).toLocaleString([],{dateStyle:'short',timeStyle:'short'}):'');text(view.notice.firstChild,state.lastRate?.notice??'');set(view.notice,'data-row-id',state.lastRate?.rowId??null);const retry=view.notice.querySelector('button'),pending=state.lastRate?.phase==='pending-acceptance';retryControl(retry,pending);view.loading.hidden=!!data||!!state.error;view.error.hidden=!state.error;text(view.error.querySelector('b'),data?'The latest read failed.':'The story could not be read.');text(view.error.querySelector('.grow>span'),state.error+(data?' Showing the last loaded rows.':''));const errorRetry=view.error.querySelector('button');retryControl(errorRetry,!!state.error);for(const section of [view.totals.closest('section'),view.tasks,view.sessions])section.hidden=!data;
+    if(data){totals(data);tasks(data);sessions(data);}view.changes.render({data,passive:state.passive,history:state.commitHistory,error:state.changesError,actionControl:state.actionControl,diffResult:state.diffResult});const flat=view.tasks.querySelector('[data-flat]');text(flat,state.flat?'Task tree':'Flat time order');set(flat,'aria-pressed',state.flat);for(const group of view.sessions.querySelectorAll('[data-group]'))set(group,'aria-pressed',(group.dataset.group==='task')===state.byTask);form();(panelRenderer??renderPanel)(state.passive);
+  }
+  function message(title,body,back=null){const nodes=[h('h1',{text:title}),h('p',{text:body})];if(back)nodes.push(h('a',{class:'cs-btn',href:back,text:'Back to story trail'}));root.replaceChildren(...nodes);}
+  return {render,renderPanel,message,patches:patch,stop:patch.stop};
+}
+
+// SPDX-License-Identifier: MIT
+// Wire projections shared by the session panel and the conversation tab.
+// Shown where the installed app lacks a call this view uses.
+const NEEDS_NEWER='This view needs a newer CodeSense.';
+function conversationState(page) {
+  if (!page) return 'loading';
+  if (page.lookup?.found === false) return page.reason ?? 'That turn is not in the stored conversation';
+  return ({absent:'not captured',expired:'removed after 90 days',unsupported:page.reason,unavailable:page.reason})[page.state] ?? page.state;
+}
+function editChips(turn) {
+  return (turn.tool_calls??[]).flatMap(call=>{
+    if(!/edit|write|patch/i.test(call.name))return [];
+    let input;try{input=JSON.parse(call.input);}catch{
+      return [...String(call.input??'').matchAll(/^\*\*\* (?:Update|Add) File: (.+)$/gm)].map(match=>({path:match[1],start:null,end:null}));
+    }
+    const path=input?.file_path??input?.path;
+    if(typeof path!=='string')return [];
+    const start=input.start_line??input.line,end=input.end_line??start;
+    const ranged=Number.isInteger(start)&&Number.isInteger(end)&&start>0&&end>=start;
+    return [{path,start:ranged?start:null,end:ranged?end:null}];
+  });
+}
+const hasRedaction = turn => [turn.text,...(turn.tool_calls??[]).flatMap(call=>[call.input,call.result])].some(value=>typeof value==='string'&&value.includes('[redacted]'));
+function runningSession(rows, facts, requested) {
+  const ids=new Set([requested,facts?.session?.sessionId,...(facts?.nativeSessionIds??[])].filter(Boolean));
+  return rows.find(row=>row.state==='running' && (ids.has(row.sessionId)));
+}
+const tailCursor = page => Math.max(0,page.turnCount+(page.truncated?.droppedTurnCount??0)-4);
+
+// Each retained contiguous interval starts its own deterministic twenty-turn pages.
+function conversationPageRequest(index,gap=null){
+  const at=gap&&index>=gap[0]&&index<=gap[1]?gap[1]+1:index;
+  const start=gap&&at>gap[1]?gap[1]+1:0;
+  const cursor=start+Math.floor((at-start)/20)*20;
+  return {cursor,limit:gap&&cursor<gap[0]?Math.min(20,gap[0]-cursor):20};
+}
+
+// Recorded absolute paths may be made relative only to a recorded story worktree.
+function editDiffRequest(facts,chip,storyId){
+  if(!facts?.sourceRepo)return {status:'unavailable',reason:'The story’s source repository is unavailable'};
+  let path=chip.path;
+  if(path.startsWith('/')){
+    const root=(facts.worktrees??[]).map(row=>row.path?.replace(/\/$/,'')).filter(Boolean).sort((a,b)=>b.length-a.length).find(root=>path.startsWith(root+'/'));
+    if(!root)return {status:'refused',reason:'The recorded path is outside this story’s worktree'};
+    path=path.slice(root.length+1);
+  }
+  return {params:{repo:facts.sourceRepo,rev:'WORKTREE',path,storyId,...(chip.start==null?{}:{range:{start:chip.start,end:chip.end}})}};
+}
+
+// SPDX-License-Identifier: MIT
+
+// Shared leaf and turn patches for the panel excerpt and full conversation.
+function createSessionDom({kit,patch,doc=document}) {
+  const h=kit.h,text=patch.text;
+  const set=(node,name,value)=>{if(value==null)node.removeAttribute(name);else if(node.getAttribute(name)!==String(value))node.setAttribute(name,String(value));};
+  const template=html=>{const t=doc.createElement('template');t.innerHTML=html;return t.content;};
+  function recorded(node,value,passive){
+    const parts=String(value??'').split(/(\[redacted\])/).filter(Boolean).map((value,index)=>({value,index,redacted:value==='[redacted]'}));
+    patch.keyed(node,parts,{key:p=>p.index,version:p=>p.redacted?'redacted':'text',render:p=>h('span',{class:p.redacted?'rd':''}),update:(el,p)=>text(el,p.value)},passive);
+  }
+  const note=page=>page?.truncated?`Conversation truncated${page.truncated.droppedTurnCount?` · ${page.truncated.droppedTurnCount} turns left out`:''}${page.truncated.trimmedFields?` · ${page.truncated.trimmedFields} fields shortened`:''}.`:'';
+  function tool(){return h('details',{class:'tool'},h('summary',null,h('span',{class:'tool-name mono'}),h('span',{class:'tool-input'}),h('span',{class:'tool-status'})),h('pre',{class:'tool-output'}),h('pre',{class:'tool-output'}));}
+  function updateTool(node,item,passive){const call=item.call,summary=node.firstChild,status=call.is_error===true?'failed':call.is_error===false?'ok':'';set(node,'data-tool-key',item.key);set(node.children[1],'data-scroll-key',item.key+':input');set(node.children[2],'data-scroll-key',item.key+':result');text(summary.children[0],call.name);recorded(summary.children[1],call.input?.slice(0,160),passive);summary.children[1].hidden=!call.input;text(summary.children[2],status);summary.children[2].className='tool-status '+status;summary.children[2].hidden=!status;recorded(node.children[1],call.input,passive);recorded(node.children[2],call.result,passive);node.children[1].hidden=!call.input;node.children[2].hidden=!call.result;}
+  function diffStatus(action=null){return h('div',{'data-diff-result':'',role:'status'},h('p'),h('input',{readonly:'','aria-label':'Fetch command'}),h('button',{class:'cs-btn is-sm',...(action?{'data-conv-action':action}:{'data-open-workspace':''})},'Open in workspace'));}
+  function updateDiffStatus(node,result){node.hidden=!result||result.status==='opened';text(node.firstChild,result?.reason??'');node.children[1].hidden=result?.status!=='commitNotLocal';set(node.children[1],'value',result?.fetchCommand??'');node.children[2].hidden=result?.status!=='commitNotLocal';}
+  function turn(){const node=h('article',{'data-row-focus':'',tabindex:'-1',class:'turn'},h('header',{class:'turn-head','data-row-label':''},h('b'),h('span'),h('span',{class:'muted'})),h('div',{class:'turn-text'}),h('div',{'data-tools':''}),h('div',{'data-chips':''}));return node;}
+  function updateTurn(node,item,passive){
+    const t=item.turn,index=t.index,meta=[t.model,t.ts_ms==null?'':new Date(t.ts_ms).toLocaleString([],{dateStyle:'short',timeStyle:'short'})].filter(Boolean);
+    if(t.usage?.input_tokens!=null)meta.push(`${t.usage.input_tokens.toLocaleString()} input tokens`);if(t.usage?.output_tokens!=null)meta.push(`${t.usage.output_tokens.toLocaleString()} output tokens`);
+    set(node,'data-row-focus',`turn:${index??item.key}`);set(node,'id',index==null?null:`turn-${index}`);set(node,'aria-label',hasRedaction(t)?`Turn ${index??''}, contains redacted content`:null);node.className=`turn ${t.role==='user'?'request':''} ${index===item.highlight?'highlight':''}`;
+    text(node.firstChild.children[0],t.role==='user'?'Request':item.agent??'Agent');text(node.firstChild.children[1],index==null?'':`Turn ${index}`);text(node.firstChild.children[2],meta.join(' · '));recorded(node.children[1],t.text,passive);node.children[1].hidden=!t.text;
+    patch.keyed(node.children[2],(t.tool_calls??[]).map((call,i)=>({call,key:`${index??item.key}:${call.native_id??i}`})),{key:x=>x.key,render:tool,update:(el,x)=>updateTool(el,x,passive)},passive);
+    patch.keyed(node.children[3],editChips(t).map((chip,i)=>({...chip,key:JSON.stringify([chip.path,chip.start,chip.end,i])})),{key:x=>x.key,render:()=>h('button',{type:'button',class:'edit-chip mono'}),update:(el,c)=>{set(el,'data-edit-path',c.path);set(el,'data-edit-start',c.start);set(el,'data-edit-end',c.end);text(el,c.path+(c.start==null?'':` · lines ${c.start}–${c.end}`));}},passive);
+  }
+  return {h,text,set,template,recorded,note,turn,updateTurn,conversationState,diffStatus,updateDiffStatus};
+}
+
+// SPDX-License-Identifier: MIT
+
+// Contribution facts use the same kit reconciliation and protected leaf patches.
+// The header line is text only; the PR link lives in Commits and PR, so the first focusable stays [data-flat].
+function createChangesView({root,header,kit,patch,doc=root.ownerDocument}) {
+ const {h,text,set,template,diffStatus,updateDiffStatus}=createSessionDom({kit,patch,doc});
+ root.append(template('<p class="note" data-worktree-note hidden></p>'));root.append(diffStatus());root.append(template('<div class="changes-grid"><section aria-labelledby="files-title"><div class="sh"><h2 id="files-title">Files changed</h2><span class="muted" data-file-count></span></div><p class="muted" data-planned-reason hidden></p><p class="muted" data-lines-reason hidden></p><p class="muted" data-lines-basis hidden></p><div class="table-wrap"><table class="cs-table t changed-files" aria-label="Files changed"><thead><tr><th>File</th><th>Lines</th><th>Planned</th></tr></thead><tbody></tbody></table></div><div data-untouched><h3>Planned but not changed</h3><ul></ul><details><summary></summary><ul></ul></details></div></section><section aria-labelledby="commits-title"><div class="sh"><h2 id="commits-title">Commits and PR</h2><span class="muted" data-commit-count></span></div><div data-prs></div><div data-branches></div><p class="muted" data-commit-reason hidden></p><ol class="commit-list" data-commits></ol><p class="fail" role="status" data-changes-error hidden></p><div class="commit-paging" data-row-focus="commit-paging" tabindex="-1"></div></section></div>'));
+ header.append(h('div'),h('div'));
+ const q=selector=>root.querySelector(selector),time=value=>value==null?'':new Date(value).toLocaleString([],{dateStyle:'short',timeStyle:'short'});
+ function link(container,value,label,reason,passive){patch.keyed(container,[{value,label,reason}],{key:()=> 'link',version:item=>item.value?'link':'label',render:item=>h(item.value?'a':'span',{class:'disc'}),update:(node,item)=>{if(item.value){set(node,'href',item.value);set(node,'target','_blank');set(node,'rel','noopener');}text(node,item.label+(item.value||!item.reason?'':` · ${item.reason}`));}},passive);}
+ function prs(container,rows,passive,compact=false){patch.keyed(container,rows,{key:row=>row.mergedSha??String(row.number),render:()=>h('div',{class:'change-pr'},h('span'),h('span'),h('span',{class:'sub'})),update:(node,pr)=>{text(node.firstChild,pr.mergedAt==null?pr.mergedAtReason??'':`Merged ${time(pr.mergedAt)} `);link(node.children[1],compact?null:pr.url,`PR #${pr.number}`,compact?null:pr.urlReason,passive);text(node.lastChild,[pr.source==='squash-subject'?(compact?'(squash)':'branch commits not kept (squash-merged)'):'',compact?null:pr.branch?`branch ${pr.branch}`:'',compact?null:pr.basis].filter(Boolean).join(' · '));}},passive);}
+ function paths(container,rows,passive){patch.keyed(container,rows,{key:path=>path,render:()=>h('li',{class:'mono'}),update:(node,path)=>text(node,path)},passive);}
+ function render({data,passive=false,history=null,error='',actionControl=null,diffResult=null}){
+  const available=Array.isArray(data?.actual)&&Array.isArray(data?.commits);root.hidden=!available;header.hidden=!available;if(!available)return;
+  const files=data.actual,planned=Array.isArray(data.planned),fileCount=data.totals?.files??files.length;
+  updateDiffStatus(q('[data-diff-result]'),diffResult);
+  prs(header.firstChild,data.prs??[],passive,true);
+  patch.keyed(header.lastChild,data.branches??[],{key:row=>row.name,render:()=>h('span',{class:'mono'}),update:(node,branch)=>text(node,'branch '+branch.name+' ')},passive);
+  const removed=(data.worktrees??[]).some(row=>row.state==='removed');q('[data-worktree-note]').hidden=!removed;text(q('[data-worktree-note]'),removed?'The worktree was removed. Recorded sessions, tasks and cost remain; file and commit facts are read from local git when available.':'');
+  text(q('[data-file-count]'),`${fileCount} files`);text(q('[data-planned-reason]'),planned?'':data.unavailable?.planned??'Touchpoints are not available');q('[data-planned-reason]').hidden=planned;
+  const linesReason=[...new Set([data.unavailable?.fileLines,data.unavailable?.files,...files.map(file=>file.linesReason)].filter(Boolean))].join(' · ');text(q('[data-lines-reason]'),linesReason);q('[data-lines-reason]').hidden=!linesReason;const basis=(data.prs??[]).length&&files.some(file=>file.lines)?"lines changed by this story's merged PRs":'';text(q('[data-lines-basis]'),basis);q('[data-lines-basis]').hidden=!basis;
+  patch.keyed(q('tbody'),files,{key:file=>file.path,render:()=>h('tr',{'data-row-focus':'',tabindex:'-1'},h('td',{class:'mono','data-row-label':''},h('span'),h('div')),h('td',null,h('span'),h('div',null,h('button',{class:'disc','data-lines-path':'','aria-controls':'drill-panel'},'Who changed lines'))),h('td',null,h('span',{'data-file-planned':''}),h('div'))),update:(node,file)=>{set(node,'data-row-focus','file:'+file.path);text(node.firstChild.firstChild,file.path);const choices=diffChoices(data,file.path);patch.keyed(node.firstChild.lastChild,data.sourceRepo?choices:[],{key:choice=>choice.rev,render:()=>h('button',{class:'disc'}),update:(button,choice)=>{set(button,'data-diff-path',file.path);set(button,'data-diff-rev',choice.rev);text(button,choice.label);}},passive);const lines=node.children[1].lastChild.firstChild;lines.hidden=!data.sourceRepo;set(lines,'data-lines-path',file.path);set(lines,'aria-label',`Who changed lines in ${file.path}`);text(node.children[1].firstChild,file.lines?`+${file.lines.added} −${file.lines.removed}`:file.linesReason&&file.linesReason!==data.unavailable?.fileLines?file.linesReason:linesReason?'unknown':'not available locally');text(node.children[2].firstChild,planned?(file.inPlanned?'yes':'no'):'');patch.keyed(node.children[2].lastChild,file.decision==null?[]:[file.decision],{key:()=> 'decision',render:()=>h('button',{class:'disc'}),update:(button,number)=>{set(button,'data-decision',number);text(button,'Decision '+number);}},passive);}},passive);
+  const untouched=data.plannedUntouched??[],section=q('[data-untouched]');section.hidden=!untouched.length;paths(section.querySelector('ul'),untouched.slice(0,3),passive);const detail=section.querySelector('details');detail.hidden=untouched.length<=3;text(detail.firstChild,`+${Math.max(0,untouched.length-3)} more`);paths(detail.querySelector('ul'),untouched.slice(3),passive);
+  prs(q('[data-prs]'),data.prs??[],passive);
+  patch.keyed(q('[data-branches]'),data.branches??[],{key:row=>row.name,render:()=>h('p',{class:'muted'},h('span',{class:'mono'}),h('span')),update:(node,branch)=>{text(node.firstChild,branch.name);const merged=(data.prs??[]).some(pr=>pr.branch===branch.name);text(node.lastChild,[branch.unavailable,merged?null:branch.pr?.unavailable,branch.basis].filter(Boolean).map(v=>' · '+v).join(''));}},passive);
+  const reason=data.unavailable?.commits;text(q('[data-commit-reason]'),reason);q('[data-commit-reason]').hidden=!reason;
+  const seen=new Set(),commits=[...(data.commits??[]),...(history?.extra??[])].filter(row=>!seen.has(row.sha)&&seen.add(row.sha));
+  text(q('[data-commit-count]'),history?.stale?`${commits.length} loaded · latest total ${data.total}`:`${commits.length} of ${data.total} commits`);
+  patch.keyed(q('[data-commits]'),commits,{key:row=>row.sha,render:()=>h('li',{'data-row-focus':'',tabindex:'-1'},h('div',{'data-row-label':''},h('span',{class:'mono'},h('span'),h('button',{class:'disc'})),h('span')),h('div',{class:'muted'}),h('div'),h('p',{class:'muted'})),update:(node,commit)=>{set(node,'data-row-focus','commit:'+commit.sha);text(node.firstChild.firstChild.firstChild,commit.sha.slice(0,7)+' ');const open=node.firstChild.firstChild.lastChild;open.hidden=!data.sourceRepo||!commit.files?.length;set(open,'data-diff-path',commit.files?.[0]??'');set(open,'data-diff-rev',commit.sha);node.firstChild.firstChild.firstChild.hidden=!open.hidden;text(open,commit.sha.slice(0,7));set(node.firstChild.firstChild,'title',commit.sha);text(node.firstChild.lastChild,commit.subject);text(node.children[1],[time(commit.authoredAt),commit.author,commit.basis].filter(Boolean).join(' · '));patch.keyed(node.children[2],commit.sessionIds??[],{key:id=>id,render:()=>h('button',{class:'disc'}),update:(button,id)=>{const session=(data.sessions??[]).find(row=>sessionId(row)===id||row.nativeSessionIds?.includes(id));set(button,'data-conversation',id);text(button,session?sessionFacts(session).agent:id);}},passive);text(node.lastChild,commit.unavailable);node.lastChild.hidden=!commit.unavailable;}},passive);
+  const failure=error||history?.error||'';text(q('[data-changes-error]'),failure);q('[data-changes-error]').hidden=!failure;
+  const cursor=history?history.nextCursor:data.nextCursor;patch.keyed(q('.commit-paging'),history?.stale?[{action:'reload',label:'Reload commits'}]:cursor==null?[]:[{action:'more',label:'Show more commits'}],{key:item=>item.action,render:()=>h('button',{class:'cs-btn is-sm'}),update:(button,item)=>{set(button,item.action==='more'?'data-more-commits':'data-reload-commits','');set(button,'aria-disabled',button===actionControl||(item.action==='more'&&history?.busy)?'true':null);text(button,item.label);}},passive);
+ }
+ return {render};
+}
+
+// SPDX-License-Identifier: MIT
+
+// "Who changed these lines" in the shared side panel: the same leaf patches, gesture gate and focus rule.
+function createLinesView({kit,patch,doc}) {
+  const {h,text,set,template,diffStatus,updateDiffStatus}=createSessionDom({kit,patch,doc});
+  const node=h('div');
+  node.append(template('<header class="panel-head"><h2 id="panel-title">Who changed these lines</h2><p class="mono sub" data-lines-file></p></header><form id="lines-form" class="lines-form"><label>From line <input class="cs-input" name="linesStart" type="number" min="1" step="1" required></label><label>To line <input class="cs-input" name="linesEnd" type="number" min="1" step="1" required></label><button class="cs-btn" type="submit" data-panel-key="lines:show">Show</button></form><p class="fail" role="status" data-lines-refused hidden></p><p class="muted" data-lines-hint hidden>Pick lines to see who changed them.</p><div class="lines-diff"><button class="cs-btn" data-panel-key="lines:diff" data-lines-diff>Open diff</button> <span class="sub" data-lines-rev></span></div>'));
+  node.append(diffStatus());
+  node.append(template('<div data-lines-loading aria-label="Loading line attribution" aria-busy="true"></div><p class="fail" role="status" data-lines-error hidden><span></span> <button class="cs-btn" data-panel-key="lines:retry" data-lines-retry>Retry</button></p><p class="note" data-lines-unavailable hidden></p><p class="subh" data-lines-summary hidden></p><div data-lines-groups></div><div data-lines-associated hidden><p class="note"><b>Who changed each line isn’t recorded yet</b><br><span></span></p><div class="own"></div></div><div class="own" data-lines-other></div>'));
+  node.querySelector('[data-lines-loading]').append(kit.skeleton({rows:3}));
+  const q=selector=>node.querySelector(selector);
+  // A passive render keeps what the person is typing; only a new committed value replaces it.
+  const value=(input,next)=>{next=next==null?'':String(next);if(input.dataset.applied!==next){input.value=next;input.dataset.applied=next;}};
+  const conversation=(container,id,turn,passive)=>patch.keyed(container,id?[{id,turn}]:[],{key:item=>`${item.id}:${item.turn??''}`,render:()=>h('button',{class:'disc'}),update:(button,item)=>{set(button,'data-conversation',item.id);set(button,'data-turn',item.turn);set(button,'data-panel-key',`lines:conversation:${item.id}:${item.turn??''}`);text(button,item.turn==null?'Open conversation':`Open conversation at turn ${item.turn}`);}},passive);
+  function render(state,passive){
+    const {path,start,end,result,error,refused}=state,picked=start!=null,revision=lineRevision(state.data,path);
+    text(q('h2'),picked?`Who changed ${lineSpan({start,end}).toLowerCase()}`:'Who changed these lines');text(q('[data-lines-file]'),path);
+    value(q('[name=linesStart]'),start);value(q('[name=linesEnd]'),end);
+    text(q('[data-lines-refused]'),refused);q('[data-lines-refused]').hidden=!refused;
+    q('[data-lines-hint]').hidden=picked||!result;text(q('[data-lines-hint]'),result?.capped?'Pick lines to see who changed them — ranges not all loaded.':'Pick lines to see who changed them.');
+    const diffRev=revision?.diffRev,diff=q('[data-lines-diff]');diff.hidden=!picked||!diffRev||!state.data?.sourceRepo;set(diff,'data-diff-rev',diffRev);set(diff,'data-diff-path',path);set(diff,'data-diff-start',start);set(diff,'data-diff-end',end);text(q('[data-lines-rev]'),revision?.label??'');
+    updateDiffStatus(q('[data-diff-result]'),state.diffResult);
+    const unavailable=result?.status==='unavailable'?result.reason:'',answered=!!result&&!unavailable&&!!result.ranges;
+    q('[data-lines-loading]').hidden=!!result||!!error||!picked;
+    const fail=q('[data-lines-error]');fail.hidden=!error;text(fail.firstChild,error);
+    text(q('[data-lines-unavailable]'),unavailable);q('[data-lines-unavailable]').hidden=!unavailable;
+    const owners=answered?lineOwnership(result,state.storyId,state.data?.sessions):{changed:0,groups:[],associated:[],candidates:[],other:[]};
+    const summary=q('[data-lines-summary]');summary.hidden=!owners.changed;text(summary,owners.changed?`This story changed ${owners.changed} of these ${end-start+1} lines.`:'');
+    patch.keyed(q('[data-lines-groups]'),owners.groups,{key:group=>group.key,render:()=>h('div',{class:'own',role:'group'},h('div',{class:'oh'},h('span',null,h('b'),h('small'))),h('div')),update:(el,group)=>{set(el,'data-lines-group',group.key);set(el,'aria-label',`${group.agent} · ${group.detail}`);const [name,detail]=el.firstChild.firstChild.children;text(name,group.agent);text(detail,group.detail);
+      patch.keyed(el.lastChild,group.ranges,{key:range=>range.key,render:()=>h('div',{class:'or','data-lines-range':''},h('div',{class:'ot'}),h('div',{class:'oc'})),update:(row,range)=>{text(row.firstChild,range.text);conversation(row.lastChild,group.sessionId,range.turn,passive);}},passive);}},passive);
+    const shared=q('[data-lines-associated]');shared.hidden=!owners.associated.length;text(shared.querySelector('span'),owners.associated.length?`These sessions edited this file. One of them may have changed ${owners.associated.map(range=>lineSpan(range).toLowerCase()).join(', ')}.`:'');
+    shared.lastChild.hidden=!owners.candidates.length;
+    patch.keyed(shared.lastChild,owners.candidates,{key:item=>item.id,render:()=>h('div',{class:'or','data-lines-candidate':''},h('div',{class:'ot'},h('b'),h('span')),h('div',{class:'oc'})),update:(row,item)=>{text(row.firstChild.firstChild,item.agent);text(row.firstChild.lastChild,' · associated');conversation(row.lastChild,item.id,null,passive);}},passive);
+    const other=q('[data-lines-other]');other.hidden=!owners.other.length;
+    patch.keyed(other,owners.other,{key:item=>`${item.range.start}:${item.range.end}:${item.range.commit}`,render:()=>h('div',{class:'or','data-lines-range':''},h('div',{class:'ot'})),update:(row,item)=>text(row.firstChild,item.text)},passive);
+  }
+  return {node,render};
+}
+
+// SPDX-License-Identifier: MIT
+
+function createPanelView({root,kit,patch,doc=root.ownerDocument}) {
+  const {h,text,set,template,recorded,note,conversationState}=createSessionDom({kit,patch,doc}),frames=new Map();
+  const close=h('button',{class:'cs-btn pclose','data-close':'','data-panel-key':'close'},'Close'),host=h('div');root.replaceChildren(close,host);
+  let active=null,lines=null;
+  function frame(){const f=h('div');f.append(template('<header class="panel-head"><h2 id="panel-title">Session</h2><span class="sub" data-agent></span><p class="basis"></p><button class="cs-btn is-primary" data-panel-key="conversation" data-conversation>Open conversation</button></header><div data-loading aria-label="Loading session" aria-busy="true"></div><p class="fail" role="status" hidden><span></span> <button class="cs-btn" data-panel-key="retry" data-panel-retry>Retry</button></p><div data-facts hidden><p class="note" data-link></p><p data-account></p><section data-tasks><h3>Task</h3><div></div></section><section data-outcome><h3>Outcome</h3><p></p></section><section data-models><h3>Models</h3><div class="table-wrap"><table class="cs-table t model-facts"><thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Cached input</th><th>Cost</th></tr></thead><tbody></tbody></table></div></section><section data-tools><h3>Tools</h3><p data-reason></p><div class="table-wrap"><table class="cs-table t model-facts"><thead><tr><th>Tool</th><th>Calls</th><th>Errors</th><th></th></tr></thead><tbody></tbody></table></div></section><section data-timing><h3>Timing</h3><dl class="facts-grid"></dl></section><section data-files><h3>Files written <span class="muted">· in these turns</span></h3><div></div></section><h3>Conversation</h3><p class="note" data-truncation></p><p class="note" data-state></p><div class="excerpt"></div></div>'));f.querySelector('[data-loading]').append(kit.skeleton({rows:4}));return f;}
+  function render(state,passive=false){
+    root.hidden=!state;if(!state)return;
+    if(state.kind==='lines'){lines??=createLinesView({kit,patch,doc});if(active!==lines.node){host.replaceChildren(lines.node);active=lines.node;}set(root,'data-row-id','file:'+state.path);set(root,'role','complementary');set(root,'aria-labelledby','panel-title');lines.render(state,passive);return;}
+    if(!frames.has(state.id))frames.set(state.id,frame());const f=frames.get(state.id);if(active!==f){host.replaceChildren(f);active=f;}
+    set(root,'data-row-id','session:'+state.id);set(root,'role','complementary');set(root,'aria-labelledby','panel-title');
+    const q=s=>f.querySelector(s),data=state.data,facts=data?sessionFacts(data):null,page=data?.conversation;
+    text(q('h2'),facts?.agent??'Session');text(q('[data-agent]'),facts?[facts.cli,facts.model].filter(Boolean).join(' · '):'');text(q('.basis'),facts?`${facts.basis} · ${state.id}`:'');q('[data-conversation]').hidden=!data;set(q('[data-conversation]'),'data-conversation',state.id);q('[data-loading]').hidden=!!data||!!state.error;q('[data-facts]').hidden=!data;
+    const fail=q('.fail');fail.hidden=!state.error;text(fail.firstChild,state.error);set(fail.querySelector('button'),'aria-disabled',state.actionControl===fail.querySelector('button')?'true':null);
+    if(!data)return;
+    text(q('[data-link]'),facts.link);q('[data-link]').hidden=!!data.session;text(q('[data-account]'),facts.account?'Account · '+facts.account:'');q('[data-account]').hidden=!facts.account;
+    const tasks=q('[data-tasks]');tasks.hidden=!data.tasks?.length;patch.keyed(tasks.lastChild,data.tasks??[],{key:t=>t.taskId,render:()=>h('p',null,h('span'),h('span',{class:'sub'})),update:(el,t)=>{const facts=taskFacts(t,[data]);text(el.firstChild,t.goal);text(el.lastChild,[facts.type,facts.skill].filter(Boolean).join(' · '));}},passive);
+    q('[data-outcome]').hidden=!facts.outcome;text(q('[data-outcome] p'),facts.outcome);
+    q('[data-models]').hidden=!data.models?.length;
+    patch.keyed(q('[data-models] tbody'),data.models??[],{key:m=>m.model,render:()=>h('tr',null,h('td'),h('td'),h('td'),h('td'),h('td',null,h('span'),h('span',{class:'sub'}),h('div'))),update:(el,m)=>{[m.model,m.tokens?.input,m.tokens?.output,m.tokens?.cacheRead].forEach((v,i)=>text(el.children[i],v));const cost=el.children[4];text(cost.children[0],money(m.costUsd));text(cost.children[1],m.costUsd==null?'not priced':costSourceLabel(m.costSource));patch.keyed(cost.children[2],m.costUsd==null?[m]:[],{key:x=>x.model,render:()=>h('button',{class:'disc rate-link'},'Set a rate'),update:(b,x)=>{set(b,'data-panel-key','rate:'+x.model);set(b,'data-panel-rate',x.model);}},passive);}},passive);
+    const tools=data.tools?.used; q('[data-tools] .table-wrap').hidden=tools==null;text(q('[data-reason]'),data.tools?.usedReason);q('[data-reason]').hidden=!data.tools?.usedReason;
+    patch.keyed(q('[data-tools] tbody'),tools??[],{key:t=>JSON.stringify([t.name,t.mcpServer??null]),render:()=>h('tr',null,h('td',{class:'mono'}),h('td'),h('td'),h('td')),update:(el,t)=>{text(el.children[0],t.name);text(el.children[1],t.calls);text(el.children[2],t.errorUnknown?(t.errors?`${t.errors} known · errors unknown for ${t.errorUnknown} calls`:'errors unknown'):t.errors);const turn=['present','truncated'].includes(data.tools.usedState)?state.failedTurns?.[JSON.stringify([t.name,t.mcpServer??null])]??page?.turns.find(turn=>turn.index!=null&&turn.tool_calls?.some(call=>call.name===t.name&&call.is_error===true))?.index:null;patch.keyed(el.children[3],turn==null?[]:[turn],{key:()=> 'failure',render:()=>h('button',{class:'disc'}),update:(b,index)=>{set(b,'data-panel-key',`failure:${t.name}:${t.mcpServer??''}`);set(b,'data-conversation',state.id);set(b,'data-turn',index);text(b,`Failed at turn ${index}`);}},passive);}},passive);
+    const timing=data.session?.timing;q('[data-timing]').hidden=!timing;
+    patch.keyed(q('[data-timing] dl'),timing?Object.entries({Time:duration(timing.wallMs),Active:duration(timing.activeMs),Idle:duration(timing.idleMs),Turns:timing.turnCount,...(data.retries==null?{}:{Retries:data.retries})}):[],{key:x=>x[0],render:()=>h('div',null,h('dt'),h('dd')),update:(el,[k,v])=>{text(el.firstChild,k);text(el.lastChild,v);}},passive);
+    const chips=(page?.turns??[]).flatMap(t=>editChips({...t,tool_calls:t.tool_calls?.filter(c=>c.is_error===false)}));q('[data-files]').hidden=!chips.length;patch.keyed(q('[data-files] div'),chips.map((c,i)=>({...c,key:JSON.stringify([c.path,c.start,c.end,i])})),{key:c=>c.key,render:()=>h('p',{class:'mono'}),update:(el,c)=>text(el,c.path+(c.start==null?'':` · lines ${c.start}–${c.end}`))},passive);
+    text(q('[data-truncation]'),note(page));q('[data-truncation]').hidden=!page?.truncated;const label=conversationState(page),present=['present','truncated'].includes(label);text(q('[data-state]'),label);q('[data-state]').hidden=present;q('.excerpt').hidden=!present;
+    patch.keyed(q('.excerpt'),present?page.turns.map((turn,i)=>({turn,key:turn.index??`unindexed:${i}`})):[],{key:x=>x.key,render:()=>h('div',null,h('span'),h('span')),update:(el,{turn})=>{patch.keyed(el.firstChild,turn.index==null?[]:[turn.index],{key:()=> 'turn',render:()=>h('button',{class:'disc'}),update:(b,index)=>{set(b,'data-panel-key','turn:'+index);set(b,'data-conversation',state.id);set(b,'data-turn',index);text(b,`Turn ${index} ›`);}},passive);recorded(el.lastChild,turn.text??turn.tool_calls?.map(c=>c.name).join(' · ')??'',passive);}},passive);
+  }
+  return {render};
+}
+
+// SPDX-License-Identifier: MIT
+
+function mountConversation({root,cs,id,turn=null,source=null,from=null,cursor=0,visible=true,focusIntents=null,patches=null}) {
+  let data=null,pageFrom=null,rows=[],error='',stopped=false,pendingDiff=null,diffOutcome=null;
+  let request=turn==null?{cursor:from??cursor,limit:20}:{turn},highlight=turn,origin=source,scrollTarget=turn??'page',readingPending=true,actionControl=null;
+  const readingPositions=new Map();
+  const openedTools=new Set();
+  const focus=focusIntents??createFocusIntents({root});
+  const patch=patches??createPatches({root:root.ownerDocument.body,kit:cs.kit});
+  const {h,text,set,template,note,turn:turnNode,updateTurn,diffStatus,updateDiffStatus}=createSessionDom({kit:cs.kit,patch,doc:root.ownerDocument});
+  root.append(template('<header class="conversation-head"><div class="conversation-title"><div class="grow"><h1>Conversation</h1><p data-facts></p><p class="muted" data-context></p><p class="muted mono" data-id></p></div><span class="live" data-live-label hidden>Live</span><div data-live></div></div><div data-back></div></header><div data-error></div><section data-loading aria-label="Loading conversation" aria-busy="true"></section><p class="note" data-truncation hidden></p><section class="note" data-state hidden><h2></h2><p></p></section><div class="conversation-body" hidden><nav class="turn-rail" data-scroll-key="conversation-rail" aria-label="Conversation turns"><ol></ol></nav><div class="thread" data-scroll-key="conversation-thread"><div class="turns-inner"><div data-origin></div><div data-earlier></div><div data-turns></div><div data-later></div></div></div></div>'));
+  const q=selector=>root.querySelector(selector);
+  q('[data-error]').after(diffStatus('workspace'));
+  q('[data-loading]').append(cs.kit.skeleton({rows:4}));
+  text(q('[data-id]'),id);
+  function actions(container,items,passive){patch.keyed(container,items,{key:x=>x.action,render:()=>h('button',{class:'cs-btn is-sm'}),update:(node,item)=>{set(node,'data-conv-action',item.action);set(node,'data-from',item.from);text(node,item.label);}},passive);}
+  function render(since=undefined){
+    if(stopped)return;
+    if(since!==undefined&&patch.defer(render,()=>render(since)))return;
+    let intent=focus.capture();if(since!==undefined)({intent}=focus.completion(intent,{since}));
+    const passive=since!==undefined,facts=data?sessionFacts(data):null,page=data?.conversation,state=conversationState(page),live=runningSession(rows,data,id),present=!!data&&['present','truncated'].includes(state);
+    text(q('h1'),facts?.agent??'Conversation');text(q('[data-facts]'),facts?[facts.model,facts.time,page?`${page.turnCount} turns`:null,facts.cost].filter(Boolean).join(' · '):'');text(q('[data-context]'),data?[data.story?[data.story.id,data.story.title].filter(Boolean).join(' · '):null,data.basis,facts.account].filter(Boolean).join(' · '):'');
+    actions(q('[data-live]'),live?[{action:'live',label:'Jump to live terminal'}]:[],passive);q('[data-live-label]').hidden=!live;
+    actions(q('[data-back]'),data?.story?.id?[{action:'back',label:'Back to story trail'}]:[],passive);
+    patch.keyed(q('[data-error]'),error?[error]:[],{key:()=> 'read-error',render:()=>h('p',{class:'fail',role:'status'},h('span'),h('button',{class:'cs-btn','data-conv-action':'retry'},'Retry')),update:(node,value)=>text(node.firstChild,value)},passive);
+    q('[data-loading]').hidden=!!data||!!error;set(q('[data-loading]'),'aria-busy',!data&&!error?'true':null);text(q('[data-truncation]'),note(page));q('[data-truncation]').hidden=!page?.truncated;q('[data-state]').hidden=!data||present;text(q('[data-state] h2'),state);text(q('[data-state] p'),page?.reason&&page.reason!==state?page.reason:'');q('.conversation-body').hidden=!present;
+    const turns=present?[...new Map(page.turns.map((turn,i)=>[turn.index??`unindexed:${i}`,turn])).values()]:[];
+    patch.keyed(q('.turn-rail ol'),turns.filter(t=>t.index!=null),{key:t=>t.index,render:()=>h('li',null,h('a',null,h('span'),h('span'))),update:(node,t)=>{const link=node.firstChild;set(link,'href',`#session/${encodeURIComponent(id)}?from=${pageFrom??0}&turn=${t.index}`);set(link,'data-jump',t.index);set(link,'aria-current',t.index===highlight?'true':null);text(link.firstChild,t.index);text(link.lastChild,t.tool_calls?.[0]?.name??(t.role==='user'?'Request':'Reply'));}},passive);
+    patch.keyed(q('[data-origin]'),present&&highlight!=null?[highlight]:[],{key:()=> 'origin',render:()=>h('p',{class:'origin-note'},h('span'),h('button',{class:'cs-btn is-sm','data-conv-action':'unhighlight'},'Remove highlight')),update:node=>text(node.firstChild,origin?'You came here from '+origin:`Turn ${highlight}`)},passive);
+    // Paging targets are stamped from the page this render shows; a gesture-held render keeps them with the page on screen.
+    const gap=page?.truncated?.droppedTurns,first=turns[0]?.index;
+    actions(q('[data-earlier]'),first>0?[{action:'earlier',label:'Show earlier turns',from:conversationPageRequest(gap&&first===gap[1]+1?gap[0]-1:first-1,gap).cursor}]:[],passive);
+    // The reader alone supplies the forward cursor, including a cursor inside a dropped interval.
+    actions(q('[data-later]'),present&&page.nextCursor!=null?[{action:'later',label:'Show later turns',from:page.nextCursor}]:[],passive);
+    patch.keyed(q('[data-turns]'),turns.map((turn,i)=>({turn,key:turn.index??`unindexed:${i}`,highlight,agent:facts?.agent})),{key:x=>x.key,render:item=>{const node=turnNode();updateTurn(node,item,passive);for(const detail of node.querySelectorAll('details')){detail.open=openedTools.has(detail.dataset.toolKey);}return node;},update:(node,item)=>updateTurn(node,item,passive)},passive);
+    updateDiffStatus(q('[data-diff-result]'),diffOutcome);
+    markBusy();
+    if(root.isConnected)focus.reconcile(intent);
+    reveal();
+  }
+  function rememberToggle(event){const detail=event.target;if(detail.matches?.('details[data-tool-key]')){detail.open?openedTools.add(detail.dataset.toolKey):openedTools.delete(detail.dataset.toolKey);}}
+  function rememberScroll(event){const pre=event.target,detail=pre.closest?.('details[data-tool-key]');if(detail&&pre.matches('pre'))rememberReading();}
+  // A live last page grows; its aligned start alone identifies the reading position.
+  const readingKey=()=>JSON.stringify({sessionId:id,from:pageFrom});
+  function rememberReading(){if(data)readingPositions.set(readingKey(),focus.captureReading(root));}
+  function reveal(){
+    if(!visible||!root.isConnected||!readingPending||request)return;
+    const target=scrollTarget==='page'?q('.thread'):scrollTarget!=null?q(`#turn-${scrollTarget}`)?.querySelector('[data-row-label]'):null;
+    if(scrollTarget!=null&&!target)return;
+    focus.restoreReading(root,{target,saved:readingPositions.get(readingKey())??[]});
+    scrollTarget=null;readingPending=false;
+  }
+  // A passive read never disables controls; only the pending user action owns its busy control.
+  function markBusy(){root.querySelectorAll('[data-jump],[data-conv-action],[data-edit-path]').forEach(el=>set(el,'aria-disabled',el===actionControl?'true':null));}
+  const reader=createIntentReader({
+    enabled:()=>visible&&root.isConnected,
+    capture:()=>({requested:request??(pageFrom==null&&highlight!=null?{turn:highlight}:conversationPageRequest(pageFrom??0,data?.conversation?.truncated?.droppedTurns)),since:focus.capture(),diff:pendingDiff}),
+    async read({requested,diff}){
+      if(typeof cs.sessionRead!=='function')throw new Error(NEEDS_NEWER);
+      const [initial,currentRows]=await Promise.all([cs.sessionRead({sessionId:id,include:['conversation'],limit:20,...requested}),cs.sessions().catch(()=>[])]);
+      let result=initial;const page=result.conversation,first=page?.turns?.find(turn=>turn.index!=null)?.index;
+      if(first!=null&&page.lookup?.found!==false){
+        const aligned=conversationPageRequest(requested.turn??first,page.truncated?.droppedTurns);
+        if(first!==aligned.cursor||page.turns.some(turn=>turn.index>=aligned.cursor+aligned.limit))result=await cs.sessionRead({sessionId:id,include:['conversation'],...aligned});
+      }
+      let diffTarget;
+      if(diff){
+        try{if(typeof cs.storyChanges!=='function')throw new Error(NEEDS_NEWER);diffTarget=diff.storyId?editDiffRequest(await cs.storyChanges({storyId:diff.storyId}),diff,diff.storyId):{status:'unavailable',reason:'This session has no linked story'};}
+        catch(failure){diffTarget={status:'unavailable',reason:String(failure.message||failure)};}
+      }
+      return {result,currentRows,diffTarget};
+    },
+    commit({result,currentRows,diffTarget},{requested}){data=result;pageFrom=result.conversation?.turns?.find(turn=>turn.index!=null)?.index??null;request=null;rows=currentRows;error='';saveRoute(true,pageFrom??conversationPageRequest(requested.turn??requested.cursor??0,result.conversation?.truncated?.droppedTurns).cursor);
+      if(diffTarget){pendingDiff=null;if(diffTarget.params){if(visible&&root.isConnected)void openDiff(diffTarget.params);}else diffOutcome=diffTarget;}
+    },
+    fail(failure){error=String(failure.message||failure);},
+    settled({since}){actionControl=null;render(since);},
+  });
+  async function openDiff(params){
+    try{if(typeof cs.openDiff!=='function')throw new Error(NEEDS_NEWER);diffOutcome=await cs.openDiff(params);}catch(failure){diffOutcome={status:'unavailable',reason:String(failure.message||failure)};}
+    if(!stopped&&visible&&root.isConnected)render();
+  }
+  const nudge=()=>reader.request();
+  function saveRoute(replace=true,from=pageFrom){
+    if(!visible||!root.isConnected||from==null)return;
+    const hash=`#session/${encodeURIComponent(id)}?from=${from}${highlight==null?'':`&turn=${highlight}`}`;
+    // Re-selecting the loaded turn keeps one history entry.
+    window.history[replace||window.location.hash===hash?'replaceState':'pushState']({storyTrail:true},'',hash);
+    window.parent.postMessage({type:'codesense:route-changed',hash,token:window.__codesenseProxy?.token},'*');
+  }
+  function navigate({turn=null,from=null,cursor=0,source=null,explicit=true,replace=true,control=null}={}){
+    reader.intent();pendingDiff=null;diffOutcome=null;
+    if(visible&&root.isConnected)rememberReading();
+    const gap=data?.conversation?.truncated?.droppedTurns,aligned=conversationPageRequest(turn??from??cursor,gap);
+    const retained=pageFrom===aligned.cursor&&(turn==null||data.conversation.turns.some(row=>row.index===turn));
+    const pendingTurn=readingPending&&turn!=null&&scrollTarget===turn;
+    highlight=turn;origin=source;scrollTarget=explicit?(turn??'page'):pendingTurn?turn:null;readingPending=true;
+    actionControl=retained?null:control;
+    if(retained){request=null;saveRoute(replace);render();return;}
+    request=turn==null?{cursor:from??cursor,limit:aligned.limit}:{turn};if(data)saveRoute(replace,aligned.cursor);markBusy();reader.request();
+  }
+  function jump(index,newSource=null,control=null){navigate({turn:index,source:newSource,replace:false,control});}
+  async function click(event){
+    const actionTarget=event.target.closest('button,a[href],summary');if(actionTarget&&root.ownerDocument.activeElement===root.ownerDocument.body)focus.restore(focus.capture(actionTarget));
+    if(event.target.closest('[aria-disabled="true"]')){event.preventDefault();return;}
+    const link=event.target.closest('[data-jump]');if(link){event.preventDefault();jump(Number(link.dataset.jump),null,link);return;}
+    const chip=event.target.closest('[data-edit-path]');
+    if(chip){pendingDiff={path:chip.dataset.editPath,start:chip.hasAttribute('data-edit-start')?Number(chip.dataset.editStart):null,end:chip.hasAttribute('data-edit-end')?Number(chip.dataset.editEnd):null,storyId:data?.story?.id};diffOutcome=null;actionControl=chip;reader.intent({read:true});render();return;}
+    const action=event.target.closest('[data-conv-action]')?.dataset.convAction;
+    if(!action){if(event.target.closest('summary'))reader.intent();return;}
+    if(action==='retry'){actionControl=actionTarget;reader.intent({read:true});markBusy();return;}
+    if(action==='unhighlight'){reader.intent();request=null;actionControl=null;highlight=null;origin=null;scrollTarget=null;readingPending=false;saveRoute();render();return;}
+    if(action==='earlier'||action==='later'){navigate({from:Number(actionTarget.dataset.from),control:actionTarget});return;}
+    const since=focus.capture();
+    try{if(action==='back')await cs.openFile({path:`story-trail.html#story/${encodeURIComponent(data.story.id)}`,newTab:false});
+      else if(action==='workspace'){if(typeof cs.openWorkspace!=='function')throw new Error(NEEDS_NEWER);await cs.openWorkspace({storyId:data.story.id});}
+      else if(action==='live'){const live=runningSession(rows,data,id);if(typeof cs.gotoAgent!=='function')throw new Error(NEEDS_NEWER);if(live)await cs.gotoAgent({agentId:live.sessionId});}}
+    catch(failure){error=String(failure.message||failure);render(since);}
+  }
+  function setVisible(shown){const changed=shown!==visible;if(!shown&&visible)rememberReading();visible=shown;if(shown&&changed){reveal();reader.request();}}
+  root.addEventListener('click',click);root.addEventListener('toggle',rememberToggle,true);root.addEventListener('scroll',rememberScroll,true);render();reader.request();
+  return {nudge,jump,navigate,setVisible,stop(){stopped=true;reader.stop();if(!focusIntents)focus.stop();if(!patches)patch.stop();root.removeEventListener('click',click);root.removeEventListener('toggle',rememberToggle,true);root.removeEventListener('scroll',rememberScroll,true);}};
+}
+
+// SPDX-License-Identifier: MIT
+
+function mountTrail({cs = window.codesense, doc = document, win = window,
+  getHash = () => win.location.hash, navigate = hash => {win.location.hash = hash;}} = {}) {
+  const root = doc.getElementById('trail'), panel = doc.getElementById('drill-panel');
+  const cache = new Map(), offs = [], collapsed = new Set(), panels = new Map(), conversations=new Map();
+  let conversationView=null,routedPopstate=false,hostRoute=null,stopped=false;
+  let focusedTask = null;
+  let current = null, currentId = '', visible = false;
+  let sort = 'when', direction = 1, flat = false, byTask = false, opener = null, rateOpener = null, activeRate = null, lastRate = null, nextRateToken = 0;
+  const focus=createFocusIntents({root:doc.body,doc,context:element=>({rowId:element.closest('#rate-form')?.dataset.rowId ?? element.closest('#drill-panel')?.dataset.rowId ?? (element.hasAttribute('data-retry')?lastRate?.rowId:null)})});
+  function renderPanel(since=undefined,passive=since!==undefined) {
+    if(passive&&view.patches.defer(renderPanel,()=>renderPanel(since,passive)))return;
+    const id=current?.selected,lines=current?.lines;
+    if(id)panelOwner(id);
+    let intent=focus.capture();
+    if(since!==undefined)({intent}=focus.completion(intent,{since}));
+    panelView.render(lines?{kind:'lines',...lines,storyId:currentId,data:current.data,diffResult:current.diffResult}:id?panels.get(id):null,passive);
+    focus.reconcile(intent);
+    if(lines)current.linesReader.resume();else if(id)panels.get(id).reader.resume();
+  }
+  async function readPanel({state}){
+      if(typeof cs.sessionRead!=='function')throw new Error(NEEDS_NEWER);
+      let result=await cs.sessionRead({sessionId:state.id,include:['conversation'],limit:1});
+      if(result?.conversation?.nextCursor!=null && visible)result=await cs.sessionRead({sessionId:state.id,include:['conversation'],cursor:tailCursor(result.conversation),limit:4});
+      const failedTurns={};
+      await Promise.all((result.tools?.used??[]).map(async tool=>{
+        const candidate='firstRetainedError' in tool?tool.firstRetainedError:tool.firstError;if(candidate?.turn==null)return;
+        try{const lookup=await cs.sessionRead({sessionId:state.id,include:['conversation'],...(candidate.toolUseId?{toolUseId:candidate.toolUseId}:{turn:candidate.turn}),limit:1});
+          if(lookup.conversation?.lookup?.found===true&&lookup.conversation.turns?.some(turn=>turn.index===candidate.turn&&turn.tool_calls?.some(call=>call.name===tool.name&&call.is_error===true&&(!candidate.toolUseId||call.native_id===candidate.toolUseId))))failedTurns[JSON.stringify([tool.name,tool.mcpServer??null])]=candidate.turn;
+        }catch{/* Unavailable conversation evidence must not create a dead jump. */}
+      }));
+      return {result,failedTurns};
+  }
+  function beginRate(model,rowId,focusKey){
+    current.reader.intent();
+    rateOpener=focusKey;activeRate=newRateState(rowId,model,++nextRateToken);lastRate=null;render({rowId:activeRate.rowId,controlId:'#rate-form [name=modelPrefix]',sectionId:activeRate.rowId.startsWith('task:')?'tasks-title':'sessions-title'},true);
+  }
+  async function openConversation(id,turn){
+    const since=focus.capture();
+    try{await cs.openFile({path:`story-trail.html#session/${encodeURIComponent(id)}${turn==null?'':`/turn/${turn}`}`,newTab:true});}
+    catch(error){const state=panels.get(id);if(state){state.error=String(error.message||error);renderPanel(since);}}
+  }
+  const view=createTrailView({root,panel,kit:cs.kit,doc,panelRenderer:passive=>renderPanel(undefined,passive)});
+  const panelView=createPanelView({root:panel,kit:cs.kit,patch:view.patches,doc});
+  function panelOwner(id){
+    if(panels.has(id))return panels.get(id);
+    const state={id,data:null,error:''};panels.set(id,state);
+    state.reader=createIntentReader({
+      enabled:()=>visible&&current?.selected===id,
+      capture:()=>({state,since:focus.capture(),basis:current?.data?.sessions.find(row=>sessionFacts(row).id===id)?.basis??state.data?.basis}),
+      read:readPanel,
+      commit({result,failedTurns},{basis}){state.data={...result,basis};state.failedTurns=failedTurns;state.error='';},
+      fail(error){state.error=String(error.message||error);},
+      settled({since}){delete state.actionControl;if(current?.selected===id)renderPanel(since);},
+    });
+    return state;
+  }
+  // The story's own ranges, read page by page (bounded) until the file appears. Pages are kept until the
+  // story's next read, and paging stops as soon as this pick no longer owns the panel.
+  const RANGE_PAGES=10;
+  async function storyRanges(owner,lines){
+    const cache=owner.ranges??={commits:[],next:undefined,pages:0,pending:null};
+    let range=prefillLines(cache,lines.path);
+    if(typeof cs.storyChanges!=='function')return {range};
+    while(!range&&owner.lines===lines&&cache.next!==null&&cache.pages<RANGE_PAGES){
+      cache.pending??=cs.storyChanges({storyId:owner.id,include:['ranges'],...(cache.next?{cursor:cache.next}:{})}).then(page=>{cache.commits.push(...(page.commits??[]));cache.next=page.nextCursor??null;cache.pages++;}).finally(()=>{cache.pending=null;});
+      await cache.pending;range=prefillLines(cache,lines.path);
+    }
+    return {range,capped:!range&&cache.next!==null&&cache.pages>=RANGE_PAGES};
+  }
+  // One line read per story: a newer pick or Close owns the reply, and a closed panel reads nothing.
+  // Only a file this story changed is read, so a panel route cannot reach other files in the repository.
+  async function readLines({owner,lines}){
+    if(!lines)return null;
+    const unavailable=reason=>({range:null,result:{status:'unavailable',reason}});
+    if(!storyFile(owner.data,lines.path))return unavailable('Not a file this story changed.');
+    if(!owner.data.sourceRepo)return unavailable('The story’s source repository is not configured.');
+    const {range,capped}=lines.start==null?await storyRanges(owner,lines):{range:{start:lines.start,end:lines.end}};
+    if(owner.lines!==lines)return null;
+    if(!range)return {range,result:{status:'pick',capped}};
+    const revision=lineRevision(owner.data,lines.path);
+    if(!revision)return {range,result:{status:'unavailable',reason:'No merged change or local story branch is recorded for this file.'}};
+    if(typeof cs.whyLine!=='function')return unavailable(NEEDS_NEWER);
+    return {range,result:await cs.whyLine({repo:owner.data.sourceRepo,rev:revision.rev,path:lines.path,...range})};
+  }
+  function linesOwner(owner){
+    owner.linesReader??=createIntentReader({
+      enabled:()=>visible&&current===owner&&!!owner.lines&&!!owner.data,
+      // Each pick is a new lines object, so identity says whether a read still owns the panel.
+      capture:()=>({owner,lines:owner.lines,since:focus.capture()}),
+      read:readLines,
+      // Only a prefilled range changes the route; a passive re-read of the same range posts nothing.
+      commit(answer,{lines}){if(!answer||owner.lines!==lines)return;const prefilled=lines.start==null;Object.assign(lines,answer.range??{},{result:answer.result,error:''});if(current===owner&&prefilled&&answer.range)linesRoute();},
+      fail(error){if(owner.lines)owner.lines.error=String(error.message||error);},
+      settled({since}){if(current===owner&&owner.lines)renderPanel(since);},
+    });
+  }
+  function linesRoute(){
+    const lines=current?.lines,params=lines?new URLSearchParams({lines:lines.path,...(lines.start==null?{}:{start:lines.start,end:lines.end})}):null;
+    const hash=`#story/${encodeURIComponent(currentId)}${params?'?'+params:''}`;
+    win.history.replaceState({storyTrail:true},'',hash);
+    win.parent.postMessage({type:'codesense:route-changed',hash,token:win.__codesenseProxy?.token},'*');
+  }
+  function openLines(path,range=null,{route=true}={}){
+    const owner=current;owner.reader.intent();owner.selected=null;linesOwner(owner);
+    owner.lines={path,start:range?.start??null,end:range?.end??null,result:null,error:'',refused:''};owner.diffResult=null;owner.diffToken=(owner.diffToken??0)+1;
+    owner.linesReader.intent({read:true});
+    if(route){linesRoute();render({rowId:'file:'+path,controlId:'#drill-panel [data-close]',sectionId:'files-title'},true);}
+  }
+  function pickLines(form){
+    const lines=current?.lines;if(!lines)return;
+    const values=new win.FormData(form),start=Number(values.get('linesStart')),end=Number(values.get('linesEnd'));
+    lines.refused=lineRefusal(start,end)??'';
+    if(!lines.refused){current.lines={...lines,start,end,result:null,error:''};current.diffResult=null;current.linesReader.intent({read:true});linesRoute();}
+    renderPanel(undefined,false);
+  }
+  function trailOwner(id){
+    if(cache.has(id))return cache.get(id);
+    const state={id,data:null,error:'',selected:null,scroll:0};cache.set(id,state);
+    state.reader=createIntentReader({
+      enabled:()=>visible&&current===state,
+      capture:()=>({since:focus.capture(),rateRequest:current===state?lastRate:state.ui?.lastRate,cursor:state.moreCursor??undefined,reload:state.actionControl?.hasAttribute('data-reload-commits')}),
+      read:({cursor})=>typeof cs.storyChanges==='function'?cs.storyChanges({storyId:id,...(cursor?{cursor}:{})}):Promise.reject(new Error(NEEDS_NEWER)),
+      commit(data,{rateRequest,cursor,reload}){
+        if(cursor){const history=state.commitHistory;if(history){const seen=new Set([...(state.data?.commits??[]),...history.extra].map(row=>row.sha));for(const commit of data.commits??[])if(!seen.has(commit.sha)){history.extra.push(commit);seen.add(commit.sha);}history.nextCursor=data.nextCursor;history.busy=false;}state.moreCursor=null;return;}
+        if(reload)state.commitHistory=null;state.ranges=null;syncCommitHistory(state,data);state.data=data;state.error='';state.updated=Date.now();
+        const pending=current===state?lastRate:state.ui?.lastRate;
+        if(pending?.phase==='pending-acceptance'&&pending.requestToken===rateRequest?.requestToken&&rateUsagePriced(pending,data.sessions)){
+          const priced=transitionRate(pending,{type:'priced',requestToken:rateRequest.requestToken});state.ui={...state.ui,lastRate:priced};if(current===state)lastRate=priced;
+        }
+      },
+      fail(error,{cursor}){const message=String(error.message||error);if(cursor&&state.commitHistory){state.commitHistory.error=message;state.commitHistory.busy=false;if(/stale/i.test(message))state.commitHistory.stale=true;state.moreCursor=null;}else state.error=message;},
+      settled({since}){delete state.actionControl;if(current===state)render(focus.capture(),false,since);},
+    });
+    return state;
+  }
+  function render(intent=focus.capture(),reveal=false,since=undefined){
+    if(!current)return;
+    if(since!==undefined&&view.patches.defer(render,()=>render(intent,reveal,since)))return;
+    if(since!==undefined)({intent,reveal}=focus.completion(intent,{since,reveal}));
+    view.render({id:currentId,data:current.data,error:current.error,updated:current.updated,actionControl:current.actionControl,selected:current.selected,sort,direction,flat,byTask,collapsed,focusedTask,activeRate,lastRate,passive:since!==undefined,commitHistory:current.commitHistory,changesError:current.changesError,diffResult:current.lines?null:current.diffResult});
+    focus.reconcile(intent,{reveal});
+  }
+  function nudge(){
+    for(const state of cache.values()){state.reader.request();if(state.lines)state.linesReader.request();}for(const state of panels.values())state.reader.request();conversationView?.nudge();
+  }
+  function syncCommitHistory(owner,data){
+    if(!Array.isArray(data.commits))return;
+    const history=owner.commitHistory;
+    if(!history)owner.commitHistory={baseCursor:data.nextCursor,nextCursor:data.nextCursor,extra:[],stale:false,busy:false,error:''};
+    else if(history.baseCursor!==data.nextCursor){
+      if(history.extra.length){const seen=new Set(history.extra.map(row=>row.sha));for(const row of owner.data.commits)if(!seen.has(row.sha)){history.extra.push(row);seen.add(row.sha);}history.stale=true;history.error='Commit history changed. Reload commits to continue paging.';}
+      else{history.baseCursor=data.nextCursor;history.nextCursor=data.nextCursor;}
+    }
+  }
+  function moreCommits(){
+    const history=current?.commitHistory;
+    if(!history||history.busy||history.stale||history.nextCursor==null)return;
+    current.moreCursor=history.nextCursor;history.busy=true;history.error='';current.reader.intent({read:true});render();
+  }
+  async function openDecision(){
+    const owner=current,id=currentId,since=focus.capture();if(!owner)return;
+    try{const context=await cs.context();if(!context?.org)throw new Error('The story’s context org is unavailable.');
+      const result=await cs.queryContext({match:{id},text:'Decisions',where:{orgs:[context.org]},limit:2});
+      if(result.rows?.length!==1||result.total>1)throw new Error('The story’s Decisions section could not be located uniquely.');
+      const row=result.rows[0],anchor=row.textMatches?.find(match=>/^Decisions(?:\s|$)/i.test(match.title))?.anchor;
+      await cs.openFile({path:row.path+(anchor?'#'+anchor:''),newTab:true});
+    }catch(error){owner.changesError=String(error.message||error);if(!stopped&&current===owner)render(focus.capture(),false,since);}
+  }
+  function close(){
+    if(current?.lines){const path=current.lines.path;current.reader.intent();current.linesReader.intent();current.lines=null;current.diffResult=null;linesRoute();render({rowId:'file:'+path,controlId:`[data-lines-path="${CSS.escape(path)}"]`,sectionId:'files-title'},true);return;}
+    current?.reader.intent();const intent={rowId:`session:${opener}`,controlId:`[data-open="${CSS.escape(opener??'')}"]`,sectionId:"sessions-title"};if(current)current.selected=null;render(intent,true);}
+  function route(requestedHash=null,explicit=true){
+    const hash=typeof requestedHash==='string'?requestedHash:getHash();
+    hostRoute=null;
+    win.history.replaceState({storyTrail:true},'');
+    win.parent.postMessage({type:'codesense:route-changed',hash,token:win.__codesenseProxy?.token},'*');
+    if(current){current.scroll=win.scrollY;current.focusIntent=focus.capture();current.ui={sort,direction,flat,byTask,activeRate,lastRate,rateOpener,opener,collapsed:[...collapsed]};}
+    panel.hidden=true;activeRate=null;lastRate=null;
+    const [routeHash,query='']=hash.split('?'),path=routeHash.split('/'),kind=path[0];
+    if(kind==='#session' && path[1]){
+      currentId='';current=null;root.classList.add('conversation-view');
+      const id=decodeURIComponent(path[1]),params=new URLSearchParams(query),options={turn:path[2]==='turn'&&path[3]!=null?Number(path[3]):params.has('turn')?Number(params.get('turn')):null,source:params.get('source'),from:params.has('from')?Number(params.get('from')):null,cursor:Number(params.get('cursor')??0),explicit};
+      let entry=conversations.get(id);
+      if(conversationView&&conversationView!==entry?.controller)conversationView.setVisible(false);
+      if(!entry){const node=cs.kit.h('div',{class:'conversation-page'});root.replaceChildren(node);entry={node,controller:mountConversation({root:node,cs,focusIntents:focus,patches:view.patches,id,...options,visible})};conversations.set(id,entry);}
+      else{if(root.firstChild!==entry.node)root.replaceChildren(entry.node);entry.controller.navigate(options);entry.controller.setVisible(visible);}
+      conversationView=entry.controller;
+      return;
+    }
+    conversationView?.setVisible(false);conversationView=null;root.classList.remove('conversation-view');
+    if(kind!=='#story'||!path[1]){currentId='';current=null;view.message('Story trail','Open a story’s Trail to see its sessions and tasks.');return;}
+    currentId=decodeURIComponent(path.slice(1).join('/'));
+    const leaving=current;current=trailOwner(currentId);
+    if(leaving&&leaving!==current){leaving.diffResult=null;leaving.diffToken=(leaving.diffToken??0)+1;}current.reader.intent({read:true});focusedTask=current.focusedTask??null;
+    const ui=current.ui??{};sort=ui.sort??'when';direction=ui.direction??1;flat=ui.flat??false;byTask=ui.byTask??false;activeRate=ui.activeRate??null;lastRate=ui.lastRate??null;rateOpener=ui.rateOpener??null;opener=ui.opener??null;collapsed.clear();for(const id of ui.collapsed??[])collapsed.add(id);
+    const params=new URLSearchParams(query),linesPath=params.get('lines'),start=Number(params.get('start')),end=Number(params.get('end'));
+    if(linesPath)openLines(linesPath,lineRefusal(start,end)?null:{start,end},{route:false});
+    else if(current.lines){current.linesReader.intent({read:true});linesRoute();}
+    if(current.selected)panelOwner(current.selected).reader.intent({read:true});render(current.focusIntent??focus.capture());win.scrollTo?.(0,current.scroll);
+  }
+  async function openChangeDiff(target){
+    const owner=current,id=currentId;if(!owner?.data?.sourceRepo)return;
+    // Only the latest click owns the result; an earlier reply never replaces it.
+    const token=owner.diffToken=(owner.diffToken??0)+1;owner.diffResult=null;
+    owner.reader.intent();render();
+    const range=target.dataset.diffStart?{range:{start:Number(target.dataset.diffStart),end:Number(target.dataset.diffEnd)}}:{};
+    let result;
+    try{if(typeof cs.openDiff!=='function')throw new Error(NEEDS_NEWER);result=await cs.openDiff({repo:owner.data.sourceRepo,rev:target.dataset.diffRev,path:target.dataset.diffPath,storyId:id,...range});}
+    catch(error){result={status:'unavailable',reason:String(error.message||error)};}
+    if(token!==owner.diffToken)return;
+    owner.diffResult=result;
+    if(!stopped&&current===owner)render();
+  }
+  async function openStoryWorkspace(){
+    const owner=current,id=currentId;if(!owner)return;
+    try{if(typeof cs.openWorkspace!=='function')throw new Error(NEEDS_NEWER);await cs.openWorkspace({storyId:id});}
+    catch(error){if(owner.diffResult)owner.diffResult={...owner.diffResult,reason:`${owner.diffResult.reason} · ${String(error.message||error)}`};if(!stopped&&current===owner)render();}
+  }
+  function click(event){
+    // A user gesture starts the next request; an earlier host pairing never consumes it.
+    hostRoute=null;
+    const target=event.target.closest('button');
+    const action=event.target.closest('button,a[href],[role=treeitem],[data-row-focus]');
+    if(action&&doc.activeElement===doc.body)focus.restore(focus.capture(action));
+    if(event.target.closest('[aria-disabled="true"]')){event.preventDefault();return;}
+    if(target?.hasAttribute('data-diff-rev')){void openChangeDiff(target);}
+    else if(target?.hasAttribute('data-lines-path')){if(current)openLines(target.dataset.linesPath);}
+    else if(target?.hasAttribute('data-lines-retry')){if(current?.lines){current.lines.error='';current.linesReader.intent({read:true});renderPanel(undefined,false);}}
+    else if(target?.hasAttribute('data-open-workspace')){void openStoryWorkspace();}
+    else if(target?.hasAttribute('data-more-commits')){moreCommits();}
+    else if(target?.hasAttribute('data-reload-commits')){if(current){current.moreCursor=null;current.actionControl=target;current.reader.intent({read:true});render();}}
+    else if(target?.hasAttribute('data-decision')){current?.reader.intent();void openDecision();}
+    else if(target?.hasAttribute('data-conversation')){void openConversation(target.dataset.conversation,target.hasAttribute('data-turn')?Number(target.dataset.turn):null);}
+    else if(target?.hasAttribute('data-panel-retry')){const state=panels.get(current?.selected);if(state){state.actionControl=target;state.reader.intent({read:true});renderPanel(undefined,false);}}
+    else if(target?.hasAttribute('data-panel-rate')){const model=target.dataset.panelRate,id=current?.selected;close();beginRate(model,`session:${id}`,`session:${id}:rate:${model}`);}
+    else if(target?.hasAttribute('data-sort')){current.reader.intent();const key=target.dataset.sort;direction=sort===key?-direction:1;sort=key;render();}
+    else if(target?.hasAttribute('data-group')){current.reader.intent();byTask=target.dataset.group==='task';render();}
+    else if(target?.hasAttribute('data-flat')){current.reader.intent();flat=!flat;render();}
+    else if(target?.hasAttribute('data-retry')){if(!current)return;current.reader.intent();current.actionControl=target;if(lastRate){lastRate=transitionRate(lastRate,{type:'retry'});}render();nudge();}
+    else if(target?.hasAttribute('data-close'))close();
+    else if(target?.hasAttribute('data-rate')){beginRate(target.dataset.rate,target.dataset.focusKey.split(':rate:')[0],target.dataset.focusKey);}
+    else if(target?.hasAttribute('data-cancel-rate')){current.reader.intent();const intent={rowId:activeRate.rowId,controlId:`[data-focus-key="${CSS.escape(rateOpener??'')}"]`};activeRate=null;render(intent,true);}
+    else if(!target && event.target.closest('[data-task]')){const item=event.target.closest('[data-task]');focusedTask=item.dataset.task;current.focusedTask=focusedTask;if(item.hasAttribute('aria-expanded')){collapsed.has(focusedTask)?collapsed.delete(focusedTask):collapsed.add(focusedTask);render();}focusTreeTask(focusedTask);}
+    else {const row=event.target.closest('[data-session]');if(row && !event.target.closest('a,input')){current.reader.intent();if(current.lines){current.linesReader.intent();current.lines=null;linesRoute();}opener=row.dataset.session;current.selected=opener;panelOwner(opener).reader.intent({read:true});render({rowId:`session:${opener}`,controlId:"#drill-panel [data-close]",sectionId:"sessions-title"},true);}}
+  }
+  async function submit(event){
+    if(event.target.id==='lines-form'){event.preventDefault();pickLines(event.target);return;}
+    if(event.target.id!=='rate-form')return;
+    event.preventDefault();if(!activeRate||activeRate.phase==='saving')return;
+    current.reader.intent();
+    const values=new win.FormData(event.target),owner=current,request=activeRate;
+    const since=focus.capture()??focus.capture(event.target.querySelector('[type=submit]'));
+    activeRate=transitionRate(activeRate,{type:'submit'});render();
+    const active=()=>owner===current?activeRate:owner.ui?.activeRate;
+    const relevant=()=>active()?.requestToken===request.requestToken;
+    try{
+      if(typeof cs.setModelRate!=='function')throw new Error(NEEDS_NEWER);
+      const changed=await cs.setModelRate({modelPrefix:values.get('modelPrefix'),effectiveFrom:values.get('effectiveFrom'),inputPerMtok:Number(values.get('inputPerMtok')),outputPerMtok:Number(values.get('outputPerMtok'))});
+      if(relevant()){
+        const result=transitionRate(active(),{type:'resolved',changed,requestToken:request.requestToken});
+        owner.ui={...owner.ui,activeRate:null,lastRate:result};
+        if(owner===current){lastRate=result;activeRate=null;render({rowId:request.rowId,controlId:'[data-focus-key="'+CSS.escape(request.rowId+':rate:'+request.model)+'"]'},true,since);}
+      }
+      nudge();
+    }catch(error){
+      if(relevant()){
+        const result=transitionRate(active(),{type:'failed',error:String(error.message||error),requestToken:request.requestToken});owner.ui={...owner.ui,activeRate:result};
+        if(owner===current){activeRate=result;render(focus.capture(),false,since);}
+      }
+    }
+  }
+  function focusTreeTask(id){
+    current.reader.intent();
+    focusedTask=id;current.focusedTask=id;
+    const next=root.querySelector(`[data-task="${CSS.escape(id)}"]`);
+    root.querySelectorAll('[role=treeitem]').forEach(el=>el.tabIndex=el===next?0:-1);focus.restore({rowId:`task:${id}`,controlId:`[data-task="${CSS.escape(id)}"]`,sectionId:"tasks-title"},{reveal:true,revealEl:':scope > [data-row-label]'});
+  }
+  function treeKey(event){
+    const item=event.target.closest?.('[role=treeitem]');
+    if(!item || event.target.closest('button'))return;
+    if(item.getAttribute('aria-disabled')==='true'){event.preventDefault();return;}
+    const items=[...root.querySelectorAll('[role=treeitem]')], index=items.indexOf(item);
+    let next=item;
+    switch(event.key){
+      case 'ArrowDown':next=items[Math.min(index+1,items.length-1)];break;
+      case 'ArrowUp':next=items[Math.max(index-1,0)];break;
+      case 'Home':next=items[0];break;
+      case 'End':next=items.at(-1);break;
+      case 'Enter':case ' ':if(item.hasAttribute('aria-expanded')){collapsed.has(item.dataset.task)?collapsed.delete(item.dataset.task):collapsed.add(item.dataset.task);render();next=root.querySelector(`[data-task="${CSS.escape(item.dataset.task)}"]`);}else return;break;
+      case 'ArrowRight':if(item.getAttribute('aria-expanded')==='false'){collapsed.delete(item.dataset.task);render();next=root.querySelector(`[data-task="${CSS.escape(item.dataset.task)}"]`);}else if(item.getAttribute('aria-expanded')==='true')next=items[index+1];break;
+      case 'ArrowLeft':if(item.getAttribute('aria-expanded')==='true'){collapsed.add(item.dataset.task);render();next=root.querySelector(`[data-task="${CSS.escape(item.dataset.task)}"]`);}else next=item.parentElement.closest('[role=treeitem]')??item;break;
+      default:return;
+    }
+    event.preventDefault();event.stopPropagation();focusTreeTask(next.dataset.task);
+  }
+  function key(event){if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopPropagation();close();}}
+  function on(target,event,fn){target.addEventListener(event,fn);offs.push(()=>target.removeEventListener(event,fn));}
+  on(doc,'click',click);on(doc,'submit',submit);on(doc,'keydown',key);on(doc,'keydown',treeKey);
+  on(doc,'input',event=>{if(event.target.closest?.('#rate-form'))current?.reader.intent();});
+  // Apply traversal intent before deferred replies resume; history restores saved reading.
+  // The paired hashchange is consumed, while standalone hashchange remains a fallback.
+  // One host open request arrives twice: a Location.href fragment navigation and a codesense:navigate
+  // message, in either order. The page side pairs them because the host keeps Location.href for documents
+  // that ignore the message. The first channel routes; the other delivery of that hash is consumed.
+  function fragment(){const hash=getHash();if(hostRoute?.hash===hash)return;route();hostRoute={hash,message:false};}
+  function hostNavigate(hash){
+    if(hostRoute?.hash===hash&&!hostRoute.message){hostRoute.message=true;return;}
+    // A message ahead of its fragment navigation owns the new history entry, so the previous route survives.
+    if(getHash()!==hash)win.history.pushState(null,'',hash);
+    route(hash);hostRoute={hash,message:true};
+  }
+  on(win,'popstate',event=>{routedPopstate=true;if(event.state?.storyTrail===true)route(null,false);else fragment();});
+  on(win,'hashchange',()=>{if(routedPopstate){routedPopstate=false;return;}fragment();});
+  on(win,'message',event=>{if(event.source===win.parent&&event.data?.type==='codesense:navigate'&&typeof event.data.token==='string'&&event.data.token===win.__codesenseProxy?.token){hostNavigate(event.data.hash);return;}if(event.source===win.parent && ['codesense:agent-activity-changed','codesense:worktrees-changed'].includes(event.data?.type))nudge();});
+  const onSessions=()=>nudge();
+  cs?.subscribe?.('sessions',{onChange:onSessions}).catch(()=>{});
+  offs.push(()=>cs?.unsubscribe?.('sessions',onSessions));
+  route();
+  if(cs?.onVisibility)offs.push(cs.onVisibility(shown=>{visible=shown;conversationView?.setVisible(shown);if(shown)nudge();}));
+  else {visible=doc.visibilityState!=='hidden';on(doc,'visibilitychange',()=>{visible=doc.visibilityState!=='hidden';if(visible)nudge();});current?.reader.resume();}
+  function stop(){stopped=true;for(const state of cache.values()){state.reader.stop();state.linesReader?.stop();}for(const state of panels.values())state.reader.stop();for(const entry of conversations.values())entry.controller.stop();view.stop();focus.stop();offs.splice(0).forEach(off=>off?.());}
+  on(win,'pagehide',stop);
+  return {stop,route,navigate};
+}
+
+mountTrail();
+})();</script></body></html>

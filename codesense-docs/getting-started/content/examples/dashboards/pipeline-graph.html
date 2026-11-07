@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="workflow" />
+    <!-- Reference dashboard · Pipeline. Your stories as a dependency graph
+         (depends_on → dependents) grouped by epic and coloured by status, kept live
+         with codesense.subscribeContext. Hover a story to light up what it waits on
+         and what it unblocks; click it to open the file. A narrow pane gets a list
+         per epic instead. Rebuilds the built-in Pipeline view with only the public
+         bridge (queryContext relationships, taxonomy, openFile) and the dashboard
+         kit (kit.dagView + the cs- classes). -->
+    <title>Pipeline</title>
+    <style>
+      html, body { height: 100%; }
+      body.cs-app { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--cs-space-3); height: 100%; overflow: hidden; }
+      @media (max-width: 520px) { body.cs-app { padding: var(--cs-space-3) var(--cs-space-3) 0; } }
+      .head { display: flex; align-items: center; gap: var(--cs-space-2); flex-wrap: wrap; }
+      .head .title { display: flex; align-items: baseline; gap: var(--cs-space-2); min-width: 0; margin-right: auto; }
+      .head .count { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; }
+      .epics { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+      .epic-chip {
+        display: inline-flex; align-items: center; gap: 8px; flex: none;
+        padding: 4px 10px; border-radius: var(--cs-radius-full);
+        font: inherit; font-size: var(--cs-text-xs); font-weight: 500; white-space: nowrap;
+        color: var(--cs-muted-fg); background: transparent; border: 1px solid var(--cs-border); cursor: pointer;
+      }
+      .epic-chip:hover { color: var(--cs-fg); }
+      .epic-chip[aria-pressed="true"] { color: var(--cs-fg); background: var(--cs-surface); border-color: color-mix(in srgb, var(--cs-accent) 55%, transparent); }
+      .mini { width: 34px; height: 4px; border-radius: 2px; background: var(--cs-hover); overflow: hidden; }
+      .mini > span { display: block; height: 100%; background: var(--cs-story-done); }
+      body.cs-app > * { flex: none; }
+      body.cs-app > .main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+      .main > .cs-dagview { flex: 1 1 auto; margin-bottom: var(--cs-space-3); }
+      #notice:empty { display: none; }
+
+      /* Graph node */
+      .story { position: relative; padding: 7px 10px 7px 12px; gap: 4px; cursor: pointer; }
+      .story::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--status-color); border-radius: var(--cs-radius) 0 0 var(--cs-radius); }
+      .story .top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+      .story .sid { font-family: var(--cs-font-mono); font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      .story .top .cs-badge { margin-left: auto; line-height: 15px; padding: 0 6px; flex: none; }
+      .story .ttl { font-size: var(--cs-text-sm); font-weight: 500; line-height: 1.25; max-height: 2.5em; overflow: hidden; }
+      .story.is-done { opacity: 0.62; }
+      .story.is-ghost { background: transparent; border-style: dashed; box-shadow: none; }
+      .story.is-ghost::before { display: none; }
+      .story.is-missing { border-color: color-mix(in srgb, var(--cs-danger) 50%, transparent); }
+      .prio { font-size: 10px; font-weight: 700; padding: 0 4px; border-radius: 3px; color: var(--cs-danger); background: color-mix(in srgb, var(--cs-danger) 14%, transparent); }
+      .cs-dag-node.is-upstream .story { border-color: color-mix(in srgb, var(--cs-warning) 60%, transparent); }
+      .cs-dag-node.is-downstream .story { border-color: color-mix(in srgb, var(--cs-accent) 60%, transparent); }
+      .group-label { display: flex; align-items: center; gap: 8px; height: 100%; padding: 0 12px; font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; overflow: hidden; }
+      .group-label strong { color: var(--cs-fg); font-weight: 600; font-size: var(--cs-text-sm); overflow: hidden; text-overflow: ellipsis; }
+      .hint { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      @media (max-width: 760px) { .hint { display: none; } }
+
+      /* List */
+      .list { flex: 1 1 auto; overflow: auto; display: flex; flex-direction: column; gap: var(--cs-space-3); padding-bottom: var(--cs-space-4); }
+      .epic-head { display: flex; align-items: center; gap: var(--cs-space-2); padding: var(--cs-space-2) var(--cs-space-3); border-bottom: 1px solid var(--cs-border); }
+      .epic-head strong { font-size: var(--cs-text-sm); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .srow { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; column-gap: 8px; align-items: start; padding: 8px var(--cs-space-3); border-bottom: 1px solid var(--cs-border); cursor: pointer; }
+      .srow:last-child { border-bottom: 0; }
+      .srow:hover { background: var(--cs-hover); }
+      .srow .cs-icon { margin-top: 2px; color: var(--status-color); }
+      .srow .ttl { font-size: var(--cs-text-sm); font-weight: 500; }
+      .srow .sub { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 2px; font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      .srow .sub .wait { color: var(--cs-warning); }
+      .srow .sid { font-family: var(--cs-font-mono); }
+      .srow.is-done { opacity: 0.62; }
+    </style>
+  </head>
+  <body class="cs-app">
+    <div class="head">
+      <div class="title"><span class="cs-h2">Pipeline</span><span id="count" class="count"></span></div>
+      <span class="hint">Hover a story to trace it · click to open</span>
+      <div class="cs-segmented" role="group" aria-label="View">
+        <button type="button" data-view="graph" title="Dependency graph"></button>
+        <button type="button" data-view="list" title="List per epic"></button>
+      </div>
+      <button id="hide-done" class="cs-btn is-sm" type="button" aria-pressed="true" title="Hide finished stories">Hide done</button>
+      <span id="live" class="cs-live is-loading">Loading</span>
+    </div>
+    <div id="epics" class="epics" role="group" aria-label="Epic"></div>
+    <div id="notice"></div>
+    <div id="main" class="main"></div>
+
+    <script>
+      const CONFIG = {
+        // Story card size in px.
+        nodeWidth: 216,
+        nodeHeight: 66,
+        // Below this page width the list view is the default.
+        listBelow: 560,
+        // Statuses that count as finished when the team's taxonomy doesn't say.
+        done: ["done"],
+      };
+      const cs = window.codesense;
+      const kit = cs && cs.kit;
+      const $ = (id) => document.getElementById(id);
+      if (!kit) {
+        document.body.textContent = "This dashboard needs a CodeSense version with the dashboard kit.";
+        throw new Error("codesense.kit unavailable");
+      }
+      const { h } = kit;
+
+      const state = {
+        result: null, // the latest queryContext result
+        error: null,
+        view: null, // "graph" | "list"; null = by width
+        hideDone: true,
+        epic: null, // the epic key to show, or null for all
+        taxonomy: null, // the team's statuses: [{id, label, color, order, role?}]
+        scope: null, // {orgs, teams} for the page's own team
+      };
+      let graph = null;
+
+      for (const b of document.querySelectorAll("[data-view]")) {
+        b.append(kit.icon(b.dataset.view === "graph" ? "workflow" : "layout-list", { size: 13 }), b.dataset.view === "graph" ? "Graph" : "List");
+        b.addEventListener("click", () => { state.view = b.dataset.view; render(); });
+      }
+      $("hide-done").addEventListener("click", () => { state.hideDone = !state.hideDone; render(); });
+      window.addEventListener("resize", () => { if (!state.view) render(); });
+      const view = () => state.view || (window.innerWidth < CONFIG.listBelow ? "list" : "graph");
+
+      function setLive(kind, text) {
+        $("live").className = "cs-live" + (kind ? " is-" + kind : "");
+        $("live").textContent = text;
+      }
+
+      // ── Model ─────────────────────────────────────────────────────────────
+      const statusOf = (r) => String((r.fields || {}).status || "");
+      function statusInfo(status) {
+        const t = state.taxonomy && state.taxonomy.find((s) => s.id === status);
+        const base = kit.storyStatus(status);
+        return { label: (t && t.label) || base.label, color: (t && t.color) || base.color, icon: base.icon, state: t };
+      }
+      function isDone(status) {
+        const t = state.taxonomy && state.taxonomy.find((s) => s.id === status);
+        return t && t.role ? t.role === "done" : CONFIG.done.includes(status);
+      }
+      const epicKey = (r) => (r.relationships && (r.relationships.parentEpic || r.relationships.folderEpic)) || "No epic";
+      const epicName = (r) => (r.relationships && (r.relationships.folderEpic || r.relationships.parentEpic)) || "No epic";
+
+      function epics(rows) {
+        const map = new Map();
+        for (const r of rows) {
+          const k = epicKey(r);
+          if (!map.has(k)) map.set(k, { key: k, name: epicName(r), total: 0, done: 0 });
+          const e = map.get(k);
+          e.total++;
+          if (isDone(statusOf(r))) e.done++;
+        }
+        return [...map.values()];
+      }
+
+      // Nodes are files (keyed by path, so two teams' S-1 never merge); an edge runs
+      // from a dependency to the story waiting on it. A dependency that isn't shown
+      // (finished and hidden, in another epic, or missing) is a dashed ghost placed
+      // in the epic of the story that waits on it.
+      function model(rows) {
+        const shown = rows.filter((r) => (!state.hideDone || !isDone(statusOf(r))) && (!state.epic || epicKey(r) === state.epic));
+        const byPath = new Map(rows.map((r) => [r.path, r]));
+        const showing = new Set(shown.map((r) => r.path));
+        const ghosts = new Map();
+        const edges = [];
+        for (const r of shown) {
+          for (const dep of (r.relationships && r.relationships.dependsOn) || []) {
+            if (!showing.has(dep.path)) {
+              const known = byPath.get(dep.path);
+              if (known && state.hideDone && isDone(statusOf(known)) && !state.epic) continue;
+              const id = "ghost:" + dep.path + "@" + epicKey(r);
+              if (!ghosts.has(id)) ghosts.set(id, { id, ghost: true, dep, known, epic: epicKey(r), height: 46 });
+              edges.push({ from: id, to: r.path });
+            } else edges.push({ from: dep.path, to: r.path });
+          }
+        }
+        return { shown, nodes: [...ghosts.values(), ...shown.map((r) => ({ id: r.path, row: r, epic: epicKey(r) }))], edges };
+      }
+
+      // ── Graph ─────────────────────────────────────────────────────────────
+      function card(n) {
+        if (n.data.ghost) {
+          const d = n.data.dep, k = n.data.known;
+          const why = !d.resolved ? "not found" : k ? (isDone(statusOf(k)) ? "done" : epicName(k)) : "outside this view";
+          return h("div", { class: "cs-dag-card story is-ghost" + (d.resolved ? "" : " is-missing"), title: d.resolved ? "Open " + d.fileName : d.id + " was not found", "data-story": d.id },
+            h("div", { class: "top" }, kit.icon(d.resolved ? "link" : "triangle-alert", { size: 12 }), h("span", { class: "sid", text: d.id })),
+            h("div", { class: "cs-xs cs-muted cs-truncate", text: why }));
+        }
+        const r = n.data.row, status = statusOf(r), info = statusInfo(status);
+        const prio = String((r.fields || {}).priority || "");
+        return h("div", {
+          class: "cs-dag-card story" + (isDone(status) ? " is-done" : ""),
+          style: { "--status-color": info.color },
+          title: r.relPath,
+          "data-story": r.id,
+        },
+          h("div", { class: "top" },
+            h("span", { class: "sid", text: r.id }),
+            /^P[01]$/i.test(prio) ? h("span", { class: "prio", text: prio.toUpperCase() }) : null,
+            kit.storyBadge(status, info.state)),
+          h("div", { class: "ttl", text: r.title || r.fileName }));
+      }
+
+      function groupLabel(g) {
+        const e = epics(state.result.rows || []).find((x) => x.key === g.key);
+        const pct = e && e.total ? Math.round((100 * e.done) / e.total) : 0;
+        return h("div", { class: "group-label" },
+          kit.icon("folder", { size: 13 }),
+          h("strong", { text: e ? e.name : g.key }),
+          e ? h("span", { text: e.done + "/" + e.total + " done" }) : null,
+          e ? h("span", { class: "mini" }, h("span", { style: { width: pct + "%" } })) : null);
+      }
+
+      function open(path) {
+        kit.call("openFile", { path }).catch((e) => $("notice").replaceChildren(kit.notice("Couldn't open it: " + e.message, "warning")));
+      }
+
+      function drawGraph(m) {
+        const main = $("main");
+        if (!graph || !main.contains(graph.el)) {
+          main.replaceChildren();
+          graph = kit.dagView(main, {
+            renderNode: card,
+            renderGroup: groupLabel,
+            group: (n) => n.epic,
+            nodeWidth: CONFIG.nodeWidth,
+            nodeHeight: CONFIG.nodeHeight,
+            nodeSep: 14,
+            rankSep: 40,
+            groupGap: 24,
+            onSelect: (id) => {
+              if (!id) return;
+              const node = graph.layout().nodes.find((n) => n.id === id);
+              if (!node) return;
+              if (node.data.row) open(node.data.row.path);
+              else if (node.data.dep.resolved) open(node.data.dep.path);
+            },
+          });
+        }
+        graph.update(m.nodes, m.edges);
+        const cyc = graph.layout().reversed;
+        $("notice").replaceChildren(cyc.length ? kit.notice("Dependency cycle: " + cyc.map((e) => idOf(e.from) + " → " + idOf(e.to)).join(", ") + ". Drawn dashed.", "warning") : "");
+      }
+      function idOf(path) {
+        const r = (state.result.rows || []).find((x) => x.path === path);
+        return r ? r.id : String(path).split("/").pop();
+      }
+
+      // ── List ──────────────────────────────────────────────────────────────
+      function listRow(r, rows) {
+        const status = statusOf(r), info = statusInfo(status);
+        const deps = (r.relationships && r.relationships.dependsOn) || [];
+        const byPath = new Map(rows.map((x) => [x.path, x]));
+        const waiting = deps.filter((d) => !d.resolved || !byPath.get(d.path) || !isDone(statusOf(byPath.get(d.path))));
+        const unblocks = rows.filter((x) => ((x.relationships && x.relationships.dependsOn) || []).some((d) => d.path === r.path));
+        return h("div", {
+          class: "srow" + (isDone(status) ? " is-done" : ""),
+          style: { "--status-color": info.color },
+          "data-story": r.id,
+          title: r.relPath,
+          onClick: () => open(r.path),
+        },
+          kit.icon(info.icon, { size: 14, title: info.label }),
+          h("div", { style: { minWidth: "0" } },
+            h("div", { class: "ttl", text: r.title || r.fileName }),
+            h("div", { class: "sub" },
+              h("span", { class: "sid", text: r.id }),
+              h("span", { text: info.label }),
+              waiting.length ? h("span", { class: "wait", text: "waits on " + waiting.map((d) => d.id).join(", ") }) : null,
+              unblocks.length ? h("span", { text: "unblocks " + unblocks.length })  : null)),
+          null);
+      }
+
+      function drawList(m) {
+        graph = null;
+        const rows = state.result.rows || [];
+        const main = $("main");
+        let list = main.querySelector(".list");
+        if (!list) {
+          list = h("div", { class: "list" });
+          main.replaceChildren(list);
+        }
+        const groups = new Map();
+        for (const r of m.shown) {
+          const k = epicKey(r);
+          if (!groups.has(k)) groups.set(k, []);
+          groups.get(k).push(r);
+        }
+        const order = (r) => { const t = state.taxonomy && state.taxonomy.find((s) => s.id === statusOf(r)); return t ? Number(t.order) || 0 : 99; };
+        const sections = [...groups.entries()].map(([key, items]) => ({ key, items: items.sort((a, b) => order(a) - order(b) || a.id.localeCompare(b.id, undefined, { numeric: true })) }));
+        kit.keyed(list, sections, {
+          key: (sec) => sec.key,
+          version: (sec) => JSON.stringify(sec.items.map((r) => [r.path, r.title, statusOf(r), r.relationships])) + state.hideDone,
+          render: (sec) => {
+            const e = epics(rows).find((x) => x.key === sec.key);
+            const pct = e && e.total ? Math.round((100 * e.done) / e.total) : 0;
+            return h("section", { class: "cs-card" },
+              h("div", { class: "epic-head" }, kit.icon("folder", { size: 14 }), h("strong", { text: e ? e.name : sec.key }),
+                h("span", { class: "cs-xs cs-muted", text: e ? e.done + "/" + e.total : "" }), h("span", { class: "mini" }, h("span", { style: { width: pct + "%" } }))),
+              sec.items.map((r) => listRow(r, rows)));
+          },
+        });
+      }
+
+      // ── Chrome & render ───────────────────────────────────────────────────
+      function drawEpics(rows) {
+        const all = epics(rows);
+        const total = rows.length, done = rows.filter((r) => isDone(statusOf(r))).length;
+        const chip = (key, name, d, t) => h("button", {
+          class: "epic-chip", type: "button", "aria-pressed": String(state.epic === key),
+          onClick: () => { state.epic = key; render(); },
+        }, h("span", { text: name }), h("span", { class: "cs-muted", text: d + "/" + t }),
+          h("span", { class: "mini" }, h("span", { style: { width: (t ? Math.round((100 * d) / t) : 0) + "%" } })));
+        $("epics").replaceChildren(chip(null, "All epics", done, total), ...all.map((e) => chip(e.key, e.name, e.done, e.total)));
+        $("count").textContent = total + (total === 1 ? " story" : " stories") + " · " + all.length + (all.length === 1 ? " epic" : " epics");
+      }
+
+      function render() {
+        for (const b of document.querySelectorAll("[data-view]")) b.setAttribute("aria-pressed", String(b.dataset.view === view()));
+        $("hide-done").setAttribute("aria-pressed", String(state.hideDone));
+        if (!state.result) {
+          graph = null;
+          $("main").replaceChildren(state.error
+            ? kit.notice("Couldn't read your stories: " + state.error, "danger", { label: "Retry", onClick: watch })
+            : kit.skeleton({ rows: 6 }));
+          return;
+        }
+        const rows = state.result.rows || [];
+        drawEpics(rows);
+        const m = model(rows);
+        if (!m.shown.length) {
+          graph = null;
+          $("notice").replaceChildren();
+          $("main").replaceChildren(kit.empty(rows.length
+            ? "Every story here is done. Turn off Hide done to see them."
+            : "No stories yet. A story is a markdown file with type: story in its frontmatter; its depends_on list draws the arrows here.", "workflow"));
+          return;
+        }
+        if (view() === "graph") drawGraph(m);
+        else { $("notice").replaceChildren(); drawList(m); }
+        if (rows.length < state.result.total) {
+          $("notice").replaceChildren(kit.notice("Showing the first " + rows.length + " of " + state.result.total + " stories.", "info"));
+        }
+      }
+
+      let off = null;
+      function watch() {
+        if (off) off();
+        state.error = null;
+        render();
+        const q = {
+          where: { kinds: ["story", "bug", "spike"], ...(state.scope || {}) },
+          select: ["status", "priority", "relationships"],
+          sort: ["id"],
+          limit: 2000,
+        };
+        // Runs now, then again whenever a file the query covers changes.
+        off = cs.subscribeContext(q, (res, err) => {
+          if (err) {
+            state.error = err.message;
+            setLive("stale", state.result ? "Stale" : "Offline");
+          } else {
+            state.result = res;
+            state.error = null;
+            setLive("", "Live");
+          }
+          render();
+        });
+      }
+      window.addEventListener("pagehide", () => off && off(), { once: true });
+
+      (async () => {
+        render();
+        // Scope to the page's own team when it lives in one, and colour by its statuses.
+        const [ctx, tax] = await Promise.all([
+          kit.call("context").catch(() => null),
+          typeof cs.taxonomy === "function" ? cs.taxonomy().catch(() => null) : null,
+        ]);
+        if (ctx && ctx.team) state.scope = { orgs: [ctx.org], teams: [ctx.team] };
+        if (tax && Array.isArray(tax.states)) state.taxonomy = tax.states;
+        watch();
+      })();
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

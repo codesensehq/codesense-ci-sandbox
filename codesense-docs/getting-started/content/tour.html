@@ -1,0 +1,1861 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — 60-second tour</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+    <style>
+      /* ----------------------------------------------------------------- */
+      /*  Tour-specific additions on top of _shared/cs-docs.css.           */
+      /*  Everything named `cs-docs-tour-*` is comp-local to this page.    */
+      /* ----------------------------------------------------------------- */
+
+      :root {
+        --cs-spot: color-mix(in oklab, var(--cs-accent) 22%, transparent);
+        --cs-spot-ring: color-mix(in oklab, var(--cs-accent) 85%, transparent);
+      }
+
+      .cs-docs-tour-main {
+        max-width: 1360px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+
+      /* Dotted lattice backdrop; decorative. */
+      .cs-docs-tour-main::before {
+        content: "";
+        position: fixed;
+        inset: var(--cs-docs-nav-height) 0 0 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 48px 48px;
+        opacity: 0.3;
+        mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+      }
+
+      .cs-docs-tour-main > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* --- Header band --- */
+      .cs-docs-tour-band {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 20px;
+        margin: 20px 0 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: 12px;
+        background: var(--cs-surface);
+      }
+      .cs-docs-tour-band__eyebrow {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        flex: 0 0 auto;
+      }
+      .cs-docs-tour-band__title {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        margin: 0;
+      }
+      .cs-docs-tour-band__meta {
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+      .cs-docs-tour-band__spacer {
+        flex: 1;
+      }
+      .cs-docs-tour-band__close {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid var(--cs-border);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--cs-fg);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        transition:
+          background 120ms ease-out,
+          border-color 120ms ease-out;
+      }
+      .cs-docs-tour-band__close:hover {
+        background: color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface));
+        border-color: color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+      }
+
+      /* --- Intro line --- */
+      .cs-docs-tour-intro {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        padding: 8px 4px 20px;
+        flex-wrap: wrap;
+      }
+      .cs-docs-tour-intro__line {
+        font-size: 15.5px;
+        color: var(--cs-fg);
+        margin: 0;
+        font-weight: 400;
+      }
+      .cs-docs-tour-intro__line b {
+        font-weight: 600;
+      }
+      .cs-docs-tour-intro__hint {
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+
+      /* --- Progress bar --- */
+      .cs-docs-tour-progress {
+        position: relative;
+        height: 4px;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--cs-border) 50%, transparent);
+        overflow: hidden;
+        margin: 0 0 20px;
+        cursor: pointer;
+      }
+      .cs-docs-tour-progress__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        transform-origin: left center;
+        transform: scaleX(0.0833); /* 1 / 12 */
+        background: linear-gradient(
+          90deg,
+          color-mix(in oklab, var(--cs-accent) 92%, transparent) 0%,
+          var(--cs-accent) 100%
+        );
+        border-radius: 999px;
+        transition: transform 240ms cubic-bezier(0.2, 0.9, 0.1, 1);
+      }
+
+      /* --- Stage (shell + caption) --- */
+      .cs-docs-tour-stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 24px;
+        align-items: stretch;
+      }
+      @media (max-width: 1080px) {
+        .cs-docs-tour-stage {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .cs-docs-tour-shell {
+        position: relative;
+        aspect-ratio: 1200 / 660;
+        width: 100%;
+        border: 1px solid var(--cs-border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--cs-surface);
+        box-shadow: 0 10px 32px -20px rgb(0 0 0 / 0.5);
+      }
+      .cs-docs-tour-shell svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      /* Screenshot slot — hidden until a real capture lands. */
+      .cs-docs-tour-shell__shot {
+        position: absolute;
+        inset: 0;
+        display: none;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 320ms ease-out;
+      }
+      .cs-docs-tour-shell[data-has-shot="true"] svg {
+        opacity: 0;
+      }
+      .cs-docs-tour-shell[data-has-shot="true"] .cs-docs-tour-shell__shot {
+        display: block;
+        opacity: 1;
+      }
+
+      /* --- Caption card --- */
+      .cs-docs-tour-caption {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 24px;
+        border: 1px solid var(--cs-border);
+        border-radius: 14px;
+        background: var(--cs-surface);
+      }
+      .cs-docs-tour-caption__row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .cs-docs-tour-caption__num {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+      }
+      .cs-docs-tour-caption__arc {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-tour-caption__title {
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        margin: 0;
+        line-height: 1.1;
+        min-height: 1.1em;
+      }
+      .cs-docs-tour-caption__body {
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        margin: 0;
+        min-height: 4.65em; /* three lines; stops layout bounce */
+      }
+      .cs-docs-tour-caption__ctas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 8px;
+      }
+      .cs-docs-tour-icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      /* --- Rail --- */
+      .cs-docs-tour-rail {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 6px;
+        margin: 24px 0 10px;
+        padding: 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: 14px;
+        background: var(--cs-surface);
+      }
+      @media (max-width: 900px) {
+        .cs-docs-tour-rail {
+          grid-template-columns: repeat(6, 1fr);
+        }
+      }
+      .cs-docs-tour-tick {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 6px;
+        border-radius: 10px;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        color: var(--cs-muted-fg);
+        font: inherit;
+        font-size: 11.5px;
+        font-weight: 500;
+        transition:
+          background 160ms ease-out,
+          color 160ms ease-out;
+        overflow: hidden;
+      }
+      .cs-docs-tour-tick::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: var(--cs-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 240ms cubic-bezier(0.2, 0.9, 0.1, 1);
+      }
+      .cs-docs-tour-tick__num {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-tour-tick__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: color-mix(in oklab, var(--cs-bg) 55%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-border) 70%, transparent);
+        color: var(--cs-muted-fg);
+        transition:
+          color 160ms,
+          border-color 160ms,
+          background 160ms;
+      }
+      .cs-docs-tour-tick__icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .cs-docs-tour-tick__label {
+        line-height: 1.2;
+        color: var(--cs-muted-fg);
+        text-align: center;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+      .cs-docs-tour-tick:hover {
+        background: color-mix(in oklab, var(--cs-accent) 7%, transparent);
+        color: var(--cs-fg);
+      }
+      .cs-docs-tour-tick:hover .cs-docs-tour-tick__icon {
+        color: var(--cs-accent);
+        border-color: color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+      }
+      .cs-docs-tour-tick[data-visited="true"]::before {
+        transform: scaleX(1);
+        opacity: 0.4;
+      }
+      .cs-docs-tour-tick[data-current="true"] {
+        background: color-mix(in oklab, var(--cs-accent) 12%, transparent);
+        color: var(--cs-fg);
+      }
+      .cs-docs-tour-tick[data-current="true"]::before {
+        transform: scaleX(1);
+      }
+      .cs-docs-tour-tick[data-current="true"] .cs-docs-tour-tick__icon {
+        color: var(--cs-accent);
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border-color: color-mix(in oklab, var(--cs-accent) 65%, var(--cs-border));
+      }
+      .cs-docs-tour-tick[data-current="true"] .cs-docs-tour-tick__num,
+      .cs-docs-tour-tick[data-current="true"] .cs-docs-tour-tick__label {
+        color: var(--cs-fg);
+      }
+
+      /* --- Footer hint strip --- */
+      .cs-docs-tour-hint {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+      .cs-docs-tour-hint__cluster {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .cs-docs-tour-hint__cluster + .cs-docs-tour-hint__cluster {
+        border-left: 1px solid var(--cs-border);
+        padding-left: 14px;
+      }
+      .cs-docs-tour-hint svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      /* ============================================================= */
+      /*  SVG shell — chrome groups + spotlight                         */
+      /* ============================================================= */
+
+      .shell-root {
+        color: var(--cs-fg);
+      }
+      .shell-bg {
+        fill: var(--cs-bg);
+      }
+      .shell-chrome {
+        fill: var(--cs-surface);
+        stroke: var(--cs-border);
+        stroke-width: 1;
+      }
+      .shell-chrome-strong {
+        fill: var(--cs-surface-raised);
+        stroke: var(--cs-border);
+        stroke-width: 1;
+      }
+      .shell-rule {
+        stroke: var(--cs-border);
+        stroke-width: 1;
+        fill: none;
+      }
+      .shell-muted {
+        fill: var(--cs-muted-fg);
+      }
+      .shell-fg {
+        fill: var(--cs-fg);
+      }
+      .shell-accent {
+        fill: var(--cs-accent);
+      }
+      .shell-mono {
+        font-family: var(--cs-font-mono);
+      }
+      .shell-sans {
+        font-family: var(--cs-font-sans);
+      }
+      .shell-dot-live {
+        fill: var(--cs-success);
+      }
+
+      /* Live dot pulse — matches the home ribbon dot signature. */
+      @media (prefers-reduced-motion: no-preference) {
+        .shell-dot-live {
+          animation: shell-dot-pulse 2.6s cubic-bezier(0.4, 0.6, 0.4, 0.6) infinite;
+          transform-origin: center;
+          transform-box: fill-box;
+        }
+        @keyframes shell-dot-pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+      }
+
+      /* --- Step content toggle ---
+         Model:
+           [data-step-content-default="viewer|right|terminal"]  = always-on content
+           [data-step-content="N"]                              = per-step overlay
+           [data-step-content][data-replaces="X"]               = overlay that hides default X
+         Uses `visibility` not `display` so SVG renders stay reliable. */
+      [data-step-content] {
+        visibility: hidden;
+      }
+      body[data-step="1"] [data-step-content="1"],
+      body[data-step="2"] [data-step-content="2"],
+      body[data-step="3"] [data-step-content="3"],
+      body[data-step="4"] [data-step-content="4"],
+      body[data-step="5"] [data-step-content="5"],
+      body[data-step="6"] [data-step-content="6"],
+      body[data-step="7"] [data-step-content="7"],
+      body[data-step="8"] [data-step-content="8"],
+      body[data-step="9"] [data-step-content="9"],
+      body[data-step="10"] [data-step-content="10"],
+      body[data-step="11"] [data-step-content="11"],
+      body[data-step="12"] [data-step-content="12"] {
+        visibility: visible;
+      }
+      body[data-step-replace~="viewer"] [data-step-content-default="viewer"],
+      body[data-step-replace~="right"] [data-step-content-default="right"],
+      body[data-step-replace~="terminal"] [data-step-content-default="terminal"] {
+        visibility: hidden;
+      }
+
+      /* --- Spotlight ring --- */
+      .shell-spotlight {
+        pointer-events: none;
+        transition:
+          x 420ms cubic-bezier(0.2, 0.9, 0.1, 1),
+          y 420ms cubic-bezier(0.2, 0.9, 0.1, 1),
+          width 420ms cubic-bezier(0.2, 0.9, 0.1, 1),
+          height 420ms cubic-bezier(0.2, 0.9, 0.1, 1);
+        fill: none;
+        stroke: var(--cs-spot-ring);
+        stroke-width: 2;
+        filter: drop-shadow(0 0 8px var(--cs-spot));
+      }
+
+      /* --- Load draw-in --- */
+      @media (prefers-reduced-motion: no-preference) {
+        .shell-row-reveal {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        .shell-row-reveal.is-in {
+          opacity: 1;
+          transform: none;
+          transition:
+            opacity 420ms cubic-bezier(0.2, 0.9, 0.1, 1),
+            transform 420ms cubic-bezier(0.2, 0.9, 0.1, 1);
+        }
+      }
+
+      /* Caption crossfade on step change */
+      .cs-docs-tour-caption__title,
+      .cs-docs-tour-caption__body {
+        transition:
+          opacity 160ms ease-out,
+          transform 160ms ease-out;
+      }
+      .cs-docs-tour-caption.is-swapping .cs-docs-tour-caption__title,
+      .cs-docs-tour-caption.is-swapping .cs-docs-tour-caption__body {
+        opacity: 0;
+        transform: translateY(2px);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .shell-spotlight {
+          transition: none !important;
+        }
+        .cs-docs-tour-progress__fill {
+          transition: none !important;
+        }
+        .cs-docs-tour-caption__title,
+        .cs-docs-tour-caption__body {
+          transition: none !important;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .cs-docs-tour-caption__title {
+          font-size: 24px;
+        }
+        .cs-docs-tour-band {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="tour" data-step="1">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-tour-main">
+      <!-- ===================== Band ===================== -->
+      <section class="cs-docs-tour-band" role="banner" data-search="60-second tour of CodeSense" id="band">
+        <span class="cs-docs-tour-band__eyebrow">Tour</span>
+        <div>
+          <h1 class="cs-docs-tour-band__title">60-second tour of CodeSense</h1>
+          <div class="cs-docs-tour-band__meta">
+            Twelve stops · about five seconds each · all keyboard-driven.
+          </div>
+        </div>
+        <div class="cs-docs-tour-band__spacer"></div>
+        <button
+          type="button"
+          class="cs-docs-tour-band__close"
+          data-action="close-tour"
+          aria-label="Close tour"
+        >
+          <svg
+            class="cs-docs-tour-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+          <span>Close</span>
+        </button>
+      </section>
+
+      <!-- ===================== Intro line ===================== -->
+      <div class="cs-docs-tour-intro">
+        <p class="cs-docs-tour-intro__line">
+          <b>This is CodeSense.</b> We'll walk through every room so you know where things live.
+        </p>
+        <span class="cs-docs-tour-intro__hint">
+          <span class="cs-docs-kbd">→</span> <span class="cs-docs-kbd">←</span> step &nbsp;·&nbsp;
+          <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search &nbsp;·&nbsp;
+          <span class="cs-docs-kbd">Esc</span> close
+        </span>
+      </div>
+
+      <!-- ===================== Progress bar ===================== -->
+      <div
+        class="cs-docs-tour-progress"
+        role="progressbar"
+        aria-label="Tour progress"
+        aria-valuemin="1"
+        aria-valuemax="12"
+        aria-valuenow="1"
+        data-cs-tour-progress
+      >
+        <div class="cs-docs-tour-progress__fill" data-cs-tour-progress-fill></div>
+      </div>
+
+      <!-- ===================== Stage ===================== -->
+      <section class="cs-docs-tour-stage" aria-label="Tour stage" data-search="Guided walkthrough of the CodeSense window" id="stage">
+        <!-- Animated SVG shell. Hero visual per invariant I-9. -->
+        <div class="cs-docs-tour-shell" data-has-shot="false" aria-hidden="false">
+          <img class="cs-docs-tour-shell__shot" alt="" data-cs-tour-shot src="" />
+
+          <svg
+            viewBox="0 0 1200 660"
+            preserveAspectRatio="xMidYMid meet"
+            class="shell-root"
+            role="img"
+            aria-labelledby="shell-title shell-desc"
+          >
+            <title id="shell-title">A stylized CodeSense window</title>
+            <desc id="shell-desc">
+              A dark application window with a title bar, left file tree, central viewer, right pane, terminal
+              strip, and status bar. A ring highlights the surface being described in the current tour step.
+            </desc>
+
+            <defs>
+              <filter id="cs-tour-drop" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="8"></feGaussianBlur>
+                <feOffset dx="0" dy="12" result="offsetblur"></feOffset>
+                <feComponentTransfer><feFuncA type="linear" slope="0.45"></feFuncA></feComponentTransfer>
+                <feMerge>
+                  <feMergeNode></feMergeNode>
+                  <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Window ground -->
+            <rect class="shell-bg" x="0" y="0" width="1200" height="660"></rect>
+
+            <!-- =========== Title bar =========== -->
+            <g class="shell-row-reveal" data-row="title">
+              <rect class="shell-chrome" x="0" y="0" width="1200" height="40"></rect>
+              <circle cx="20" cy="20" r="6" fill="#ff5f57"></circle>
+              <circle cx="40" cy="20" r="6" fill="#febc2e"></circle>
+              <circle cx="60" cy="20" r="6" fill="#28c840"></circle>
+
+              <g data-spot-anchor="book">
+                <rect x="94" y="10" width="20" height="20" rx="4" class="shell-chrome-strong"></rect>
+                <path
+                  d="M100 15 L100 25 M100 15 L108 15 M100 25 L108 25 M108 15 L108 25"
+                  stroke="var(--cs-accent)"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  fill="none"
+                ></path>
+                <text class="shell-sans" x="122" y="24" font-size="12" fill="var(--cs-fg)">codesense-docs</text>
+                <text class="shell-mono shell-muted" x="226" y="24" font-size="11">
+                  / getting-started / tour.html
+                </text>
+              </g>
+
+              <circle class="shell-dot-live" cx="446" cy="20" r="3.4"></circle>
+
+              <g data-spot-anchor="identity">
+                <rect x="1060" y="8" width="124" height="24" rx="6" class="shell-chrome-strong"></rect>
+                <circle cx="1076" cy="20" r="7" fill="var(--cs-accent)"></circle>
+                <text
+                  x="1072"
+                  y="24"
+                  font-size="10"
+                  font-family="var(--cs-font-mono)"
+                  fill="var(--cs-accent-fg)"
+                  font-weight="600"
+                >A</text>
+                <text class="shell-sans" x="1092" y="23" font-size="11.5" fill="var(--cs-fg)">dev · codesense</text>
+                <path
+                  d="M1170 18 L1174 22 L1178 18"
+                  stroke="var(--cs-muted-fg)"
+                  stroke-width="1.4"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </g>
+            </g>
+
+            <!-- =========== Left tree =========== -->
+            <g class="shell-row-reveal" data-row="tree" data-spot-anchor="tree">
+              <rect class="shell-chrome" x="0" y="40" width="220" height="560"></rect>
+
+              <rect x="12" y="52" width="196" height="26" rx="6" fill="var(--cs-bg)" stroke="var(--cs-border)"></rect>
+              <text class="shell-sans shell-muted" x="22" y="69" font-size="11">Filter…</text>
+              <rect
+                x="186"
+                y="58"
+                width="16"
+                height="14"
+                rx="3"
+                fill="color-mix(in oklab, var(--cs-border) 50%, transparent)"
+              ></rect>
+              <text class="shell-mono" x="190" y="68" font-size="9" fill="var(--cs-muted-fg)">⌘K</text>
+
+              <g>
+                <path
+                  d="M18 100 l4 -4 l4 4"
+                  stroke="var(--cs-muted-fg)"
+                  stroke-width="1.4"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <text class="shell-sans" x="36" y="104" font-size="12" fill="var(--cs-fg)" font-weight="500">
+                  getting-started
+                </text>
+              </g>
+              <text class="shell-sans" x="48" y="128" font-size="12" fill="var(--cs-accent)">tour.html</text>
+              <text class="shell-sans shell-muted" x="48" y="150" font-size="12">home.html</text>
+              <text class="shell-sans shell-muted" x="48" y="172" font-size="12">factory-playbook.html</text>
+              <text class="shell-sans shell-muted" x="48" y="194" font-size="12">architecture.html</text>
+
+              <g>
+                <path
+                  d="M18 218 l4 4 l4 -4"
+                  stroke="var(--cs-muted-fg)"
+                  stroke-width="1.4"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <text class="shell-sans" x="36" y="222" font-size="12" fill="var(--cs-fg)" font-weight="500">arcs</text>
+                <text class="shell-sans shell-muted" x="190" y="222" font-size="10">14</text>
+              </g>
+
+              <g>
+                <path
+                  d="M18 244 l4 4 l4 -4"
+                  stroke="var(--cs-muted-fg)"
+                  stroke-width="1.4"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <text class="shell-sans" x="36" y="248" font-size="12" fill="var(--cs-fg)" font-weight="500">
+                  _bmad-output
+                </text>
+              </g>
+
+              <line class="shell-rule" x1="12" y1="276" x2="208" y2="276"></line>
+
+              <text class="shell-mono shell-muted" x="12" y="298" font-size="10" letter-spacing="1.5">INBOXES</text>
+              <g>
+                <circle cx="22" cy="320" r="3" fill="var(--cs-accent)"></circle>
+                <text class="shell-sans" x="36" y="324" font-size="12" fill="var(--cs-fg)">builder</text>
+                <text class="shell-mono shell-muted" x="188" y="324" font-size="10">3</text>
+              </g>
+              <g>
+                <circle cx="22" cy="340" r="3" fill="var(--cs-muted-fg)"></circle>
+                <text class="shell-sans" x="36" y="344" font-size="12" fill="var(--cs-fg)">resolver</text>
+                <text class="shell-mono shell-muted" x="188" y="344" font-size="10">1</text>
+              </g>
+              <g>
+                <circle cx="22" cy="360" r="3" fill="var(--cs-muted-fg)"></circle>
+                <text class="shell-sans shell-muted" x="36" y="364" font-size="12">reviewer</text>
+                <text class="shell-mono shell-muted" x="188" y="364" font-size="10">0</text>
+              </g>
+
+              <line class="shell-rule" x1="12" y1="388" x2="208" y2="388"></line>
+
+              <text class="shell-mono shell-muted" x="12" y="410" font-size="10" letter-spacing="1.5">AGENTS</text>
+              <g>
+                <rect x="12" y="422" width="18" height="18" rx="4" fill="var(--cs-accent)" opacity="0.55"></rect>
+                <text class="shell-mono" x="18" y="436" font-size="10" fill="var(--cs-accent-fg)" font-weight="600">M</text>
+                <text class="shell-sans" x="40" y="436" font-size="12" fill="var(--cs-fg)">Mary</text>
+              </g>
+              <g>
+                <rect x="12" y="446" width="18" height="18" rx="4" fill="#d670d6" opacity="0.55"></rect>
+                <text class="shell-mono" x="18" y="460" font-size="10" fill="var(--cs-bg)" font-weight="600">W</text>
+                <text class="shell-sans" x="40" y="460" font-size="12" fill="var(--cs-fg)">Winston</text>
+              </g>
+              <g>
+                <rect x="12" y="470" width="18" height="18" rx="4" fill="#f0a93b" opacity="0.55"></rect>
+                <text class="shell-mono" x="18" y="484" font-size="10" fill="var(--cs-bg)" font-weight="600">A</text>
+                <text class="shell-sans" x="40" y="484" font-size="12" fill="var(--cs-fg)">Amelia × 3</text>
+              </g>
+            </g>
+
+            <!-- =========== Viewer (centre) =========== -->
+            <g class="shell-row-reveal" data-row="viewer" data-spot-anchor="viewer">
+              <rect class="shell-chrome" x="220" y="40" width="620" height="520"></rect>
+
+              <rect x="220" y="40" width="620" height="30" fill="var(--cs-bg)" stroke="none"></rect>
+              <rect x="236" y="46" width="150" height="20" rx="4" fill="var(--cs-surface)" stroke="var(--cs-border)"></rect>
+              <text class="shell-sans" x="248" y="60" font-size="11" fill="var(--cs-fg)">tour.html</text>
+              <circle cx="378" cy="56" r="2.5" fill="var(--cs-accent)"></circle>
+              <text class="shell-sans shell-muted" x="398" y="60" font-size="11">home.html</text>
+              <text class="shell-sans shell-muted" x="462" y="60" font-size="11">architecture.html</text>
+
+              <g data-step-content-default="viewer">
+                <text class="shell-sans" x="256" y="110" font-size="22" fill="var(--cs-fg)" font-weight="600">
+                  Welcome to CodeSense
+                </text>
+                <text class="shell-sans shell-muted" x="256" y="134" font-size="12">
+                  A dark console, 14 arcs, one running factory.
+                </text>
+
+                <rect x="256" y="156" width="548" height="2" fill="var(--cs-border)"></rect>
+
+                <rect
+                  x="256"
+                  y="178"
+                  width="548"
+                  height="106"
+                  rx="10"
+                  fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                ></rect>
+                <text class="shell-mono shell-muted" x="272" y="202" font-size="10" letter-spacing="1.4">A — FIRST TOUCH</text>
+                <text class="shell-sans" x="272" y="226" font-size="14" fill="var(--cs-fg)" font-weight="600">
+                  What happens between install and your first useful minute.
+                </text>
+                <text class="shell-sans shell-muted" x="272" y="250" font-size="11.5">
+                  book icon · the tour · identity · where files live
+                </text>
+                <rect
+                  x="760"
+                  y="194"
+                  width="28"
+                  height="28"
+                  rx="6"
+                  fill="color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border))"
+                ></rect>
+
+                <rect
+                  x="256"
+                  y="300"
+                  width="548"
+                  height="106"
+                  rx="10"
+                  fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                ></rect>
+                <text class="shell-mono shell-muted" x="272" y="324" font-size="10" letter-spacing="1.4">B — THE MODEL</text>
+                <text class="shell-sans" x="272" y="348" font-size="14" fill="var(--cs-fg)" font-weight="600">
+                  Orgs, teams, context layers.
+                </text>
+                <text class="shell-sans shell-muted" x="272" y="372" font-size="11.5">
+                  teams.yml · inheritance · All-orgs · layers
+                </text>
+
+                <rect
+                  x="256"
+                  y="424"
+                  width="548"
+                  height="76"
+                  rx="10"
+                  fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                ></rect>
+                <text class="shell-mono shell-muted" x="272" y="446" font-size="10" letter-spacing="1.4">MCP · LAUNCH</text>
+                <text class="shell-mono" x="272" y="468" font-size="12" fill="var(--cs-fg)">
+                  open_workspace { agent: 'builder' } <tspan fill="var(--cs-muted-fg)"># inbox: builder</tspan>
+                </text>
+                <text class="shell-mono" x="272" y="486" font-size="12" fill="var(--cs-fg)">routine_run_now ship-release</text>
+              </g>
+
+              <!-- Step 11: Pipeline / story-board view replaces the viewer -->
+              <g data-step-content="11" data-replaces="viewer">
+                <text class="shell-sans" x="256" y="110" font-size="20" fill="var(--cs-fg)" font-weight="600">
+                  Pipeline · DEMO
+                </text>
+                <text class="shell-sans shell-muted" x="256" y="130" font-size="11.5">
+                  14 phases · 42 stories · 7 in-flight · 3 blocked
+                </text>
+                <rect x="256" y="150" width="548" height="2" fill="var(--cs-border)"></rect>
+
+                <g>
+                  <rect x="266" y="178" width="88" height="36" rx="8" fill="color-mix(in oklab, #58a6ff 18%, var(--cs-surface))" stroke="#58a6ff"></rect>
+                  <text class="shell-sans" x="280" y="201" font-size="11" fill="var(--cs-fg)" font-weight="600">1 · Idea</text>
+
+                  <rect x="380" y="178" width="88" height="36" rx="8" fill="color-mix(in oklab, #58a6ff 18%, var(--cs-surface))" stroke="#58a6ff"></rect>
+                  <text class="shell-sans" x="398" y="201" font-size="11" fill="var(--cs-fg)" font-weight="600">2 · Spec</text>
+
+                  <rect x="494" y="178" width="110" height="36" rx="8" fill="color-mix(in oklab, #d670d6 18%, var(--cs-surface))" stroke="#d670d6"></rect>
+                  <text class="shell-sans" x="508" y="201" font-size="11" fill="var(--cs-fg)" font-weight="600">3 · Arch</text>
+
+                  <rect x="630" y="178" width="88" height="36" rx="8" fill="color-mix(in oklab, #d670d6 18%, var(--cs-surface))" stroke="#d670d6"></rect>
+                  <text class="shell-sans" x="650" y="201" font-size="11" fill="var(--cs-fg)" font-weight="600">4 · UX</text>
+
+                  <rect x="744" y="178" width="60" height="36" rx="8" fill="color-mix(in oklab, #f0a93b 18%, var(--cs-surface))" stroke="#f0a93b"></rect>
+                  <text class="shell-sans" x="754" y="201" font-size="11" fill="var(--cs-fg)" font-weight="600">5–9</text>
+
+                  <rect x="266" y="246" width="88" height="36" rx="8" fill="color-mix(in oklab, #3fb950 18%, var(--cs-surface))" stroke="#3fb950"></rect>
+                  <text class="shell-sans" x="280" y="269" font-size="11" fill="var(--cs-fg)" font-weight="600">10 Review</text>
+
+                  <rect x="380" y="246" width="60" height="36" rx="8" fill="color-mix(in oklab, #3fb950 18%, var(--cs-surface))" stroke="#3fb950"></rect>
+                  <text class="shell-sans" x="394" y="269" font-size="11" fill="var(--cs-fg)" font-weight="600">11 QA</text>
+
+                  <rect x="466" y="246" width="78" height="36" rx="8" fill="color-mix(in oklab, #3fb950 18%, var(--cs-surface))" stroke="#3fb950"></rect>
+                  <text class="shell-sans" x="478" y="269" font-size="11" fill="var(--cs-fg)" font-weight="600">12 Retro</text>
+
+                  <rect x="570" y="246" width="60" height="36" rx="8" fill="color-mix(in oklab, #39d3bb 18%, var(--cs-surface))" stroke="#39d3bb"></rect>
+                  <text class="shell-sans" x="584" y="269" font-size="11" fill="var(--cs-fg)" font-weight="600">13 Ship</text>
+
+                  <rect x="656" y="246" width="68" height="36" rx="8" fill="color-mix(in oklab, #a08cff 18%, var(--cs-surface))" stroke="#a08cff"></rect>
+                  <text class="shell-sans" x="668" y="269" font-size="11" fill="var(--cs-fg)" font-weight="600">14 Loop</text>
+
+                  <path d="M354 196 L380 196" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M468 196 L494 196" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M604 196 L630 196" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M718 196 L744 196" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+
+                  <path d="M774 214 Q774 230 310 230 Q310 240 310 246" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M354 264 L380 264" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M440 264 L466 264" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M544 264 L570 264" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M630 264 L656 264" stroke="var(--cs-muted-fg)" stroke-width="1.3" fill="none"></path>
+                  <path d="M690 282 Q690 300 310 300 Q310 316 310 324" stroke="var(--cs-muted-fg)" stroke-width="1.3" stroke-dasharray="3 3" fill="none"></path>
+                </g>
+
+                <g transform="translate(266, 440)">
+                  <rect x="0" y="0" width="500" height="60" rx="8" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-mono shell-muted" x="12" y="18" font-size="10" letter-spacing="1.5">LEGEND</text>
+                  <circle cx="18" cy="36" r="4" fill="#58a6ff"></circle><text class="shell-sans" x="30" y="40" font-size="11" fill="var(--cs-fg)">plan</text>
+                  <circle cx="78" cy="36" r="4" fill="#d670d6"></circle><text class="shell-sans" x="90" y="40" font-size="11" fill="var(--cs-fg)">design</text>
+                  <circle cx="146" cy="36" r="4" fill="#f0a93b"></circle><text class="shell-sans" x="158" y="40" font-size="11" fill="var(--cs-fg)">build</text>
+                  <circle cx="206" cy="36" r="4" fill="#3fb950"></circle><text class="shell-sans" x="218" y="40" font-size="11" fill="var(--cs-fg)">verify</text>
+                  <circle cx="268" cy="36" r="4" fill="#39d3bb"></circle><text class="shell-sans" x="280" y="40" font-size="11" fill="var(--cs-fg)">ship</text>
+                  <circle cx="320" cy="36" r="4" fill="#a08cff"></circle><text class="shell-sans" x="332" y="40" font-size="11" fill="var(--cs-fg)">loop</text>
+                </g>
+              </g>
+
+              <!-- Step 12: Settings panel replaces the viewer -->
+              <g data-step-content="12" data-replaces="viewer">
+                <text class="shell-sans" x="256" y="110" font-size="20" fill="var(--cs-fg)" font-weight="600">Settings</text>
+                <text class="shell-sans shell-muted" x="256" y="130" font-size="11.5">Themes · keybindings · machines</text>
+                <rect x="256" y="150" width="548" height="2" fill="var(--cs-border)"></rect>
+
+                <g>
+                  <rect x="256" y="170" width="548" height="54" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="272" y="194" font-size="13" fill="var(--cs-fg)" font-weight="500">Appearance</text>
+                  <text class="shell-sans shell-muted" x="272" y="213" font-size="11.5">Dark · Light · Follow system</text>
+                  <rect x="700" y="186" width="88" height="22" rx="11" fill="color-mix(in oklab, var(--cs-accent) 20%, var(--cs-surface))" stroke="color-mix(in oklab, var(--cs-accent) 60%, var(--cs-border))"></rect>
+                  <circle cx="712" cy="197" r="7" fill="var(--cs-accent)"></circle>
+                  <text class="shell-sans" x="726" y="200" font-size="11" fill="var(--cs-fg)">dark</text>
+                </g>
+                <g transform="translate(0, 68)">
+                  <rect x="256" y="170" width="548" height="54" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="272" y="194" font-size="13" fill="var(--cs-fg)" font-weight="500">Keybindings</text>
+                  <text class="shell-sans shell-muted" x="272" y="213" font-size="11.5">88 bindings · ⌘K · ⌘P · ⌘⇧P · →/← · esc</text>
+                  <text class="shell-sans" x="750" y="202" font-size="11" fill="var(--cs-accent)">Open file →</text>
+                </g>
+                <g transform="translate(0, 136)">
+                  <rect x="256" y="170" width="548" height="54" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="272" y="194" font-size="13" fill="var(--cs-fg)" font-weight="500">Machines</text>
+                  <text class="shell-sans shell-muted" x="272" y="213" font-size="11.5">this-mac · build-mac · cs-remote.example.com</text>
+                  <text class="shell-mono" x="730" y="202" font-size="10.5" fill="var(--cs-success)">3 online</text>
+                </g>
+                <g transform="translate(0, 204)">
+                  <rect x="256" y="170" width="548" height="54" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="272" y="194" font-size="13" fill="var(--cs-fg)" font-weight="500">Connectors</text>
+                  <text class="shell-sans shell-muted" x="272" y="213" font-size="11.5">GitHub · Slack · Jira · Playwright</text>
+                  <text class="shell-mono" x="730" y="202" font-size="10.5" fill="var(--cs-success)">4 ok</text>
+                </g>
+              </g>
+            </g>
+
+            <!-- =========== Right pane (default: chat) =========== -->
+            <g class="shell-row-reveal" data-row="right" data-spot-anchor="right">
+              <rect class="shell-chrome" x="840" y="40" width="360" height="520"></rect>
+
+              <rect x="840" y="40" width="360" height="30" fill="var(--cs-bg)" stroke="none"></rect>
+              <text class="shell-sans" x="860" y="60" font-size="11" fill="var(--cs-fg)" font-weight="500">chat</text>
+              <text class="shell-sans shell-muted" x="898" y="60" font-size="11">inbox</text>
+              <text class="shell-sans shell-muted" x="938" y="60" font-size="11">routine</text>
+              <text class="shell-sans shell-muted" x="988" y="60" font-size="11">agent</text>
+
+              <g data-step-content-default="right">
+                <rect x="860" y="86" width="300" height="88" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <rect x="870" y="94" width="18" height="18" rx="4" fill="var(--cs-accent)" opacity="0.6"></rect>
+                <text class="shell-mono" x="876" y="108" font-size="10" fill="var(--cs-accent-fg)" font-weight="600">M</text>
+                <text class="shell-sans" x="896" y="107" font-size="11.5" fill="var(--cs-fg)" font-weight="600">Mary</text>
+                <text class="shell-mono shell-muted" x="930" y="107" font-size="10">analyst</text>
+                <text class="shell-sans" x="870" y="130" font-size="12" fill="var(--cs-fg)">The spec is distilled. 5 stories, chain of</text>
+                <text class="shell-sans" x="870" y="148" font-size="12" fill="var(--cs-fg)">1 → {2,3,4,5}. See <tspan fill="var(--cs-accent)">pipeline-graph</tspan>.</text>
+
+                <rect x="860" y="186" width="300" height="60" rx="10" fill="color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface))" stroke="color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border))"></rect>
+                <text class="shell-sans" x="870" y="206" font-size="11.5" fill="var(--cs-fg)" font-weight="600">you</text>
+                <text class="shell-sans" x="870" y="226" font-size="12" fill="var(--cs-fg)">Open the pipeline. Fire story 1 to builder.</text>
+
+                <rect x="860" y="258" width="300" height="72" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <rect x="870" y="266" width="18" height="18" rx="4" fill="#f0a93b" opacity="0.65"></rect>
+                <text class="shell-mono" x="876" y="280" font-size="10" fill="var(--cs-bg)" font-weight="600">A</text>
+                <text class="shell-sans" x="896" y="279" font-size="11.5" fill="var(--cs-fg)" font-weight="600">Amelia</text>
+                <text class="shell-mono shell-muted" x="932" y="279" font-size="10">builder-1</text>
+                <text class="shell-sans" x="870" y="302" font-size="12" fill="var(--cs-fg)">On it. worktree opens at ~/wt/demo-1.</text>
+
+                <rect x="860" y="492" width="300" height="46" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <text class="shell-sans shell-muted" x="874" y="518" font-size="12">Reply to Mary · ⌘↵ to send</text>
+              </g>
+
+              <g data-step-content="7" data-replaces="right">
+                <text class="shell-sans" x="860" y="94" font-size="14" fill="var(--cs-fg)" font-weight="600">builder</text>
+                <text class="shell-mono shell-muted" x="902" y="94" font-size="10.5">inbox · 3 open</text>
+                <rect x="860" y="104" width="300" height="2" fill="var(--cs-border)"></rect>
+
+                <g>
+                  <rect x="860" y="116" width="300" height="56" rx="10" fill="color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface))" stroke="color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border))"></rect>
+                  <text class="shell-sans" x="874" y="136" font-size="12" fill="var(--cs-fg)" font-weight="600">DEMO-1 · scaffold shared chrome</text>
+                  <text class="shell-sans shell-muted" x="874" y="156" font-size="11">2 msgs · builder · now</text>
+                  <circle cx="1148" cy="128" r="3" fill="var(--cs-accent)"></circle>
+                </g>
+                <g>
+                  <rect x="860" y="184" width="300" height="56" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="874" y="204" font-size="12" fill="var(--cs-fg)" font-weight="500">DEMO-3 · tour.html</text>
+                  <text class="shell-sans shell-muted" x="874" y="224" font-size="11">1 msg · builder · 3m</text>
+                </g>
+                <g>
+                  <rect x="860" y="252" width="300" height="56" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-sans" x="874" y="272" font-size="12" fill="var(--cs-fg)" font-weight="500">DEMO-9 · factory playbook</text>
+                  <text class="shell-sans shell-muted" x="874" y="292" font-size="11">4 msgs · builder · 11m</text>
+                </g>
+
+                <rect x="860" y="492" width="300" height="46" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <text class="shell-mono shell-muted" x="874" y="510" font-size="10" letter-spacing="1.3">ROLE CONTRACT</text>
+                <text class="shell-sans" x="874" y="528" font-size="12" fill="var(--cs-fg)">builder · implements stories · auto-wake on idle</text>
+              </g>
+
+              <g data-step-content="8" data-replaces="right">
+                <text class="shell-sans" x="860" y="94" font-size="14" fill="var(--cs-fg)" font-weight="600">agents</text>
+                <text class="shell-mono shell-muted" x="908" y="94" font-size="10.5">7 personas · 3 live</text>
+                <rect x="860" y="104" width="300" height="2" fill="var(--cs-border)"></rect>
+
+                <g>
+                  <rect x="860" y="116" width="300" height="60" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <rect x="874" y="130" width="30" height="30" rx="6" fill="var(--cs-accent)" opacity="0.75"></rect>
+                  <text class="shell-mono" x="884" y="150" font-size="14" fill="var(--cs-accent-fg)" font-weight="700">M</text>
+                  <text class="shell-sans" x="916" y="140" font-size="13" fill="var(--cs-fg)" font-weight="600">Mary</text>
+                  <text class="shell-mono shell-muted" x="916" y="158" font-size="10.5">analyst · bmad-forge-idea</text>
+                  <circle cx="1148" cy="128" r="3" fill="var(--cs-success)"></circle>
+                </g>
+                <g>
+                  <rect x="860" y="184" width="300" height="60" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <rect x="874" y="198" width="30" height="30" rx="6" fill="#d670d6" opacity="0.75"></rect>
+                  <text class="shell-mono" x="884" y="218" font-size="14" fill="var(--cs-bg)" font-weight="700">W</text>
+                  <text class="shell-sans" x="916" y="208" font-size="13" fill="var(--cs-fg)" font-weight="600">Winston</text>
+                  <text class="shell-mono shell-muted" x="916" y="226" font-size="10.5">architect · bmad-architecture</text>
+                  <circle cx="1148" cy="196" r="3" fill="var(--cs-success)"></circle>
+                </g>
+                <g>
+                  <rect x="860" y="252" width="300" height="60" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <rect x="874" y="266" width="30" height="30" rx="6" fill="#f0a93b" opacity="0.75"></rect>
+                  <text class="shell-mono" x="884" y="286" font-size="14" fill="var(--cs-bg)" font-weight="700">A×3</text>
+                  <text class="shell-sans" x="916" y="276" font-size="13" fill="var(--cs-fg)" font-weight="600">Amelia × 3</text>
+                  <text class="shell-mono shell-muted" x="916" y="294" font-size="10.5">builder · bmad-build</text>
+                  <circle cx="1148" cy="264" r="3" fill="var(--cs-warning)"></circle>
+                </g>
+                <g>
+                  <rect x="860" y="320" width="300" height="60" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <rect x="874" y="334" width="30" height="30" rx="6" fill="#3fb950" opacity="0.75"></rect>
+                  <text class="shell-mono" x="880" y="354" font-size="14" fill="var(--cs-bg)" font-weight="700">Mu</text>
+                  <text class="shell-sans" x="916" y="344" font-size="13" fill="var(--cs-fg)" font-weight="600">Murat</text>
+                  <text class="shell-mono shell-muted" x="916" y="362" font-size="10.5">tea · bmad-testarch-atdd</text>
+                  <circle cx="1148" cy="332" r="3" fill="var(--cs-muted-fg)"></circle>
+                </g>
+              </g>
+
+              <g data-step-content="9" data-replaces="right">
+                <text class="shell-sans" x="860" y="94" font-size="14" fill="var(--cs-fg)" font-weight="600">routines</text>
+                <text class="shell-mono shell-muted" x="914" y="94" font-size="10.5">4 active</text>
+                <rect x="860" y="104" width="300" height="2" fill="var(--cs-border)"></rect>
+
+                <g>
+                  <rect x="860" y="116" width="300" height="110" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-mono shell-muted" x="874" y="134" font-size="10" letter-spacing="1.3">INBOX_IDLE · BUILDER</text>
+                  <text class="shell-sans" x="874" y="156" font-size="13" fill="var(--cs-fg)" font-weight="600">wake-builder-on-idle</text>
+                  <circle cx="884" cy="190" r="7" fill="color-mix(in oklab, #f0a93b 25%, var(--cs-surface))" stroke="#f0a93b"></circle>
+                  <line x1="892" y1="190" x2="936" y2="190" stroke="var(--cs-muted-fg)" stroke-width="1.3"></line>
+                  <circle cx="944" cy="190" r="7" fill="color-mix(in oklab, #f0a93b 25%, var(--cs-surface))" stroke="#f0a93b"></circle>
+                  <line x1="952" y1="190" x2="996" y2="190" stroke="var(--cs-muted-fg)" stroke-width="1.3"></line>
+                  <circle cx="1004" cy="190" r="7" fill="color-mix(in oklab, #3fb950 25%, var(--cs-surface))" stroke="#3fb950"></circle>
+                  <line x1="1012" y1="190" x2="1056" y2="190" stroke="var(--cs-muted-fg)" stroke-width="1.3" stroke-dasharray="3 3"></line>
+                  <circle cx="1064" cy="190" r="7" fill="color-mix(in oklab, var(--cs-border) 60%, transparent)" stroke="var(--cs-border)"></circle>
+                  <text class="shell-mono shell-muted" x="874" y="214" font-size="10">last ran 4m ago · next on idle</text>
+                </g>
+
+                <g>
+                  <rect x="860" y="238" width="300" height="86" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-mono shell-muted" x="874" y="256" font-size="10" letter-spacing="1.3">CRON · 0 9 * * MON</text>
+                  <text class="shell-sans" x="874" y="278" font-size="13" fill="var(--cs-fg)" font-weight="600">weekly-ship-digest</text>
+                  <text class="shell-mono shell-muted" x="874" y="300" font-size="10">next: Mon 9:00</text>
+                  <text class="shell-mono" x="874" y="316" font-size="10" fill="var(--cs-success)">● enabled</text>
+                </g>
+
+                <g>
+                  <rect x="860" y="336" width="300" height="68" rx="10" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                  <text class="shell-mono shell-muted" x="874" y="354" font-size="10" letter-spacing="1.3">EACH_MAC</text>
+                  <text class="shell-sans" x="874" y="376" font-size="13" fill="var(--cs-fg)" font-weight="600">sync-context</text>
+                  <text class="shell-mono shell-muted" x="874" y="394" font-size="10">this-mac · build-mac</text>
+                </g>
+              </g>
+            </g>
+
+            <!-- =========== Terminal strip + Status bar =========== -->
+            <g class="shell-row-reveal" data-row="terminal" data-spot-anchor="terminal">
+              <rect class="shell-chrome" x="220" y="560" width="620" height="100"></rect>
+              <g data-step-content-default="terminal">
+                <text class="shell-mono shell-muted" x="238" y="582" font-size="10" letter-spacing="1.5">TERMINAL · ~/wt/demo-3</text>
+                <text class="shell-mono" x="238" y="604" font-size="11.5" fill="var(--cs-success)">$ claude  <tspan fill="var(--cs-muted-fg)"># agent: builder</tspan></text>
+                <text class="shell-mono shell-muted" x="238" y="622" font-size="11.5">[builder] opening worktree ~/wt/demo-3…</text>
+                <text class="shell-mono shell-muted" x="238" y="640" font-size="11.5">[builder] story DEMO-3 → status: building</text>
+              </g>
+
+              <rect class="shell-chrome" x="840" y="560" width="360" height="100"></rect>
+              <text class="shell-mono shell-muted" x="856" y="582" font-size="10" letter-spacing="1.5">STATUS</text>
+              <circle cx="860" cy="604" r="3" fill="var(--cs-success)"></circle>
+              <text class="shell-sans" x="872" y="608" font-size="11.5" fill="var(--cs-fg)">this-mac · online</text>
+              <circle cx="860" cy="624" r="3" fill="var(--cs-success)"></circle>
+              <text class="shell-sans" x="872" y="628" font-size="11.5" fill="var(--cs-fg)">cs-remote.example.com · online</text>
+              <text class="shell-mono shell-muted" x="856" y="648" font-size="10.5">bridge: window.codesense</text>
+            </g>
+
+            <!-- Step 6: Terminal content replaces the default terminal with a remote-exec moment -->
+            <g data-step-content="6" data-replaces="terminal">
+              <text class="shell-mono shell-muted" x="238" y="582" font-size="10" letter-spacing="1.5">
+                TERMINAL · ~/wt/demo-3 · remote: build-mac
+              </text>
+              <text class="shell-mono" x="238" y="604" font-size="11.5" fill="var(--cs-success)">$ claude  <tspan fill="var(--cs-muted-fg)"># agent: reviewer, on build-mac</tspan></text>
+              <text class="shell-mono shell-muted" x="238" y="622" font-size="11.5">[reviewer@build-mac] worktree ready at ~/srv/cs/wt/demo-3</text>
+              <text class="shell-mono" x="238" y="642" font-size="11.5" fill="var(--cs-fg)">$ <tspan fill="var(--cs-accent)">▊</tspan></text>
+            </g>
+
+            <!-- Step 10: Workspaces switcher popover over title bar -->
+            <g data-step-content="10" data-spot-anchor="workspaces">
+              <rect x="0" y="40" width="1200" height="620" fill="var(--cs-bg)" opacity="0.4"></rect>
+              <rect x="80" y="56" width="420" height="300" rx="12" fill="var(--cs-surface)" stroke="var(--cs-border)" filter="url(#cs-tour-drop)"></rect>
+              <text class="shell-mono shell-muted" x="100" y="80" font-size="10" letter-spacing="1.5">WORKSPACES · WORKTREES</text>
+              <rect x="100" y="92" width="380" height="2" fill="var(--cs-border)"></rect>
+
+              <g>
+                <rect x="100" y="104" width="380" height="48" rx="8" fill="color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface))" stroke="color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border))"></rect>
+                <circle cx="116" cy="128" r="4" fill="var(--cs-accent)"></circle>
+                <text class="shell-sans" x="128" y="124" font-size="13" fill="var(--cs-fg)" font-weight="600">demo-3-tour</text>
+                <text class="shell-mono shell-muted" x="128" y="142" font-size="10.5">~/wt/demo-3 · branch demo/story-3</text>
+                <text class="shell-mono" x="430" y="130" font-size="10.5" fill="var(--cs-success)">● live</text>
+              </g>
+              <g>
+                <rect x="100" y="162" width="380" height="48" rx="8" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <circle cx="116" cy="186" r="4" fill="var(--cs-muted-fg)"></circle>
+                <text class="shell-sans" x="128" y="182" font-size="13" fill="var(--cs-fg)" font-weight="500">demo-9-factory</text>
+                <text class="shell-mono shell-muted" x="128" y="200" font-size="10.5">~/wt/demo-9 · branch demo/story-9</text>
+              </g>
+              <g>
+                <rect x="100" y="220" width="380" height="48" rx="8" fill="color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface))" stroke="var(--cs-border)"></rect>
+                <circle cx="116" cy="244" r="4" fill="var(--cs-muted-fg)"></circle>
+                <text class="shell-sans" x="128" y="240" font-size="13" fill="var(--cs-fg)" font-weight="500">demo-5-stories</text>
+                <text class="shell-mono shell-muted" x="128" y="258" font-size="10.5">~/wt/demo-5 · branch demo/story-5</text>
+              </g>
+
+              <rect x="100" y="282" width="140" height="26" rx="6" fill="var(--cs-accent)"></rect>
+              <text class="shell-sans" x="118" y="300" font-size="11.5" fill="var(--cs-accent-fg)" font-weight="500">+ new workspace</text>
+            </g>
+
+            <!-- The spotlight ring. CSS variables (--spot-*) drive its bbox per step. -->
+            <rect
+              class="shell-spotlight"
+              data-cs-tour-ring
+              x="48"
+              y="56"
+              width="190"
+              height="32"
+              rx="10"
+              aria-hidden="true"
+            ></rect>
+          </svg>
+        </div>
+
+        <!-- =========== Caption card =========== -->
+        <aside class="cs-docs-tour-caption" data-cs-tour-caption aria-live="polite">
+          <div class="cs-docs-tour-caption__row">
+            <span class="cs-docs-tour-caption__num" data-cs-tour-num>01 / 12</span>
+            <span class="cs-docs-tour-caption__arc" data-cs-tour-arc>Arc A · First touch</span>
+          </div>
+          <h2 class="cs-docs-tour-caption__title" data-cs-tour-title>The book icon</h2>
+          <p class="cs-docs-tour-caption__body" data-cs-tour-body>
+            You're looking at the training manual. Every arc opens here — this page included. The book icon in
+            the title bar is the shortcut back to home when you've drifted off the trail.
+          </p>
+          <div class="cs-docs-tour-caption__ctas">
+            <button type="button" class="cs-docs-btn cs-docs-btn--primary" data-cs-tour-open>
+              <svg
+                class="cs-docs-tour-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+              <span data-cs-tour-open-label>Open home</span>
+            </button>
+            <a
+              href="./arc-a-first-touch/index.html"
+              class="cs-docs-btn cs-docs-btn--ghost"
+              data-cs-tour-deepdive
+            >
+              <svg
+                class="cs-docs-tour-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="15 10 20 15 15 20" />
+                <path d="M4 4v7a4 4 0 0 0 4 4h12" />
+              </svg>
+              <span>Deep dive</span>
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ===================== Rail ===================== -->
+      <nav class="cs-docs-tour-rail" role="tablist" aria-label="Tour steps" data-cs-tour-rail>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="1" data-current="true" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">01</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 7v14" />
+              <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Book</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="2" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">02</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="5" />
+              <path d="M20 21a8 8 0 0 0-16 0" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Identity</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="3" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">03</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" />
+              <path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" />
+              <path d="M3 5a2 2 0 0 0 2 2h3" />
+              <path d="M3 3v13a2 2 0 0 0 2 2h3" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Tree</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="4" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">04</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10 12.5 8 15l2 2.5" />
+              <path d="m14 12.5 2 2.5-2 2.5" />
+              <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              <path d="M5 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9l6 6v12a2 2 0 0 1-2 2z" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Viewer</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="5" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">05</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M15 3v18" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Right pane</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="6" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">06</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m7 11 2-2-2-2" />
+              <path d="M11 13h4" />
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Terminal</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="7" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">07</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Inboxes</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="8" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">08</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 8V4H8" />
+              <rect width="16" height="12" x="4" y="8" rx="2" />
+              <path d="M2 14h2" />
+              <path d="M20 14h2" />
+              <path d="M15 13v2" />
+              <path d="M9 13v2" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Agents</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="9" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">09</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m17 2 4 4-4 4" />
+              <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+              <path d="m7 22-4-4 4-4" />
+              <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Routines</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="10" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">10</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m12.83 2.18 8.3 4.6a1 1 0 0 1 0 1.75l-8.3 4.6a2 2 0 0 1-1.66 0l-8.3-4.6a1 1 0 0 1 0-1.75l8.3-4.6a2 2 0 0 1 1.66 0z" />
+              <path d="M2 12a1 1 0 0 0 .58.91l8.6 4.08a2 2 0 0 0 1.65 0l8.58-4.08A1 1 0 0 0 22 12" />
+              <path d="M2 17a1 1 0 0 0 .58.91l8.6 4.08a2 2 0 0 0 1.65 0l8.58-4.08A1 1 0 0 0 22 17" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Workspaces</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="11" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">11</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="18" r="3" />
+              <circle cx="6" cy="6" r="3" />
+              <path d="M13 6h3a2 2 0 0 1 2 2v7" />
+              <path d="M6 9v12" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Pipeline</span>
+        </button>
+        <button type="button" class="cs-docs-tour-tick" role="tab" data-step="12" aria-controls="stage">
+          <span class="cs-docs-tour-tick__num">12</span>
+          <span class="cs-docs-tour-tick__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 7h-9" />
+              <path d="M14 17H5" />
+              <circle cx="17" cy="17" r="3" />
+              <circle cx="7" cy="7" r="3" />
+            </svg>
+          </span>
+          <span class="cs-docs-tour-tick__label">Settings</span>
+        </button>
+      </nav>
+
+      <!-- ===================== Hint strip ===================== -->
+      <div class="cs-docs-tour-hint">
+        <div class="cs-docs-tour-hint__cluster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 8h.01" />
+            <path d="M12 12h.01" />
+            <path d="M14 8h.01" />
+            <path d="M16 12h.01" />
+            <path d="M18 8h.01" />
+            <path d="M6 8h.01" />
+            <path d="M7 16h10" />
+            <path d="M8 12h.01" />
+            <rect width="20" height="16" x="2" y="4" rx="2" />
+          </svg>
+          <span>Use <span class="cs-docs-kbd">→</span> <span class="cs-docs-kbd">←</span> to step through.</span>
+        </div>
+        <div class="cs-docs-tour-hint__cluster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span>Hit <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> to search the whole doc.</span>
+        </div>
+        <div class="cs-docs-tour-hint__cluster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4" />
+            <path d="M12 8h.01" />
+          </svg>
+          <span>Mocked chrome: an illustration of the app, not a screenshot.</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · 60-second tour</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">→</span> <span class="cs-docs-kbd">←</span> step</span
+          >
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+          <span class="cs-footer__legend-item"><span class="cs-docs-kbd">Esc</span> close</span>
+        </span>
+      </div>
+    </footer>
+
+    <!-- ===================== Script ===================== -->
+    <script>
+      (function () {
+        "use strict";
+
+        // Each step has: title · arc label · one-line body · spotlight bbox (in SVG units) ·
+        // "open-in-app" verb and args · deep-dive href · screenshot path with {theme}.
+        var STEPS = [
+          {
+            title: "The book icon",
+            arc: "Arc A · First touch",
+            body: "You're looking at the training manual. Every arc opens here — this page included. The book icon in the title bar is the shortcut back to home when you've drifted off the trail.",
+            spot: { x: 88, y: 6, w: 342, h: 28 },
+            open: { verb: "openFile", args: { path: "./README.html", newTab: true }, label: "Open home" },
+            deep: "./arc-a-first-touch/index.html",
+            shot: "./screenshots/tour/tour-step-1-{theme}.png",
+          },
+          {
+            title: "Identity",
+            arc: "Arc B · The model",
+            body: "Who you are, which org, which team. Everything else — context, agents, worktrees — inherits from this chip. Click it to switch orgs or sign in on a new Mac.",
+            spot: { x: 1056, y: 6, w: 132, h: 28 },
+            open: null,
+            deep: "./arc-b-model/index.html",
+            shot: "./screenshots/tour/tour-step-2-{theme}.png",
+          },
+          {
+            title: "The left tree",
+            arc: "Arc A · First touch",
+            body: "Your docs, planning, agents, inboxes. Natural-sorted; folders are first-class; the filter at the top is instant. The whole app is navigable from here.",
+            spot: { x: 0, y: 40, w: 220, h: 520 },
+            open: null,
+            deep: "./arc-a-first-touch/index.html",
+            shot: "./screenshots/tour/tour-step-3-{theme}.png",
+          },
+          {
+            title: "The viewer",
+            arc: "Arc I · Dashboards & primitives",
+            body: "HTML, Markdown, Excalidraw — all first-class, all rendered live. HTML docs run in a trusted sandbox and can talk to the app through window.codesense.",
+            spot: { x: 220, y: 40, w: 620, h: 520 },
+            open: { verb: "openFile", args: { path: "./README.html" }, label: "Open the welcome page" },
+            deep: "./arc-i-dashboard-primitives/index.html",
+            shot: "./screenshots/tour/tour-step-4-{theme}.png",
+          },
+          {
+            title: "The right pane",
+            arc: "Arc I · Dashboards & primitives",
+            body: "Where agents answer. Chat, inbox detail, routine inspector, graph editor — same slot, different hats. One pane, many jobs.",
+            spot: { x: 840, y: 40, w: 360, h: 520 },
+            open: null,
+            deep: "./arc-i-dashboard-primitives/index.html",
+            shot: "./screenshots/tour/tour-step-5-{theme}.png",
+          },
+          {
+            title: "The terminal",
+            arc: "Arc D · Terminals & machines",
+            body: "Local or remote, same shape. Survives relaunch. Sees your context. Every machine you've added is one keystroke away — no copy-pasting SSH incantations.",
+            spot: { x: 220, y: 560, w: 620, h: 100 },
+            open: null,
+            deep: "./arc-d-terminals-and-machines/index.html",
+            shot: "./screenshots/tour/tour-step-6-{theme}.png",
+          },
+          {
+            title: "Inboxes",
+            arc: "Arc F · Inbox flows",
+            body: "Message-driven work. Each role has an inbox; threads land there, agents and humans both reply. This is where the factory wakes up on idle.",
+            spot: { x: 840, y: 40, w: 360, h: 520 },
+            open: null,
+            deep: "./arc-f-inboxes-and-triage/index.html",
+            shot: "./screenshots/tour/tour-step-7-{theme}.png",
+          },
+          {
+            title: "Agents",
+            arc: "Arc E · Agents",
+            body: "A library of personas. Pick one, send it a thread, it works. Agents are versioned, shareable, and bring their own skills — Mary writes specs, Amelia implements, Winston reviews.",
+            spot: { x: 840, y: 40, w: 360, h: 520 },
+            open: null,
+            deep: "./arc-e-agents/index.html",
+            shot: "./screenshots/tour/tour-step-8-{theme}.png",
+          },
+          {
+            title: "Routines",
+            arc: "Arc G · Routines",
+            body: "Every trigger shape — cron, each_mac, inbox_idle, event. One place to see what's firing, what's scheduled, and what's waiting on an idle inbox.",
+            spot: { x: 840, y: 40, w: 360, h: 520 },
+            open: null,
+            deep: "./arc-g-routines/index.html",
+            shot: "./screenshots/tour/tour-step-9-{theme}.png",
+          },
+          {
+            title: "Workspaces & worktrees",
+            arc: "Arc C · Workspaces & worktrees",
+            body: "Prepared worktrees of your repos, created where the work needs them. Each story gets its own branch; parallel work doesn't collide; opening a workspace readies five Macs at once.",
+            spot: { x: 72, y: 50, w: 436, h: 318 },
+            open: null,
+            deep: "./arc-c-workspaces-and-worktrees/index.html",
+            shot: "./screenshots/tour/tour-step-10-{theme}.png",
+          },
+          {
+            title: "The pipeline",
+            arc: "Arc H · The factory",
+            body: "Story → sprint → ship, as a dependency graph that drives the run. Status transitions fire routines; failures loop back to a resolver. The DAG is the plan and the operator at once.",
+            spot: { x: 220, y: 40, w: 620, h: 520 },
+            open: null,
+            deep: "./arc-l-factory/index.html",
+            shot: "./screenshots/tour/tour-step-11-{theme}.png",
+          },
+          {
+            title: "Settings",
+            arc: "Arc N · Reference catalog",
+            body: "Themes, keybindings, machines. The small stuff that compounds. From here you can swap themes or add a Mac — everything else inherits.",
+            spot: { x: 220, y: 40, w: 620, h: 520 },
+            open: null,
+            deep: "./arc-n-reference/index.html",
+            shot: "./screenshots/tour/tour-step-12-{theme}.png",
+          },
+        ];
+
+        var TOTAL = STEPS.length;
+
+        var body = document.body;
+        var ring = document.querySelector("[data-cs-tour-ring]");
+        var shell = document.querySelector(".cs-docs-tour-shell");
+        var shellShot = document.querySelector("[data-cs-tour-shot]");
+        var captionEl = document.querySelector("[data-cs-tour-caption]");
+        var captionNum = document.querySelector("[data-cs-tour-num]");
+        var captionArc = document.querySelector("[data-cs-tour-arc]");
+        var captionTtl = document.querySelector("[data-cs-tour-title]");
+        var captionBody = document.querySelector("[data-cs-tour-body]");
+        var openBtn = document.querySelector("[data-cs-tour-open]");
+        var openLabel = document.querySelector("[data-cs-tour-open-label]");
+        var deepLink = document.querySelector("[data-cs-tour-deepdive]");
+        var rail = document.querySelector("[data-cs-tour-rail]");
+        var progressEl = document.querySelector("[data-cs-tour-progress]");
+        var progressFill = document.querySelector("[data-cs-tour-progress-fill]");
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // --- Load wave ---------------------------------------------------
+        (function loadWave() {
+          var rows = document.querySelectorAll(".shell-row-reveal");
+          if (reduceMotion) {
+            rows.forEach(function (r) {
+              r.classList.add("is-in");
+            });
+            return;
+          }
+          rows.forEach(function (r, i) {
+            setTimeout(function () {
+              r.classList.add("is-in");
+            }, 80 + i * 90);
+          });
+        })();
+
+        // --- Step state --------------------------------------------------
+        var current = 1;
+        var visited = new Set([1]);
+        var finalInstalled = false;
+
+        function go(n, opts) {
+          opts = opts || {};
+          if (n < 1) n = TOTAL;
+          if (n > TOTAL) n = 1;
+          if (n === current && !opts.force) return;
+
+          var step = STEPS[n - 1];
+
+          body.setAttribute("data-step", String(n));
+
+          var overlay = document.querySelector('[data-step-content="' + n + '"]');
+          var replaces = overlay ? overlay.getAttribute("data-replaces") || "" : "";
+          if (replaces) body.setAttribute("data-step-replace", replaces);
+          else body.removeAttribute("data-step-replace");
+
+          ring.setAttribute("x", step.spot.x);
+          ring.setAttribute("y", step.spot.y);
+          ring.setAttribute("width", step.spot.w);
+          ring.setAttribute("height", step.spot.h);
+
+          if (!reduceMotion) {
+            captionEl.classList.add("is-swapping");
+            setTimeout(function () {
+              paintCaption(step, n);
+              captionEl.classList.remove("is-swapping");
+            }, 160);
+          } else {
+            paintCaption(step, n);
+          }
+
+          rail.querySelectorAll(".cs-docs-tour-tick").forEach(function (t) {
+            var s = Number(t.getAttribute("data-step"));
+            if (s === n) t.setAttribute("data-current", "true");
+            else t.removeAttribute("data-current");
+            if (visited.has(s) && s !== n) t.setAttribute("data-visited", "true");
+            else if (s !== n) t.removeAttribute("data-visited");
+          });
+
+          var ratio = n / TOTAL;
+          progressFill.style.transform = "scaleX(" + ratio + ")";
+          progressEl.setAttribute("aria-valuenow", String(n));
+
+          trySwapScreenshot(step);
+          visited.add(n);
+          current = n;
+          updateFinalCta(n);
+          syncHash(n);
+        }
+
+        function paintCaption(step, n) {
+          captionNum.textContent =
+            String(n).padStart(2, "0") + " / " + String(TOTAL).padStart(2, "0");
+          captionArc.textContent = step.arc;
+          captionTtl.textContent = step.title;
+          captionBody.textContent = step.body;
+          // Only a step with a real in-app action shows the Open button.
+          openBtn.style.display = step.open ? "" : "none";
+          if (step.open) openLabel.textContent = step.open.label;
+          deepLink.setAttribute("href", step.deep);
+        }
+
+        function trySwapScreenshot(step) {
+          if (!window.__codesenseTourShotsReady) return;
+          var theme = (document.documentElement.getAttribute("data-theme") || "dark").toLowerCase();
+          var url = step.shot.replace("{theme}", theme);
+          if (!url) return;
+          shellShot.setAttribute("src", url);
+          shell.setAttribute("data-has-shot", "true");
+        }
+
+        // --- Final-step CTA: swap in a "Take the factory tour" primary --
+        function updateFinalCta(n) {
+          if (n === TOTAL && !finalInstalled) {
+            if (document.querySelector("[data-cs-tour-final]")) return;
+            var ctas = openBtn.parentElement;
+            var factoryBtn = document.createElement("a");
+            factoryBtn.className = "cs-docs-btn cs-docs-btn--primary";
+            factoryBtn.setAttribute("data-cs-tour-final", "");
+            factoryBtn.setAttribute("href", "./factory-playbook.html");
+            factoryBtn.innerHTML =
+              '<svg class="cs-docs-tour-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+              'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+              '<path d="M12 16h.01" />' +
+              '<path d="M16 16h.01" />' +
+              '<path d="M3 22V8a1 1 0 0 1 1.4-.9l5.2 2.6a1 1 0 0 0 1.4-.9V8a1 1 0 0 1 1.4-.9l5.2 2.6a1 1 0 0 0 1.4-.9V3a1 1 0 0 1 1-1h.1a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />' +
+              '<path d="M8 16h.01" />' +
+              "</svg>" +
+              "<span>Take the factory tour</span>";
+            openBtn.classList.remove("cs-docs-btn--primary");
+            openBtn.classList.add("cs-docs-btn--ghost");
+            ctas.insertBefore(factoryBtn, ctas.firstChild);
+
+            factoryBtn.addEventListener("click", function (ev) {
+              if (
+                window.codesense &&
+                typeof window.codesense.openFile === "function"
+              ) {
+                ev.preventDefault();
+                window.codesense.openFile({ path: "./factory-playbook.html", newTab: true });
+              }
+            });
+
+            finalInstalled = true;
+          } else if (n !== TOTAL && finalInstalled) {
+            var fb = document.querySelector("[data-cs-tour-final]");
+            if (fb) fb.remove();
+            openBtn.classList.remove("cs-docs-btn--ghost");
+            openBtn.classList.add("cs-docs-btn--primary");
+            finalInstalled = false;
+          }
+        }
+
+        // --- Open-in-app -------------------------------------------------
+        openBtn.addEventListener("click", async function () {
+          var step = STEPS[current - 1];
+          if (!step.open) return;
+          var cs = window.codesense;
+          if (!cs || typeof cs.invoke !== "function") {
+            openBtn.setAttribute("aria-disabled", "true");
+            openLabel.textContent = "Not available in preview";
+            setTimeout(function () {
+              openBtn.removeAttribute("aria-disabled");
+              openLabel.textContent = step.open.label;
+            }, 1600);
+            return;
+          }
+          openBtn.setAttribute("aria-busy", "true");
+          try {
+            if (step.open.verb === "openFile" && typeof cs.openFile === "function") {
+              await cs.openFile(step.open.args);
+            } else {
+              await cs.invoke(step.open.verb, step.open.args || {});
+            }
+          } catch (e) {
+            // Bridge call failed; swallow — the user still sees the mocked chrome.
+          } finally {
+            openBtn.removeAttribute("aria-busy");
+            openLabel.textContent = step.open.label;
+          }
+        });
+
+        // Deep-dive — route through openFile when the bridge is live.
+        deepLink.addEventListener("click", function (ev) {
+          var cs = window.codesense;
+          if (!cs || typeof cs.openFile !== "function") return;
+          ev.preventDefault();
+          cs.openFile({ path: deepLink.getAttribute("href"), newTab: true });
+        });
+
+        // --- Rail click -------------------------------------------------
+        rail.addEventListener("click", function (ev) {
+          var tick = ev.target.closest("[data-step]");
+          if (!tick) return;
+          var n = Number(tick.getAttribute("data-step"));
+          if (!Number.isFinite(n)) return;
+          go(n);
+        });
+
+        // --- Progress bar click to scrub --------------------------------
+        progressEl.addEventListener("click", function (ev) {
+          var rect = progressEl.getBoundingClientRect();
+          var ratio = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+          var n = Math.max(1, Math.min(TOTAL, Math.ceil(ratio * TOTAL)));
+          go(n);
+        });
+
+        // --- Close ------------------------------------------------------
+        function closeTour() {
+          var cs = window.codesense;
+          if (cs && typeof cs.closeTab === "function") {
+            cs.closeTab();
+            return;
+          }
+          if (cs && typeof cs.openFile === "function") {
+            cs.openFile({ path: "./README.html" });
+            return;
+          }
+          history.back();
+        }
+        document.querySelector('[data-action="close-tour"]').addEventListener("click", closeTour);
+
+        // --- Keyboard ---------------------------------------------------
+        window.addEventListener("keydown", function (ev) {
+          var tag = (ev.target && ev.target.tagName) || "";
+          if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+
+          // ⌘K / Ctrl+K is handled by the shared nav.js palette — do not consume.
+          var isMacMod = navigator.platform.toLowerCase().indexOf("mac") >= 0 ? ev.metaKey : ev.ctrlKey;
+          if (isMacMod && (ev.key === "k" || ev.key === "K")) return;
+          // Modifier chords for anything else: leave to the host.
+          if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+
+          switch (ev.key) {
+            case "ArrowRight":
+            case "ArrowDown":
+              ev.preventDefault();
+              go(current + 1);
+              break;
+            case "ArrowLeft":
+            case "ArrowUp":
+              ev.preventDefault();
+              go(current - 1);
+              break;
+            case "Home":
+              ev.preventDefault();
+              go(1);
+              break;
+            case "End":
+              ev.preventDefault();
+              go(TOTAL);
+              break;
+            case "Escape":
+              ev.preventDefault();
+              closeTour();
+              break;
+            default:
+              if (/^[1-9]$/.test(ev.key)) {
+                ev.preventDefault();
+                go(Number(ev.key));
+              }
+          }
+        });
+
+        // --- Touch scrub ------------------------------------------------
+        var touchStartX = null;
+        shell.addEventListener(
+          "touchstart",
+          function (ev) {
+            if (ev.touches.length !== 1) return;
+            touchStartX = ev.touches[0].clientX;
+          },
+          { passive: true },
+        );
+        shell.addEventListener(
+          "touchend",
+          function (ev) {
+            if (touchStartX == null) return;
+            var dx = (ev.changedTouches[0] || {}).clientX - touchStartX;
+            touchStartX = null;
+            if (Math.abs(dx) < 48) return;
+            go(dx < 0 ? current + 1 : current - 1);
+          },
+          { passive: true },
+        );
+
+        // --- Theme-aware screenshot swap --------------------------------
+        if (
+          window.codesense &&
+          window.codesense.kit &&
+          typeof window.codesense.kit.subscribeContext === "function"
+        ) {
+          window.codesense.kit.subscribeContext(function (ctx) {
+            if (ctx && ctx.theme) {
+              document.documentElement.setAttribute("data-theme", ctx.theme);
+              trySwapScreenshot(STEPS[current - 1]);
+            }
+          });
+        }
+
+        // --- Hash deep-link ---------------------------------------------
+        function syncHash(n) {
+          var target = "#step/" + n;
+          if (location.hash !== target) {
+            history.replaceState(null, "", target);
+          }
+        }
+        var hashMatch = /^#step\/(\d+)$/.exec(location.hash || "");
+        var startAt = hashMatch ? Number(hashMatch[1]) : 1;
+        go(Math.max(1, Math.min(TOTAL, startAt || 1)), { force: true });
+
+        window.addEventListener("hashchange", function () {
+          var m = /^#step\/(\d+)$/.exec(location.hash || "");
+          if (m) go(Math.max(1, Math.min(TOTAL, Number(m[1]))));
+        });
+      })();
+    </script>
+  </body>
+</html>

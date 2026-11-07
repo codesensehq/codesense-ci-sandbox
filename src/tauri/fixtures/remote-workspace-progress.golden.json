@@ -1,0 +1,48 @@
+{
+  "event": "remote-workspace-progress",
+  "failed": {
+    "failedPhase": "copying",
+    "message": "the connection to build-mac dropped",
+    "phase": "failed",
+    "requestId": "req-1"
+  },
+  "sequence": [
+    {
+      "objects": 120,
+      "phase": "fetching",
+      "requestId": "req-1",
+      "total": 480
+    },
+    {
+      "objects": 480,
+      "phase": "bundling",
+      "requestId": "req-1"
+    },
+    {
+      "phase": "copying",
+      "requestId": "req-1",
+      "sent": 0,
+      "total": 117440512
+    },
+    {
+      "phase": "copying",
+      "requestId": "req-1",
+      "sent": 42991616,
+      "total": 117440512
+    },
+    {
+      "phase": "verifying",
+      "requestId": "req-1"
+    },
+    {
+      "phase": "creatingWorktree",
+      "requestId": "req-1"
+    }
+  ],
+  "update": [
+    {
+      "phase": "updatingWorktree",
+      "requestId": "req-1"
+    }
+  ]
+}

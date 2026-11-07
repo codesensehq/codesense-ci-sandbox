@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Create your context repo</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/create">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Create your first editable context repo" id="hero">
+        <h1>Create your first editable context repo</h1>
+      </section>
+
+      <section data-search="Why create an editable context repo" id="why">
+        <p>
+          You landed in the <strong>docs org</strong>, the read-only docs CodeSense ships with.
+          Anything that writes needs a context repo of your own. Pages can't create one for you;
+          you make it from the context repo menu.
+        </p>
+      </section>
+      <section data-search="Create flow from the context repo menu" id="steps">
+        <h2>Create one now</h2>
+        <ol>
+          <li>
+            Open the context repo menu: the context repo / team name at the top left, or
+            <kbd>⌘⇧G</kbd>.
+          </li>
+          <li>
+            Choose <strong>Create a new context repo…</strong>, type a <strong>Name</strong>, and
+            turn on <strong>Start from the CodeSense example</strong> if you want an editable copy
+            of these docs. Choose <strong>Create and connect</strong>.
+          </li>
+          <li>
+            CodeSense switches to the new repo. Already have one? Use
+            <strong>Connect a context repo…</strong> instead.
+          </li>
+        </ol>
+        <p>
+          The full walk-through is <a href="./create-a-context-repo.html">Create a context repo</a>.
+        </p>
+      </section>
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            A local agent can create one with <code>create_local_organization</code>. It has no
+            example option: the repo starts empty.
+          </p>
+          <pre><code>create_local_organization {
+  displayName: "Acme Billing",
+  destinationPath: "/Users/you/CodeSense/acme-billing",
+}</code></pre>
+        </details>
+      </section>
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · First touch</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Records</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/records">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Records">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Records</h1>
+        <p class="lede">
+          Collections give a pane structured records with scoped access, live updates and
+          version-aware writes.
+        </p>
+      </section>
+      <section id="collections" data-search="Declare a collection">
+        <h2>Declare a collection</h2>
+        <p>
+          Place this file at the team's <code>content/schema/checklist.yaml</code>. The folder is
+          relative to the team root. Each record is stored separately. Collection names must match
+          their schema filenames.
+        </p>
+        <pre><code>collection: checklist
+scope: team
+folder: content/checklist
+id: slug
+title: title
+fields:
+  title: { type: text, required: true }
+  done: { type: yes-no }
+order: [title]</code></pre>
+        <p>
+          Team collections belong to their team root; private collections belong to the person's
+          private org space and include the built-in <code>notes</code> collection. A story
+          collection declares <code>scope: story</code> in the team schema, with a folder relative
+          to content. Scope is resolved from the collection and the caller's grant; page calls must
+          not pass their own <code>scope</code>, <code>org</code> or <code>team</code>. Use distinct
+          names for private and team collections to avoid ambiguous resolution.
+        </p>
+      </section>
+      <section id="human-only" data-search="humanOnly append-only records agent refused write setFields delete">
+        <h2>Keep records append-only for agents</h2>
+        <p>
+          A collection reserves actions for the person with a top-level <code>humanOnly</code> key
+          in its schema file. Do not nest it under <code>options</code>; a nested map is ignored.
+          An agent's <code>records_*</code> call is refused with
+          <code>only a human can &hellip; records in this collection</code>; a person is never
+          refused. A schema that names any other action fails to load.
+        </p>
+        <pre><code>humanOnly: [write, setFields, delete]</code></pre>
+        <ul>
+          <li><code>delete</code>: agents cannot delete a record (the built-in <code>notes</code> collection lists this).</li>
+          <li><code>write</code>: agents cannot edit a record: <code>records_write</code>, <code>records_set_fields</code> and <code>records_restore</code> are all refused.</li>
+          <li><code>setFields</code>: agents cannot change frontmatter fields: <code>records_set_fields</code>, a <code>records_write</code> that sends <code>fields</code> (with an append, a replacement or the same body) and a full <code>records_restore</code> are refused. A body-only <code>records_write</code> stays allowed unless <code>write</code> is listed.</li>
+        </ul>
+        <p>
+          <code>records_create</code> is never refused. &ldquo;Append-only&rdquo; means
+          <code>humanOnly: [write, setFields, delete]</code>: agents add records, people correct
+          them.
+        </p>
+        <p>
+          <code>humanOnly</code> applies to <code>records_*</code> calls. It sets how agents are
+          expected to use a collection; it is not a security boundary. File tools and
+          <code>update_frontmatter</code> write the Markdown files directly, and a page or dashboard
+          call runs as the person, so keep a checker if a collection must stay append-only.
+        </p>
+      </section>
+      <section id="subscribe" data-search="Read and subscribe">
+        <h2>Read and subscribe</h2>
+        <pre><code>&lt;meta name=&quot;codesense:capabilities&quot; content=&quot;records:read:team records:write:team&quot;&gt;
+&lt;ul id=&quot;records&quot; aria-label=&quot;Checklist&quot;&gt;&lt;/ul&gt;
+&lt;p id=&quot;status&quot; role=&quot;status&quot;&gt;Loading…&lt;/p&gt;
+&lt;script&gt;
+const cs = window.codesense;
+const list = document.getElementById(&#x27;records&#x27;);
+const status = document.getElementById(&#x27;status&#x27;);
+function showError(error) { status.textContent = String(error.message || error); }
+function receive(snapshot) {
+  list.replaceChildren();
+  for (const record of snapshot.snapshot) {
+    const item = document.createElement(&#x27;li&#x27;);
+    item.textContent = record.title || record.id;
+    list.append(item);
+  }
+  status.textContent = snapshot.snapshot.length ? &#x27;Checklist updated&#x27; : &#x27;No checklist records yet&#x27;;
+}
+cs.onTeardown(() =&gt; cs.unsubscribe(&#x27;records&#x27;, receive, {collection: &#x27;checklist&#x27;}));
+cs.ready();
+cs.subscribe(&#x27;records&#x27;, {collection: &#x27;checklist&#x27;, onChange: receive})
+  .then(receive).catch(showError);
+&lt;/script&gt;</code></pre>
+        <p>
+          Use <code>records.collections()</code> to discover declared collections,
+          <code>records.list({collection})</code> for a one-time list, and
+          <code>records.read({collection,id})</code> for one full record. The
+          <a href="../generated/live-hub.md">records LiveHub topic</a> pushes snapshots and deltas
+          through the same hidden/stale lifecycle as sessions. Private records require own-scope
+          grants, which the dock ceiling does not offer.
+        </p>
+      </section>
+      <section id="writes" data-search="Write safely">
+        <h2>Write safely</h2>
+        <pre><code>// Run inside an async button handler; catch errors and keep the edit visible.
+await cs.records.create({collection: &#x27;checklist&#x27;, id: &#x27;review&#x27;,
+  body: &#x27;Read the draft&#x27;, fields: {title: &#x27;Review&#x27;, done: false}});
+const current = await cs.records.read({collection: &#x27;checklist&#x27;, id: &#x27;review&#x27;});
+const result = await cs.records.write({collection: &#x27;checklist&#x27;, id: &#x27;review&#x27;,
+  base: current.body, body: &#x27;Read the revised draft&#x27;});
+if (result.overlaps.length) {
+  status.textContent = &#x27;Concurrent edit overlaps: review the merged record&#x27;;
+} else {
+  await cs.records.setFields({collection: &#x27;checklist&#x27;, id: &#x27;review&#x27;, fields: {done: true}});
+}</code></pre>
+        <p>
+          Use the exact body you read as <code>base</code> for a replacement. Concurrent edits are
+          merged; the result reports <code>merged</code> and <code>overlaps</code>. Show overlapping
+          regions for review instead of silently claiming the edit is final. For an append or a
+          find/replace patch use the operation's documented fields. Update only fields you intend to
+          change, await writes and preserve the person's unsaved input on an error. Keep a stable
+          <code>requestId</code> when retrying an uncertain write; do not blindly repeat creates.
+          Private collections have history, readAt and restore; team and story collections have no
+          automatic history. See <a href="../generated/page-sdk.md">records verb signatures</a>; the
+          engine, collection schema and grant still validate every call.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a> ·
+        <a href="./getting-data-into-a-dashboard.html#limits">Records limits and which data path to use</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

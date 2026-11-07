@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Update the docs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      .cs-docs-arcA {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA p {
+        line-height: 1.55;
+      }
+      .cs-docs-arcA ol,
+      .cs-docs-arcA ul {
+        padding-left: 1.1em;
+      }
+      .cs-docs-arcA li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/update-the-docs">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <section data-hero data-search="Update the docs offline" id="hero">
+        <h1>Update the docs</h1>
+        <p class="lede">These pages ship inside the app. An explicit update selects the running
+          app's bundled docs offline, preserving local work first. Untouched older copies also
+          refresh automatically at startup when a newer app bundle arrives.</p>
+      </section>
+
+      <section data-search="Check docs versions and freshness" id="why">
+        <h2>Check the version first</h2>
+        <p>Ask an agent to call <code>codesense_overview</code>. Its <code>docs</code> section
+          reports <code>bundledCommit</code>, <code>placedCommit</code>, <code>appVersion</code>,
+          <code>state</code> and an action. The state is current, behind, modified,
+          behind-and-modified or missing; unreadable docs report an error. Behind means the
+          placed commit differs from this app's bundle. It does not promise a newer online release.</p>
+      </section>
+
+      <section data-search="Run the manual Docs helper routine" id="steps">
+        <h2>Run the manual helper</h2>
+        <p>The <code>update-codesense-docs</code> routine belongs to <code>docs-helper</code>
+          in the docs team. It is manual by design, with no schedule. As an
+          <code>each_mac</code> routine it starts disabled on this Mac. When you choose to
+          use it, explicitly enable it here, then fire it with <code>routine_run_now</code>.
+          Enabling it does not add a schedule. Each run starts a fresh helper in the team's
+          content directory. The task loads the
+          update skill, checks the overview, calls <code>update_codesense_docs</code>, and
+          reports the result with <code>signal_done</code>.</p>
+        <p>This works from another active project. <code>routine_list {}</code> lists all
+          synced teams' routines; it has no org/team filter. Choose the returned row with
+          <code>org: codesense/docs</code>, <code>team: getting-started</code>, and
+          <code>name: Update CodeSense docs</code>. Copy that row's qualified <code>id</code>
+          into the following calls:</p>
+        <pre><code>routine_list {}
+routine_set_enabled {"id":"&lt;returned id&gt;","enabled":true}
+routine_run_now {"id":"&lt;returned id&gt;"}
+routine_runs {"id":"&lt;returned id&gt;"}</code></pre>
+        <p>When CodeSense launched you, you may also pass your own <code>sessionId</code>
+          to the enable and run-now calls. <code>routine_run</code> reads an existing run
+          by <code>runId</code>; it does not launch a routine.</p>
+        <p>The update tool always targets the canonical docs checkout for the active profile,
+          independently of the helper's working directory. Any agent can call the tool directly
+          when the user requests a refresh.</p>
+      </section>
+
+      <section data-search="Preserve local docs edits before an offline update" id="try-this-now">
+        <h2>What happens to local work</h2>
+        <p>A current clean copy is a no-op. For a replacement, the tool creates a named local
+          preservation branch containing HEAD history, a staged-content snapshot when needed,
+          and a working snapshot including tracked deletions and nonignored untracked files.
+          It then selects the bundle's HEAD and index. The result reports
+          <code>preservationBranch</code> and <code>changedPaths</code>.</p>
+        <p>Ignored machine state stays available. An update that would overwrite or delete unsaved
+          local content is refused.
+          If a later step fails, keep and report the preservation branch before resolving the
+          error. No network, private remote or credentials are used.</p>
+      </section>
+
+      <section data-search="How to update docs via MCP" id="via-mcp">
+        <h2>From an agent</h2>
+        <pre><code>codesense_overview {}
+update_codesense_docs {}</code></pre>
+        <p>Report the versions, state, canonical root, preservation branch and changed paths.
+          Trust live tool descriptions if a doc disagrees, and check <code>docs.state</code>.
+          Codex agents pass their own <code>session_id</code> to <code>send_message</code>
+          and <code>sessionId</code> to <code>signal_done</code>.</p>
+        <p><a href="../mcp-explorer.html#tool/update_codesense_docs">update_codesense_docs contract</a></p>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/update_codesense_docs">update_codesense_docs</a>
+        ·
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml schema</a>
+        ·
+        <a href="./files-on-disk.html#paths">docs-org path</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · Update the docs</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

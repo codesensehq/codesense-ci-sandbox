@@ -1,0 +1,21 @@
+# R1: every place on a routine fire path, the delivery core or the
+# session server's wake/timer engine that names a launch primitive (see
+# PRIMITIVES in routines_invariants_guard.rs). Test code is exempt.
+# Format: <path> <enclosing fn> <primitive> <exact non-test count> # why it keeps R1
+#
+# A new entry needs its R1 argument: a wake fire must never start an agent that
+# is live in its target, and a timer must never start anything (R6).
+# The machine-armed fire path (`runs_on: machine:<id>`) lands
+# here with its own lines (its wake fires go through SessionDeliver; a fresh
+# fire launches only into a prepared workspace).
+src/routines/dispatch.rs execute launch_remote( 1 # fresh run on another machine: a fresh run is a new instance on purpose
+src/routines/dispatch.rs launch_remote open_remote( 1 # the fresh remote launch, one Create per run id
+src/routines/dispatch.rs launch .launch( 1 # the one local launcher call: fresh runs, and a wake only after Fired::LaunchHere
+src/routines/wake.rs fire launch_absent( 1 # reached only from Pick::Absent with the single flight claimed
+src/routines/wake.rs launch_absent open_remote( 1 # a wake's remote launch-if-absent, Create then Attach on one request id
+src/routines/wake.rs open_remote .remote_tab( 2 # the Create, and the one Attach after a lost answer (never a second Create)
+src/routines/dispatch.rs launch launch_managed_dir_session( 1 # AppLauncher::launch, a visible run's tab: reached only through Launcher::launch (the dispatch::launch line above)
+src/routines/dispatch.rs launch launch_headless_session( 1 # AppLauncher::launch, a headless fresh run: reached only through Launcher::launch
+src/routines/wake_app.rs remote_tab remote_shell_tab_bound( 2 # AppWakeEnv::remote_tab, Create and Attach: reached only through wake::open_remote
+crates/codesense-session-server/src/routine_arm/mod.rs start .launch( 1 # machine-armed fire: a wake reaches it only with no candidate (live, idle or busy, or starting: host flights + reserved openings) and if_absent=true, so the host's single flight refuses it (Busy -> woken instead) if anyone runs or is starting the agent there; fresh is a new instance on purpose
+crates/codesense-session-server/src/routine_arm/host_port.rs launch arm_launch( 1 # HostArmPort::launch: reached only through RoutineArms::start; Host::arm_launch checks and reserves the (agent, workspace) flight in one step under agent_flights, shared with every desktop launch-if-absent ReserveTab and held across finish_tab

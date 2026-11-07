@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="calendar-clock" />
+    <!-- Reference dashboard · Routines. Every routine with its schedule in words, next
+         run, last run and recent history; select one for its run timeline and Run
+         now; select a run for its result, transcript and captured output. A second
+         tab lists finished agent runs. Kept live on routines-changed. Rebuilds the
+         Agents tab's Schedule view and run detail with only the public bridge
+         (routines, routineRuns, routineRun, runs, run, routineRefresh) and the
+         dashboard kit. On an app without these calls it says so. -->
+    <title>Routines</title>
+    <style>
+      html, body { height: 100%; }
+      body.cs-app { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--cs-space-3); height: 100%; overflow: hidden; }
+      body.cs-app > * { flex: none; }
+      @media (max-width: 520px) { body.cs-app { padding: var(--cs-space-3) var(--cs-space-3) 0; } }
+      .head { display: flex; align-items: center; gap: var(--cs-space-2); flex-wrap: wrap; }
+      .head .title { display: flex; align-items: baseline; gap: var(--cs-space-2); min-width: 0; margin-right: auto; }
+      .head .count { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; }
+      #notice:empty, #urgent:empty { display: none; }
+      .urgent {
+        display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        padding: var(--cs-space-2) var(--cs-space-3); border-radius: var(--cs-radius); font-size: var(--cs-text-sm);
+        background: color-mix(in srgb, var(--cs-state-needs-you) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--cs-state-needs-you) 40%, transparent);
+      }
+      .urgent > .cs-icon { color: var(--cs-state-needs-you); }
+      .urgent button { font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
+      body.cs-app > .main { flex: 1 1 auto; min-height: 0; display: grid; gap: var(--cs-space-3); grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+      @media (min-width: 760px) { body.cs-app > .main.is-split { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
+      .pane { min-height: 0; overflow: auto; padding-bottom: var(--cs-space-4); }
+
+      /* Routine list */
+      .rlist { display: flex; flex-direction: column; }
+      .rrow {
+        display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; column-gap: 10px; row-gap: 6px; align-items: center;
+        padding: 10px var(--cs-space-3); border-bottom: 1px solid var(--cs-border); cursor: pointer; position: relative;
+      }
+      .rrow:last-child { border-bottom: 0; }
+      .rrow:hover { background: var(--cs-hover); }
+      .rrow.is-selected { background: color-mix(in srgb, var(--cs-accent) 12%, transparent); }
+      .rrow.is-selected::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--cs-accent); }
+      .rrow.is-off { opacity: 0.6; }
+      .ricon { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: var(--cs-hover); color: var(--cs-muted-fg); }
+      .rrow.is-needs-you .ricon { background: color-mix(in srgb, var(--cs-state-needs-you) 18%, transparent); color: var(--cs-state-needs-you); }
+      .rname { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: var(--cs-text-sm); min-width: 0; }
+      .rsub { display: flex; align-items: center; gap: 5px; font-size: var(--cs-text-xs); color: var(--cs-muted-fg); min-width: 0; margin-top: 1px; }
+      .rend { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+      .rend .when { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; }
+      .strip { grid-column: 2 / -1; display: flex; gap: 3px; height: 12px; align-items: stretch; }
+      .strip > span { width: 7px; border-radius: 2px; background: var(--tone, var(--cs-hover)); opacity: 0.9; }
+      .strip > span.is-empty { background: var(--cs-hover); }
+
+      /* Tones for run phases and outcomes */
+      .tone-ok { --tone: var(--cs-success); }
+      .tone-bad { --tone: var(--cs-danger); }
+      .tone-you { --tone: var(--cs-state-needs-you); }
+      .tone-run { --tone: var(--cs-state-running); }
+      .tone-quiet { --tone: color-mix(in srgb, var(--cs-muted-fg) 55%, transparent); }
+      .cs-badge.tone-ok, .cs-badge.tone-bad, .cs-badge.tone-you, .cs-badge.tone-run, .cs-badge.tone-quiet { --cs-badge-color: var(--tone); }
+
+      /* Detail */
+      .detail { display: flex; flex-direction: column; gap: var(--cs-space-4); }
+      .back { align-self: flex-start; }
+      .flip { transform: rotate(180deg); }
+      .dhead { display: flex; align-items: flex-start; gap: var(--cs-space-3); flex-wrap: wrap; }
+      .dhead .ricon { width: 36px; height: 36px; border-radius: 10px; }
+      .dhead .names { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+      .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--cs-space-2); }
+      .fact { padding: var(--cs-space-2) var(--cs-space-3); border: 1px solid var(--cs-border); border-radius: var(--cs-radius); background: var(--cs-surface); min-width: 0; }
+      .fact .k { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      .fact .v { font-size: var(--cs-text-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .section-label { font-size: var(--cs-text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cs-muted-fg); }
+
+      /* Run timeline */
+      .timeline { display: flex; flex-direction: column; }
+      .trun { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 10px; cursor: pointer; border-radius: var(--cs-radius); padding: 0 var(--cs-space-2); }
+      .trun:hover { background: var(--cs-hover); }
+      .trun .rail { position: relative; display: flex; justify-content: center; }
+      .trun .rail::before { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--cs-border); }
+      .trun:first-child .rail::before { top: 14px; }
+      .trun:last-child .rail::before { bottom: calc(100% - 14px); }
+      .trun .dot { position: relative; margin-top: 6px; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--tone); background: var(--cs-bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 45%, transparent); }
+      .trun .body { padding: 6px 0 12px; min-width: 0; }
+      .trun .line1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--cs-text-sm); }
+      .trun .line1 .phase { font-weight: 600; color: var(--tone); }
+      .trun .line1 .meta { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      .trun .result { margin-top: 2px; font-size: var(--cs-text-sm); color: var(--cs-fg); max-height: 2.8em; overflow: hidden; }
+      .trun .result.is-quiet { color: var(--cs-muted-fg); font-size: var(--cs-text-xs); }
+      @media (prefers-reduced-motion: no-preference) { .spin { animation: spin 1s linear infinite; } }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Agent runs */
+      .arow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; align-items: center; padding: 10px var(--cs-space-3); border-bottom: 1px solid var(--cs-border); cursor: pointer; }
+      .arow:last-child { border-bottom: 0; }
+      .arow:hover { background: var(--cs-hover); }
+
+      /* Drawer content */
+      .turn { display: flex; flex-direction: column; gap: 4px; padding: var(--cs-space-3) 0; border-bottom: 1px solid var(--cs-border); }
+      .turn:last-child { border-bottom: 0; }
+      .turn .who { display: flex; align-items: center; gap: 6px; font-size: var(--cs-text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cs-muted-fg); }
+      .tool { display: inline-flex; align-items: center; gap: 5px; font-family: var(--cs-font-mono); font-size: var(--cs-text-xs); color: var(--cs-muted-fg); padding: 1px 6px; border-radius: 4px; background: var(--cs-hover); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .tool.is-error { color: var(--cs-danger); }
+      .text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--cs-text-sm); }
+      .result-block { padding: var(--cs-space-3); border-radius: var(--cs-radius); background: var(--cs-inset); border: 1px solid var(--cs-border); }
+    </style>
+  </head>
+  <body class="cs-app">
+    <div class="head">
+      <div class="title"><span class="cs-h2">Routines</span><span id="count" class="count"></span></div>
+      <div class="cs-segmented" role="tablist" aria-label="Show">
+        <button type="button" role="tab" aria-selected="true" data-tab="routines">Routines</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="runs">Agent runs</button>
+      </div>
+      <span id="live" class="cs-live is-loading">Loading</span>
+    </div>
+    <div id="urgent" class="urgent" role="alert"></div>
+    <div id="notice"></div>
+    <div id="main" class="main"></div>
+
+    <aside id="drawer" class="cs-drawer" hidden aria-label="Run details">
+      <div class="cs-drawer-header">
+        <span id="drawer-title" class="cs-h2 cs-truncate"></span>
+        <span class="cs-spacer"></span>
+        <button id="drawer-close" class="cs-btn is-ghost is-icon" type="button" aria-label="Close"></button>
+      </div>
+      <div id="drawer-body" class="cs-drawer-body"></div>
+    </aside>
+
+    <script>
+      const CONFIG = {
+        stripRuns: 12, // recent runs drawn as a strip under each routine
+        historyLimit: 25, // runs in a routine's timeline
+        runsLimit: 50, // agent runs on the second tab
+        splitAbove: 760, // list and detail side by side from this width
+        pollMs: 30000,
+      };
+      const cs = window.codesense;
+      const kit = cs && cs.kit;
+      const $ = (id) => document.getElementById(id);
+      if (!kit) {
+        document.body.textContent = "This dashboard needs a CodeSense version with the dashboard kit.";
+        throw new Error("codesense.kit unavailable");
+      }
+      const { h } = kit;
+
+      const state = {
+        tab: "routines",
+        routines: null, // routines() rows
+        runsByRoutine: new Map(), // id → runs[] | Error
+        agentRuns: null, // runs() rows | Error
+        selected: null, // routine id
+        error: null,
+        unavailable: false,
+        starting: new Set(), // routine ids with a Run now in flight
+      };
+      const split = () => window.innerWidth >= CONFIG.splitAbove;
+
+      // ── Vocabulary ───────────────────────────────────────────────────────
+      const TONES = {
+        succeeded: ["tone-ok", "circle-check-big", "Succeeded"], success: ["tone-ok", "circle-check-big", "Succeeded"],
+        completed: ["tone-ok", "circle-check-big", "Completed"], failed: ["tone-bad", "circle-x", "Failed"],
+        timed_out: ["tone-bad", "clock", "Timed out"], needs_you: ["tone-you", "message-circle-question", "Needs you"],
+        "needs-attention": ["tone-you", "triangle-alert", "Needs attention"], running: ["tone-run", "loader-circle", "Running"],
+        queued: ["tone-quiet", "clock", "Queued"], ended: ["tone-quiet", "circle-dashed", "Ended"],
+        cancelled: ["tone-quiet", "ban", "Cancelled"], skipped: ["tone-quiet", "circle-dashed", "Skipped"],
+        coalesced: ["tone-quiet", "git-commit-horizontal", "Folded in"],
+        // Wake runs (mode: wake): queued means waiting for the agent to be idle.
+        delivered: ["tone-ok", "circle-check-big", "Delivered"],
+        undelivered: ["tone-bad", "circle-x", "Undelivered"],
+        unknown: ["tone-you", "circle-help", "May have been delivered"],
+      };
+      const tone = (p) => TONES[p] || ["tone-quiet", "circle-help", p ? String(p).replace(/_/g, " ") : "Never run"];
+      function badge(p) {
+        const [cls, icon, label] = tone(p);
+        return h("span", { class: "cs-badge " + cls }, kit.icon(icon, { size: 12, class: p === "running" ? "spin" : "" }), label);
+      }
+      function when(t) {
+        const ms = typeof t === "number" ? t : Date.parse(t);
+        if (!isFinite(ms)) return "";
+        if (ms <= Date.now()) return kit.timeAgo(ms);
+        const m = Math.max(1, Math.round((ms - Date.now()) / 60000));
+        return m < 60 ? "in " + m + "m" : m < 1440 ? "in " + Math.round(m / 60) + "h" : "in " + Math.round(m / 1440) + "d";
+      }
+      function took(a, b) {
+        const s = Math.round((Date.parse(b) - Date.parse(a)) / 1000);
+        if (!isFinite(s) || s < 0) return "";
+        return s < 60 ? s + "s" : s < 3600 ? Math.round(s / 60) + "m" : (s / 3600).toFixed(1) + "h";
+      }
+      const scopeIcon = (r) => kit.icon(r.scope === "team" ? "users" : "user", { size: 11, title: r.scope === "team" ? "Team routine" : "Personal routine" });
+      function setLive(kind, text) {
+        $("live").className = "cs-live" + (kind ? " is-" + kind : "");
+        $("live").textContent = text;
+      }
+      const unavailable = (what) => kit.notice(what + " needs a newer CodeSense. Update the app to see it here.", "warning");
+
+      // ── Tabs ─────────────────────────────────────────────────────────────
+      for (const b of document.querySelectorAll("[data-tab]")) {
+        b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); refresh(); });
+      }
+      $("drawer-close").append(kit.icon("x"));
+      $("drawer-close").addEventListener("click", () => ($("drawer").hidden = true));
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("drawer").hidden = true; });
+      window.addEventListener("resize", () => render());
+
+      // ── Routine list ─────────────────────────────────────────────────────
+      function strip(id) {
+        const runs = state.runsByRoutine.get(id);
+        const list = Array.isArray(runs) ? runs.slice(0, CONFIG.stripRuns).reverse() : [];
+        const cells = [];
+        for (let i = list.length; i < CONFIG.stripRuns; i++) cells.push(h("span", { class: "is-empty" }));
+        for (const r of list) cells.push(h("span", { class: tone(r.phase)[0], title: tone(r.phase)[2] + " · " + when(r.created_at) }));
+        return h("div", { class: "strip", "aria-hidden": "true" }, cells);
+      }
+      function routineRow(r) {
+        const last = r.last_run;
+        return h("div", {
+          class: "rrow" + (state.selected === r.id && split() ? " is-selected" : "") + (r.needs_you ? " is-needs-you" : "") + (r.enabled ? "" : " is-off"),
+          "data-routine": r.id,
+          role: "button",
+          tabindex: "0",
+          onClick: () => select(r.id),
+          onKeydown: (e) => { if (e.key === "Enter") select(r.id); },
+        },
+          h("span", { class: "ricon" }, kit.icon(r.needs_you ? "message-circle-question" : "calendar-clock", { size: 15 })),
+          h("div", { style: { minWidth: "0" } },
+            h("div", { class: "rname" }, h("span", { class: "cs-truncate", text: r.name || r.id }), r.enabled ? null : h("span", { class: "cs-badge", text: "Off" })),
+            h("div", { class: "rsub" }, scopeIcon(r), h("span", { class: "cs-truncate", text: r.schedule_in_words || "on demand" }))),
+          h("div", { class: "rend" },
+            last ? badge(last.status) : badge(null),
+            h("span", { class: "when", text: r.next_run_at && r.enabled ? "next " + when(r.next_run_at) : last ? when(last.at) : "" })),
+          strip(r.id));
+      }
+
+      // ── Routine detail ───────────────────────────────────────────────────
+      function fact(k, v) { return h("div", { class: "fact" }, h("div", { class: "k", text: k }), h("div", { class: "v", text: v || "—", title: v || "" })); }
+      function timelineRow(run) {
+        const [cls, icon, label] = tone(run.phase);
+        const text = run.result_text || (run.phase === "coalesced" && run.linked_run_id ? "Folded into run " + run.linked_run_id : run.reason || "");
+        return h("div", { class: "trun " + cls, "data-run": run.run_id, role: "button", tabindex: "0", onClick: () => showRun(run.run_id, run), onKeydown: (e) => { if (e.key === "Enter") showRun(run.run_id, run); } },
+          h("div", { class: "rail" }, h("span", { class: "dot" }, kit.icon(icon, { size: 11, class: run.phase === "running" ? "spin" : "" }))),
+          h("div", { class: "body" },
+            h("div", { class: "line1" },
+              h("span", { class: "phase", text: label }),
+              h("span", { class: "meta", text: [when(run.started_at || run.created_at), run.ended_at && took(run.started_at || run.created_at, run.ended_at) ? "took " + took(run.started_at || run.created_at, run.ended_at) : null, run.source].filter(Boolean).join(" · ") })),
+            text ? h("div", { class: "result" + (run.result_text ? "" : " is-quiet"), text }) : null));
+      }
+
+      function detail(r) {
+        const runs = state.runsByRoutine.get(r.id);
+        const starting = state.starting.has(r.id);
+        const parts = [];
+        if (!split()) parts.push(h("button", { class: "cs-btn is-ghost is-sm back", type: "button", onClick: () => select(null) }, kit.icon("chevron-right", { size: 14, class: "flip" }), "All routines"));
+        parts.push(h("div", { class: "dhead" },
+          h("span", { class: "ricon" }, kit.icon("calendar-clock", { size: 18 })),
+          h("div", { class: "names" },
+            h("span", { class: "cs-h2", text: r.name || r.id }),
+            h("div", { class: "cs-row is-wrap" },
+              h("span", { class: "cs-badge" }, scopeIcon(r), r.scope === "team" ? "Team" : "Personal"),
+              r.enabled ? h("span", { class: "cs-badge is-success", text: "On here" }) : h("span", { class: "cs-badge", text: "Off here" }),
+              r.needs_you ? h("span", { class: "cs-badge is-warning" }, kit.icon("message-circle-question", { size: 12 }), "Needs you") : null)),
+          h("button", {
+            class: "cs-btn is-primary", type: "button", disabled: starting ? true : null,
+            onClick: () => runNow(r),
+          }, kit.icon(starting ? "loader-circle" : "play", { size: 14, class: starting ? "spin" : "" }), starting ? "Starting…" : "Run now")));
+        parts.push(h("div", { class: "facts" },
+          fact("Schedule", r.schedule_in_words),
+          fact("Next run", r.enabled && r.next_run_at ? when(r.next_run_at) : r.enabled ? "on its trigger" : "off here"),
+          fact("Agent", r.agent),
+          fact("Runs on", r.runs_on === "each_mac" ? "every Mac" : "one Mac"),
+          fact("Owner", r.owner_name || r.owner)));
+        parts.push(h("span", { class: "section-label", text: "Runs on this Mac" }));
+        if (!runs) parts.push(kit.skeleton({ rows: 4 }));
+        else if (runs instanceof Error) parts.push(runs.unavailable ? unavailable("Run history") : kit.notice(runs.message, "danger", { label: "Retry", onClick: () => loadRuns(r.id) }));
+        else if (!runs.length) parts.push(kit.empty("No runs yet on this Mac. Run now to try it.", "history"));
+        else {
+          const tl = h("div", { class: "timeline" });
+          kit.keyed(tl, runs, { key: (x) => x.run_id, render: timelineRow });
+          parts.push(tl);
+        }
+        return h("div", { class: "detail" }, parts);
+      }
+
+      async function runNow(r) {
+        state.starting.add(r.id);
+        render();
+        try {
+          await cs.act("routineRefresh", { key: r.id });
+          $("notice").replaceChildren(kit.notice(r.name + " is starting. Its run shows up below.", "info"));
+          await loadRuns(r.id);
+        } catch (e) {
+          $("notice").replaceChildren(kit.notice("Couldn't start " + r.name + ": " + e.message, "danger"));
+        } finally {
+          state.starting.delete(r.id);
+          render();
+        }
+      }
+
+      // ── Run detail drawer ────────────────────────────────────────────────
+      function kv(pairs) {
+        const dl = h("dl", { class: "cs-kv" });
+        for (const [k, v] of pairs) if (v != null && v !== "") dl.append(h("dt", { text: k }), h("dd", null, v));
+        return dl;
+      }
+      function transcriptView(t) {
+        const turns = (t && t.turns) || [];
+        if (!turns.length) return null;
+        const icon = { user: "user", assistant: "bot", result: "circle-check-big" };
+        return h("div", { class: "cs-card" },
+          h("div", { class: "cs-card-header" }, kit.icon("terminal", { size: 14 }), "Transcript", h("span", { class: "cs-muted cs-xs", text: turns.length + " turns" })),
+          h("div", { class: "cs-card-body", style: { paddingTop: "0", paddingBottom: "0" } }, turns.map((turn) => h("div", { class: "turn" },
+            h("span", { class: "who" }, kit.icon(icon[turn.role] || "circle", { size: 12 }), turn.role),
+            turn.text ? h("div", { class: "text", text: turn.text }) : null,
+            (turn.tool_calls || []).length ? h("div", { class: "cs-row is-wrap", style: { gap: "4px" } }, turn.tool_calls.map((c) => h("span", { class: "tool" + (c.is_error ? " is-error" : ""), title: c.name }, kit.icon("zap", { size: 10 }), c.name))) : null))));
+      }
+
+      async function showRun(runId, known) {
+        $("drawer-title").textContent = "Run";
+        $("drawer-body").replaceChildren(kit.skeleton({ rows: 4 }));
+        $("drawer").hidden = false;
+        const rr = known || (await kit.call("routineRun", { runId }).catch(() => null));
+        const agentRunId = (rr && rr.linked_run_id) || runId;
+        const ar = await kit.call("run", { runId: agentRunId }).catch((e) => e);
+        const parts = [];
+        if (rr) {
+          const routine = (state.routines || []).find((x) => x.id === (rr.routine_id || state.selected));
+          $("drawer-title").textContent = rr.routine_name || (routine && routine.name) || "Run";
+          parts.push(h("div", { class: "cs-row is-wrap" }, badge(rr.phase), rr.source ? h("span", { class: "cs-badge", text: rr.source }) : null),
+            rr.result_text ? h("div", { class: "result-block text", text: rr.result_text }) : null,
+            kv([
+              ["Run", h("span", { class: "cs-mono", text: rr.run_id })],
+              ["Queued", when(rr.created_at)],
+              ["Started", when(rr.started_at)],
+              ["Ended", when(rr.ended_at)],
+              ["Took", rr.ended_at ? took(rr.started_at || rr.created_at, rr.ended_at) : ""],
+              ["Agent", rr.agent],
+              ["Reason", rr.reason],
+              ["Folded into", rr.linked_run_id],
+            ]));
+        }
+        if (ar && !(ar instanceof Error)) {
+          const o = ar.outcome;
+          if (o && !rr) {
+            $("drawer-title").textContent = o.story_id || "Agent run";
+            parts.push(h("div", { class: "cs-row" }, badge(o.status)),
+              o.summary ? h("div", { class: "result-block text", text: o.summary }) : null,
+              kv([["Run", h("span", { class: "cs-mono", text: o.run_id })], ["Story", o.story_id], ["Ended", when(o.ended_at)], ["Exit code", o.exit_code == null ? "" : String(o.exit_code)], ["Workspace", o.workspace]]));
+          }
+          const tv = transcriptView(ar.transcript);
+          if (tv) parts.push(tv);
+          if (ar.artifact) parts.push(h("span", { class: "section-label", text: "Captured output" + (ar.artifactTruncated ? " (tail)" : "") }), h("pre", { class: "cs-pre", text: ar.artifact }));
+        } else if (ar instanceof Error && ar.unavailable) parts.push(unavailable("Transcripts and captured output"));
+        $("drawer-body").replaceChildren(...(parts.filter(Boolean).length ? parts.filter(Boolean) : [kit.empty("Nothing was recorded for this run.", "history")]));
+      }
+
+      // ── Agent runs tab ───────────────────────────────────────────────────
+      function agentRunRow(r) {
+        const o = r.outcome || {};
+        return h("div", { class: "arow", "data-run": o.run_id, onClick: () => showRun(o.run_id, null) },
+          badge(r.validated || o.status),
+          h("div", { style: { minWidth: "0" } },
+            h("div", { class: "rname" }, h("span", { class: "cs-truncate", text: o.summary || o.story_id || o.run_id })),
+            h("div", { class: "rsub" }, o.story_id ? h("span", { class: "cs-mono", text: o.story_id }) : null, o.workspace ? h("span", { class: "cs-truncate", text: "· " + o.workspace }) : null)),
+          h("span", { class: "cs-xs cs-muted", text: when(o.ended_at) }));
+      }
+
+      // ── Render ───────────────────────────────────────────────────────────
+      function select(id) {
+        state.selected = id;
+        if (id && !state.runsByRoutine.has(id)) loadRuns(id);
+        render();
+      }
+
+      function render() {
+        // aria-selected is the WAI-ARIA attribute for role="tab".
+        for (const b of document.querySelectorAll("[data-tab]")) b.setAttribute("aria-selected", String(b.dataset.tab === state.tab));
+        const main = $("main");
+        if (state.tab === "runs") {
+          main.className = "main";
+          $("urgent").replaceChildren();
+          const list = state.agentRuns;
+          if (!list) main.replaceChildren(h("div", { class: "pane" }, kit.skeleton({ rows: 6 })));
+          else if (list instanceof Error) main.replaceChildren(h("div", { class: "pane" }, list.unavailable ? unavailable("Agent run history") : kit.notice(list.message, "danger", { label: "Retry", onClick: refresh })));
+          else if (!list.length) main.replaceChildren(h("div", { class: "pane" }, kit.empty("No finished agent runs on this Mac yet. A run lands here when its agent calls signal_done or exits.", "bot")));
+          else {
+            const card = h("div", { class: "cs-card" });
+            kit.keyed(card, list, { key: (r) => r.outcome.run_id, render: agentRunRow });
+            main.replaceChildren(h("div", { class: "pane" }, card));
+          }
+          return;
+        }
+        if (state.unavailable) { main.replaceChildren(h("div", { class: "pane" }, unavailable("The routines list"))); return; }
+        if (!state.routines) {
+          main.className = "main";
+          main.replaceChildren(h("div", { class: "pane" }, state.error
+            ? kit.notice("Couldn't read your routines: " + state.error, "danger", { label: "Retry", onClick: refresh })
+            : h("div", { class: "cs-card" }, kit.skeleton({ rows: 5, avatar: true }))));
+          return;
+        }
+        const routines = state.routines;
+        $("count").textContent = routines.length + (routines.length === 1 ? " routine" : " routines") + " · " + routines.filter((r) => r.enabled).length + " on here";
+        const needs = routines.filter((r) => r.needs_you);
+        $("urgent").replaceChildren(...(needs.length ? [kit.icon("message-circle-question", { size: 16 }), h("span", { text: needs.length === 1 ? "Waiting on you:" : needs.length + " routines are waiting on you:" }),
+          ...needs.map((r, i) => [i ? ", " : "", h("button", { type: "button", text: r.name, onClick: () => select(r.id) })]).flat()] : []));
+        if (typeof cs.setBadge === "function") cs.setBadge(needs.length ? { count: needs.length, severity: "warning" } : null);
+        if (!routines.length) {
+          main.className = "main";
+          main.replaceChildren(h("div", { class: "pane" }, kit.empty("No routines yet. Ask an agent for one, e.g. “triage new issues every morning at 8”, or use the /routine skill.", "calendar-clock")));
+          return;
+        }
+        if (split() && !routines.some((r) => r.id === state.selected)) {
+          state.selected = (needs[0] || routines[0]).id;
+          if (!state.runsByRoutine.has(state.selected)) loadRuns(state.selected);
+        }
+        const selected = routines.find((r) => r.id === state.selected);
+        main.className = "main" + (split() ? " is-split" : "");
+        let listPane = main.querySelector(".pane.is-list");
+        let detailPane = main.querySelector(".pane.is-detail");
+        if (!listPane || !detailPane) {
+          listPane = h("div", { class: "pane is-list" }, h("div", { class: "cs-card rlist" }));
+          detailPane = h("div", { class: "pane is-detail" });
+          main.replaceChildren(listPane, detailPane);
+        }
+        const showList = split() || !selected;
+        listPane.hidden = !showList;
+        detailPane.hidden = !selected;
+        kit.keyed(listPane.firstChild, routines, {
+          key: (r) => r.id,
+          render: routineRow,
+          version: (r) => JSON.stringify([r, state.selected === r.id && split(), state.runsByRoutine.get(r.id)]),
+        });
+        if (selected) detailPane.replaceChildren(detail(selected));
+      }
+
+      // ── Data ─────────────────────────────────────────────────────────────
+      async function loadRuns(id) {
+        try {
+          const res = await kit.call("routineRuns", { key: id, limit: CONFIG.historyLimit });
+          state.runsByRoutine.set(id, (res && res.runs) || []);
+        } catch (e) {
+          state.runsByRoutine.set(id, e);
+        }
+        render();
+      }
+
+      let gen = 0;
+      async function refresh() {
+        const my = ++gen;
+        try {
+          if (state.tab === "runs") {
+            state.agentRuns = await kit.call("runs", { limit: CONFIG.runsLimit }).catch((e) => e);
+            if (my !== gen) return;
+          } else {
+            const list = await kit.call("routines");
+            if (my !== gen) return;
+            state.routines = list || [];
+            state.error = null;
+            // Every routine's recent runs, for the strips and the open timeline.
+            await Promise.all(state.routines.map((r) => kit.call("routineRuns", { key: r.id, limit: CONFIG.historyLimit })
+              .then((res) => state.runsByRoutine.set(r.id, (res && res.runs) || []), (e) => state.runsByRoutine.set(r.id, e))));
+            if (my !== gen) return;
+          }
+          setLive("", "Live");
+        } catch (e) {
+          if (my !== gen) return;
+          if (e.unavailable) { state.unavailable = true; setLive("stale", "Unavailable"); }
+          else { state.error = e.message; setLive("stale", state.routines ? "Stale" : "Offline"); }
+        }
+        render();
+      }
+
+      render();
+      // The host pushes routines-changed when a routine or one of its runs changes.
+      kit.live(refresh, { events: ["routines-changed"], pollMs: CONFIG.pollMs });
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

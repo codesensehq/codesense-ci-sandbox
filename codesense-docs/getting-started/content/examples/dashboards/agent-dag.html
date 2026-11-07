@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="network" />
+    <!-- Reference dashboard · Agents. Every agent session as a live graph of who
+         launched whom (sessions().launchedBy), with its state, latest progress note,
+         machine and unread mail. Graph view (pan, zoom, focus) on a wide page, an
+         indented tree in a narrow pane. Click an agent for its details; double-click
+         (or "Go to agent") to jump to it. Rebuilds the built-in Agents tree with only
+         the public bridge (window.codesense) and the dashboard kit (codesense.kit +
+         the cs- classes). Works as a right pane, a centre tab or an inbox message. -->
+    <title>Agents</title>
+    <style>
+      html, body { height: 100%; }
+      body.cs-app { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--cs-space-3); height: 100%; overflow: hidden; }
+      @media (max-width: 520px) { body.cs-app { padding: var(--cs-space-3) var(--cs-space-3) 0; } }
+      .head { display: flex; align-items: center; gap: var(--cs-space-2); flex-wrap: wrap; }
+      .head .title { display: flex; align-items: baseline; gap: var(--cs-space-2); min-width: 0; margin-right: auto; }
+      .head .count { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; }
+      .legend { display: flex; flex-wrap: wrap; gap: 6px; }
+      .legend strong { font-weight: 600; margin-left: 2px; }
+      .urgent {
+        display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        padding: var(--cs-space-2) var(--cs-space-3); border-radius: var(--cs-radius);
+        font-size: var(--cs-text-sm);
+        background: color-mix(in srgb, var(--cs-state-needs-you) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--cs-state-needs-you) 40%, transparent);
+      }
+      .urgent > .cs-icon { color: var(--cs-state-needs-you); }
+      .urgent button { font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 2px; }
+      body.cs-app > * { flex: none; }
+      body.cs-app > .main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+      .main > .cs-dagview { flex: 1 1 auto; margin-bottom: var(--cs-space-3); }
+      #notice:empty, #urgent:empty, #legend:empty { display: none; }
+
+      /* Graph node */
+      .agent { position: relative; padding: 7px 10px 8px; gap: 3px; cursor: pointer; }
+      .agent .top { display: flex; align-items: center; gap: 7px; min-width: 0; }
+      .agent .name { font-weight: 600; font-size: var(--cs-text-sm); flex: 1 1 auto; min-width: 0; }
+      .agent .line { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--cs-text-xs); color: var(--cs-muted-fg); }
+      .agent .line .cs-badge { line-height: 15px; padding: 0 6px; flex: none; }
+      .agent .meta { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); display: flex; gap: 4px; align-items: center; min-width: 0; }
+      .agent .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--cs-hover); }
+      .agent .bar > span { display: block; height: 100%; background: var(--phase-color, var(--cs-accent)); }
+      .agent.is-needs-you { border-color: var(--cs-state-needs-you); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-state-needs-you) 22%, transparent); }
+      .agent.is-offline, .agent.is-unknown { border-style: dashed; }
+      .agent.is-exited { opacity: 0.7; }
+      .outside { padding: 6px 10px; border-style: dashed; background: transparent; box-shadow: none; color: var(--cs-muted-fg); cursor: default; font-size: var(--cs-text-xs); }
+      .outside .top { font-weight: 600; font-size: var(--cs-text-sm); color: var(--cs-fg); }
+      @media (prefers-reduced-motion: no-preference) {
+        .agent.is-needs-you { animation: urgent 2.4s ease-in-out infinite; }
+      }
+      @keyframes urgent { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--cs-state-needs-you) 8%, transparent); } }
+
+      /* Tree */
+      .tree { flex: 1 1 auto; overflow: auto; margin: 0 calc(-1 * var(--cs-space-2)); padding-bottom: var(--cs-space-4); }
+      .row {
+        display: grid; grid-template-columns: auto 20px minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
+        padding: 6px var(--cs-space-2) 6px calc(var(--cs-space-2) + var(--depth) * 18px);
+        border-radius: var(--cs-radius); cursor: pointer; position: relative;
+      }
+      .row:hover { background: var(--cs-hover); }
+      .row.is-selected { background: color-mix(in srgb, var(--cs-accent) 14%, transparent); }
+      .row.is-needs-you { background: color-mix(in srgb, var(--cs-state-needs-you) 10%, transparent); }
+      .row .twist { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--cs-muted-fg); border: 0; background: none; padding: 0; cursor: pointer; border-radius: 4px; }
+      .row .twist:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .row .twist.is-leaf { visibility: hidden; }
+      .row .body { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+      .row .name { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: var(--cs-text-sm); min-width: 0; }
+      .row .note { font-size: var(--cs-text-xs); color: var(--cs-muted-fg); display: flex; gap: 6px; align-items: center; min-width: 0; }
+      .row .note .cs-badge { line-height: 14px; padding: 0 5px; flex: none; }
+      .row .end { display: flex; align-items: center; gap: 6px; }
+      .row::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(var(--cs-space-2) + var(--depth) * 18px - 10px); border-left: 1px solid var(--cs-border); opacity: var(--guide, 0); }
+      .chip-machine { display: inline-flex; align-items: center; gap: 3px; font-size: var(--cs-text-xs); color: var(--cs-muted-fg); white-space: nowrap; }
+      @media (max-width: 420px) { .chip-machine span { display: none; } }
+
+      /* Sheet */
+      .sheet-head { display: flex; align-items: center; gap: var(--cs-space-3); min-width: 0; }
+      .sheet-head .who { min-width: 0; display: flex; flex-direction: column; }
+      .progress-block { display: flex; flex-direction: column; gap: 6px; padding: var(--cs-space-3); border-radius: var(--cs-radius); background: var(--cs-inset); border: 1px solid var(--cs-border); }
+      .progress-block .note { font-size: var(--cs-text-sm); }
+      .links { display: flex; flex-wrap: wrap; gap: 6px; }
+      .link-chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 3px; border-radius: var(--cs-radius-full); border: 1px solid var(--cs-border); background: var(--cs-surface); color: var(--cs-fg); font: inherit; font-size: var(--cs-text-xs); cursor: pointer; }
+      .link-chip:hover { border-color: var(--cs-accent); }
+      .actions { display: flex; gap: var(--cs-space-2); flex-wrap: wrap; }
+      .section-label { font-size: var(--cs-text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cs-muted-fg); }
+    </style>
+  </head>
+  <body class="cs-app">
+    <div class="head">
+      <div class="title"><span class="cs-h2">Agents</span><span id="count" class="count"></span></div>
+      <div class="cs-segmented" role="group" aria-label="View">
+        <button type="button" data-view="graph" title="Launch graph"></button>
+        <button type="button" data-view="tree" title="Indented tree"></button>
+      </div>
+      <button id="by-machine" class="cs-btn is-sm" type="button" aria-pressed="false" title="Group the graph by machine"></button>
+      <button id="hide-done" class="cs-btn is-sm" type="button" aria-pressed="false" title="Hide finished sessions">Hide done</button>
+      <span id="live" class="cs-live is-loading">Loading</span>
+    </div>
+    <div id="urgent" class="urgent" role="alert"></div>
+    <div id="legend" class="legend"></div>
+    <div id="notice"></div>
+    <div id="main" class="main"></div>
+
+    <aside id="sheet" class="cs-drawer" hidden aria-label="Agent details">
+      <div class="cs-drawer-header">
+        <div id="sheet-head" class="sheet-head"></div>
+        <span class="cs-spacer"></span>
+        <button id="sheet-close" class="cs-btn is-ghost is-icon" type="button" aria-label="Close"></button>
+      </div>
+      <div id="sheet-body" class="cs-drawer-body"></div>
+    </aside>
+
+    <script>
+      const CONFIG = {
+        // Graph card size in px; the layout spaces cards by these.
+        nodeWidth: 224,
+        nodeHeight: 76,
+        // Below this page width the tree view is the default.
+        treeBelow: 560,
+        // Re-read this often while on screen (the host also pushes every change).
+        pollMs: 30000,
+      };
+      const cs = window.codesense;
+      const kit = cs && cs.kit;
+      const $ = (id) => document.getElementById(id);
+      if (!kit) {
+        document.body.textContent = "This dashboard needs a CodeSense version with the dashboard kit.";
+        throw new Error("codesense.kit unavailable");
+      }
+      const { h } = kit;
+
+      const state = {
+        rows: null, // sessions() rows, once read
+        view: null, // "graph" | "tree"; null = by width
+        byMachine: false,
+        hideDone: false,
+        selected: null,
+        collapsed: new Set(),
+        error: null,
+      };
+      let graph = null; // the kit.dagView, while the graph view is showing
+
+      // ── Chrome ────────────────────────────────────────────────────────────
+      for (const b of document.querySelectorAll("[data-view]")) {
+        b.append(kit.icon(b.dataset.view === "graph" ? "network" : "list-tree", { size: 13 }), b.dataset.view === "graph" ? "Graph" : "Tree");
+        b.addEventListener("click", () => { state.view = b.dataset.view; render(); });
+      }
+      $("by-machine").append(kit.icon("server", { size: 13 }), "By machine");
+      $("by-machine").addEventListener("click", () => { state.byMachine = !state.byMachine; graph = null; render(); });
+      $("hide-done").addEventListener("click", () => { state.hideDone = !state.hideDone; render(); });
+      $("sheet-close").append(kit.icon("x"));
+      $("sheet-close").addEventListener("click", () => select(null));
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && state.selected) select(null); });
+      window.addEventListener("resize", () => { if (!state.view) render(); });
+
+      const view = () => state.view || (window.innerWidth < CONFIG.treeBelow ? "tree" : "graph");
+      const shown = () => (state.rows || []).filter((r) => !state.hideDone || r.state !== "exited");
+      const byHandle = () => new Map((state.rows || []).map((r) => [r.handle, r]));
+      const remote = (r) => r.machine && r.machine !== "This Mac";
+
+      function setLive(kind, text) {
+        $("live").className = "cs-live" + (kind ? " is-" + kind : "");
+        $("live").textContent = text;
+      }
+
+      // ── Summary: count, who needs you, the state legend ──────────────────
+      function summary(rows) {
+        const machines = new Set(rows.map((r) => r.machine || "This Mac"));
+        $("count").textContent = rows.length + (rows.length === 1 ? " session" : " sessions") +
+          (machines.size > 1 ? " · " + machines.size + " machines" : "");
+        const needs = rows.filter((r) => r.state === "needs-you");
+        const urgent = $("urgent");
+        if (needs.length) {
+          urgent.replaceChildren(kit.icon("message-circle-question", { size: 16 }),
+            h("span", { text: needs.length === 1 ? "Waiting on you:" : needs.length + " agents are waiting on you:" }),
+            ...needs.map((r, i) => [i ? ", " : "", h("button", { type: "button", text: r.displayName, onClick: () => select(r.handle, true) })]).flat());
+        } else urgent.replaceChildren();
+        const counts = {};
+        for (const r of rows) counts[r.state] = (counts[r.state] || 0) + 1;
+        $("legend").replaceChildren(...Object.keys(kit.agentStates).filter((s) => counts[s]).map((s) => {
+          const b = kit.statusBadge(s);
+          b.append(h("strong", { text: String(counts[s]) }));
+          return b;
+        }));
+      }
+
+      // ── Graph view ────────────────────────────────────────────────────────
+      function graphModel(rows) {
+        const handles = new Set(rows.map((r) => r.handle));
+        const outside = new Map();
+        const edges = [];
+        for (const r of rows) {
+          if (!r.launchedBy) continue;
+          if (handles.has(r.launchedBy)) edges.push({ from: r.launchedBy, to: r.handle });
+          else {
+            const id = "outside:" + r.launchedBy;
+            if (!outside.has(id)) outside.set(id, { id, width: 168, height: 46, outside: true, label: r.launchedBy, machine: r.machine || "This Mac" });
+            edges.push({ from: id, to: r.handle });
+          }
+        }
+        return { nodes: [...outside.values(), ...rows.map((r) => ({ id: r.handle, row: r }))], edges };
+      }
+
+      function launcherLabel(who) {
+        if (who === "human") return "You";
+        if (who === "routine") return "A routine";
+        return who;
+      }
+
+      function agentCard(n) {
+        if (n.data.outside) {
+          return h("div", { class: "cs-dag-card outside" },
+            h("div", { class: "top cs-row" }, kit.icon(n.data.label === "human" ? "user" : n.data.label === "routine" ? "calendar-clock" : "link", { size: 14 }), h("span", { class: "cs-truncate", text: launcherLabel(n.data.label) })),
+            h("div", { text: "started these" }));
+        }
+        const r = n.data.row;
+        const p = r.progress;
+        const phaseInfo = p && kit.phase(p.phase);
+        return h("div", {
+          class: "cs-dag-card agent is-" + r.state,
+          "data-handle": r.handle,
+          title: r.displayName + " (" + r.handle + ")",
+          style: phaseInfo ? { "--phase-color": phaseInfo.color } : null,
+        },
+          h("div", { class: "top" },
+            kit.avatar({ face: r.avatar, name: r.displayName, size: 20 }),
+            h("span", { class: "name cs-truncate", text: r.displayName }),
+            r.unread ? h("span", { class: "cs-count", title: r.unread + " unread", text: String(r.unread) }) : null,
+            kit.statusDot(r.state)),
+          p
+            ? h("div", { class: "line" }, kit.phaseBadge(p.phase), h("span", { class: "cs-truncate", text: p.note || "" }))
+            : h("div", { class: "line" }, h("span", { text: kit.agentState(r.state).label })),
+          h("div", { class: "meta" },
+            remote(r) ? kit.icon("server", { size: 11 }) : null,
+            h("span", { class: "cs-truncate", text: [r.machine, r.story || r.role].filter(Boolean).join(" · ") })),
+          p && p.total ? h("div", { class: "bar" }, h("span", { style: { width: Math.min(100, (100 * p.step) / p.total) + "%" } })) : null);
+      }
+
+      function drawGraph(rows) {
+        const main = $("main");
+        if (!graph || !main.contains(graph.el)) {
+          main.replaceChildren();
+          graph = kit.dagView(main, {
+            renderNode: agentCard,
+            nodeWidth: CONFIG.nodeWidth,
+            nodeHeight: CONFIG.nodeHeight,
+            nodeSep: 18,
+            rankSep: 46,
+            group: state.byMachine ? (n) => (n.row ? n.row.machine || "This Mac" : n.machine) : undefined,
+            renderGroup: (g) => h("div", { class: "cs-dag-group-label" }, kit.icon(g.key === "This Mac" ? "laptop" : "server", { size: 12 }), g.key, h("span", { text: "· " + g.count })),
+            onSelect: (id) => select(id && id.indexOf("outside:") === 0 ? null : id),
+            onActivate: (id) => goTo(id),
+            selected: state.selected,
+          });
+        }
+        const { nodes, edges } = graphModel(rows);
+        graph.update(nodes, edges);
+        graph.select(state.selected);
+      }
+
+      // ── Tree view ─────────────────────────────────────────────────────────
+      function treeRows(rows) {
+        const handles = new Set(rows.map((r) => r.handle));
+        const kids = new Map();
+        const roots = [];
+        for (const r of rows) {
+          if (r.launchedBy && handles.has(r.launchedBy)) {
+            if (!kids.has(r.launchedBy)) kids.set(r.launchedBy, []);
+            kids.get(r.launchedBy).push(r);
+          } else roots.push(r);
+        }
+        const out = [];
+        (function walk(list, depth) {
+          for (const r of list) {
+            const children = kids.get(r.handle) || [];
+            out.push({ row: r, depth, children: children.length });
+            if (!state.collapsed.has(r.handle)) walk(children, depth + 1);
+          }
+        })(roots, 0);
+        return out;
+      }
+
+      function treeRow(item) {
+        const r = item.row, p = r.progress;
+        const open = !state.collapsed.has(r.handle);
+        const twist = h("button", {
+          class: "twist" + (item.children ? "" : " is-leaf"),
+          type: "button",
+          "aria-label": open ? "Collapse" : "Expand",
+          onClick: (e) => {
+            e.stopPropagation();
+            if (state.collapsed.has(r.handle)) state.collapsed.delete(r.handle);
+            else state.collapsed.add(r.handle);
+            render();
+          },
+        }, kit.icon(open ? "chevron-down" : "chevron-right", { size: 14 }));
+        return h("div", {
+          class: "row" + (r.state === "needs-you" ? " is-needs-you" : "") + (state.selected === r.handle ? " is-selected" : ""),
+          "data-handle": r.handle,
+          style: { "--depth": String(item.depth), "--guide": item.depth ? "1" : "0" },
+          role: "treeitem",
+          "aria-level": String(item.depth + 1),
+          "aria-expanded": item.children ? String(open) : null,
+          tabindex: "0",
+          onClick: () => select(r.handle, true),
+          onDblclick: () => goTo(r.handle),
+          onKeydown: (e) => { if (e.key === "Enter") select(r.handle, true); },
+        },
+          twist,
+          kit.avatar({ face: r.avatar, name: r.displayName, size: 20 }),
+          h("div", { class: "body" },
+            h("div", { class: "name" }, h("span", { class: "cs-truncate", text: r.displayName }), kit.statusDot(r.state)),
+            h("div", { class: "note" },
+              p ? kit.phaseBadge(p.phase) : h("span", { text: kit.agentState(r.state).label }),
+              p && p.note ? h("span", { class: "cs-truncate", text: p.note }) : null)),
+          h("div", { class: "end" },
+            remote(r) ? h("span", { class: "chip-machine", title: "Runs on " + r.machine }, kit.icon("server", { size: 11 }), h("span", { text: r.machine })) : null,
+            r.unread ? h("span", { class: "cs-count", title: r.unread + " unread", text: String(r.unread) }) : null));
+      }
+
+      function drawTree(rows) {
+        graph = null;
+        const main = $("main");
+        let tree = main.querySelector(".tree");
+        if (!tree) {
+          tree = h("div", { class: "tree", role: "tree", "aria-label": "Agents" });
+          main.replaceChildren(tree);
+        }
+        kit.keyed(tree, treeRows(rows), {
+          key: (it) => it.row.handle,
+          render: treeRow,
+          version: (it) => JSON.stringify([it.row, it.depth, it.children, state.collapsed.has(it.row.handle), state.selected === it.row.handle]),
+        });
+      }
+
+      // ── Details sheet ─────────────────────────────────────────────────────
+      function kv(pairs) {
+        const dl = h("dl", { class: "cs-kv" });
+        for (const [k, v] of pairs) if (v != null && v !== "") dl.append(h("dt", { text: k }), h("dd", null, v));
+        return dl;
+      }
+      function chip(r) {
+        return h("button", { class: "link-chip", type: "button", onClick: () => select(r.handle, true) },
+          kit.avatar({ face: r.avatar, name: r.displayName, size: 16 }), r.displayName, kit.statusDot(r.state));
+      }
+
+      function drawSheet() {
+        const r = state.selected && byHandle().get(state.selected);
+        if (!r) { $("sheet").hidden = true; return; }
+        const p = r.progress;
+        $("sheet-head").replaceChildren(
+          kit.avatar({ face: r.avatar, name: r.displayName, size: 32 }),
+          h("div", { class: "who" }, h("span", { class: "cs-h2 cs-truncate", text: r.displayName }), h("span", { class: "cs-mono cs-xs cs-muted", text: r.handle })));
+        const parent = r.launchedBy && byHandle().get(r.launchedBy);
+        const children = (state.rows || []).filter((x) => x.launchedBy === r.handle);
+        $("sheet-body").replaceChildren(...[
+          h("div", { class: "cs-row is-wrap" }, kit.statusBadge(r.state), p ? kit.phaseBadge(p.phase) : null,
+            r.unread ? h("span", { class: "cs-badge is-accent" }, kit.icon("mail", { size: 12 }), r.unread + " unread") : null),
+          p ? h("div", { class: "progress-block" },
+            p.note ? h("div", { class: "note", text: p.note }) : null,
+            p.total ? h("div", { class: "cs-row" },
+              h("div", { class: "cs-progress", style: { flex: "1 1 auto", "--cs-progress-color": kit.phase(p.phase).color } }, h("span", { style: { width: Math.min(100, (100 * p.step) / p.total) + "%" } })),
+              h("span", { class: "cs-xs cs-muted", text: "step " + p.step + " of " + p.total })) : null,
+            h("div", { class: "cs-xs cs-muted", text: "updated " + kit.timeAgo(p.atMs) })) : null,
+          h("div", { class: "actions" },
+            h("button", { class: "cs-btn is-primary", type: "button", onClick: () => goTo(r.handle) }, kit.icon("arrow-up-right", { size: 14 }), "Go to agent")),
+          kv([
+            ["Machine", r.machine],
+            ["Workspace", r.workspace],
+            ["Story", r.story ? h("span", { class: "cs-mono", text: r.story }) : null],
+            ["Agent", r.agent],
+            ["Role", r.role],
+            ["Unread", r.unread == null ? "unknown" : r.unread ? r.unread + (r.oldestUnreadAt ? ", oldest " + kit.timeAgo(r.oldestUnreadAt) : "") : "none"],
+            ["Launched by", parent ? chip(parent) : r.launchedBy ? launcherLabel(r.launchedBy) : "started by hand"],
+          ]),
+          children.length ? h("div", { class: "cs-stack", style: { gap: "6px" } },
+            h("span", { class: "section-label", text: "Launched " + children.length }),
+            h("div", { class: "links" }, children.map(chip))) : null,
+        ].filter(Boolean));
+        $("sheet").hidden = false;
+      }
+
+      function select(handle, focus) {
+        state.selected = handle || null;
+        if (graph && focus && state.selected) graph.center(state.selected);
+        render();
+      }
+
+      async function goTo(handle) {
+        if (!handle || handle.indexOf("outside:") === 0) return;
+        try {
+          await cs.act("gotoAgent", { agentId: handle });
+          $("notice").replaceChildren();
+        } catch (e) {
+          $("notice").replaceChildren(kit.notice("Couldn't go to that agent: " + e.message, "warning"));
+        }
+      }
+
+      // ── Render & refresh ──────────────────────────────────────────────────
+      function render() {
+        for (const b of document.querySelectorAll("[data-view]")) b.setAttribute("aria-pressed", String(b.dataset.view === view()));
+        $("by-machine").hidden = view() !== "graph";
+        $("by-machine").setAttribute("aria-pressed", String(state.byMachine));
+        $("hide-done").setAttribute("aria-pressed", String(state.hideDone));
+        if (state.rows === null) {
+          graph = null;
+          if (state.error) $("main").replaceChildren(kit.notice("Couldn't read your sessions: " + state.error, "danger", { label: "Retry", onClick: refresh }));
+          else $("main").replaceChildren(kit.skeleton({ rows: 5, avatar: true }));
+          return;
+        }
+        const rows = shown();
+        summary(state.rows);
+        if (!rows.length) {
+          graph = null;
+          $("main").replaceChildren(kit.empty(state.rows.length
+            ? "Every session here has finished. Turn off Hide done to see them."
+            : "No agents running yet. Launch one on a story, or have an agent call open_workspace: it shows up here live.", "bot"));
+        } else if (view() === "graph") drawGraph(rows);
+        else drawTree(rows);
+        drawSheet();
+      }
+
+      let gen = 0;
+      async function refresh() {
+        const my = ++gen;
+        try {
+          const rows = await kit.call("sessions");
+          if (my !== gen) return;
+          state.rows = rows || [];
+          state.error = null;
+          setLive("", "Live");
+        } catch (e) {
+          if (my !== gen) return;
+          state.error = e.message;
+          setLive("stale", state.rows ? "Stale" : "Offline");
+        }
+        render();
+      }
+
+      render();
+      // Re-read on every roster change and progress note the host pushes.
+      kit.live(refresh, {
+        events: ["sessions-changed", "agents-changed", "agent-activity-changed"],
+        pollMs: CONFIG.pollMs,
+      });
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

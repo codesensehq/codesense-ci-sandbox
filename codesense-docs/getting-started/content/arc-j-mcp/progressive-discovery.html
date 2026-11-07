@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="telescope" />
+    <title>CodeSense — Progressive discovery</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/progressive-discovery"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-j-mcp/progressive-discovery"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/progressive-discovery"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcj-step {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 10px 14px;
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 12px 0;
+      }
+      .arcj-step__n {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+        font-family: var(--cs-font-mono);
+      }
+      .arcj-step h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        font-family: var(--cs-font-mono);
+      }
+      .arcj-step p {
+        margin: 0 0 8px;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--cs-fg);
+      }
+      .arcj-step .caption {
+        color: var(--cs-muted-fg);
+        font-size: 12.5px;
+      }
+      pre code {
+        font-size: 12.5px;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+      }
+      .arcj-when {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 13.5px;
+      }
+      .arcj-when th,
+      .arcj-when td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arcj-when th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .arcj-when code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/progressive-discovery">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Progressive discovery — the four meta-tools, when to reach for each"
+        id="hero"
+      >
+        <h1>The four moves, in order.</h1>
+        <p class="lede">
+          You don't know every tool CodeSense has. You don't need to. Call
+          <code>codesense_overview</code> first — it tells you where you are and what matters. If
+          that answers the question, stop. If it doesn't, search for a tool, read its schema, call
+          it.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A funnel of the four meta-tools with branch points. The agent asks overview, decides whether it has the answer, searches if not, reads the schema, calls the tool."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-pd"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+            <!-- Column headings -->
+            <text
+              x="20"
+              y="28"
+              style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+            >
+              THE AGENT ASKS
+            </text>
+            <text
+              x="320"
+              y="28"
+              style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+            >
+              THE BRIDGE REPLIES
+            </text>
+
+            <!-- 1 overview -->
+            <g transform="translate(20 50)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                codesense_overview {}
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 11px">
+                "What have I got right now?"
+              </text>
+            </g>
+            <path
+              d="M284 78 L 320 78"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-pd)"
+            />
+            <g transform="translate(324 50)">
+              <rect
+                width="296"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                orgs, teams, source repos, machines,
+              </text>
+              <text x="12" y="40" style="fill: var(--cs-fg); font-size: 12px">
+                open sessions, routines, inboxes
+              </text>
+            </g>
+
+            <!-- 2 search -->
+            <g transform="translate(20 130)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                codesense_search_tools
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 11px">
+                { query: "add source repo" }
+              </text>
+            </g>
+            <path
+              d="M284 158 L 320 158"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-pd)"
+            />
+            <g transform="translate(324 130)">
+              <rect
+                width="296"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                [ add_source_repo, attach_source_repo_path,
+              </text>
+              <text x="12" y="40" style="fill: var(--cs-fg); font-size: 12px">
+                remove_source_repo, … ]
+              </text>
+            </g>
+
+            <!-- 3 schema -->
+            <g transform="translate(20 210)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                codesense_get_tool_schema
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 11px">
+                { name: "add_source_repo" }
+              </text>
+            </g>
+            <path
+              d="M284 238 L 320 238"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-pd)"
+            />
+            <g transform="translate(324 210)">
+              <rect
+                width="296"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                description + inputSchema
+              </text>
+              <text x="12" y="40" style="fill: var(--cs-muted-fg); font-size: 11px">
+                (required fields, allowed shapes, examples)
+              </text>
+            </g>
+
+            <!-- 4 call -->
+            <g transform="translate(20 290)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 24%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+                stroke-width="1.6"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 13px; font-family: var(--cs-font-mono)"
+              >
+                add_source_repo { … }
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 11px">
+                (or codesense_call_tool { name, arguments })
+              </text>
+            </g>
+            <path
+              d="M284 318 L 320 318"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-pd)"
+            />
+            <g transform="translate(324 290)">
+              <rect
+                width="296"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="22" style="fill: var(--cs-fg); font-size: 12px">
+                the tool's result, verbatim
+              </text>
+              <text x="12" y="40" style="fill: var(--cs-muted-fg); font-size: 11px">
+                { status: "ok", data: { … } }
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Walkthrough of the four moves — step by step" id="steps">
+        <h2>Walkthrough</h2>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">1</span>
+          <div>
+            <h3>codesense_overview</h3>
+            <p>
+              <strong>Always start here.</strong> One read-only call. You see every active org,
+              every team, every source repo, every machine, every open session and routine. Most
+              agent tasks are answered from this reply alone — "which teams does this user have?",
+              "which source repo is bound to this team?", "is there already a session doing X?"
+            </p>
+            <p class="caption">
+              In <code>tools/list</code> with every other tool. Takes no args.
+              Nothing writes.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">2</span>
+          <div>
+            <h3>codesense_search_tools</h3>
+            <p>
+              You need a verb and you don't know its exact name. Pass a query that's some
+              combination of the words you'd put in a description — <code>"add source repo"</code>,
+              <code>"canvas render"</code>, <code>"story create"</code>. Multiple terms are
+              AND-matched against name + description. Returns the top hits, sorted so name-matches
+              beat description-matches.
+            </p>
+            <p class="caption">
+              The reply lists each hit's name and description. Every tool is in
+              <code>tools/list</code>; call the one you pick after <code>get_tool_schema</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">3</span>
+          <div>
+            <h3>codesense_get_tool_schema</h3>
+            <p>
+              Hand it a tool name. Get back the full description plus the input JSON schema — the
+              same shape <code>tools/list</code> carries for it.
+              You know what fields are required, which are optional, and what the valid shapes look
+              like. If the name isn't a tool, the reply is <code>{status: "unknown", name}</code>,
+              nothing throws.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">4</span>
+          <div>
+            <h3>Call the tool</h3>
+            <p>
+              Two ways. On a host that can dispatch outside
+              <code>tools/list</code> (Claude Code, the CodeSense bridge in-app), just
+              <code>invoke</code> the tool by its name — <code>add_source_repo { … }</code>,
+              verbatim. On a host that can't, wrap it:
+              <code>codesense_call_tool { name, arguments }</code>. The inner tool's result is
+              returned verbatim either way.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="When to reach for each — table of use cases" id="when">
+        <h2>When to reach for each</h2>
+        <table class="arcj-when">
+          <thead>
+            <tr>
+              <th>Situation</th>
+              <th>Call</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>First call of the session. You want context.</td>
+              <td><code>codesense_overview</code></td>
+            </tr>
+            <tr>
+              <td>You know the verb exists but not the name.</td>
+              <td><code>codesense_search_tools</code></td>
+            </tr>
+            <tr>
+              <td>Overview said there's a routine; now I want the full list.</td>
+              <td>
+                <code>codesense_search_tools { query: "routine list" }</code>
+                → <code>routine_list</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Found a tool. What arguments does it take?</td>
+              <td><code>codesense_get_tool_schema</code></td>
+            </tr>
+            <tr>
+              <td>Agent is going to call it right now.</td>
+              <td>Call it by name. No wrapper needed.</td>
+            </tr>
+            <tr>
+              <td>
+                Agent host literally refuses tools outside
+                <code>tools/list</code>.
+              </td>
+              <td><code>codesense_call_tool</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Why this shape — short answer and the MCP-complete rule" id="invariant">
+        <h2>Why this shape</h2>
+        <p>
+          The MCP server has every CodeSense verb — the
+          <strong>MCP-complete</strong> rule says every UI action has a tool, and
+          <code>tools/list</code> advertises all of them so strict hosts can call any of them. With
+          a few hundred tools, an agent rarely knows a name up front, and hosts that load schemas lazily
+          show names only. Search and schema close that gap.
+        </p>
+      </section>
+
+      <section data-search="Try this now — walk all four meta-tools" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Run the second step — a search for the first verb you'd use after overview. The reply
+          shows how name-match beats description-match.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_search_tools", "args": {"query": "add source repo"}}'
+          label="Search for add_source_repo"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// 1. Where am I?
+codesense_overview {}
+
+// 2. Find a verb.
+codesense_search_tools { query: 'add source repo' }
+
+// 3. Read the contract.
+codesense_get_tool_schema { name: 'add_source_repo' }
+
+// 4. Call it.
+add_source_repo {
+  org: 'acme',
+  team: 'default',
+  url: 'owner/repo'
+}</code></pre>
+          <p>
+            Deep-link into the explorer:
+            <a href="../mcp-explorer.html#tool/codesense_overview"
+              >mcp-explorer#tool/codesense_overview</a
+            >,
+            <a href="../mcp-explorer.html#tool/codesense_search_tools">…/codesense_search_tools</a>,
+            <a href="../mcp-explorer.html#tool/codesense_get_tool_schema"
+              >…/codesense_get_tool_schema</a
+            >, <a href="../mcp-explorer.html#tool/codesense_call_tool">…/codesense_call_tool</a>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Next:
+        <a href="./overview-call.html">codesense_overview</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · Progressive discovery</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

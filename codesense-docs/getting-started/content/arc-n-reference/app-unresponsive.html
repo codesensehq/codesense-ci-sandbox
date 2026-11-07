@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="life-buoy" />
+    <title>CodeSense — App unresponsive and MCP timeouts</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/app-unresponsive">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="App unresponsive MCP runtime heartbeat troubleshooting" id="hero">
+        <p><span class="cs-docs-chip" data-arc="N">Arc N · Troubleshooting</span></p>
+        <h1>When CodeSense stops responding</h1>
+        <p>Use the error text to distinguish a stalled runtime from a call that reached its time limit.</p>
+      </section>
+
+      <section data-search="Architecture runtime heartbeat stalled wait retry restart" id="runtime-stalled">
+        <h2>Architecture: the runtime is unresponsive</h2>
+        <p>When the independent heartbeat observer reports a runtime stall, an MCP call can return this exact error:</p>
+        <pre><code>CodeSense UI/runtime unresponsive (runtime heartbeat stalled); wait, then retry; restart the app if it persists. Outcome may be unknown; inspect state before repeating mutations</code></pre>
+        <ol>
+          <li>Wait briefly, then retry a read-only call such as <code>list_sessions</code>.</li>
+          <li>Before repeating an action that writes or sends something, inspect whether it already completed. Accepted work can continue after an error is returned.</li>
+          <li>If calls keep failing or the app stays unresponsive, restart CodeSense.</li>
+        </ol>
+        <p>A fully frozen runtime cannot reply to MCP; check for the self-capture file instead.</p>
+      </section>
+
+      <section data-search="Example agent recovery read-only list_sessions codesense_call_tool" id="example">
+        <h2>Example: probe before repeating an action</h2>
+        <p>After a runtime-stalled error or the relay's outcome-unknown error, wait, then make this read-only MCP tool call:</p>
+        <pre><code>{
+  "name": "codesense_call_tool",
+  "arguments": {
+    "name": "list_sessions",
+    "arguments": {}
+  }
+}</code></pre>
+        <p>When the probe succeeds, inspect the session state before repeating an earlier write or message.</p>
+      </section>
+
+      <section data-search="Policy absolute backstop 15 minutes 900 CODESENSE_MCP_TOOL_TIMEOUT_SECS" id="backstop">
+        <h2>The absolute backstop</h2>
+        <p>Every MCP call has a default 15-minute (900-second) absolute backstop, including healthy long calls. There are no per-tool exemptions. At the default setting, its distinct error is:</p>
+        <pre><code>MCP tool call exceeded the absolute backstop of 900 s. Outcome may be unknown; inspect state before retrying</code></pre>
+        <p>This error reports elapsed time; it does not establish a runtime stall. Inspect the operation's state before retrying it.</p>
+        <p>Set <code>CODESENSE_MCP_TOOL_TIMEOUT_SECS</code> in the environment that launches CodeSense to configure the backstop in positive whole seconds. For example, <code>CODESENSE_MCP_TOOL_TIMEOUT_SECS=1800</code> allows 30 minutes. Invalid or zero values use the default 900 seconds; positive overrides are uncapped. The error shows the configured number of seconds.</p>
+      </section>
+
+      <section data-search="Architecture MCP relay transport closed session restart reconnect workspace capture" id="session-recovery">
+        <h2>Sessions keep their MCP transport</h2>
+        <p>A stalled request receives an error for that request while the session's MCP transport stays open:</p>
+        <pre><code>CodeSense did not answer in time; outcome unknown; inspect state before repeating writes</code></pre>
+        <p>If the relay loses its downstream connection to CodeSense, it reconnects with bounded backoff. It never repeats a pending tool call automatically. Wait, retry a read-only probe, and inspect state before repeating a write. For HTTP downstreams, an expired request retires the downstream connection; other outstanding calls also report an unknown outcome before reconnection. Authentication or policy failures still end the connection.</p>
+        <p>When the session server confirms a session is still live, a delayed expiry notification keeps its existing owner, team and captured workspace. An app restart also restores the captured workspace for that same live session. An ended session stays removed. If the server cannot report liveness, the session is released when it expires.</p>
+        <p>If a session still reports <code>Transport closed</code>, restart that session. Restarting the app alone does not reconnect a session whose client already closed its MCP transport.</p>
+      </section>
+
+      <section data-search="Architecture wedged renderer watchdog recovery sample logs size cap" id="capture">
+        <h2>Architecture: renderer recovery and self-capture</h2>
+        <p>The renderer watchdog reloads a stalled webview. If its original renderer remains stuck, it terminates only a renderer verified to belong to this app, then reloads again and waits for a heartbeat within a bounded recovery window. If the UI stays stuck, restart the app.</p>
+        <p>Separately, an OS thread watches runtime and logger heartbeats. After either stops for 30 seconds, it writes a marker directly to the app log and takes a five-second macOS <code>sample</code> of the app's own process.</p>
+        <p>The capture is written to the app's logs directory. For the standard macOS install:</p>
+        <pre><code>~/Library/Logs/ai.codesense/runtime-stall.sample.txt</code></pre>
+        <p>Each sample is capped at 4 MiB. There is at most one capture per incident; capture re-arms after both heartbeats recover. A later capture replaces the same file, so copy it if you need to retain evidence of an earlier incident. Isolated installs use their own app logs directory.</p>
+      </section>
+
+      <p><a href="troubleshooting.html">Back to the troubleshooting index</a></p>
+    </main>
+  </body>
+</html>

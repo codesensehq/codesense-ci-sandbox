@@ -1,0 +1,850 @@
+{
+  "$defs": {
+    "After": {
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "$ref": "#/$defs/AfterOn"
+        },
+        "routine": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "routine",
+        "on"
+      ],
+      "type": "object"
+    },
+    "AfterOn": {
+      "enum": [
+        "succeeded",
+        "finished"
+      ],
+      "type": "string"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "properties": {
+        "per_day": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "per_week": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ContextQuery": {
+      "additionalProperties": false,
+      "description": "The query. See the module docs for an example.",
+      "properties": {
+        "cursor": {
+          "description": "The `nextCursor` of a previous page.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/FilterClause"
+          },
+          "type": "array"
+        },
+        "groupBy": {
+          "description": "Count matches per value of this key (every item of a list counts).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limit": {
+          "format": "uint",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "match": {
+          "additionalProperties": true,
+          "description": "Shorthand: `{ \"status\": [\"todo\", \"review\"], \"team\": \"default\" }` — a\nscalar is `eq`, an array is `in`.",
+          "type": "object"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RelationshipFilter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "select": {
+          "description": "Frontmatter keys to return (plus the built-in row fields). Include\n`\"relationships\"` to also get relationship refs. Omitted: everything.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sort": {
+          "description": "Sort keys, applied in order; ties fall back to path. Default: path.",
+          "items": {
+            "$ref": "#/$defs/SortSpec"
+          },
+          "type": "array"
+        },
+        "text": {
+          "description": "Token-aware title, heading and body match (bounded scan).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "where": {
+          "$ref": "#/$defs/WhereScope",
+          "default": {
+            "orgs": "all"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "EventSpec": {
+      "description": "An event trigger: `agent_done` (an agent finished), `inbox_idle` (an agent sits\nidle at its prompt with unread inbox mail) or `role_pending` (a message is queued\nfor a role inbox in reach of the routine).",
+      "properties": {
+        "from_agent": {
+          "description": "`agent_done` only: only an agent this names finishing fires it; read like\n[`RoutineDef::agent`].",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MetadataCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role": {
+          "description": "`role_pending` only: watch this queue; omit to watch every queue in reach.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "FilterClause": {
+      "additionalProperties": false,
+      "description": "One filter clause. Clauses on the same key OR together; different keys AND.",
+      "properties": {
+        "key": {
+          "description": "Any frontmatter key, or a built-in field (`path`, `relPath`, `fileName`,\n`id`, `org`, `team`, `layer`, `kind`, `mtime`, `title`, `parentEpic`).\nMatching ignores case, `-`/`_` and camelCase vs snake_case.",
+          "type": "string"
+        },
+        "max": true,
+        "min": true,
+        "op": {
+          "$ref": "#/$defs/FilterOp"
+        },
+        "value": {
+          "description": "The operand for `eq`/`in`/`not`/`contains`/`prefix`. `\"@me\"` stands for the\nsigned-in user."
+        }
+      },
+      "required": [
+        "key",
+        "op"
+      ],
+      "type": "object"
+    },
+    "FilterOp": {
+      "description": "A filter operator.",
+      "oneOf": [
+        {
+          "const": "eq",
+          "description": "Equals `value` (any item, for list fields).",
+          "type": "string"
+        },
+        {
+          "const": "in",
+          "description": "Equals any of `value` (an array).",
+          "type": "string"
+        },
+        {
+          "const": "not",
+          "description": "Equals none of `value` (a scalar or an array). Files without the key match.",
+          "type": "string"
+        },
+        {
+          "const": "exists",
+          "description": "The key is present and non-empty.",
+          "type": "string"
+        },
+        {
+          "const": "missing",
+          "description": "The key is absent or empty.",
+          "type": "string"
+        },
+        {
+          "const": "contains",
+          "description": "A list field has an item equal to `value`, or a text field contains it —\nboth ignoring case. A JSON-number `value` matches numerically instead.",
+          "type": "string"
+        },
+        {
+          "const": "range",
+          "description": "`min <= value <= max` (either bound optional). A value only matches bounds\nof its own kind: numbers numerically, ISO dates chronologically, text\nnaturally; a numeric bound never matches a date or text.",
+          "type": "string"
+        },
+        {
+          "const": "prefix",
+          "description": "Text starts with `value`.",
+          "type": "string"
+        }
+      ]
+    },
+    "FullSort": {
+      "additionalProperties": false,
+      "description": "The object form of a sort key. Unknown fields reject, so a typo such as\n`direction` fails loudly instead of sorting ascending.",
+      "properties": {
+        "dir": {
+          "$ref": "#/$defs/SortDir",
+          "default": "asc"
+        },
+        "key": {
+          "type": "string"
+        },
+        "missing": {
+          "$ref": "#/$defs/MissingOrder",
+          "default": "last"
+        },
+        "order": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "type": "object"
+    },
+    "HandoverFrom": {
+      "description": "A machine a routine moved off, until it acknowledged the disarm.",
+      "properties": {
+        "epoch": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "machine": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "machine",
+        "epoch"
+      ],
+      "type": "object"
+    },
+    "Kind": {
+      "description": "What a file is, by the existing classification rules (frontmatter `type`,\nfile extension, location).",
+      "enum": [
+        "story",
+        "bug",
+        "spike",
+        "epic",
+        "doc",
+        "dashboard",
+        "skill",
+        "other"
+      ],
+      "type": "string"
+    },
+    "Layer": {
+      "description": "Which layer of the context footprint a file lives in.",
+      "oneOf": [
+        {
+          "const": "team",
+          "description": "A team's shared context repo.",
+          "type": "string"
+        },
+        {
+          "const": "private",
+          "description": "The user's private space for one org. Only ever returned for its own org.",
+          "type": "string"
+        },
+        {
+          "const": "all-orgs",
+          "description": "Content that applies in every org (e.g. the CodeSense docs bundle).",
+          "type": "string"
+        }
+      ]
+    },
+    "MetadataCondition": {
+      "additionalProperties": false,
+      "description": "Selection and predicates share the context query wire model and comparator.",
+      "properties": {
+        "list": {
+          "description": "An authoring hint for list wording; matching always uses the query engine.",
+          "type": "boolean"
+        },
+        "previous": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterClause"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "$ref": "#/$defs/ContextQuery",
+          "default": {
+            "where": {
+              "orgs": "all"
+            }
+          }
+        },
+        "target": {
+          "$ref": "#/$defs/FilterClause"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "type": "object"
+    },
+    "Migrated": {
+      "description": "The legacy file a routine was migrated from.",
+      "properties": {
+        "from": {
+          "description": "The legacy dir relative to the space's `config/`: `routines/<id>`.\nThe legacy content last brought forward (the 3-way merge base for an\nolder client's edits) is kept beside the routine, in\n`migrate::BASE_FILE`, so mirroring it never rewrites this file.",
+          "type": "string"
+        },
+        "note": {
+          "description": "Shown with the routine: why it was renamed on the way (an id clash).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision": {
+          "description": "The revision the move wrote: the editor says why the routine\nstarts a new session only until a later revision is saved.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "from"
+      ],
+      "type": "object"
+    },
+    "MissedPolicy": {
+      "enum": [
+        "skip",
+        "run_once"
+      ],
+      "type": "string"
+    },
+    "MissingOrder": {
+      "description": "Where files without a value for the sort key go. Default: last.",
+      "enum": [
+        "first",
+        "last"
+      ],
+      "type": "string"
+    },
+    "OverlapPolicy": {
+      "enum": [
+        "coalesce",
+        "skip",
+        "queue"
+      ],
+      "type": "string"
+    },
+    "Policy": {
+      "additionalProperties": true,
+      "properties": {
+        "budget_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Budget"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_runtime": {
+          "description": "Required. `30m` / `2h`, between one minute and a day. Optional on the wire\nonly so a missing value is a typed validation error.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max_wakes": {
+          "description": "Optional, set by the routine's author (usually an\nagent): how many deliveries its wakes may make in all. Reached, the\nroutine pauses itself with one inbox note; resuming starts a new count.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "max_wakes_per_day": {
+          "description": "Deliveries in any rolling 24 h. Over it a fire is\n`undelivered(limit_reached)`; it resumes on its own.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "min_gap": {
+          "description": "The least time between two wakes of this routine, into any session (`30m`,\n`2h`, `1d`; at most `7d`), for wakes that start heavy work. A fire\ninside it is coalesced or skipped per `overlap`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "missed": {
+          "$ref": "#/$defs/MissedPolicy",
+          "default": "skip"
+        },
+        "overlap": {
+          "$ref": "#/$defs/OverlapPolicy",
+          "default": "coalesce"
+        },
+        "visible": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "RelationshipFilter": {
+      "additionalProperties": false,
+      "description": "Relationship predicates. Each token is a path, a `story_id`, a file name or a\nfile stem. All given predicates AND together.",
+      "properties": {
+        "backlinkedBy": {
+          "description": "This lists the file in its `supporting_docs`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dependedOnBy": {
+          "description": "This depends on the file (the file is a dependency of it).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dependsOn": {
+          "description": "The file `depends_on` this.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasDeps": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "hasSupportingDoc": {
+          "description": "The file lists this in `supporting_docs`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isBacklinked": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "parentEpic": {
+          "description": "The file's parent epic (`parent_epic`/`epic` frontmatter, or a folder on its path).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "RoutineAction": {
+      "enum": [
+        "agent",
+        "command"
+      ],
+      "type": "string"
+    },
+    "RoutineTrigger": {
+      "description": "One trigger. On the wire it is a single-key map: `- schedule: {…}` or\n`- event: {…}`.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "schedule": {
+              "$ref": "#/$defs/ScheduleSpec"
+            }
+          },
+          "required": [
+            "schedule"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "event": {
+              "$ref": "#/$defs/EventSpec"
+            }
+          },
+          "required": [
+            "event"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ScheduleSpec": {
+      "description": "A wall-clock schedule: a 5-field cron in an IANA zone (see\n[`super::schedule`]). A missing `tz` is filled with this machine's zone at\nsave and persisted, so it never changes with where the app later runs.",
+      "properties": {
+        "cron": {
+          "type": "string"
+        },
+        "tz": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cron"
+      ],
+      "type": "object"
+    },
+    "SortDir": {
+      "description": "Sort direction.",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "type": "string"
+    },
+    "SortSpec": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/FullSort"
+        }
+      ],
+      "description": "One sort key: `\"status\"`, `\"-mtime\"` (descending), or the object form.\n`order` ranks values explicitly (e.g. a team's own status order); values\nnot listed sort after the listed ones. It also orders `groupBy` buckets\nwhen the group key is sorted on."
+    },
+    "Variable": {
+      "additionalProperties": true,
+      "description": "A declared task variable. `default` is required when any trigger is a\nschedule, because nobody is there to supply a value.",
+      "properties": {
+        "default": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/VariableType",
+          "default": "text"
+        }
+      },
+      "type": "object"
+    },
+    "VariableType": {
+      "enum": [
+        "text",
+        "number",
+        "boolean"
+      ],
+      "type": "string"
+    },
+    "Where": {
+      "additionalProperties": true,
+      "description": "Where the run happens. `kind` is `team_workspace` or `repo:<owner>/<repo>`.",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "machine": {
+          "description": "Which machine runs it: `local`, `any` or a team-shared machine id;\nabsent means local.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "WhereScope": {
+      "additionalProperties": false,
+      "description": "Where to look. Every dimension narrows; omitted means unconstrained.",
+      "properties": {
+        "kinds": {
+          "items": {
+            "$ref": "#/$defs/Kind"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "layers": {
+          "items": {
+            "$ref": "#/$defs/Layer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "orgs": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": "all",
+          "description": "Orgs to search. Default: every synced org. All-orgs content matches any org."
+        },
+        "pathGlob": {
+          "description": "A glob over the path relative to the content root (e.g. `**/DEMO-*.md`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pathPrefix": {
+          "description": "An absolute path prefix, or a prefix of the path relative to the content root.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sameOrgAs": {
+          "description": "Limit to the org of the content root this absolute path (a file or a\nfolder) sits under — a UI default, e.g. a `csquery` block searching its\nown org. Fails closed: a path under no org's root (all-orgs content, or\noutside the footprint) leaves only all-orgs content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sameRootAs": {
+          "description": "Limit to the one content root (a team's context repo, a private space, or\nall-orgs content) this absolute path sits under — e.g. a team board\nlisting its own team's stories. Nothing matches when the path is under no root.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "teams": {
+          "description": "Team names. Private and all-orgs files have no team, so naming teams excludes them.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "One routine definition, exactly as stored in `routine.yml`.",
+  "properties": {
+    "action": {
+      "$ref": "#/$defs/RoutineAction"
+    },
+    "after": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/After"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "agent": {
+      "description": "The agent that runs the task; see [`AgentRef`]. A routine stored under\nits agent (`config/agents/<agent>/routines/<id>/`) does not write it: the\npath names the agent and every read fills it in (`layout`). Only a\nlegacy `config/routines/<id>/` file or an `_unassigned` one carries it.",
+      "type": "string"
+    },
+    "archived_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "archived_with_agent": {
+      "description": "Archived because its agent was archived: restoring the agent offers to\nrestore exactly these (`lifecycle`).",
+      "type": "boolean"
+    },
+    "arm_epoch": {
+      "description": "Bumped on every move of the routine between a desktop and a\nmachine. A machine refuses an arm or disarm older than the epoch it\nholds, so a stale definition can never re-arm it there.",
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "armed_host": {
+      "default": "",
+      "description": "The local host id of the one Mac that arms this routine, so it fires\nonce however many machines have it. Placement, not permission: anyone\nmay move it. Unset only in a definition written outside CodeSense; see\n`host::is_armed_here`.",
+      "type": "string"
+    },
+    "armed_machine": {
+      "description": "The team-shared id of the machine whose session server arms this\nroutine: it fires there on the machine's own clock, with or\nwithout a desktop. `armed_host` then names the Mac that manages the\narm (pushes it, and records its runs); no Mac fires it itself. Old\nclients carry it as an unknown key.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "command": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "handover_from": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HandoverFrom"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The machine this routine moved off and the epoch of that\nmove, until that machine acknowledged it stopped firing it. No Mac\nfires the routine meanwhile (it may still fire there), whichever Mac\nreads this; the Mac that manages it clears it once acknowledged."
+    },
+    "id": {
+      "type": "string"
+    },
+    "migrated": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Migrated"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Where a migrated routine came from (`migrate`)."
+    },
+    "mode": {
+      "description": "What a fire does: `fresh` starts a new instance of the agent, `wake`\ndelivers the task into a live one (starting one only when\nnone is running). Blank when the author picked none: the default is worked out\nat fire time (`service::effective_mode`); migration writes `fresh`.\nKept as a string so an unknown value is a\ntyped [`ValidationError`]; see [`RoutineDef::mode`].",
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner": {
+      "default": "",
+      "description": "The principal who created this routine, for display and attribution.\nIt grants nothing: anyone who can see a routine can change it.",
+      "type": "string"
+    },
+    "policy": {
+      "$ref": "#/$defs/Policy",
+      "default": {
+        "missed": "skip",
+        "overlap": "coalesce",
+        "visible": false
+      }
+    },
+    "result_schema": {
+      "description": "Optional bounded inline JSON Schema for a private dashboard snapshot."
+    },
+    "revision": {
+      "default": 0,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "runs_on": {
+      "description": "How a team routine runs: `one_mac` (the default, also when empty) runs\nit once for the team on the `armed_host` Mac; `each_mac` runs it on\nevery Mac whose user turned it on there, each with its own runs. Kept\nas a string so an unknown value is a typed [`ValidationError`]; see\n[`RoutineDef::runs_on`].",
+      "type": "string"
+    },
+    "task": {
+      "type": "string"
+    },
+    "triggers": {
+      "description": "Empty means manual-only.",
+      "items": {
+        "$ref": "#/$defs/RoutineTrigger"
+      },
+      "type": "array"
+    },
+    "variables": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Variable"
+      },
+      "type": "object"
+    },
+    "where": {
+      "$ref": "#/$defs/Where"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "where"
+  ],
+  "title": "RoutineDef",
+  "type": "object"
+}

@@ -1,0 +1,10 @@
+[package]
+name = "codesense-guards"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[dev-dependencies]
+syn = { version = "2", features = ["full", "visit"] }
+proc-macro2 = "1"

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="cs:type" content="content" />
+  <meta name="codesense:icon" content="panels-top-left" />
+  <title>CodeSense — Customize the built-in panes</title>
+  <link rel="stylesheet" href="../_shared/cs-docs.css" />
+  <link rel="stylesheet" href="./_arc-i.css" />
+  <script src="../_shared/nav.js" defer></script>
+</head>
+<body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/customize-built-in-panes">
+<nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+<main class="cs-main">
+<section data-hero data-search="Inbox pane customize Inbox agent list pane Notes pinned fork" id="hero">
+  <span class="cs-docs-eyebrow">Arc I · Recipe</span>
+  <h1>Customize the built-in panes</h1>
+  <p class="lede">Fork the Inbox pane, Notes or agent list pane from the exact HTML shipped with this app. To customize Inbox, start with its complete source and keep the live plumbing.</p>
+</section>
+<section id="sources" data-search="built-in pane source examples fork">
+<h2>Start with the shipped source</h2>
+<p>These are read-only examples, generated from the current implementations. Each begins with a “Fork me” provenance comment; every remaining byte matches its source. Copy the whole file, including its scripts and declarations, into your own pane. Editing an example in the docs team does not customize the app.</p>
+<ul>
+<li><a href="../examples/panes/inbox.html">Inbox HTML</a> — <code>src/features/shell/right-pane/__fixtures__/inbox-pane.html</code>. This is the built-in HTML Inbox the app ships.</li>
+<li><a href="../examples/panes/notes.html">Notes HTML</a> — <code>src/features/shell/right-pane/__fixtures__/notes-pane.html</code>. An HTML alternative; the app can also use classic Notes.</li>
+<li><a href="../examples/panes/agent-list.html">Agent list HTML</a> — <code>src/features/shell/slots/__fixtures__/agent-list-pane.html</code>. An HTML alternative; the default dock is native.</li>
+</ul>
+<p>You need no application checkout. Follow the function names in these copies and apply the edits below. The source paths explain provenance, not a dependency on a developer workspace.</p>
+</section>
+<section id="fork" data-search="pane_write pane_open private team grants validate">
+<h2>Save and preview your fork</h2>
+<ol class="steps">
+<li>Read the selected example as text. Give its <code>&lt;title&gt;</code> a recognizable name, such as <code>Backend triage</code>. Before overwriting an existing custom pane, call <code>pane_list</code> for the intended org/team, find that fork’s returned <code>path</code>, and use ordinary local filesystem access to read it and copy a backup <strong>outside every <code>panes/</code> directory</strong>. A backup HTML left in <code>panes/</code> becomes another discoverable pane. There is no pane-read MCP tool; do not assume <code>read_content_file</code> accepts pane paths.</li>
+<li>Use a distinct id for the first preview, such as <code>backend-triage-preview</code>. For a right-pane preview of the agent list, change its <code>codesense:slots</code> from <code>dock</code> to <code>right-pane dock</code>. Keep Notes’ <code>right-pane</code> declaration. Inbox uses its <code>human-inbox</code> surface.</li>
+<li>Keep the original capabilities, commands, event handlers, visibility handling and cleanup. Check <a href="../generated/pane-declarations.md">declarations</a>, <a href="../generated/page-sdk.md">SDK methods</a>, <a href="../generated/codesense.d.ts">exact typings</a>, <a href="../generated/capabilities.md">grants</a> and <a href="../generated/slots.md">slot ceilings</a> rather than copying a permission table. Declaring a capability requests it; policy and the slot still bound the effective grant. Notes reads your private records; a team-safe pane may be denied them. Never work around a denial by broadening policy.</li>
+<li>Call <code>validate_live_data_doc</code> with <code>{ content: html }</code> for the edited HTML (or <code>{ path: localFilePath }</code> to validate a local file), resolve its diagnostics, then <code>pane_write</code> with the whole document. <code>pane_write</code> overwrites a file; it does not merge edits. Use <code>scope: "personal"</code> only when the user requests a private fork; the tool calls this scope “personal”, while discovery labels it “private”.</li>
+<li>Call <code>pane_open</code> with the same id and scope. Confirm <code>placed: true</code>; otherwise switch to the named team or a child team (or the private fork’s org), then call it again. The fork is a separate panel. Use <strong>View → Panels</strong> and its title to show it again.</li>
+</ol>
+<pre><code>// Agent-side MCP calls. html is the complete copied and edited document.
+mcp.call("validate_live_data_doc", { content: html })
+mcp.call("pane_write", {
+  org: "acme/api", scope: "personal", id: "backend-triage-preview", html
+})
+mcp.call("pane_open", {
+  org: "acme/api", scope: "personal", id: "backend-triage-preview"
+})
+
+// Team fork instead: use this target for pane_write; omit html on pane_open.
+// { org: "acme/api", team: "backend", scope: "team", id: "backend-triage-preview", html }</code></pre>
+<pre><code># Local shell example. Set pane_path to the exact custom file path from pane_list.
+# Choose a backup_path outside panes/ before overwriting the original.
+cp "$pane_path" "$backup_path"
+# To restore that existing fork later:
+cp "$backup_path" "$pane_path"</code></pre>
+<p>A private pane belongs to you within that org; a team pane is discoverable by that team and its children. Sharing follows your team’s content workflow. A preview does not change an Inbox shortcut or select a Notes/dock source.</p>
+</section>
+<section id="inbox" data-search="customize Inbox pane needs-you single team">
+<h2>Customize the Inbox pane: one team’s needs-you queue</h2>
+<p>In the Inbox copy, use your real org and team in place of <code>acme/api</code> and <code>backend</code>. This queue works while that team is active and intentionally shows an error asking you to switch teams elsewhere. <strong>Promoting it to a private canonical Inbox affects every team you open in that org; promoting it to a team Inbox also affects child teams.</strong> Other teams’ Inbox entry points will show that error, not their mail. Keep it as a distinct-id side panel if that broader effect is unwanted. It explicitly binds every read and write to that pair, including history paging, and uses the real message <code>kind</code>. Unread is a separate property.</p>
+<p>Here “needs-you” filters the <strong>conversation list</strong>: an extra query supplies eligibility, unread counts and previews from the latest 500 matching needs-you messages. Opening one shows the <strong>complete conversation</strong>, including updates and your replies. The pane badge keeps the shipped full-Inbox unread count; the list counts only matching needs-you messages. Keep the shipped unfiltered message windows, conversation summaries, history cursors and paging unchanged. The small derived list view below does not filter thread messages or rewrite summary counts.</p>
+<pre><code class="language-diff" data-recipe="inbox">@@
+-        const contextReady = cs.context().then((ctx) =&gt; {
++        let triageMessages = [];
++        const triageTeam = { org: &quot;acme/api&quot;, team: &quot;backend&quot; };
++        const contextReady = cs.context().then((host) =&gt; {
++          const current = host.activeTeam || { org: host.org, team: host.team };
++          if (current.org !== triageTeam.org || current.team !== triageTeam.team)
++            throw new Error(&quot;Switch to the triage team before opening this Inbox&quot;);
++          const ctx = { ...host, ...triageTeam };
+@@
+-          crossTeam = ctx.inboxScope === &quot;all-teams&quot;;
++          crossTeam = false;
+@@
+-        const writeTeam = (team) =&gt; (crossTeam ? team : {});
++        const writeTeam = () =&gt; triageTeam;
+@@
+-            const [inbox, sent, roleView, status] = await Promise.all([
++            const [inbox, sent, roleView, status, queue] = await Promise.all([
+@@
+-              crossTeam ? cs.inboxRollup?.() : cs.inbox({ scope: &quot;to-human&quot;, limit: 500 }),
+-              crossTeam ? null : cs.inbox({ scope: &quot;to-agents&quot;, limit: 500 }),
++              cs.inbox({ ...triageTeam, scope: &quot;to-human&quot;, limit: 500 }),
++              cs.inbox({ ...triageTeam, scope: &quot;to-agents&quot;, limit: 500 }),
+@@
+-              cs.humanStatus(),
++              cs.humanStatus(),
++              cs.inbox({ ...triageTeam, scope: &quot;to-human&quot;, kind: &quot;needs-you&quot;, limit: 500 }),
+@@
+-            conversations = inbox.conversations || [];
++            triageMessages = queue.messages.filter((m) =&gt; !m.archivedAtMs);
++            conversations = inbox.conversations || [];
+@@
+-          threads = [...groups.values()]
++          threads = [...groups.values()]
++            .filter((t) =&gt; triageMessages.some((m) =&gt;
++              conversationKey(m.conversation, m.team) === t.key,
++            ))
+@@
+-                unread: t.summaries.reduce((n, c) =&gt; n + c.unread, 0),
++                unread: triageMessages.filter((m) =&gt;
++                  conversationKey(m.conversation, m.team) === t.key &amp;&amp; unread(m),
++                ).length,
+@@
+-          const rows = threads.map((t) =&gt; {
++          const rows = threads.map((t) =&gt; {
++            const queued = triageMessages.filter((m) =&gt;
++              conversationKey(m.conversation, m.team) === t.key,
++            );
++            t = { ...t, last: queued.reduce((a, b) =&gt;
++              a.createdAtMs &gt; b.createdAtMs ? a : b,
++            ) };</code></pre>
+<p>Leave <code>refresh()</code>, its dirty/visible guards, <code>onInbox</code> subscriptions, stable message/conversation keys and the existing reply, archive and navigation handlers in place. Verify a needs-you conversation appears, an update-only conversation does not, and a fresh needs-you message updates the list without reopening it. In an open thread, updates and replies remain visible and older history stays reachable with the original Load older messages control.</p>
+</section>
+<section id="notes" data-search="Notes pinned fields.pinned section">
+<h2>Notes: count the pinned section</h2>
+<p>Notes already separates pinned and recent notes. <code>partitionNotes()</code> reads <code>fields.pinned</code>, sorts pinned notes by title, and keeps recent notes separate. Make a small useful variation: include the current pinned count in its section heading. In <code>renderList()</code>, replace the pinned entry in the section loop:</p>
+<pre><code class="language-diff" data-recipe="notes">@@
+-          [&quot;Pinned&quot;, pinned],
++          [`Pinned (${pinned.length})`, pinned],</code></pre>
+<p>This counts the current search results. With no search, it counts all pinned notes. Empty groups remain hidden. Keep the real Pin/Unpin menu: it writes the note’s existing metadata through the records API. Pin or unpin a note and confirm the section and count update live. Keep <a href="./records.html">records</a> subscriptions and editor lifecycle unchanged; there is no separate pin store or pin API.</p>
+</section>
+<section id="agents" data-search="agent list pane roleHoldings group roles unassigned">
+<h2>Agent list: group by roles</h2>
+<figure>
+  <img src="../_shared/screens/agent-list.png" width="236" height="700"
+    alt="Agents dock in Workspace view with a crew, a parent working with two subagents, and an agent waiting for a branch decision." loading="lazy">
+  <figcaption>The Agents dock groups crews by workspace. Working parents show their subagents; needs-you stays beside the agent that needs your answer.</figcaption>
+</figure>
+
+<p>Inside <code>flatten()</code>, replace only the status arrangement branch with role grouping. Relabel its menu choice and active chip as shown. Then open <strong>Filter and arrange agents → By roles</strong> in your fork. Team, manager and workspace arrangements keep working; the internal saved value <code>status</code> is reused for the relabeled choice.</p>
+<pre><code class="language-diff" data-recipe="agent-list">@@
+-        if (ui.arrange === &quot;status&quot;) {
+-          for (const [rank, label] of [
+-            [0, &quot;Needs you&quot;],
+-            [1, &quot;Working&quot;],
+-            [2, &quot;Ready&quot;],
+-            [3, &quot;Other&quot;],
+-          ]) {
+-            const members = viewRefs.filter(
+-              (r) =&gt;
+-                (CRASHED.has(sessions.get(r.sessionRef)?.effectiveStatus) ||
+-                sessions.get(r.sessionRef)?.state === &quot;offline&quot;
+-                  ? 3
+-                  : subagentsWorking(sessions.get(r.sessionRef))
+-                    ? 1
+-                    : (r.statusGroup ?? 3)) === rank,
+-            );
+-            if (!members.length) continue;
+-            out.push({ id: &quot;status:&quot; + rank, kind: &quot;heading&quot;, label, height: 26 });
+-            for (const ref of members) agent(ref, null, false);
+-          }
+-          return out;
+-        }
++        if (ui.arrange === &quot;status&quot;) {
++          // Group each row once by its complete role set, within its team.
++          const roleGroups = new Map();
++          for (const ref of viewRefs) {
++            const held = sessions.get(ref.sessionRef)?.roleHoldings || [];
++            const roles = [...new Set(held.map((r) =&gt; r.role))].sort();
++            const key = JSON.stringify([ref.teamKey, roles]);
++            if (!roleGroups.has(key)) roleGroups.set(key, { team: ref.teamKey, roles, refs: [] });
++            roleGroups.get(key).refs.push(ref);
++          }
++          for (const [key, group] of [...roleGroups].sort(([, a], [, b]) =&gt;
++            a.team.localeCompare(b.team) ||
++            Number(!a.roles.length) - Number(!b.roles.length) || a.roles.join(&quot;, &quot;).localeCompare(b.roles.join(&quot;, &quot;)),
++          )) {
++            out.push({
++              id: &quot;roles:&quot; + key,
++              kind: &quot;heading&quot;,
++              label: group.team + &quot; · &quot; + (group.roles.join(&quot;, &quot;) || &quot;Unassigned&quot;),
++              height: 26,
++            });
++            for (const ref of group.refs) agent(ref, null, false);
++          }
++          return out;
++        }
+@@
+-          chips.push(chip(&quot;By status&quot;, &quot;Arrange by team&quot;, () =&gt; changeArrange(&quot;teams&quot;)));
++          chips.push(chip(&quot;By roles&quot;, &quot;Arrange by team&quot;, () =&gt; changeArrange(&quot;teams&quot;)));
+@@
+-          [&quot;status&quot;, &quot;By status&quot;],
++          [&quot;status&quot;, &quot;By roles&quot;],
+@@
+-&lt;option value=&quot;status&quot;&gt;By status&lt;/option&gt;
++&lt;option value=&quot;status&quot;&gt;By roles&lt;/option&gt;</code></pre>
+<p>Each heading includes its team and complete sorted role set. A multi-role session appears once under, for example, <code>builder, reviewer</code>; no role is discarded and no row id is duplicated. Sessions without a role go under <strong>Unassigned</strong>. Headings sort by stable keys; members retain the host’s order. This changes presentation only: <code>agent(ref, null, false)</code> keeps the existing session identity, selection, menu, stop and navigation actions. Keep the sessions subscription and its repaint callback. Role changes should regroup the same rows live.</p>
+</section>
+<section id="select" data-search="select Inbox Notes Agents list rollback classic restore">
+<h2>Select the fork and restore the original</h2>
+<h3>Replace the Inbox entry point</h3>
+<p>After the distinct-id preview works, write the same edited HTML with the canonical <code>id: "inbox"</code>, in the requested private or team scope. Use the Inbox entry in <strong>View → Panels</strong> (or the Inbox shortcut) to reveal it. With no explicit profile choice, Inbox resolves the nearest team-chain <code>inbox</code>, then your private <code>inbox</code>, then the bundled built-in. A team fork therefore takes precedence over a private fork: a private <code>inbox</code> will not replace an existing team <code>inbox</code>. <strong>Sharing a team-scoped <code>id: "inbox"</code> replaces that team’s Inbox for everyone using its content, including inheriting child teams.</strong> Coordinate that change with the team before sharing it. An existing explicit profile selection takes precedence over this automatic lookup; writing a canonical file does not change that selection. See the saved-choice check below if your fork does not appear.</p>
+<p>To revert, delete or rename <em>your fork’s</em> <code>panes/inbox.html</code> at the path returned by <code>pane_write</code>, or copy the outside-<code>panes/</code> backup back to that exact path if there was already a custom Inbox. Reveal Inbox again after discovery updates. Removing a private fork returns to the bundled Inbox only if no team fork or explicit profile choice still wins. Identify the original by <code>dashboardRef.scope: "built-in"</code> and its app-owned path, <code>{codesense_home}/users/{principal}/builtin-panes/panes/inbox.html</code>. Its outer <code>pane_list</code> entry can say <code>scope: "private"</code>; that label alone does not make it your custom fork. Do not edit or delete that original or the docs example. There is no “classic Inbox” toggle.</p>
+<h3>If a saved Inbox choice still wins</h3>
+<p>Inspect the local profile JSON with ordinary filesystem access at <code>{codesense_home}/users/{principal}/scratch/orgs/{owner}/{repo}/config/profile.json</code>. Look at <code>rightPaneSurfaces.inbox</code> and <code>slots["right-pane"]</code>, and match any saved reference against the full <code>dashboardRef</code> in <code>pane_list</code>, including its scope and team. Use that listing’s exact path to identify the selected custom file. A private installed copy can remain selected after its original team source is removed.</p>
+<p>There is no shipped Inbox reset control or MCP tool for inspecting or clearing those profile fields. Do not invent a picker or assignment call. If the user wants to retire the selected custom fork, back it up outside <code>panes/</code> and remove or rename that exact custom file; when the reference no longer matches a listed Inbox, canonical team → private → built-in lookup resumes. This does not erase the saved reference: restoring the same selected fork can make it win again. If that selected pane should stay, leave it intact and use your distinct-id preview as a side panel.</p>
+<h3>Notes</h3>
+<p>A distinct Notes fork can be opened as its own right panel with <code>pane_open</code>. In <strong>Settings → General</strong>, <strong>Use the classic Notes</strong> set to <strong>On</strong> restores native Notes; <strong>Off</strong> uses the current/found HTML Notes surface. This is a classic-versus-HTML toggle, not an arbitrary fork picker: opening your distinct-id preview does not assign it to the Notes entry point.</p>
+<h3>Agent list</h3>
+<p>For your final dock fork, preserve <code>codesense:slots="dock"</code> (or <code>right-pane dock</code> if you also want a side-panel preview). In <strong>Settings → General → Agents list</strong>, choose your fork’s title/identity from the list. Choose <strong>Built-in</strong> to restore the native agent list. Removing a preview file only removes that preview; restore a selected dock choice before deleting its file.</p>
+<p>Agents can write, validate and open panes today. A generic MCP assignment tool for surfaces/slots is not available yet; do not invent an assignment call. Manual selection, including the dock picker above, remains the user step.</p>
+</section>
+<section id="updates" data-search="pane updates generated examples refresh rollback subscriptions">
+<h2>Keep the fork current</h2>
+<p>App updates refresh these generated examples, not your customized copy. Keep the original snapshot and your small diff; compare a new example against it before carrying your edit forward. Revalidate and repeat the live checks after updating. Saving your pane prepares a replacement behind its frozen working view and swaps only when ready. A broken save keeps the previous version interactive under a fallback strip; hidden panes catch up on reveal. See <a href="./lifecycle-and-liveness.html#pane-saves">pane saves and the optional state snapshot</a>. Preserve subscriptions, teardown, commands and stable row ids rather than building another state store.</p>
+<p>Continue with <a href="./custom-pane-live-list.html">a custom live list</a>, <a href="./pane-shapes.html">pane shapes</a>, <a href="./commands-and-menus.html">commands and menus</a>, <a href="./lifecycle-and-liveness.html">lifecycle and liveness</a>, <a href="./records.html">records</a> and <a href="./testing-and-conformance.html">testing and conformance</a>. See also <a href="../generated/live-hub.md">generated live topics</a> and <a href="../mcp-explorer.html">exact MCP tool arguments</a>.</p>
+</section>
+</main>
+</body>
+</html>

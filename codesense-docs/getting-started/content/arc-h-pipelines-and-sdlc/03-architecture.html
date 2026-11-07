@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 3 · Architecture</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="3"
+    data-page="arc-h-pipelines-and-sdlc/03-architecture"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 3 — Architecture" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>03</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>DESIGN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>03</span> ·
+                  <span data-cs-phase-name>Architecture</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Winston projects the spec into a lean spine of invariants and
+                  one or two diagrams. The output is three bullet points and
+                  one excalidraw — not every file in the repo.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"
+                    ><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Skill</strong><code data-cs-phase-skill>…</code></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span
+                  >
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What architecture phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              An architecture is a <em>spine</em>: the invariants that survive
+              refactors, the shape every downstream artifact projects out of.
+              Winston runs <code>bmad-architecture</code> against the spec from
+              phase 2 and ships one short doc + at most one diagram per surface.
+            </p>
+            <p>
+              The output is deliberately thin. If your architecture doc lists
+              every file in the repo, you wrote inventory, not architecture.
+            </p>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="Worked example — DEMO architecture"
+            id="worked"
+          >
+            <h2>Worked example — DEMO architecture</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="What goes wrong — Architecture phase"
+            id="goes-wrong"
+          >
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in architecture" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="agent.yaml Winston architect"
+            id="agent-yaml"
+          >
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="routine.yml architecture phase"
+            id="routine-yml"
+          >
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="Local vs remote — architecture"
+            id="lr"
+          >
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Winston uses <code>apply_canvas</code> and
+                  <code>render_canvas</code> to author Excalidraw diagrams and
+                  render their PNG sidecars right next to the architecture doc.
+                  The resulting <code>.excalidraw</code> file is clickable in-app.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Same two MCP tools — the canvas state round-trips through the
+                  remote host agent. Opening the <code>.excalidraw</code> tab
+                  shows the live canvas backed by the remote file.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — architecture" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Run <code>bmad-architecture</code> against your most recent spec.
+              Winston will produce the spine and a sibling Excalidraw diagram.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-architecture"}'
+              label="Author an architecture spine"
+              confirm="Run bmad-architecture in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to architect via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-architecture' })
+codesense.invoke('apply_canvas', { path: 'diagrams/kill-ladder.excalidraw', elements: [...] })
+codesense.invoke('render_canvas', { path: 'diagrams/kill-ladder.excalidraw' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-3">factory playbook · phase 3</a>
+            &nbsp;·&nbsp; Edge cases &amp; reference →
+            <a href="../architecture.html">architecture dashboard</a>
+            &nbsp;·&nbsp; Previous: <a href="./02-spec.html">← 02 Spec</a> ·
+            Next: <a href="./04-ux-design.html">04 UX design →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 3 · Architecture</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

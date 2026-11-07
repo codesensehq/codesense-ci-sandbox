@@ -1,0 +1,34 @@
+id: solo-founder-queue-wake
+name: Wake the solo founder planner for queued work
+owner: codesense
+mode: wake
+task: |
+  A role message was queued for {{trigger.role}} in {{trigger.org}}/{{trigger.team}}.
+  Run echo $CODESENSE_TAB_SESSION_ID to read your own id. If empty, match your
+  tab name and workspace in list_sessions and use launchTelemetry.sessionId.
+  Pass your id to who_am_i. Find the solo-founder-planner key with agent_list and read
+  its default_prompt with agent_get; follow those instructions even on a cold
+  launch. Inspect role_state for the three
+  solo-founder queues. Ignore unrelated roles; this routine deliberately watches all roles.
+  Claim only solo-founder-planner work. Do not claim builder or reviewer work.
+  For their pending work, inspect its story id and the live holders, then launch
+  the correct saved agent in that story with open_workspace if needed. If the
+  holder is already live, send_message to its handle to read its queue.
+  Keep at most one assignment active. Do not relaunch accepted work with a live holder.
+  Handoffs must explicitly launch or notify the next seat: this routine is not
+  a guarantee of another wake for messages inside the same run chain.
+  Use your own session_id with send_message. Finish this wake with routine_done.
+  If there is no work for this team, finish with a one-line no-work summary.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: role_pending
+policy:
+  max_runtime: 10m
+  max_wakes_per_day: 12
+  overlap: coalesce
+  visible: true
+runs_on: each_mac
+revision: 1

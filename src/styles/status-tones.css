@@ -1,0 +1,44 @@
+/* SPDX-License-Identifier: MIT */
+/* The Agents tab's state tones, from the app's status tokens: one place for the tints that
+   were being spelled out at every use. Ink is a tint of the state colour in the foreground, so
+   it reads on every theme; a wash is the state colour at low strength over the surface. */
+
+@utility text-needs-ink {
+  color: color-mix(in oklab, var(--cs-status-needs) 58%, var(--foreground));
+}
+@utility text-busy-ink {
+  color: color-mix(in oklab, var(--cs-status-busy) 80%, var(--foreground));
+}
+@utility text-failed-ink {
+  color: color-mix(in oklab, var(--cs-status-failed) 80%, var(--foreground));
+}
+@utility text-warning-ink {
+  color: color-mix(in oklab, var(--theme-severity-warning-fg) 78%, var(--foreground));
+}
+@utility text-warning-fg {
+  color: var(--theme-severity-warning-fg);
+}
+@utility bg-warning-fg {
+  background-color: var(--theme-severity-warning-fg);
+}
+@utility bg-warning-wash {
+  background-color: var(--theme-severity-warning-bg);
+}
+@utility border-warning {
+  border-color: var(--theme-severity-warning-border);
+}
+@utility bg-needs-wash {
+  background-color: color-mix(in srgb, var(--cs-status-needs) 9%, var(--background));
+}
+@utility bg-needs-wash-strong {
+  background-color: color-mix(in srgb, var(--cs-status-needs) 14%, var(--background));
+}
+@utility bg-needs-soft {
+  background-color: color-mix(in srgb, var(--cs-status-needs) 18%, transparent);
+}
+@utility bg-busy-soft {
+  background-color: color-mix(in srgb, var(--cs-status-busy) 14%, transparent);
+}
+@utility bg-failed-soft {
+  background-color: color-mix(in srgb, var(--cs-status-failed) 14%, transparent);
+}

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Terminal tabs</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/terminal-tabs">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Terminal tabs — lifecycle, hibernation, resume" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Tabs</span>
+        </p>
+        <h1>Tabs: open, hidden, resumed</h1>
+      </section>
+
+      <section data-search="What a terminal tab is" id="why">
+        <p>
+          A terminal tab is a workspace-scoped shell with scrollback the UI can read.
+          It's the surface agents live in, the surface you type into, and — because of
+          how PTYs are owned — a surface that outlives the app itself. This page is
+          the full lifecycle: creation, hiding, quitting, resume, closing.
+        </p>
+      </section>
+
+      <section data-search="Tab lifecycle" id="lifecycle">
+        <h2>Lifecycle</h2>
+        <ol>
+          <li>
+            <strong>Open</strong> — you ask for a new tab (⌘T, UI, or
+            <code>open_terminal_tab</code> / <code>open_remote_tab</code>). CodeSense
+            allocates a tab id, spawns the PTY in your login shell (zsh, bash or
+            fish), and streams scrollback from frame 0. PTYs are children of the
+            terminal server (<code>codesense-session-server</code>): on this Mac, a
+            process separate from the app; on a remote machine, one in your account
+            there.
+          </li>
+          <li>
+            <strong>Active</strong> — the tab is in the workspace tab-strip. You type;
+            agents type back. <code>read_terminal_tab</code> snapshots scrollback for
+            agents without disturbing the live stream. <code>run_in_terminal_tab</code>
+            types + submits a line (or sends a single key).
+          </li>
+          <li>
+            <strong>Hidden</strong> — you can hide a tab from the strip without
+            closing it. It keeps running and is listed under its tile's chip in the
+            tray as <em>Hidden tabs</em>; one click restores it.
+          </li>
+          <li>
+            <strong>Dormant (CodeSense quit)</strong> — the UI is gone but the PTYs
+            keep running in the terminal server, so agents carry on working. A remote
+            machine's tabs also keep running while your Mac sleeps.
+          </li>
+          <li>
+            <strong>Resume</strong> — re-open CodeSense (or wake the Mac). CodeSense
+            reconnects to each terminal server, and the UI shows each tab as it was,
+            plus anything that scrolled by while you were gone.
+          </li>
+          <li>
+            <strong>Close</strong> — ⌘W or the × on the pill hides the tab when a
+            command is running in it and ends it when it's idle, asking first if
+            background jobs would die with it. <em>End</em> terminates the PTY and its
+            scrollback is gone. ⌘⇧T reopens the last closed tab: a hidden one on its
+            live session, an ended one as a fresh shell in the same place.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Local vs remote tab differences" id="local-vs-remote">
+        <h2>Local vs remote tabs</h2>
+        <p>
+          The shape of a tab is identical. The owning process differs:
+        </p>
+        <ul>
+          <li>
+            <strong>Local</strong> — PTY under the terminal server on this Mac.
+            Survives CodeSense quit. Does <em>not</em> survive restarting your Mac or
+            stopping the terminal server. If the terminal server can't start, new
+            terminals run inside the app and close when you quit it.
+          </li>
+          <li>
+            <strong>Remote</strong> — PTY under the terminal server on the remote
+            account. Survives CodeSense quit, your Mac sleeping, your Mac rebooting,
+            and your Wi-Fi dropping out. Does <em>not</em> survive the remote machine
+            rebooting or the terminal server being replaced (after an update,
+            CodeSense reopens the machine's tabs as fresh shells).
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Scrollback — what read_terminal_tab returns" id="scrollback">
+        <h2>Scrollback contract</h2>
+        <p>
+          Scrollback is bounded by the emulator (<em>Terminal scrollback</em> in
+          Settings → General: 5,000 lines by default). When an
+          agent calls <code>read_terminal_tab</code>, CodeSense returns the current
+          snapshot:
+        </p>
+        <ul>
+          <li>
+            <strong>Normal shell</strong> — plain text lines, including scrollback up
+            to the limit.
+          </li>
+          <li>
+            <strong>Full-screen TUI</strong> (Claude Code, Codex, <code>top</code>) —
+            the emulator renders the alt-screen and returns the rendered frame rather
+            than the raw overlapping redraws. The agent sees what you see.
+          </li>
+          <li>
+            <strong>Remote</strong> — every read returns the full text; there is no
+            delta protocol. Reads are cheap enough to make this the honest shape.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Addressing tabs — by handle or by name" id="addressing">
+        <h2>Addressing tabs</h2>
+        <p>Every MCP tool that touches a tab accepts two addressing modes:</p>
+        <ul>
+          <li>
+            <strong><code>{handle}</code></strong> — the opaque handle returned by
+            <code>open_terminal_tab</code> / <code>open_remote_tab</code> /
+            <code>open_workspace</code> / <code>list_sessions</code>. Preferred for
+            automation.
+          </li>
+          <li>
+            <strong><code>{tab}</code></strong> — the tab's current name (editable in
+            the UI, visible in <code>list_sessions</code>) with optional
+            <code>{machine}</code> / <code>{workspace}</code> qualifiers to disambiguate.
+            Ambiguous names return the candidate set instead of guessing.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Hidden tabs" id="hidden">
+        <h2>Hidden tabs</h2>
+        <p>
+          Hiding a tab is a UX-only idea: the PTY keeps running, scrollback keeps
+          accumulating, agents keep working, and the tile's chip in the tray lists
+          them under <em>Hidden tabs</em>; one click restores a tab. Agents don't need
+          the tab visible to drive it;
+          hidden tabs still answer <code>run_in_terminal_tab</code> and
+          <code>read_terminal_tab</code>.
+        </p>
+      </section>
+
+      <section data-search="Try this now — list open tabs" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>See the current tab inventory across every workspace and every machine.</p>
+        <cs-try-this
+          verb="sessions"
+          args="{}"
+          label="List open tabs"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to inspect / read a tab via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Inventory.
+codesense.invoke('list_sessions', {})
+
+// Snapshot a tab's scrollback.
+codesense.invoke('read_terminal_tab', {
+  tab: 'Machine setup',   // or { handle: '…' }
+  view: 'scrollback',     // 'screen' for a live alt-screen frame
+})
+
+// Type into a tab.
+codesense.invoke('run_in_terminal_tab', {
+  tab: 'Machine setup',
+  command: '/setup-machine',
+})</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./add-machine-user.html">← Add machine user</a> ·
+        <a href="./parity-matrix.html">Parity matrix →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_sessions">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Tabs</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

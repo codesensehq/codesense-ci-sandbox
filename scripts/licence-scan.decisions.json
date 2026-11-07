@@ -1,0 +1,100 @@
+{
+  "vendored:Bun": {
+    "licence": "MIT AND LGPL-2.0-or-later AND LGPL-2.1-or-later",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted because the emulator stays a separate binary whose LGPL JavaScriptCore and WebKit parts ship with the source offer and NOTICE in src-tauri/resources/emulator/NOTICE.md."
+  },
+  "vendored:Geist": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted because the dashboard kit ships Geist unmodified with its OFL.txt beside it."
+  },
+  "vendored:Assistant (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/Assistant.OFL.txt."
+  },
+  "vendored:Cascadia Code (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/CascadiaCode.OFL.txt."
+  },
+  "vendored:Excalifont (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/Excalifont.OFL.txt."
+  },
+  "vendored:Lilita One (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships, unmodified, the two Google Fonts subsets of Lilita One that @excalidraw/excalidraw bundles under that name (upstream subsets, not ours), with its licence in release/third-party/LilitaOne.OFL.txt."
+  },
+  "vendored:Nunito (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/Nunito.OFL.txt."
+  },
+  "vendored:Virgil (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/Virgil.OFL.txt."
+  },
+  "vendored:Xiaolai SC (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Accepted on the Geist OFL-1.1 decision because the app ships the font unmodified from @excalidraw/excalidraw with its licence in release/third-party/Xiaolai.OFL.txt."
+  },
+  "vendored:Liberation Sans (Excalidraw font)": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "OFL 2.x replaces the GPL-2.0 1.05 Excalidraw ships"
+  },
+  "npm:@fontsource-variable/geist": {
+    "licence": "OFL-1.1",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "The npm packaging of the Geist font, accepted on the Geist OFL-1.1 decision: shipped unmodified with its OFL text."
+  },
+  "npm:argparse": {
+    "licence": "Python-2.0",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Permissive (PSF-style) licence, compatible with distributing the app under MIT; notices carry its text."
+  },
+  "npm:khroma": {
+    "licence": "Unknown",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "The package manifest has no licence field, but upstream github.com/fabiospampinato/khroma is MIT (GitHub licence API: MIT); accepted as MIT."
+  },
+  "npm:robust-predicates": {
+    "licence": "Unlicense",
+    "decision": "accepted",
+    "by": "maintainer",
+    "date": "2026-11-04",
+    "reason": "Public-domain dedication (Unlicense), permissive and compatible with MIT distribution."
+  }
+}

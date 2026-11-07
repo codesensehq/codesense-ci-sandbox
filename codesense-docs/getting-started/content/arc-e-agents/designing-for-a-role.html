@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="users" />
+    <title>CodeSense — Designing for a role</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-cmp {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-cmp th,
+      .arce-cmp td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-cmp th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-cmp code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/designing-for-a-role">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Seat templates appendix agent design roles environment isolation" id="hero">
+        <h1>Shape a seat around its job.</h1>
+        <p>This is the appendix to the <a href="./agent-design.html">agent-design guide</a>. Choose a small context, the tools the job needs, and a clear handoff. One agent can cover several seats when the work is small.</p>
+      </section>
+      <section data-search="Seat catalogue triager builder reviewer scout resolver analyst" id="seats">
+        <h2>Six useful starting seats</h2>
+        <table class="arce-cmp">
+          <thead><tr><th>Seat</th><th>Context and task</th><th>Default and trade-off</th></tr></thead>
+          <tbody>
+            <tr id="triager"><td>Triager</td><td>Selected inbox sources. Classify, summarize and route.</td><td>Read sources; send bounded handoffs. Broad access makes triage easier but increases exposure.</td></tr>
+            <tr id="builder"><td>Builder</td><td>One assignment, acceptance criteria and its workspace.</td><td>Allow the project's build and test tools. Keep scope small; ask before release actions.</td></tr>
+            <tr id="reviewer"><td>Reviewer</td><td>One artifact, its diff, acceptance criteria and evidence.</td><td>Report reproducible defects or green. Independent context costs another pass but reduces shared assumptions.</td></tr>
+            <tr id="scout"><td>Scout</td><td>One source and one output.</td><td>Use a command when the check is fixed. Use a model only for judgment.</td></tr>
+            <tr id="resolver"><td>Resolver</td><td>The decision, alternatives and relevant constraints.</td><td>Work with a person when goals conflict. Do not turn ambiguity into silent policy.</td></tr>
+            <tr id="analyst"><td>Analyst</td><td>Selected sources and a bounded question.</td><td>Cite evidence and uncertainty. More sources can help; prune irrelevant material.</td></tr>
+          </tbody>
+        </table>
+        <p>The <a href="../examples/agents/solo-founder/README.md">solo-founder starter</a> has copyable planner, builder and reviewer YAML with self-contained prompts. It needs no separately installed slash command or workflow skill.</p>
+      </section>
+      <section data-search="Environment permissions isolation startup context" id="isolation">
+        <h2>Isolate launch settings</h2>
+        <p>A saved agent chooses <code>runtime</code>, <code>args</code>, <code>env</code>, <code>startup</code>, <code>context</code>, <code>mcp.servers</code> and native <code>permissions</code>. Environment values must be strings and are visible to anyone who reads the definition. Never put credentials in them.</p>
+        <p>Each launch receives its own generated permission settings. Agents sharing a folder do not share those settings. CodeSense-owned launch variables take precedence. A launched agent's PATH is your login shell's PATH, with CodeSense's own tools first. This is launch configuration, not isolation of data or a substitute for the CLI sandbox.</p>
+        <p><code>startup: []</code> and <code>context: []</code> request no content from those lists. Omitted context uses runtime defaults. Preview the resolved files; do not assume an empty list removes files already present in the workspace. Add only paths that exist in the user's content.</p>
+        <p>See <a href="./agent-yaml.html">agent.yaml</a> and <a href="./context-field.html">the context resolver</a>. Test permission choices at launch. A prompt saying “review only” does not prevent writes.</p>
+      </section>
+      <section data-search="Roles queue registration claim receipts durable handoff" id="roles">
+        <h2>Roles carry durable work</h2>
+        <p>A role is a queue address; an agent is a launch definition; a session does the work. Save role settings with <code>role_save</code>. A default handler names an agent but does not start it automatically.</p>
+        <p>A worker calls <code>register_role</code> with its own session id and chosen shared or exclusive mode. Use the returned instance and generation to claim with <code>claim_role_messages</code>, accept with <code>accept_role_message</code>, and acknowledge handled work with <code>ack_role_message</code> and its receipt. See the <a href="../setting-up-agents/manager-agent.md">manager recipe</a>.</p>
+        <p>Use <code>send_role_message</code> for durable work and <code>reply</code> for an existing thread. Direct messages use current session handles from <code>list_sessions</code>. The launch's <code>role</code> label is display-only; <code>queue_role</code> chooses a queue at launch.</p>
+      </section>
+      <section data-search="Metadata triggers command routines after determinism event role_pending" id="routines">
+        <h2>Start fixed work without a model</h2>
+        <p>For a known metadata transition, use a metadata trigger. For a fixed check, use <code>routine_create</code> with <code>action: "command"</code> and a <code>command</code> argv array. A second routine can use <code>after</code> to follow a successful or finished run. See <a href="../arc-g-routines/triggers.html">triggers</a>.</p>
+        <p><code>role_pending</code> is available through MCP <code>events</code> and YAML. Omit <code>role</code> to hear every queue in reach, or set <code>role:"reviewer"</code> for reviewer mail only. A team routine watches its own team. The wildcard starter inspects <code>{{trigger.role}}</code> to decide what to do. A queued message alone does not launch its handler. The <a href="../examples/agents/solo-founder/README.md">starter</a> shows a wake routine and explicit worker launches.</p>
+        <p>Preview agents, dry-run routine creation, then save routines disabled. Enable only after approval. Check actual outcomes and the visible app state. Choose intervals and handoff rules with the user.</p>
+      </section>
+      <p><a href="./index.html">← Arc E · Agents</a> · <a href="../mcp-explorer.html">MCP reference</a></p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Designing for a role</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

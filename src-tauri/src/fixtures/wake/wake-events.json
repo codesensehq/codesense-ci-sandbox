@@ -1,0 +1,121 @@
+{
+  "wake-delivered": [
+    {
+      "caption": "Woken by Triage",
+      "deliveredAtMs": 1700000030000,
+      "deliveryId": "d-1",
+      "machineId": "local",
+      "marker": "Triage",
+      "origin": {
+        "kind": "routine",
+        "routineKey": "acme/core/barb/triage",
+        "runId": "run-42"
+      },
+      "replayed": false,
+      "sessionId": "s-barb",
+      "source": "push"
+    }
+  ],
+  "wake-outcome": [
+    {
+      "atMs": 1700000000000,
+      "deadlineMs": 1700000060000,
+      "deliveryId": "d-1",
+      "idempotencyKey": "run-42",
+      "machineId": "local",
+      "marker": "Triage",
+      "mayRetry": false,
+      "origin": {
+        "kind": "routine",
+        "routineKey": "acme/core/barb/triage",
+        "runId": "run-42"
+      },
+      "ours": true,
+      "replayed": false,
+      "sessionId": "s-barb",
+      "source": "reply",
+      "status": "queued"
+    },
+    {
+      "atMs": 1700000000000,
+      "deliveredAtMs": 1700000030000,
+      "deliveryId": "d-1",
+      "idempotencyKey": "run-42",
+      "machineId": "local",
+      "marker": "Triage",
+      "mayRetry": false,
+      "origin": {
+        "kind": "routine",
+        "routineKey": "acme/core/barb/triage",
+        "runId": "run-42"
+      },
+      "ours": true,
+      "replayed": false,
+      "sessionId": "s-barb",
+      "source": "push",
+      "status": "delivered"
+    },
+    {
+      "atMs": 1700000000000,
+      "deliveryId": "d-2",
+      "idempotencyKey": "timer:t-1:3",
+      "machineId": "local",
+      "marker": "Check the build (set by Barb)",
+      "mayRetry": false,
+      "origin": {
+        "kind": "timer",
+        "timerId": "t-1"
+      },
+      "ours": true,
+      "reason": "busy_timeout",
+      "replayed": false,
+      "sessionId": "s-barb",
+      "source": "push",
+      "status": "undelivered"
+    },
+    {
+      "atMs": 0,
+      "deliveryId": "",
+      "idempotencyKey": "run-43",
+      "machineId": "codesense-test-1",
+      "marker": "Triage",
+      "mayRetry": true,
+      "origin": {
+        "kind": "routine",
+        "routineKey": "acme/core/barb/triage",
+        "runId": "run-43"
+      },
+      "ours": true,
+      "reason": "machine_offline",
+      "replayed": false,
+      "sessionId": "s-remote",
+      "source": "local",
+      "status": "undelivered"
+    }
+  ],
+  "wakeHistory": [
+    {
+      "atMs": 1700000000000,
+      "deliveredAtMs": 1700000030000,
+      "deliveryId": "d-1",
+      "marker": "Triage",
+      "origin": {
+        "kind": "routine",
+        "routineKey": "acme/core/barb/triage",
+        "runId": "run-42"
+      },
+      "status": "delivered"
+    },
+    {
+      "atMs": 1700000000000,
+      "deliveryId": "d-2",
+      "marker": "Check the build (set by Barb)",
+      "origin": {
+        "kind": "timer",
+        "timerId": "t-1"
+      },
+      "reason": "busy_timeout",
+      "status": "undelivered"
+    }
+  ]
+}

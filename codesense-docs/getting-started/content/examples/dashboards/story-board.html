@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <!-- Example dashboard · Story board. The open stories in one epic, one column per
+         status, kept live with codesense.subscribeContext — no connector needed. -->
+    <title>Story board</title>
+    <style>
+      /* Colours come from the app's theme (--cs-* tokens the host sets), so the page
+         follows light/dark and the viewer theme wherever it is open. Spacing, radius,
+         the mono font and the cs- components come from the dashboard kit every live
+         doc gets (see the kit section of get_live_data_contract). */
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--cs-bg); color: var(--cs-fg); }
+      body { font: 13px/1.5 var(--cs-font-sans); -webkit-font-smoothing: antialiased; }
+      .page { padding: 20px 24px 40px; }
+      header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+      h1 { font-size: 16px; margin: 0; }
+      .muted { color: var(--cs-muted-fg); }
+      .state { font-size: 12px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .state.stale { color: var(--cs-danger); }
+      label { display: inline-flex; gap: 6px; align-items: center; color: var(--cs-muted-fg); }
+      input {
+        font: 12px var(--cs-font-mono);
+        color: var(--cs-fg);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        padding: 3px 8px;
+        width: 12em;
+      }
+      .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 12px; overflow-x: auto; }
+      .column { background: var(--cs-surface); border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); min-height: 120px; }
+      .column h2 {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-transform: capitalize;
+      }
+      .cards { list-style: none; margin: 0; padding: 8px; display: grid; gap: 8px; }
+      .card { background: var(--cs-inset); border: 1px solid var(--cs-border); border-radius: 6px; padding: 8px 10px; }
+      .card .id { font: 11px var(--cs-font-mono); color: var(--cs-accent); }
+      .card .title { margin-top: 2px; }
+      .card .meta { margin-top: 4px; font-size: 11px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .card .p0, .card .p1 { color: var(--cs-warning); }
+      .empty { padding: 24px; text-align: center; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <h1>Story board</h1>
+        <label>Epic <input id="epic" placeholder="all epics" spellcheck="false" /></label>
+        <span id="summary" class="muted"></span>
+        <span id="state" class="state">loading…</span>
+      </header>
+      <div id="board" class="board" aria-live="polite"></div>
+    </div>
+    <script>
+      const CONFIG = {
+        // The epic to show (its id or folder name). Empty shows open stories in every epic.
+        epic: "",
+        // Statuses that never get a column.
+        hidden: ["done"],
+        // Column order; statuses not listed here follow, alphabetically.
+        order: ["planning", "todo", "in-progress", "blocked", "review", "qa"],
+      };
+      const cs = window.codesense;
+      const $ = (id) => document.getElementById(id);
+
+      // Safe DOM only: every value is set with textContent, never parsed as HTML.
+      function h(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+      }
+
+      function query(epic) {
+        const q = {
+          where: { kinds: ["story", "bug", "spike"] },
+          filters: [{ key: "status", op: "not", value: CONFIG.hidden }],
+          select: ["status", "priority", "assigned_to"],
+          sort: ["priority", "id"],
+          groupBy: "status",
+          limit: 2000,
+        };
+        if (epic) q.relationships = { parentEpic: epic };
+        return q;
+      }
+
+      function columnOrder(groups) {
+        const rank = (s) => {
+          const i = CONFIG.order.indexOf(s);
+          return i === -1 ? CONFIG.order.length : i;
+        };
+        return groups
+          .map((g) => String(g.value ?? "no status"))
+          .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+      }
+
+      function card(row) {
+        const f = row.fields || {};
+        const li = h("li", "card");
+        li.append(h("div", "id", row.id || row.relPath));
+        li.append(h("div", "title", row.title || row.relPath));
+        const meta = h("div", "meta");
+        if (f.priority) meta.append(h("span", String(f.priority).toLowerCase(), String(f.priority)));
+        if (f.assigned_to) meta.append(document.createTextNode((f.priority ? " · " : "") + f.assigned_to));
+        if (meta.childNodes.length) li.append(meta);
+        return li;
+      }
+
+      function draw(result) {
+        const board = $("board");
+        board.replaceChildren();
+        const rows = result.rows || [];
+        const groups = result.groups || [];
+        $("summary").textContent =
+          result.total + (result.total === 1 ? " open story" : " open stories") +
+          (rows.length < result.total ? " (first " + rows.length + " shown)" : "");
+        if (!groups.length) {
+          board.append(h("div", "empty", "No open stories."));
+          return;
+        }
+        const counts = new Map(groups.map((g) => [String(g.value ?? "no status"), g.count]));
+        for (const status of columnOrder(groups)) {
+          const col = h("section", "column");
+          const title = h("h2");
+          // The kit's story badge: the pipeline's icon and colour for a default status.
+          title.append(cs.kit.storyBadge(status), h("span", "muted", String(counts.get(status) || 0)));
+          const list = h("ul", "cards");
+          for (const row of rows) {
+            if (String((row.fields || {}).status ?? "no status") === status) list.append(card(row));
+          }
+          col.append(title, list);
+          board.append(col);
+        }
+      }
+
+      let off = null;
+      function watch(epic) {
+        if (off) off();
+        const state = $("state");
+        state.textContent = "loading…";
+        state.className = "state";
+        // Runs now, then again whenever a file in the covered orgs changes.
+        off = cs.subscribeContext(query(epic), (result, error) => {
+          if (error) {
+            state.textContent = "stale: " + error.message;
+            state.className = "state stale";
+            return;
+          }
+          state.textContent = "live";
+          state.className = "state";
+          draw(result);
+        });
+      }
+
+      const input = $("epic");
+      input.value = CONFIG.epic;
+      input.addEventListener("change", () => watch(input.value.trim()));
+      watch(CONFIG.epic);
+      window.addEventListener("pagehide", () => off && off(), { once: true });
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

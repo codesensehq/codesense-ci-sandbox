@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Virtual list pane</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      #list {
+        height: 300px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body class="cs-app">
+    <div id="list" tabindex="0" aria-label="Rows"></div>
+    <script>
+      window.renders = 0;
+      window.list = codesense.kit.virtualList({
+        container: document.getElementById("list"),
+        topic: "rows",
+        rowHeight: 20,
+        layoutKey: (row) => row.label,
+        update(el, row, index) {
+          el.dataset.index = String(index);
+        },
+        render(row, index) {
+          window.renders++;
+          const el = document.createElement("div");
+          el.className = "row";
+          el.dataset.id = row.id;
+          el.dataset.index = String(index);
+          el.tabIndex = 0;
+          el.textContent = row.label;
+          return el;
+        },
+      });
+      codesense.ready();
+    </script>
+  </body>
+</html>

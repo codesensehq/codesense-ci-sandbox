@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="user-plus" />
+    <title>CodeSense — Add machine user</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/add-machine-user">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Authorize a teammate on a machine" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Add user</span>
+          <span class="cs-docs-chip">/add-machine-user</span>
+        </p>
+        <h1>Let a teammate onto your machine</h1>
+      </section>
+
+      <section data-search="What the add-machine-user skill does" id="why">
+        <p>
+          The <code>/add-machine-user</code> skill gives a teammate SSH access to a
+          machine, either as their <strong>own Unix account</strong> or by dropping
+          their public key on a <strong>shared account</strong>. It only ever handles
+          <em>public</em> keys. Never a private key. Never a password. Never a token.
+        </p>
+      </section>
+
+      <section data-search="Own account vs shared account" id="choice">
+        <h2>Own account vs shared account</h2>
+        <p>Pick carefully; the skill recommends <strong>own account</strong>.</p>
+        <ul>
+          <li>
+            <strong>Own account</strong>
+            <span class="cs-docs-chip cs-docs-chip--ok">recommended</span>
+            — each teammate gets their own Unix login (<code>sam</code>,
+            <code>jo</code>, …). Their files, their agent CLI logins, their keychain.
+            This is CodeSense's <em>private-account</em> mode on this machine.
+            Needs <code>sudo</code> to create the account the first time.
+          </li>
+          <li>
+            <strong>Shared account</strong>
+            <span class="cs-docs-chip cs-docs-chip--warn">narrow use</span>
+            — everyone works as the same Unix user. Everyone sees and can modify
+            each other's files. No <code>sudo</code> needed to add a key. Fine for a
+            CI box or a lab machine; not for day-to-day.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Walking the skill" id="walkthrough">
+        <h2>Walking it</h2>
+        <ol>
+          <li>
+            <strong>You give the skill four things:</strong> the SSH host, the
+            teammate's name for the account (lowercase, e.g. <code>sam</code>),
+            their public key (a single line starting <code>ssh-ed25519</code> or
+            <code>ssh-rsa</code>, usually from their <code>~/.ssh/id_ed25519.pub</code>),
+            and which mode: own or shared.
+          </li>
+          <li>
+            <strong>The skill checks the account.</strong>
+            <code>ssh &lt;host&gt; 'id -u &lt;name&gt;'</code> tells it whether to
+            create or just add a key.
+          </li>
+          <li>
+            <strong>Own account path.</strong> On Linux: shows you the exact
+            <code>sudo useradd -m -s /bin/bash &lt;name&gt;</code> command, waits for
+            your <em>yes</em>, then runs it over <code>ssh -t</code>. On macOS: points
+            you at <em>System Settings → Users &amp; Groups</em> or
+            <code>sudo sysadminctl -addUser</code>. No password is set — the teammate
+            signs in with their key.
+          </li>
+          <li>
+            <strong>Append the key, once.</strong> The <code>grep -qxF … || echo … &gt;&gt;</code>
+            pattern guarantees re-running the skill doesn't duplicate the key.
+            Permissions on <code>~/.ssh</code> (<code>700</code>) and
+            <code>authorized_keys</code> (<code>600</code>) are set to what SSH expects.
+          </li>
+          <li>
+            <strong>Verify &amp; hand over.</strong>
+            <code>grep -cxF &lt;key&gt; …authorized_keys</code> prints <code>1</code>.
+            The skill tells the teammate the host, port, and user name they should
+            use, and points them at <em>Machines → Add machine…</em> in CodeSense.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Local vs remote — teammate on a shared Mac" id="local-vs-remote">
+        <h2>On a shared Mac</h2>
+        <p>
+          Same skill. The host is the Mac you're adding your teammate to, SSH'd into
+          from your own Mac. CodeSense itself can't onboard a user into
+          <em>another person's</em> local account — that's by design. If two people
+          want to share a Mac for CodeSense work, add the second person as an SSH user
+          on that Mac and treat it as a remote private-account machine from their side.
+        </p>
+      </section>
+
+      <section data-search="Make the machine visible to the team" id="team-share">
+        <h2>Make the machine visible to the team</h2>
+        <p>
+          Independently from the SSH authorization, the <strong>machine declaration</strong>
+          itself (label, host, port, pinned host key) can be shared with your team so
+          every teammate sees the machine in their Machines list and binds their own
+          account to it:
+        </p>
+        <pre><code>codesense.invoke('save_machine', {
+  label: 'build-box-01',
+  host:  'build-box-01.lab',
+  port:  22,
+  share: { team: 'ops' },
+})</code></pre>
+        <p>
+          The declaration is a team file like any other: it reaches teammates when an agent
+          pushes the context repo and they next pull. Teammates'
+          <em>bindings</em> (their key, their user name) never sync and never leave
+          their own Mac.
+        </p>
+      </section>
+
+      <section data-search="Try this now — append a public key" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List the machines this team sees, then run <code>/add-machine-user</code> in a shell
+          tab on your Mac to add your key to one. The skill shows the <code>ssh</code>
+          command before it runs it.
+        </p>
+        <cs-try-this
+          verb="machines"
+          args="{}"
+          label="List my machines"
+          confirm=""
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to invoke the skill" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Launch the Machine-setup agent and send it the skill command:</p>
+          <pre><code>// Open the agent in a tab (or address an existing one via list_sessions).
+codesense.invoke('open_terminal_tab', {
+  requestId: crypto.randomUUID(),
+  launch: { agentKey: 'machine-setup' },
+  headed: true,
+})
+
+// Drive the skill.
+codesense.invoke('run_in_terminal_tab', {
+  tab: 'Machine setup',
+  command: '/add-machine-user',
+})</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./setup-machine.html">← Setup machine</a> ·
+        <a href="./terminal-tabs.html">Terminal tabs →</a> ·
+        Edge cases &amp; reference →
+        <a href="../recipes-gallery.html#add-machine-user">recipes-gallery / add-machine-user</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Add user</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

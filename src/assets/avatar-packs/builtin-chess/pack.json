@@ -1,0 +1,35 @@
+{
+  "name": "Chess",
+  "faces": [
+    {
+      "id": "king",
+      "file": "king.svg",
+      "label": "King"
+    },
+    {
+      "id": "queen",
+      "file": "queen.svg",
+      "label": "Queen"
+    },
+    {
+      "id": "rook",
+      "file": "rook.svg",
+      "label": "Rook"
+    },
+    {
+      "id": "bishop",
+      "file": "bishop.svg",
+      "label": "Bishop"
+    },
+    {
+      "id": "knight",
+      "file": "knight.svg",
+      "label": "Knight"
+    },
+    {
+      "id": "pawn",
+      "file": "pawn.svg",
+      "label": "Pawn"
+    }
+  ]
+}

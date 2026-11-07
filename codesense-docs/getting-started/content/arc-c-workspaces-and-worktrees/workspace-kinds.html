@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Workspace kinds</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1000px;
+      }
+      .arcC-kinds {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      .arcC-kind {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      .arcC-kind__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .arcC-kind__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .arcC-kind h3 {
+        margin: 2px 0 4px;
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .arcC-kind p {
+        margin: 0;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      .arcC-kind__fields {
+        margin-top: 10px;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-sm);
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      .arcC-kind__fields strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+      .arcC-tell {
+        margin: var(--cs-docs-space-5) 0;
+        padding: 16px 20px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+      }
+      .arcC-tell h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .arcC-tell ul {
+        margin: 0;
+        padding-left: 1.1em;
+      }
+      .arcC-tell li {
+        margin: 6px 0;
+        line-height: 1.5;
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/workspace-kinds">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="The four workspace kinds in CodeSense" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Workspace kinds</span>
+        </p>
+        <h1>Four kinds, one open call</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          A <em>workspace</em> is anything you can <code>open_workspace</code> against. CodeSense
+          ships four kinds. Three of them — story, epic, team — are tied to a context repo. The
+          fourth is just a managed dir. Each one gets its own tab, its own name, and the same
+          lifecycle (open · live · hidden · closed). What differs is
+          <strong>what sits on disk</strong> when the tab lands.
+        </p>
+        <figure
+          class="cs-docs-card"
+          style="
+            padding: 0;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cs-muted-fg);
+            background: var(--cs-inset);
+          "
+        >
+          <span style="padding: 20px; text-align: center"
+            >Hero — four workspace tabs side by side in the CodeSense window:
+            <code>DEMO-1</code> (story), <code>per-agent-kill-switch</code> (epic),
+            <code>Default</code> (team), <code>sprint-triage</code> (generic). Screenshot
+            coming.</span
+          >
+        </figure>
+      </section>
+
+      <!-- =============== The four kinds =============== -->
+      <section data-search="Story epic team generic workspace kinds" id="kinds">
+        <h2>The four kinds</h2>
+        <div class="arcC-kinds" role="list">
+          <article class="arcC-kind" role="listitem">
+            <span class="arcC-kind__eyebrow">
+              <span class="arcC-kind__dot" style="background: var(--cs-accent)"></span>
+              Story
+            </span>
+            <h3>A worktree per story</h3>
+            <p>
+              The headline kind. Opens into a real git worktree bound to the story's branch,
+              hydrated with the story's docs. One per story, forever (until merge-teardown).
+            </p>
+            <div class="arcC-kind__fields">
+              <strong>handle</strong> story_id<br />
+              <strong>on disk</strong> ../&lt;repo&gt;-wt/&lt;slug&gt;/ (beside the clone)<br />
+              <strong>git</strong> real worktree, feature branch<br />
+              <strong>source</strong> story's <code>source_repo</code>
+            </div>
+          </article>
+
+          <article class="arcC-kind" role="listitem">
+            <span class="arcC-kind__eyebrow">
+              <span
+                class="arcC-kind__dot"
+                style="background: color-mix(in oklab, var(--cs-accent) 60%, #b48bff)"
+              ></span>
+              Epic
+            </span>
+            <h3>Plan + integration view</h3>
+            <p>
+              A synthetic workspace holding the epic's docs plus the epic-wide integration worktree.
+              One per epic. Not a git clone itself — the integration view mounts each epic repo's
+              integration branch inside the workspace.
+            </p>
+            <div class="arcC-kind__fields">
+              <strong>handle</strong> epic path<br />
+              <strong>slug</strong> <code>_epic/{epic_id}</code><br />
+              <strong>on disk</strong> ~/CodeSense/&lt;team&gt;/_epic/&lt;id&gt;/<br />
+              <strong>git</strong> synthetic — mounts integration branches
+            </div>
+          </article>
+
+          <article class="arcC-kind" role="listitem">
+            <span class="arcC-kind__eyebrow">
+              <span class="arcC-kind__dot" style="background: #4fd4bb"></span>
+              Team
+            </span>
+            <h3>The whole team view</h3>
+            <p>
+              The team's editable context repo opened as a workspace. Where you edit agents,
+              routines, docs, panes. One per team per Mac. No per-session worktree — everything
+              lives in the team's content root.
+            </p>
+            <div class="arcC-kind__fields">
+              <strong>handle</strong> team key (<code>org/team</code>)<br />
+              <strong>on disk</strong> ~/CodeSense/&lt;team&gt;/content/<br />
+              <strong>git</strong> the context repo's own clone<br />
+              <strong>agents</strong> run in <code>_worker/</code> under the user dir
+            </div>
+          </article>
+
+          <article class="arcC-kind" role="listitem">
+            <span class="arcC-kind__eyebrow">
+              <span class="arcC-kind__dot" style="background: var(--cs-muted-fg)"></span>
+              Generic
+            </span>
+            <h3>A managed dir</h3>
+            <p>
+              You picked a path and gave it a name. CodeSense tracks the handle so your terminal
+              tabs and agent sessions bind to it; no git, no hydration. Useful for ad-hoc work and
+              sprint-triage tabs.
+            </p>
+            <div class="arcC-kind__fields">
+              <strong>handle</strong> whatever you named it<br />
+              <strong>on disk</strong> wherever you pointed it<br />
+              <strong>git</strong> none (CodeSense doesn't touch it)<br />
+              <strong>typical</strong> `sprint-triage`, `notes`
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- =============== How to tell =============== -->
+      <section data-search="How to tell workspace kinds apart" id="tell-them-apart">
+        <h2>How to tell them apart</h2>
+        <div class="arcC-tell">
+          <h3>In the UI</h3>
+          <ul>
+            <li>
+              Story workspaces show the <strong>story id</strong> in the tab title and a branch pill
+              underneath (<code>feat/demo-1</code>).
+            </li>
+            <li>
+              Epic workspaces show the <strong>epic name</strong> plus a small
+              <strong>plan</strong> glyph. No branch pill — there's no single branch.
+            </li>
+            <li>
+              Team workspaces show the <strong>team name</strong> and a tiny content-repo dot.
+              Opening agents from a team workspace routes them to the user's
+              <code>_worker/</code> dir under the team.
+            </li>
+            <li>
+              Generic workspaces show the <strong>handle you gave it</strong> and no context-repo
+              badge.
+            </li>
+          </ul>
+        </div>
+        <div class="arcC-tell">
+          <h3>In the slug</h3>
+          <p style="margin: 0 0 10px">
+            Every synthetic workspace is encoded as a reserved slug that can never collide with a
+            real GitHub owner (GitHub owners can't contain <code>_</code>):
+          </p>
+          <pre><code># A real source repo
+acme/sample-source-repo
+
+# An epic workspace — synthetic
+_epic/per-agent-kill-switch</code></pre>
+          <p style="margin: 10px 0 0; color: var(--cs-muted-fg); font-size: var(--cs-docs-text-sm)">
+            The leading <code>_</code> is the tell. Story and team workspaces reuse the underlying
+            context repo's slug and story / team id; generic workspaces use the handle you supplied.
+          </p>
+        </div>
+      </section>
+
+      <!-- =============== Which do you want =============== -->
+      <section data-search="Which workspace kind do I want" id="which-one">
+        <h2>Which kind do you want?</h2>
+        <ol>
+          <li>
+            <strong>Writing code against a story?</strong> Open the
+            <strong>story workspace</strong>. It creates the worktree; the agent you launch there gets its
+            declared context, and story docs arrive when an agent calls <code>hydrate_story</code>.
+          </li>
+          <li>
+            <strong>Planning or triaging an epic?</strong> Open the <strong>epic workspace</strong>.
+            All five sibling stories are visible; the integration view mounts their shared branches.
+          </li>
+          <li>
+            <strong>Editing team instructions, agents, routines, docs?</strong> Open the
+            <strong>team workspace</strong>. Edits land directly in your team's content repo.
+          </li>
+          <li>
+            <strong>Working on something that isn't tracked by CodeSense yet?</strong>
+            Open a <strong>generic workspace</strong> for the dir. Add terminal tabs; promote to a
+            story workspace later when the work gets a story id.
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — open the sample story workspace" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Open the first story in the shipped sample epic as a story workspace. If you haven't
+          created an editable context repo yet, the Try-this button will prompt you first — the docs
+          org is read-only.
+        </p>
+        <cs-try-this
+          verb="openWorkspace"
+          args='{"storyId":"DEMO-1"}'
+          label="Open DEMO-1"
+          confirm="Open the DEMO-1 story workspace?"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to open each workspace kind via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>One tool, four kinds of target</strong></summary>
+          <p style="margin-top: 8px; color: var(--cs-muted-fg)">
+            <code>open_workspace</code> opens a story workspace from a <code>story_id</code>;
+            with a <code>target</code> it launches an agent in a story or a team workspace.
+            Agent launches settle with a typed status (<code>opened</code> ·
+            <code>alreadyLive</code> · <code>busy</code> · <code>invalid</code>).
+          </p>
+          <pre><code>// Story — creates the worktree if it doesn't exist yet
+codesense.invoke('open_workspace', { story_id: 'DEMO-1' })
+// → { handle, mode, headed, reconciled }
+
+// Launch an agent in that story's worktree, in a new tab
+codesense.invoke('open_workspace', { target: 'story', story_id: 'DEMO-1', name: 'review', agent: 'reviewer' })
+
+// Launch an agent in a team workspace
+codesense.invoke('open_workspace', { target: 'team-workspace', name: 'sprint-triage' })</code></pre>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> ·
+        <a href="../mcp-explorer.html#tool/rename_workspace">rename_workspace</a> ·
+        <a href="./worktree-creation.html">how a worktree appears →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Workspace kinds</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,432 @@
+/* =============================================================================
+ * _arc-h.css — Arc H pipelines + full SDLC
+ *
+ * Page-scoped tokens + patterns for the 15 content pages under
+ * arc-h-pipelines-and-sdlc/. Layers on top of ./../_shared/cs-docs.css: this
+ * file carries the arc-H-specific pieces (facet rail, 14-step hero, phase
+ * sidenav, local/remote callout) and nothing else.
+ *
+ * Scoped to `body.cs-page[data-arc="H"]` so a sibling arc can lift pieces
+ * without inheriting the SDLC chroma.
+ * ============================================================================= */
+
+body.cs-page[data-arc="H"] {
+  /* Phase-group chroma — same palette the factory-playbook dashboard uses.
+     Keeps the "Plan / Design / Build / Verify / Ship / Loop" group colour
+     identical across both surfaces. */
+  --h-plan: #58a6ff;
+  --h-design: #d670d6;
+  --h-build: #f0a93b;
+  --h-verify: #3fb950;
+  --h-ship: #39d3bb;
+  --h-loop: #a08cff;
+
+  /* Opacity hook used by data-cs-ready to avoid flash-of-placeholder-text. */
+  opacity: 1;
+}
+
+body.cs-page[data-arc="H"][data-phase]:not([data-cs-ready="true"]) .cs-h-stage {
+  opacity: 0.4;
+  transition: opacity 180ms ease-out;
+}
+body.cs-page[data-arc="H"][data-phase][data-cs-ready="true"] .cs-h-stage {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.cs-page[data-arc="H"][data-phase]:not([data-cs-ready="true"]) .cs-h-stage {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * Layout: content column with optional phase sidenav on the right.
+ * --------------------------------------------------------------------------- */
+
+body.cs-page[data-arc="H"] .cs-main {
+  max-width: var(--cs-docs-content-max);
+  padding: 24px;
+}
+
+.cs-h-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .cs-h-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cs-h-sidenav {
+    display: none;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * Phase header card (hero bar on every N-*.html page).
+ * --------------------------------------------------------------------------- */
+
+.cs-h-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--cs-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--cs-surface-raised) 100%, transparent),
+    var(--cs-surface)
+  );
+  border-radius: var(--cs-docs-radius-lg);
+  margin-bottom: 20px;
+}
+
+.cs-h-head__num {
+  font-family: var(--cs-font-mono);
+  font-size: 44px;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--cs-faint-fg);
+  letter-spacing: -0.03em;
+  min-width: 92px;
+}
+
+.cs-h-head__group {
+  display: inline-block;
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  letter-spacing: 0.1em;
+  color: var(--cs-muted-fg);
+  margin-bottom: 4px;
+}
+
+.cs-h-head__title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+  font-weight: 650;
+}
+
+.cs-h-head__sub {
+  margin: 6px 0 0;
+  color: var(--cs-muted-fg);
+  max-width: 64ch;
+}
+
+/* Chip rail (agent / skill / inbox / trigger / dashboard). */
+
+.cs-h-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.cs-h-facets .cs-docs-chip strong {
+  color: var(--cs-fg);
+  font-weight: 650;
+  margin-right: 4px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Section cards (what & why, worked example, snippets, "what goes wrong").
+ * --------------------------------------------------------------------------- */
+
+.cs-h-section {
+  margin: 24px 0;
+}
+.cs-h-section h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+.cs-h-section .cs-docs-card {
+  padding: 18px;
+}
+
+.cs-h-snippet {
+  display: block;
+  position: relative;
+  margin: 0;
+}
+.cs-h-snippet pre {
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--cs-inset);
+  color: var(--cs-fg);
+  font-size: 12.5px;
+  line-height: 1.55;
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius-sm);
+  overflow-x: auto;
+  white-space: pre;
+}
+.cs-h-snippet__copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  background: var(--cs-surface-raised);
+  color: var(--cs-muted-fg);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius-sm);
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+.cs-h-snippet__copy:hover {
+  color: var(--cs-fg);
+}
+
+.cs-h-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) {
+  .cs-h-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Local vs Remote callout. */
+
+.cs-h-lr {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  overflow: hidden;
+}
+@media (max-width: 720px) {
+  .cs-h-lr {
+    grid-template-columns: 1fr;
+  }
+}
+.cs-h-lr__cell {
+  padding: 14px 16px;
+  background: var(--cs-surface);
+}
+.cs-h-lr__cell + .cs-h-lr__cell {
+  border-left: 1px solid var(--cs-border);
+}
+@media (max-width: 720px) {
+  .cs-h-lr__cell + .cs-h-lr__cell {
+    border-left: 0;
+    border-top: 1px solid var(--cs-border);
+  }
+}
+.cs-h-lr__label {
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  letter-spacing: 0.1em;
+  color: var(--cs-muted-fg);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.cs-h-lr__cell[data-side="local"] .cs-h-lr__label {
+  color: var(--cs-accent);
+}
+.cs-h-lr__cell[data-side="remote"] .cs-h-lr__label {
+  color: var(--cs-docs-role-scout);
+}
+
+/* -----------------------------------------------------------------------------
+ * The 14-step hero (shown on index.html + condensed version on phase sidenav).
+ * --------------------------------------------------------------------------- */
+
+.cs-h-stepper {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 6px;
+  padding: 16px;
+  background: var(--cs-inset);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+}
+@media (max-width: 920px) {
+  .cs-h-stepper {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.cs-h-step {
+  display: block;
+  padding: 10px 8px;
+  background: var(--cs-surface);
+  border: 1px solid var(--cs-border);
+  border-top: 3px solid var(--cs-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--cs-fg);
+  min-height: 76px;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+.cs-h-step:hover {
+  background: var(--cs-surface-raised);
+  text-decoration: none;
+}
+.cs-h-step[data-group="Plan"] {
+  border-top-color: var(--h-plan);
+}
+.cs-h-step[data-group="Design"] {
+  border-top-color: var(--h-design);
+}
+.cs-h-step[data-group="Build"] {
+  border-top-color: var(--h-build);
+}
+.cs-h-step[data-group="Verify"] {
+  border-top-color: var(--h-verify);
+}
+.cs-h-step[data-group="Ship"] {
+  border-top-color: var(--h-ship);
+}
+.cs-h-step[data-group="Loop"] {
+  border-top-color: var(--h-loop);
+}
+.cs-h-step[aria-current="page"] {
+  background: var(--cs-accent-soft);
+  border-color: var(--cs-accent);
+}
+.cs-h-step__num {
+  font-family: var(--cs-font-mono);
+  font-size: 11.5px;
+  color: var(--cs-muted-fg);
+  letter-spacing: 0.08em;
+  display: block;
+}
+.cs-h-step__name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-top: 4px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Sidenav — compact per-phase list on each phase page.
+ * --------------------------------------------------------------------------- */
+
+.cs-h-sidenav {
+  position: sticky;
+  top: calc(var(--cs-docs-nav-height) + 24px);
+  padding: 12px;
+  background: var(--cs-surface);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  font-size: var(--cs-docs-text-sm);
+}
+.cs-h-sidenav__label {
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  letter-spacing: 0.1em;
+  color: var(--cs-muted-fg);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.cs-h-sidenav ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+.cs-h-sidenav li a {
+  display: flex;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: var(--cs-docs-radius-sm);
+  color: var(--cs-muted-fg);
+}
+.cs-h-sidenav li a:hover {
+  background: var(--cs-hover);
+  color: var(--cs-fg);
+  text-decoration: none;
+}
+.cs-h-sidenav li a[aria-current="page"] {
+  color: var(--cs-fg);
+  background: var(--cs-accent-soft);
+}
+.cs-h-sidenav .num {
+  font-family: var(--cs-font-mono);
+  font-size: 11px;
+  color: var(--cs-muted-fg);
+  min-width: 20px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Phase-8 "massively parallel" subsection — three distribution patterns.
+ * --------------------------------------------------------------------------- */
+
+.cs-h-par {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 920px) {
+  .cs-h-par {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cs-h-par__card {
+  padding: 16px;
+  border: 1px solid var(--cs-border);
+  background: var(--cs-surface);
+  border-radius: var(--cs-docs-radius);
+}
+.cs-h-par__card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.cs-h-par__card .mix {
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  color: var(--cs-muted-fg);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The three machine-row glyphs: 5 slots per card, filled / open according to
+   where the Amelia worktrees live. Pure CSS; no diagram asset required for
+   the glyph. */
+.cs-h-par__row {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0 6px;
+}
+.cs-h-par__slot {
+  flex: 1 1 0;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--cs-inset-strong);
+}
+.cs-h-par__slot[data-fill="local"] {
+  background: var(--cs-accent);
+}
+.cs-h-par__slot[data-fill="remote"] {
+  background: var(--cs-docs-role-scout);
+}
+
+/* Diagram embeds use a shared aspect-ratio frame. */
+.cs-h-par__diagram {
+  margin-top: 12px;
+  aspect-ratio: 16 / 9;
+  background: var(--cs-inset);
+  border: 1px dashed var(--cs-border);
+  border-radius: var(--cs-docs-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-xs);
+  text-align: center;
+  padding: 8px;
+}

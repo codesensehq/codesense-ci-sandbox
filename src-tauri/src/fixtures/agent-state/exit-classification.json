@@ -1,0 +1,16 @@
+{
+  "cases": [
+    { "code": 0, "signal": null, "requested": false, "class": "clean", "outcome": "done" },
+    { "code": 0, "signal": "", "requested": false, "class": "clean", "outcome": "done" },
+    { "code": 1, "signal": null, "requested": false, "class": "abnormal", "outcome": "crashed" },
+    { "code": 137, "signal": null, "requested": false, "class": "abnormal", "outcome": "crashed" },
+    { "code": -1, "signal": null, "requested": false, "class": "abnormal", "outcome": "crashed" },
+    { "code": null, "signal": "Killed: 9", "requested": false, "class": "abnormal", "outcome": "crashed" },
+    { "code": 0, "signal": "Terminated: 15", "requested": false, "class": "abnormal", "outcome": "crashed" },
+    { "code": null, "signal": null, "requested": false, "class": "unknown", "outcome": "done" },
+    { "code": null, "signal": "", "requested": false, "class": "unknown", "outcome": "done" },
+    { "code": null, "signal": "Killed: 9", "requested": true, "class": "abnormal", "outcome": "done" },
+    { "code": 1, "signal": null, "requested": true, "class": "abnormal", "outcome": "done" },
+    { "code": 0, "signal": null, "requested": true, "class": "clean", "outcome": "done" }
+  ]
+}

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file" />
+    <title>CodeSense — File extensions</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/file-extensions"] .cs-main {
+        max-width: 1040px;
+      }
+      body[data-page="arc-n-reference/file-extensions"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/file-extensions"] h1 {
+        font-size: clamp(28px, 3.6vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 66ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/file-extensions"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        padding: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-inset);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/file-extensions"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 170px;
+      }
+      body[data-page="arc-n-reference/file-extensions"] figure.hero figcaption {
+        padding: 10px 14px;
+        border-top: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/file-extensions"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/file-extensions"] p,
+      body[data-page="arc-n-reference/file-extensions"] li {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-n-reference/file-extensions"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-n-reference/file-extensions"] table.ext {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-5);
+        font-size: 13px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/file-extensions"] table.ext th,
+      body[data-page="arc-n-reference/file-extensions"] table.ext td {
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 55%, transparent);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-n-reference/file-extensions"] table.ext thead th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      body[data-page="arc-n-reference/file-extensions"] table.ext tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      body[data-page="arc-n-reference/file-extensions"] table.ext td.ext {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--cs-fg);
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        background: var(--cs-accent-soft);
+        color: var(--cs-accent);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill--markdown {
+        background: color-mix(in oklab, #39d3bb 20%, transparent);
+        color: #39d3bb;
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill--html {
+        background: color-mix(in oklab, #a08cff 20%, transparent);
+        color: #a08cff;
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill--image {
+        background: color-mix(in oklab, #f0a93b 20%, transparent);
+        color: #f0a93b;
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill--excalidraw {
+        /* WCAG 2.1 AA: brighten pill text for 4.5:1 contrast. */
+        background: color-mix(in oklab, #ea6a5a 20%, transparent);
+        color: color-mix(in oklab, #ea6a5a 55%, #ffffff);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .pill--code {
+        background: color-mix(in oklab, var(--cs-success) 18%, transparent);
+        color: var(--cs-success);
+      }
+      body[data-page="arc-n-reference/file-extensions"] details {
+        margin: var(--cs-docs-space-3) 0;
+        padding: 10px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/file-extensions"] details summary {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/file-extensions"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/file-extensions">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="File extensions and viewers" id="hero">
+        <span class="cs-docs-eyebrow">Arc N · Extensions</span>
+        <h1>What CodeSense renders when you click a file.</h1>
+        <p class="lede">
+          CodeSense ships twenty <strong>viewable</strong> file extensions. Markdown and HTML get
+          full editors; <code>.excalidraw</code> opens the canvas; images open inline; everything
+          else lands in the <strong>code viewer</strong> (CodeMirror 6, read-only, syntax-high­
+          lighted). Anything unlisted still gets the code viewer as a catch-all, with a
+          <strong>binary heuristic</strong> that gates known-binary payloads to a placeholder before
+          any read.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 150"
+            role="img"
+            aria-label="A file flows into a decision diamond; viewable extensions route to a renderer, unknown falls through to the code viewer, binary extensions short-circuit to a gated placeholder."
+          >
+            <title>File → viewer routing</title>
+            <desc>
+              Left: a file icon. Center: a decision diamond "Known extension?". Right: three
+              outcomes — rendered inline, code viewer catch-all, binary placeholder.
+            </desc>
+            <style>
+              .e-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+              }
+              .e-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+              }
+              .e-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .e-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .e-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.3;
+                fill: none;
+              }
+              .e-warn {
+                stroke: var(--cs-warning, #d29922);
+                stroke-width: 1.3;
+                fill: none;
+              }
+            </style>
+            <defs>
+              <marker
+                id="e-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+              <marker
+                id="e-arrow-warn"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-warning, #d29922)" />
+              </marker>
+            </defs>
+
+            <!-- File icon -->
+            <g transform="translate(30 55)">
+              <path class="e-ins" d="M0 0 L30 0 L40 10 L40 50 L0 50 Z" />
+              <text class="e-txt" x="20" y="30" text-anchor="middle">file</text>
+            </g>
+
+            <!-- Diamond -->
+            <g transform="translate(140 50)">
+              <polygon class="e-surf" points="60,0 120,30 60,60 0,30" />
+              <text class="e-txt" x="60" y="28" text-anchor="middle">known</text>
+              <text class="e-txt" x="60" y="42" text-anchor="middle">extension?</text>
+            </g>
+            <path class="e-acc" d="M72 80 L140 80" marker-end="url(#e-arrow)" />
+
+            <!-- yes → renderer -->
+            <path class="e-acc" d="M260 80 L370 42" marker-end="url(#e-arrow)" />
+            <text class="e-mut" x="300" y="54">yes</text>
+            <g transform="translate(370 20)">
+              <rect class="e-surf" width="160" height="42" rx="6" />
+              <text class="e-txt" x="80" y="20" text-anchor="middle">matching renderer</text>
+              <text class="e-mut" x="80" y="35" text-anchor="middle">
+                markdown · html · image · canvas · code
+              </text>
+            </g>
+
+            <!-- fallthrough → code viewer -->
+            <path class="e-acc" d="M260 90 L370 100" marker-end="url(#e-arrow)" />
+            <text class="e-mut" x="300" y="106">unknown</text>
+            <g transform="translate(370 86)">
+              <rect class="e-surf" width="160" height="26" rx="6" />
+              <text class="e-txt" x="80" y="18" text-anchor="middle">code viewer (catch-all)</text>
+            </g>
+
+            <!-- binary → placeholder -->
+            <path class="e-warn" d="M100 110 L220 128 L370 128" marker-end="url(#e-arrow-warn)" />
+            <text class="e-mut" x="200" y="124">known binary</text>
+            <g transform="translate(370 118)">
+              <rect class="e-ins" width="160" height="22" rx="6" />
+              <text class="e-txt" x="80" y="16" text-anchor="middle">
+                binary · gated placeholder
+              </text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            Known extension wins · unknown falls through to the code viewer · binary short-circuits.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="Twenty viewable extensions" id="viewable">
+        <h2>Twenty viewable extensions</h2>
+        <p>
+          Grouped by viewer. The <strong>markdown</strong> and <strong>html</strong> viewers are the
+          only ones that expose the frontmatter editor; everything else is read-only.
+        </p>
+
+        <table class="ext">
+          <thead>
+            <tr>
+              <th>Extension</th>
+              <th>Viewer</th>
+              <th>Rendered as</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ext">.md</td>
+              <td><span class="pill pill--markdown">markdown</span></td>
+              <td>Prose (react-markdown)</td>
+              <td>Default when the type is absent. Frontmatter editor exposed.</td>
+            </tr>
+            <tr>
+              <td class="ext">.markdown</td>
+              <td><span class="pill pill--markdown">markdown</span></td>
+              <td>Prose</td>
+              <td>Uncommon but valid markdown extension.</td>
+            </tr>
+            <tr>
+              <td class="ext">.html</td>
+              <td><span class="pill pill--html">html</span></td>
+              <td>Framed iframe + shim</td>
+              <td>Served via <code>buildViewerUrl()</code>; postMessage bridge injected.</td>
+            </tr>
+            <tr>
+              <td class="ext">.htm</td>
+              <td><span class="pill pill--html">html</span></td>
+              <td>Framed</td>
+              <td>Alias for <code>.html</code>.</td>
+            </tr>
+            <tr>
+              <td class="ext">.excalidraw</td>
+              <td><span class="pill pill--excalidraw">canvas</span></td>
+              <td>Editable canvas</td>
+              <td>
+                PNG sidecar at <code>.excalidraw.png</code>; the sidecar is filtered from listings.
+              </td>
+            </tr>
+            <tr>
+              <td class="ext">.png · .jpg · .jpeg · .gif · .webp · .svg</td>
+              <td><span class="pill pill--image">image</span></td>
+              <td>URL-served inline</td>
+              <td>
+                Viewable but <strong>not navigable</strong>. PNG sidecars for excalidraw are hidden.
+              </td>
+            </tr>
+            <tr>
+              <td class="ext">.yaml · .yml</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted (CodeMirror 6)</td>
+              <td>Read-only. The schema browser's validator covers the semantic layer.</td>
+            </tr>
+            <tr>
+              <td class="ext">.toml</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Configuration; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.json</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Data / config; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.xml</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Markup; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.ini</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>INI config; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.env</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Environment file; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.csv</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>CSV data; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.sh</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Shell script; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.py</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Python; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.rs</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>Rust; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.ts</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>TypeScript; read-only.</td>
+            </tr>
+            <tr>
+              <td class="ext">.js</td>
+              <td><span class="pill pill--code">code</span></td>
+              <td>Highlighted</td>
+              <td>JavaScript; read-only.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <strong>Twenty extensions</strong>, five viewers. Everything else falls through to the
+          code viewer as a catch-all, unless the binary heuristic trips first.
+        </p>
+      </section>
+
+      <section data-search="The binary fallback" id="binary">
+        <h2>The binary fallback</h2>
+        <p>
+          Six extension families short-circuit to a placeholder <strong>before any read</strong>:
+          archives, executables, fonts, audio/video, office documents, and non-viewable image
+          formats. Clicking the file surfaces its path, size, and a copy button instead of
+          attempting to render.
+        </p>
+
+        <details open>
+          <summary>Known-binary extensions (gated to placeholder)</summary>
+          <ul>
+            <li>
+              <strong>Archives</strong> — <code>zip</code>, <code>tar</code>, <code>gz</code>,
+              <code>tgz</code>, <code>bz2</code>, <code>xz</code>, <code>zst</code>,
+              <code>br</code>, <code>7z</code>, <code>rar</code>
+            </li>
+            <li>
+              <strong>Executables</strong> — <code>exe</code>, <code>dll</code>, <code>so</code>,
+              <code>dylib</code>, <code>o</code>, <code>a</code>, <code>bin</code>,
+              <code>wasm</code>, <code>class</code>, <code>pyc</code>
+            </li>
+            <li>
+              <strong>Fonts</strong> — <code>woff</code>, <code>woff2</code>, <code>ttf</code>,
+              <code>otf</code>,
+              <code>eot</code>
+            </li>
+            <li>
+              <strong>Audio / video</strong> — <code>mp4</code>, <code>webm</code>,
+              <code>mov</code>, <code>avi</code>, <code>mkv</code>, <code>mp3</code>,
+              <code>wav</code>, <code>flac</code>, <code>ogg</code>, <code>m4a</code>
+            </li>
+            <li>
+              <strong>Documents</strong> — <code>pdf</code>, <code>doc</code>, <code>docx</code>,
+              <code>xls</code>, <code>xlsx</code>, <code>ppt</code>, <code>pptx</code>,
+              <code>sqlite</code>,
+              <code>db</code>
+            </li>
+            <li>
+              <strong>Non-viewable images</strong> — <code>ico</code>, <code>bmp</code>,
+              <code>tiff</code>, <code>tif</code>,
+              <code>heic</code>
+            </li>
+          </ul>
+        </details>
+
+        <p>
+          The catch-all code viewer also content-sniffs for binary (NUL check in the first page): an
+          extension-less file that reads as text still opens fine; one that reads as binary falls
+          back to the placeholder.
+        </p>
+      </section>
+
+      <section data-search="How to probe via MCP" id="mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary>Ask CodeSense which viewer a path would open in</summary>
+          <p>
+            The <code>resolveViewer</code> bridge verb takes a path (or just an extension) and
+            returns the viewer name without actually opening the file:
+          </p>
+          <pre><code>tool_call("resolveViewer", { path: "./notes/incident.pdf" })
+// → { ext: "pdf", viewer: null, fallback: "binary-placeholder" }
+tool_call("resolveViewer", { path: "./design.excalidraw" })
+// → { ext: "excalidraw", viewer: "canvas" }</code></pre>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html">schema browser</a>
+        ·
+        <a href="../mcp-explorer.html#tool/resolveViewer">resolveViewer tool</a>
+        ·
+        <a href="./index.html">back to Arc N</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · File extensions</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

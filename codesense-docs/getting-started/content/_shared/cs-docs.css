@@ -1,0 +1,943 @@
+/* =============================================================================
+ * cs-docs.css — canonical shared chrome for the CodeSense docs org
+ *
+ * Scope
+ *   Every doc under codesense-docs/getting-started/content/*.html references
+ *   this file:
+ *       <link rel="stylesheet" href="./_shared/cs-docs.css">
+ *
+ *   Mocks under designs/<page>/mock.html reference it with ../_shared/cs-docs.css
+ *   and inline a local fallback copy so a single file:// preview still renders.
+ *
+ * Layering
+ *   1. --cs-* tokens — the real viewer injects these per-theme on <html>; the
+ *      block below is only the *fallback* that keeps standalone previews honest.
+ *      Dark is the default; light kicks in on `prefers-color-scheme: light`.
+ *   2. --cs-docs-* tokens — docs-wide extensions (spacing scale, radii, text
+ *      scale, shadows, role chroma) that aren't theme-vended. Live only here.
+ *   3. Shell: cs-page / cs-topnav / cs-main / cs-footer.
+ *   4. Patterns: cs-docs-btn, cs-docs-card, cs-docs-chip, cs-docs-kbd, palette.
+ *
+ * Rules the chrome has to carry:
+ *   - Every browser surface themed via --cs-*: scrollbars, selection, focus ring.
+ *   - prefers-reduced-motion: motion is additive, never load-bearing.
+ *   - Keyboard-complete: focus-visible is a hard-rule outline, not decoration.
+ *   - Theme toggle cross-fades (opacity transition on <html>), not reload.
+ *   - No external fetches. No CDN. Lucide SVGs are inlined per-doc.
+ * ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+ * 1 · Tokens — fallback palette (dark default + light via media query)
+ *     The real viewer wins when it injects --cs-* on :root. These fallbacks
+ *     only paint when the doc is opened file:// or outside the viewer.
+ * --------------------------------------------------------------------------- */
+
+:root {
+  /* Semantic surfaces */
+  --cs-bg: #0d1117;
+  --cs-fg: #e6edf3;
+  --cs-muted-fg: #a3abbb;
+  --cs-faint-fg: #868fa0;
+  --cs-subtle-fg: #6b7788;
+  --cs-border: #262c38;
+  --cs-border-strong: #353c4a;
+  --cs-surface: #161b22;
+  --cs-surface-raised: #1b2130;
+  --cs-inset: #11161e;
+  --cs-inset-strong: #1a2029;
+  --cs-hover: rgba(255, 255, 255, 0.045);
+
+  /* Accent + semantics */
+  --cs-accent: #7aa2ff;
+  --cs-accent-fg: #0d1117;
+  --cs-accent-soft: color-mix(in srgb, var(--cs-accent) 16%, transparent);
+  --cs-link: var(--cs-accent);
+  --cs-danger: #f85149;
+  --cs-success: #3fb950;
+  --cs-warning: #d29922;
+
+  /* Fonts */
+  --cs-font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --cs-font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  color-scheme: dark;
+
+  /* ------- docs-wide (never vended by the viewer) ------- */
+
+  --cs-docs-radius-xs: 4px;
+  --cs-docs-radius-sm: 6px;
+  --cs-docs-radius: 10px;
+  --cs-docs-radius-lg: 14px;
+  --cs-docs-radius-full: 999px;
+
+  --cs-docs-space-1: 4px;
+  --cs-docs-space-2: 8px;
+  --cs-docs-space-3: 12px;
+  --cs-docs-space-4: 16px;
+  --cs-docs-space-5: 24px;
+  --cs-docs-space-6: 32px;
+  --cs-docs-space-7: 48px;
+
+  --cs-docs-text-xs: 11.5px;
+  --cs-docs-text-sm: 13px;
+  --cs-docs-text-base: 15px;
+  --cs-docs-text-md: 14px;
+  --cs-docs-text-lg: 18px;
+  --cs-docs-text-xl: 22px;
+
+  --cs-docs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --cs-docs-shadow-md: 0 10px 28px -12px rgba(0, 0, 0, 0.6), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --cs-docs-shadow-sheet:
+    -24px 0 60px -24px rgba(0, 0, 0, 0.55), -2px 0 8px -2px rgba(0, 0, 0, 0.35);
+
+  /* Nav / palette */
+  --cs-docs-nav-height: 48px;
+  --cs-docs-palette-max-h: 60vh;
+  --cs-docs-content-max: 1240px;
+
+  /* Role chroma — reused by inbox-flows / recipes-gallery */
+  --cs-docs-role-triager: #6ea8f0;
+  --cs-docs-role-builder: #4ec28a;
+  --cs-docs-role-reviewer: #a898ff;
+  --cs-docs-role-scout: #e0ac55;
+  --cs-docs-role-resolver: #ea6a5a;
+  --cs-docs-role-analyst: #5ec6dc;
+  --cs-docs-role-custom: var(--cs-muted-fg);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --cs-bg: #ffffff;
+    --cs-fg: #1f2328;
+    --cs-muted-fg: #5c6370;
+    --cs-faint-fg: #8b94a0;
+    --cs-subtle-fg: #94a3b8;
+    --cs-border: #e4e6ea;
+    --cs-border-strong: #c9ced6;
+    --cs-surface: #f7f8fa;
+    --cs-surface-raised: #ffffff;
+    --cs-inset: #f6f7f9;
+    --cs-inset-strong: #eef0f3;
+    --cs-hover: rgba(16, 20, 28, 0.045);
+
+    --cs-accent: #0969da;
+    --cs-accent-fg: #ffffff;
+    --cs-link: var(--cs-accent);
+    --cs-danger: #cf222e;
+    --cs-success: #1a7f37;
+    --cs-warning: #9a6700;
+
+    color-scheme: light;
+
+    --cs-docs-shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.04), 0 1px 1px rgba(15, 20, 25, 0.02);
+    --cs-docs-shadow-md:
+      0 8px 20px -8px rgba(16, 20, 28, 0.14), 0 2px 6px -2px rgba(16, 20, 28, 0.08);
+    --cs-docs-shadow-sheet:
+      -24px 0 60px -24px rgba(16, 20, 28, 0.22), -2px 0 8px -2px rgba(16, 20, 28, 0.08);
+
+    --cs-docs-role-triager: #1f5e9e;
+    --cs-docs-role-builder: #2a8a5e;
+    --cs-docs-role-reviewer: #6b50e8;
+    --cs-docs-role-scout: #b57a21;
+    --cs-docs-role-resolver: #b03326;
+    --cs-docs-role-analyst: #1f8ba6;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * 2 · Reset & root body
+ *     Minimal — just the parts every doc assumes. No typographic opinionation
+ *     beyond font + line-height; content pages set their own h-scale.
+ * --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Cross-fade theme flips rather than reload. nav.js toggles html[data-theme]. */
+  transition:
+    background-color 180ms ease-out,
+    color 180ms ease-out;
+}
+
+body {
+  background: var(--cs-bg);
+  color: var(--cs-fg);
+  font-family: var(--cs-font-sans);
+  font-size: var(--cs-docs-text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11", "tnum";
+  min-height: 100vh;
+}
+
+a {
+  color: var(--cs-link);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* WCAG 2.1 AA: inline links inside paragraph / list text need
+ * a non-colour distinguisher. Block / layout links keep text-decoration: none
+ * by scoping this rule to flow content; chrome and nav opt out via
+ * `cs-link--chrome` (see cs-topnav__brand etc.). */
+/* Any flow-text link that doesn't carry its own class (i.e. isn't a chrome
+ * link / nav / button-styled anchor) picks up the inline-flow underline.
+ * Button / nav anchors opt out by carrying their own class. */
+a:not([class]) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+  text-underline-offset: 3px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--cs-font-mono);
+}
+
+/* Craft-floor: themed browser surfaces (the parts you didn't draw). */
+::selection {
+  background: color-mix(in oklab, var(--cs-accent) 32%, transparent);
+  color: var(--cs-fg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--cs-border) 70%, transparent);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+  background-clip: padding-box;
+}
+* {
+  scrollbar-color: color-mix(in oklab, var(--cs-border) 70%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cs-accent);
+  outline-offset: 2px;
+  border-radius: var(--cs-docs-radius-sm);
+}
+:focus:not(:focus-visible) {
+  outline: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * 3 · Shell — cs-page / cs-topnav / cs-main / cs-footer
+ * --------------------------------------------------------------------------- */
+
+.cs-page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+/* Shared top nav. nav.js renders arc dropdown + search affordance into this
+   element; it's safe to leave empty in authored HTML. */
+.cs-topnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--cs-docs-space-3);
+  height: var(--cs-docs-nav-height);
+  padding: 0 var(--cs-docs-space-4);
+  background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+  border-bottom: 1px solid var(--cs-border);
+  font-size: var(--cs-docs-text-sm);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+}
+
+/* Brand lockup rendered by nav.js. */
+.cs-topnav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cs-docs-space-2);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--cs-fg);
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: var(--cs-docs-radius-sm);
+}
+.cs-topnav__brand:hover {
+  background: var(--cs-hover);
+  text-decoration: none;
+}
+.cs-topnav__brand-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--cs-docs-radius-sm);
+  background: linear-gradient(
+    140deg,
+    var(--cs-accent),
+    color-mix(in oklab, var(--cs-accent) 55%, #d670d6)
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  flex: 0 0 auto;
+}
+.cs-topnav__brand-slash {
+  color: var(--cs-faint-fg);
+  font-weight: 400;
+}
+
+/* Arc dropdown trigger — the 14-arc affordance owned by nav.js. */
+.cs-topnav__arcs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius-sm);
+  background: var(--cs-surface);
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-sm);
+}
+.cs-topnav__arcs:hover {
+  border-color: var(--cs-border-strong);
+  color: var(--cs-fg);
+}
+.cs-topnav__arcs[aria-expanded="true"] {
+  color: var(--cs-fg);
+  border-color: color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+}
+.cs-topnav__arcs-letter {
+  font-family: var(--cs-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cs-faint-fg);
+  padding: 2px 5px;
+  border-radius: var(--cs-docs-radius-xs);
+  background: color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface));
+}
+body[data-page="home"] .cs-topnav__arcs-letter {
+  display: none;
+}
+
+/* Arc dropdown menu */
+.cs-topnav__menu {
+  position: absolute;
+  top: calc(var(--cs-docs-nav-height) - 2px);
+  left: var(--cs-docs-space-4);
+  z-index: 40;
+  min-width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: var(--cs-docs-space-2);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  background: var(--cs-surface-raised);
+  box-shadow: var(--cs-docs-shadow-md);
+  display: none;
+}
+.cs-topnav__menu[data-open="true"] {
+  display: block;
+}
+.cs-topnav__menu-item {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: var(--cs-docs-space-2);
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--cs-docs-radius-sm);
+  color: var(--cs-fg);
+  text-decoration: none;
+  font-size: var(--cs-docs-text-sm);
+}
+.cs-topnav__menu-item:hover,
+.cs-topnav__menu-item:focus-visible {
+  background: var(--cs-hover);
+  text-decoration: none;
+}
+.cs-topnav__menu-item[aria-current="page"] {
+  background: var(--cs-accent-soft);
+  color: var(--cs-fg);
+}
+.cs-topnav__menu-item .letter {
+  font-family: var(--cs-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cs-faint-fg);
+  text-align: center;
+}
+
+/* Search affordance in the nav — a trusted twin of ⌘K. */
+.cs-topnav__search {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cs-docs-space-2);
+  padding: 5px 10px 5px 12px;
+  min-width: 240px;
+  max-width: 420px;
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius-full);
+  background: var(--cs-surface);
+  color: var(--cs-faint-fg);
+  font-size: var(--cs-docs-text-sm);
+  cursor: text;
+  transition:
+    border-color 120ms ease-out,
+    background 120ms ease-out;
+}
+.cs-topnav__search:hover,
+.cs-topnav__search:focus-within {
+  border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+  background: color-mix(in oklab, var(--cs-accent) 4%, var(--cs-surface));
+  color: var(--cs-muted-fg);
+}
+.cs-topnav__search svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+.cs-topnav__search-placeholder {
+  flex: 1;
+}
+
+/* Theme toggle (optional button owned by nav.js). */
+.cs-topnav__theme {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cs-muted-fg);
+  border: 1px solid var(--cs-border);
+  background: var(--cs-surface);
+  border-radius: var(--cs-docs-radius-sm);
+}
+.cs-topnav__theme:hover {
+  color: var(--cs-fg);
+  border-color: var(--cs-border-strong);
+}
+
+/* Main area. Content pages scope their own layout inside. */
+.cs-main {
+  display: block;
+  min-height: 0;
+  width: 100%;
+  max-width: var(--cs-docs-content-max);
+  margin: 0 auto;
+  padding: 0 var(--cs-docs-space-5) var(--cs-docs-space-7);
+}
+.cs-main--wide {
+  max-width: none;
+  padding: 0;
+}
+.cs-main--split {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+}
+
+@media (max-width: 640px) {
+  .cs-main {
+    padding: 0 var(--cs-docs-space-4) var(--cs-docs-space-6);
+  }
+}
+
+/* Footer: keyboard legend / provenance band. */
+.cs-footer {
+  border-top: 1px solid var(--cs-border);
+  background: var(--cs-inset);
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-xs);
+}
+.cs-footer__inner {
+  max-width: var(--cs-docs-content-max);
+  margin: 0 auto;
+  padding: var(--cs-docs-space-3) var(--cs-docs-space-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cs-docs-space-4);
+  align-items: center;
+}
+.cs-footer__legend {
+  display: inline-flex;
+  gap: var(--cs-docs-space-3);
+  flex-wrap: wrap;
+}
+.cs-footer__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cs-footer__spacer {
+  flex: 1;
+}
+
+/* -----------------------------------------------------------------------------
+ * 4 · Patterns — buttons, cards, chips, kbd, palette
+ * --------------------------------------------------------------------------- */
+
+/* ---- cs-docs-btn ---- */
+.cs-docs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--cs-docs-radius);
+  font: inherit;
+  font-size: var(--cs-docs-text-md);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 120ms ease-out,
+    background 120ms ease-out,
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out,
+    color 120ms ease-out;
+  white-space: nowrap;
+}
+.cs-docs-btn:disabled,
+.cs-docs-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.cs-docs-btn[aria-busy="true"] {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.cs-docs-btn--primary {
+  background: var(--cs-accent);
+  color: var(--cs-accent-fg);
+}
+/* Code inside a button inherits the button's foreground / background, not the
+ * default <code> styling (WCAG 2.1 AA). Specificity boosted
+ * with [class] so per-page overrides don't leak back in. */
+.cs-docs-btn[class] code,
+a.cs-docs-btn[class] > code {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.cs-docs-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px -16px color-mix(in oklab, var(--cs-accent) 90%, black);
+  text-decoration: none;
+}
+
+.cs-docs-btn--ghost {
+  background: transparent;
+  border-color: var(--cs-border);
+  color: var(--cs-fg);
+}
+.cs-docs-btn--ghost:hover {
+  border-color: color-mix(in oklab, var(--cs-accent) 60%, var(--cs-border));
+  background: color-mix(in oklab, var(--cs-accent) 7%, transparent);
+  text-decoration: none;
+}
+
+.cs-docs-btn--quiet {
+  background: var(--cs-surface);
+  border-color: var(--cs-border);
+  color: var(--cs-muted-fg);
+}
+.cs-docs-btn--quiet:hover {
+  background: var(--cs-surface-raised);
+  color: var(--cs-fg);
+  border-color: var(--cs-border-strong);
+  text-decoration: none;
+}
+
+.cs-docs-btn--danger {
+  background: transparent;
+  border-color: color-mix(in oklab, var(--cs-danger) 40%, var(--cs-border));
+  color: var(--cs-danger);
+}
+.cs-docs-btn--danger:hover {
+  background: color-mix(in oklab, var(--cs-danger) 10%, transparent);
+  border-color: var(--cs-danger);
+  text-decoration: none;
+}
+
+/* Compact variant (for inline affordances inside cards / rows). */
+.cs-docs-btn--sm {
+  padding: 5px 10px;
+  gap: 6px;
+  font-size: var(--cs-docs-text-sm);
+  border-radius: var(--cs-docs-radius-sm);
+}
+
+/* ---- cs-docs-card ---- */
+.cs-docs-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cs-docs-space-2);
+  padding: var(--cs-docs-space-4) var(--cs-docs-space-4) var(--cs-docs-space-3);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  background: var(--cs-surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+}
+.cs-docs-card:is(a, button):hover,
+.cs-docs-card:is(a, button):focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--cs-docs-shadow-md);
+  border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+  text-decoration: none;
+}
+.cs-docs-card__title {
+  margin: 0;
+  font-size: var(--cs-docs-text-lg);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+}
+.cs-docs-card__hook {
+  margin: 0;
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-md);
+  line-height: 1.5;
+}
+
+/* ---- cs-docs-chip ---- */
+.cs-docs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--cs-font-mono);
+  font-size: var(--cs-docs-text-xs);
+  padding: 3px 8px;
+  border-radius: var(--cs-docs-radius-sm);
+  background: color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface));
+  border: 1px solid color-mix(in oklab, var(--cs-border) 70%, transparent);
+  color: var(--cs-muted-fg);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.cs-docs-chip--accent {
+  background: var(--cs-accent-soft);
+  color: var(--cs-accent);
+  border-color: color-mix(in oklab, var(--cs-accent) 40%, transparent);
+}
+.cs-docs-chip--ok {
+  background: color-mix(in oklab, var(--cs-success) 14%, transparent);
+  color: var(--cs-success);
+  border-color: color-mix(in oklab, var(--cs-success) 40%, transparent);
+}
+.cs-docs-chip--warn {
+  background: color-mix(in oklab, var(--cs-warning) 14%, transparent);
+  color: var(--cs-warning);
+  border-color: color-mix(in oklab, var(--cs-warning) 40%, transparent);
+}
+.cs-docs-chip--danger {
+  background: color-mix(in oklab, var(--cs-danger) 14%, transparent);
+  color: var(--cs-danger);
+  border-color: color-mix(in oklab, var(--cs-danger) 40%, transparent);
+}
+
+/* Arc chroma — set data-arc on the chip to get its colour. Mirrors
+   factory-playbook's group chroma; the generator will emit
+   data-arc values for every arc. */
+.cs-docs-chip[data-arc="A"] {
+  color: var(--cs-accent);
+  border-color: color-mix(in oklab, var(--cs-accent) 40%, transparent);
+}
+.cs-docs-chip[data-arc="B"] {
+  color: #d670d6;
+  border-color: color-mix(in oklab, #d670d6 40%, transparent);
+}
+.cs-docs-chip[data-arc="C"] {
+  color: #f0a93b;
+  border-color: color-mix(in oklab, #f0a93b 40%, transparent);
+}
+.cs-docs-chip[data-arc="D"] {
+  color: var(--cs-success);
+  border-color: color-mix(in oklab, var(--cs-success) 40%, transparent);
+}
+.cs-docs-chip[data-arc="E"] {
+  color: #39d3bb;
+  border-color: color-mix(in oklab, #39d3bb 40%, transparent);
+}
+.cs-docs-chip[data-arc="F"] {
+  color: #a08cff;
+  border-color: color-mix(in oklab, #a08cff 40%, transparent);
+}
+
+/* ---- cs-docs-kbd ---- */
+.cs-docs-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  min-width: 20px;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1px solid var(--cs-border);
+  border-bottom-width: 2px;
+  background: color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface));
+  font-family: var(--cs-font-mono);
+  font-size: 11.5px;
+  color: var(--cs-muted-fg);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+kbd {
+  /* lightweight default so arbitrary <kbd> inherits the look */
+  font-family: var(--cs-font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border: 1px solid var(--cs-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--cs-surface-raised, var(--cs-surface));
+  color: var(--cs-muted-fg);
+}
+
+/* -----------------------------------------------------------------------------
+ * 5 · Command palette (⌘K)
+ *     nav.js mounts this on first open and reads generated/search-index.json.
+ * --------------------------------------------------------------------------- */
+
+.cs-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: color-mix(in oklab, #000 56%, transparent);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 24px;
+  animation: cs-fade-in 140ms ease-out;
+}
+.cs-palette-overlay[data-open="true"] {
+  display: flex;
+}
+.cs-palette {
+  width: 100%;
+  max-width: 640px;
+  background: var(--cs-surface-raised);
+  color: var(--cs-fg);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  box-shadow: var(--cs-docs-shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: var(--cs-docs-palette-max-h);
+}
+.cs-palette__input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cs-docs-space-2);
+  padding: 10px var(--cs-docs-space-3);
+  border-bottom: 1px solid var(--cs-border);
+}
+.cs-palette__input-row svg {
+  flex: 0 0 auto;
+  color: var(--cs-muted-fg);
+}
+.cs-palette__input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--cs-fg);
+  font: inherit;
+  font-size: var(--cs-docs-text-md);
+}
+.cs-palette__input::placeholder {
+  color: var(--cs-faint-fg);
+}
+.cs-palette__hint {
+  color: var(--cs-faint-fg);
+  font-size: 11px;
+}
+.cs-palette__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--cs-docs-space-1);
+  overflow-y: auto;
+  min-height: 60px;
+}
+.cs-palette__item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: var(--cs-docs-space-3);
+  padding: 8px 10px;
+  border-radius: var(--cs-docs-radius-sm);
+  color: var(--cs-fg);
+  cursor: pointer;
+  font-size: var(--cs-docs-text-sm);
+}
+.cs-palette__item:hover,
+.cs-palette__item[aria-selected="true"] {
+  background: var(--cs-hover);
+}
+.cs-palette__item[aria-selected="true"] {
+  background: var(--cs-accent-soft);
+  outline: 1px solid color-mix(in oklab, var(--cs-accent) 40%, transparent);
+}
+.cs-palette__item-title {
+  font-weight: 500;
+}
+.cs-palette__item-crumb {
+  color: var(--cs-muted-fg);
+  font-size: 11.5px;
+}
+.cs-palette__item-kind {
+  font-family: var(--cs-font-mono);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: var(--cs-docs-radius-xs);
+  color: var(--cs-muted-fg);
+  background: color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface));
+}
+.cs-palette__empty {
+  padding: var(--cs-docs-space-4);
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-sm);
+  text-align: center;
+}
+.cs-palette__footer {
+  display: flex;
+  gap: var(--cs-docs-space-3);
+  padding: 8px var(--cs-docs-space-3);
+  border-top: 1px solid var(--cs-border);
+  background: var(--cs-inset);
+  color: var(--cs-muted-fg);
+  font-size: 11px;
+}
+.cs-palette__footer .cs-docs-kbd {
+  font-size: 10.5px;
+  padding: 1px 5px;
+}
+@keyframes cs-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+ * 6 · Utilities
+ * --------------------------------------------------------------------------- */
+
+.cs-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Any element with data-cs-nav is where nav.js is allowed to inject chrome.
+   An empty <nav class="cs-topnav" data-cs-nav></nav> is the canonical mount
+   point in authored pages. */
+[data-cs-nav]:empty {
+  min-height: var(--cs-docs-nav-height);
+}
+
+/* -----------------------------------------------------------------------------
+ * 7 · Reduced motion & print
+ * --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  :root {
+    --cs-bg: #ffffff;
+    --cs-fg: #1a1a1a;
+    --cs-muted-fg: #4a4a4a;
+    --cs-surface: #ffffff;
+    --cs-border: #cccccc;
+    color-scheme: light;
+  }
+  body::before {
+    display: none;
+  }
+  .cs-topnav,
+  .cs-footer,
+  .cs-palette-overlay {
+    display: none !important;
+  }
+  .cs-main {
+    max-width: none;
+    padding: 0;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+  .cs-docs-card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}

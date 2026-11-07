@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="users" />
+    <title>CodeSense — Teams</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 960px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+
+      /* Inline SVG hero for the team chain — three stacked team cards with a
+         dashed arrow walking up to the parent. Reduced-motion safe (no
+         animation; this is a static illustration). */
+      .chain-fig {
+        display: block;
+        width: 100%;
+        max-width: 640px;
+        margin: 10px auto 20px;
+      }
+      .chain-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .chain-fig .box {
+        fill: var(--cs-surface);
+        stroke: var(--cs-border);
+        stroke-width: 1;
+      }
+      .chain-fig .box.active {
+        stroke: var(--cs-accent);
+        stroke-width: 1.5;
+      }
+      .chain-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 13px var(--cs-font-ui, system-ui), sans-serif;
+      }
+      .chain-fig .sub {
+        fill: var(--cs-muted-fg);
+        font: 11px var(--cs-font-ui, system-ui), sans-serif;
+      }
+      .chain-fig .arrow {
+        stroke: var(--cs-accent);
+        stroke-width: 1.5;
+        fill: none;
+        stroke-dasharray: 4 3;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/teams">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Teams — single-parent chain and inheritance" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Teams</span>
+        </p>
+        <h1>One parent, many children, resolved nearest-first.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Teams in CodeSense form a tree, not a web. A team can declare one
+          <code>parent_team</code>, and its context becomes its own content plus everything
+          its parents hold: agents, routines, skills, docs. Inheritance is decided
+          <strong>per file</strong>. Folders are shared and merged, never owned by one team;
+          for each file the closest team wins, so your team's file beats a parent's at the
+          same path. Chain depth caps at 64.
+        </p>
+
+        <figure class="chain-fig" aria-labelledby="chain-cap">
+          <svg viewBox="0 0 560 220" role="img" aria-label="Three stacked team cards — default, platform, root — with a dashed arrow travelling up through them to show that each file resolves to the closest team that has it.">
+            <title>Team chain · default → platform → root</title>
+            <!-- root -->
+            <g transform="translate(40 20)">
+              <rect class="box" x="0" y="0" width="200" height="54" rx="8" />
+              <text class="lbl" x="14" y="24">root</text>
+              <text class="sub" x="14" y="42">top of the chain · parent_team: null</text>
+            </g>
+            <!-- platform -->
+            <g transform="translate(40 90)">
+              <rect class="box" x="0" y="0" width="200" height="54" rx="8" />
+              <text class="lbl" x="14" y="24">platform</text>
+              <text class="sub" x="14" y="42">parent_team: root</text>
+            </g>
+            <!-- default (active) -->
+            <g transform="translate(40 160)">
+              <rect class="box active" x="0" y="0" width="200" height="54" rx="8" />
+              <text class="lbl" x="14" y="24">default · active</text>
+              <text class="sub" x="14" y="42">parent_team: platform</text>
+            </g>
+            <!-- arrow -->
+            <path class="arrow" d="M 260 190 Q 320 190 320 120 Q 320 50 260 50" />
+            <polygon class="arrow" points="258,45 272,50 258,55" fill="var(--cs-accent)" stroke="none" />
+            <!-- caption to right of arrow -->
+            <text class="sub" x="340" y="50">1 · look here first</text>
+            <text class="sub" x="340" y="120">2 · fall back to parent</text>
+            <text class="sub" x="340" y="190">3 · and the parent's parent</text>
+          </svg>
+          <figcaption id="chain-cap" style="margin-top: 6px; color: var(--cs-faint-fg); font-size: 12px; text-align: center">
+            Per file, closest team wins · depth cap 64 · no cycles
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== teams.yml =============== -->
+      <section id="set-team-parent" data-search="set_team_parent team nesting and explicit content sharing">
+        <h2>Nest teams with <code>set_team_parent</code></h2>
+        <p>Use <code>set_team_parent</code> to set or clear a team's parent. A child receives only
+          ancestor <code>content/</code> and <code>panes/</code> paths declared in
+          <code>config/sharing.yml</code>; each middle team must share them onward. Agent and routine
+          configuration under <code>config/</code> does not inherit. The nearest shared copy wins.</p>
+      </section>
+      <section data-search="teams.yml schema" id="teams-yml">
+        <h2>What <code>teams.yml</code> declares</h2>
+        <p>
+          One <code>teams.yml</code> at the org root lists every team. It's a plain
+          array; each entry declares a <code>name</code>, a <code>slug</code> for the
+          directory at the org root, a <code>display_name</code>, and the
+          <code>remote</code> key. <code>parent_team</code> is the one load-bearing
+          optional field: set it, and the team inherits from that team's chain. Agents can
+          set it too, with <code>set_team_parent</code>.
+        </p>
+        <pre><code>teams:
+  - name: default
+    slug: default
+    display_name: Default
+    remote: origin
+    parent_team: platform
+  - name: platform
+    slug: platform
+    display_name: Platform
+    remote: origin
+    parent_team: root
+  - name: root
+    slug: root
+    display_name: Root
+    remote: origin</code></pre>
+        <p>
+          <code>landing_page</code> is optional: the team's home page, relative to its
+          <code>content/</code> folder. Without it CodeSense uses <code>README.md</code>,
+          <code>README.html</code> or <code>index.html</code> from that folder, and
+          nothing if none exists. The page opens whenever the team has nothing open: when
+          you enter the team with no tabs, and when you close its last tab. If the tab you
+          close is the home page itself, the team stays empty until you next enter it.
+          Tabs you left open always come back instead. A page that resolves outside the
+          team's content (an absolute path, <code>..</code>, or a symlink leading out) or
+          names a hidden file or folder (<code>.env</code>, <code>.claude/…</code>) is
+          never opened.
+        </p>
+        <p>
+          You don't edit <code>teams.yml</code> for this. Right-click one of the team's own
+          files, in the left nav or on its tab, and choose
+          <strong>Set as team starter page</strong>; the page shows a small house in the
+          nav. On that page, <strong>Clear starter page</strong> goes back to the default
+          (<code>README.md</code>, <code>README.html</code> or <code>index.html</code>).
+          Files a parent team shares, hidden files and the read-only CodeSense Docs can't be
+          set. The file must exist when you set it; if it is later moved or deleted, the team
+          opens its default page instead, and Settings → Workspace says so. Settings →
+          Workspace also shows each team's starter page with Change and Clear, and agents use
+          the <code>set_team_starter_page</code> MCP tool. The change is a local edit of the
+          context repo until you, or an agent, commit and push it.
+        </p>
+        <p>
+          Full field list — including <code>is_archived</code>, <code>settings</code>,
+          and the Rust validator reference — is in the
+          <a href="../schema-browser.html#schema/teams-yml">schema browser</a>.
+        </p>
+      </section>
+
+      <!-- =============== Inheritance walkthrough =============== -->
+      <section data-search="How inheritance walks the team chain, per file" id="walkthrough">
+        <h2>How a file resolves along the chain</h2>
+        <ol>
+          <li>
+            <strong>Build the chain.</strong> From the team, append each
+            <code>parent_team</code> until you hit <code>null</code> or the depth cap
+            (64). For <code>default</code> above the chain is
+            <code>[default, platform, root]</code>.
+          </li>
+          <li>
+            <strong>Resolve each file, closest first.</strong> For every file path, the
+            team's own content is checked first, then each parent in order. The first team
+            that has the file supplies it.
+          </li>
+          <li>
+            <strong>Merge folders, never own them.</strong> If <code>default</code> has
+            <code>.claude/skills/review/SKILL.md</code> and <code>platform</code> has
+            <code>.claude/skills/deploy/SKILL.md</code>, <code>default</code> sees both in
+            one <code>.claude/skills/</code> folder. If both have
+            <code>review/SKILL.md</code>, <code>default</code>'s copy wins. You override a
+            file by placing one closer to home.
+          </li>
+          <li>
+            <strong>No cycles.</strong> The validator rejects a <code>parent_team</code>
+            that would form a loop. Rename-safe: renaming a team re-points every
+            child's <code>parent_team</code> in one write.
+          </li>
+        </ol>
+        <p>
+          When an agent launches, the chain sits under two closer places, the repo's own
+          content and your private space: the full order is on
+          <a href="./content-layers.html">content layers</a>. What the agent actually gets
+          is the part of that merged view its <code>context</code> asks for, copied once
+          at launch.
+        </p>
+      </section>
+
+      <!-- =============== Inherited files =============== -->
+      <section data-search="Inherited files in the left nav, editing and Copy into team" id="inherited">
+        <h2>Inherited files in the left nav</h2>
+        <p>
+          Open <code>default</code> and the left nav shows its own files and its parents'
+          in the same folders. An inherited file carries a quiet marker naming the team it
+          comes from, and while you edit it the toolbar reads
+          <em>From platform — edits save to platform</em>.
+        </p>
+        <ul>
+          <li>
+            <strong>Editing it edits the parent's file.</strong> Opening it shows:
+            <em>"This file comes from platform. Changes you make here update it for
+            platform and every team that inherits from it."</em> The save goes to
+            <code>platform</code>'s folder. Deleting, renaming or moving an inherited file
+            asks you to confirm first (for example <em>"Move in platform?"</em>), because it
+            happens in <code>platform</code> for every team that inherits it.
+          </li>
+          <li>
+            <strong>Copy into default</strong> (the file's menu offers "Copy into ‹team›"
+            for the team you're in) makes your team's own copy. It is now the closest one,
+            so it wins for <code>default</code> and its children, while
+            <code>platform</code> keeps the original. Delete that copy later and
+            <code>platform</code>'s version shows again.
+          </li>
+          <li>
+            <strong>Folders are shared, files are inherited.</strong> A folder shows up
+            once, with every file from every team in the chain merged into it. New files
+            and files you drop into it land in your team. Inherited files can't be
+            dragged, and renaming or deleting a folder only touches your team's files in
+            it.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Picking a parent =============== -->
+      <section data-search="When to set a parent team" id="pick">
+        <h2>When to set a parent</h2>
+        <ul>
+          <li>
+            <strong>Shared skills across several products.</strong> Put the skills on
+            <code>platform</code>, make each product team's <code>parent_team: platform</code>.
+          </li>
+          <li>
+            <strong>A pilot team that borrows the mainline's agents.</strong> Set
+            <code>parent_team</code> to the main team; only the overrides live on the
+            pilot team's own layer.
+          </li>
+          <li>
+            <strong>Don't nest without reason.</strong> One flat team is fine for a solo
+            dev. The chain is a tool for people who need the same skill in two places.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list teams and parents" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge which org and team this page belongs to. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Which team is this page in?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to walk the team chain via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            An agent reads every team's <code>parent</code> from <code>describe_setup</code>
+            and follows the links to produce the chain:
+          </p>
+          <pre><code>// describe_setup {} → { data: { orgs: [{ slug, teams: [{ name, parent? }] }] } }
+const org = setup.data.orgs[0]
+const chain = (name) =&gt; {
+  const seen = []
+  let cur = name
+  while (cur) {
+    if (seen.includes(cur)) throw new Error('cycle')
+    seen.push(cur)
+    cur = org.teams.find(t =&gt; t.name === cur)?.parent
+  }
+  return seen
+}
+chain('default') // → ['default', 'platform', 'root']</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./orgs.html">← Orgs</a> ·
+        <a href="./content-layers.html">Content layers →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml schema</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Teams</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

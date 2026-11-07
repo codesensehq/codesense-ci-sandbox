@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="list" />
+    <title>CodeSense — Runs and stories</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-h-pipelines-and-sdlc/runs-and-stories">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Runs and stories">
+        <span class="cs-docs-eyebrow">Arc H · Pipelines and SDLC</span>
+        <h1>Runs and stories</h1>
+        <p class="lede">
+          Reference for the tools that read agent runs and run events, and for the story-authoring and source-repo tools: <code>list_runs</code>, <code>read_run*</code>, <code>list_run_events</code>, <code>get_story_format</code>, <code>validate_story</code>, <code>read_epic_repos</code>, <code>set_epic_repos</code> and <code>list_source_repos</code>.
+        </p>
+      </section>
+      <section id="runs" data-search="Agent runs">
+        <h2>Agent runs</h2>
+        <p>A run appears here once it has recorded an outcome. A run still going is not listed; <code>list_sessions</code> shows it. A dashboard's <code>codesense.runs()</code>, <code>run()</code>, <code>runEvidence()</code> and <code>runWorkProduct()</code> return the same data as the matching tools.</p>
+        <h3 id="tool-list_runs"><code>list_runs</code></h3>
+        <p>Lists the latest recorded outcome of every agent run on this Mac, newest first by end time. Optional <code>limit</code> (default 50, max 500). Returns <code>[{outcome:{story_id, run_id, status, summary?, ended_at, source, org?, team?, session_ids?, ...}, validated, has_structured_transcript, link}]</code>. <code>link</code> is <code>linked</code> when the outcome names the session(s) that did the work (<code>session_ids</code>, with the trusted <code>org</code> and <code>team</code> the run was launched under) and <code>unlinked</code> for a run recorded before outcomes carried them. Older runs are never rewritten. Take <code>outcome.run_id</code> to the other run tools, and <code>outcome.session_ids</code> to the session record (see <a href="#run-session-join">How a run joins its session</a>).</p>
+        <pre data-tool-example="list_runs"><code>{
+  &quot;tool&quot;: &quot;list_runs&quot;,
+  &quot;arguments&quot;: {
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <h3 id="tool-read_run"><code>read_run</code></h3>
+        <p>Reads one run in full: <code>{outcome, transcript, artifact, artifactTruncated}</code>. <code>transcript</code> is the structured conversation or null (see <a href="#session-conversation">How a session's conversation is kept</a>), <code>artifact</code> the tail of the captured terminal output (secrets redacted) or null. Optional <code>maxArtifactBytes</code> (default 65536, max 1048576) caps the output returned, from the end. <code>outcome</code> is the same row <code>list_runs</code> gives, with <code>link</code>.</p>
+        <pre data-tool-example="read_run"><code>{
+  &quot;tool&quot;: &quot;read_run&quot;,
+  &quot;arguments&quot;: {
+    &quot;runId&quot;: &quot;&lt;outcome.run_id from list_runs&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-read_run_evidence"><code>read_run_evidence</code></h3>
+        <p>Reads one run's audit record: <code>{header, run, perNodeResults, authority}</code>, covering what fired it, how it ended, its step-by-step spine and what each step reported. Returns null when there is no evidence. Optional <code>storyId</code> selects one story for a run that worked several. Use <code>read_run</code> for the transcript of a particular attempt.</p>
+        <pre data-tool-example="read_run_evidence"><code>{
+  &quot;tool&quot;: &quot;read_run_evidence&quot;,
+  &quot;arguments&quot;: {
+    &quot;runId&quot;: &quot;&lt;outcome.run_id from list_runs&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-read_run_work_product"><code>read_run_work_product</code></h3>
+        <p>Reads the git branch a run produced, as captured when it ended: <code>{branch}</code>, or null when it produced none, is still going or is unknown. The repository is <code>outcome.work_product.source_repo</code> from the <code>list_runs</code> row.</p>
+        <pre data-tool-example="read_run_work_product"><code>{
+  &quot;tool&quot;: &quot;read_run_work_product&quot;,
+  &quot;arguments&quot;: {
+    &quot;runId&quot;: &quot;&lt;outcome.run_id from list_runs&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-list_run_events"><code>list_run_events</code></h3>
+        <p>Reads durable run events on this Mac, newest first by record time. <code>since_ms</code> (inclusive epoch milliseconds) is required; <code>until_ms</code>, <code>kinds</code> (<code>outcome</code>, <code>advance</code>) and <code>limit</code> (default 50, max 500) are optional. Outcome and advance events have different shapes, described in the tool schema. The store spans teams, so scope a <code>story_id</code> to your org and team with <code>query_context</code> before using it in a team review. Where <code>list_runs</code> gives one latest row per run, this gives the event history.</p>
+        <pre data-tool-example="list_run_events"><code>{
+  &quot;tool&quot;: &quot;list_run_events&quot;,
+  &quot;arguments&quot;: {
+    &quot;since_ms&quot;: 1792700000000,
+    &quot;kinds&quot;: [
+      &quot;outcome&quot;
+    ],
+    &quot;limit&quot;: 50
+  }
+}</code></pre>
+        <h3 id="run-session-join">How a run joins its session</h3>
+        <p>Every managed launch of Claude or Codex writes one <strong>session record</strong> in the usage store when it binds. The record is keyed by the CodeSense session id and also holds the CLI's own session id, so a run, its usage and its timing all join in one place. Older sessions have no record; a hand-started CLI in a CodeSense tab gets a minimal one on its first hook.</p>
+        <ul>
+          <li><strong>Run → session:</strong> <code>outcome.session_ids</code> in <code>list_runs</code> and <code>read_run</code>. A run several sessions worked names all of them, in the order they first appeared.</li>
+          <li><strong>Usage → run:</strong> each <code>session_usage</code> row has <code>runId</code>, from the record. Match it to <code>outcome.run_id</code> to price a run exactly. A session with no record, or one launched outside a run, has <code>runId: null</code>.</li>
+          <li><strong>Missing facts say why.</strong> A fact the launch could not know is null and has a reason under <code>unavailable</code>. Nothing is guessed from a folder or a name.</li>
+          <li><strong>No credentials.</strong> The record holds no env values and no raw argv. The account is only its provider, id, label and source.</li>
+        </ul>
+        <p>A record, as stored for a managed Claude launch:</p>
+        <pre><code>{
+  &quot;sessionId&quot;: &quot;shell-mcp-1&quot;,
+  &quot;nativeSessionId&quot;: &quot;c1a0de00-0000-4000-a000-000000000307&quot;,
+  &quot;org&quot;: &quot;acme&quot;, &quot;team&quot;: &quot;web&quot;, &quot;handle&quot;: &quot;DEMO-1&quot;,
+  &quot;launchedBy&quot;: &quot;codesense&quot;,
+  &quot;agent&quot;: &quot;acme/web/dev@3&quot;, &quot;manifestHash&quot;: &quot;abc123&quot;,
+  &quot;cli&quot;: &quot;claude&quot;, &quot;cliVersion&quot;: &quot;2.5.0&quot;, &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+  &quot;mcpAllow&quot;: [&quot;codesense&quot;], &quot;bridgeTools&quot;: [&quot;send_message&quot;, &quot;signal_done&quot;],
+  &quot;account&quot;: {&quot;provider&quot;: &quot;anthropic&quot;, &quot;accountId&quot;: &quot;acct-1&quot;, &quot;label&quot;: &quot;work&quot;, &quot;source&quot;: &quot;explicit&quot;},
+  &quot;storyId&quot;: &quot;DEMO-1&quot;, &quot;workspace&quot;: &quot;/work/ws&quot;, &quot;worktree&quot;: &quot;/work/wt&quot;,
+  &quot;branch&quot;: &quot;feat/DEMO-1&quot;, &quot;runId&quot;: &quot;agent-launch:1c9e...&quot;,
+  &quot;unavailable&quot;: {},
+  &quot;timing&quot;: {&quot;startedAtMs&quot;: 1792800000000, &quot;wallMs&quot;: 44000, &quot;activeMs&quot;: 9000, &quot;idleMs&quot;: 35000,
+             &quot;turnCount&quot;: 2, &quot;toolCallCount&quot;: 2, &quot;timingSource&quot;: &quot;claude-hooks&quot;,
+             &quot;idleGaps&quot;: [{&quot;afterTurn&quot;: 0, &quot;fromMs&quot;: 1792800006000, &quot;toMs&quot;: 1792800036000, &quot;waitingOn&quot;: &quot;prompt&quot;}]}
+}</code></pre>
+        <p><strong>Timing</strong> is derived from turns the app already observes. A turn ends waiting on <code>prompt</code>, <code>permission</code>, <code>blocked</code> (the latest <code>signal_progress</code> was <code>blocked</code>; its note is kept), <code>error</code> or <code>unknown</code>. Idle is the gap from one turn's end to the next turn's start, or to the session's end. Wall time is end minus start and idle is wall minus active. These are facts only: nothing here says a session was stuck or lost.</p>
+        <h3 id="session-conversation">How a session's conversation is kept</h3>
+        <p>CodeSense keeps the conversation of every managed Claude or Codex session, by session and not only for runs: the person's requests, the agent's replies, and each tool call with its result. It is read from the CLI's own session log and stored in the CodeSense home under <code>session-conversations/</code>, beside <code>run-artifacts/</code>. <code>read_run</code> reads it for the latest session a run names; an older run still reads its own record.</p>
+        <ul>
+          <li><strong>When:</strong> after a turn ends while the session runs (Claude's Stop, a Codex turn stopping, failing or being interrupted; at most once a minute per session), when the session ends, when a run completes, and just before a scoped Codex home is removed. A session that crashes keeps what its last turn end stored.</li>
+          <li><strong>Secrets are removed first.</strong> Every line of the CLI's log is scrubbed before it is parsed or written. A private key is masked from its header through its body, whether the log holds it plainly or inside JSON inside JSON.</li>
+          <li><strong>Size and age.</strong> A conversation is kept whole up to 20 MiB. Past that it keeps the first request and the newest turns, drops the oldest between them, and says what it dropped (<code>truncated</code>, with the turn range and the bytes). The tool-call index always covers every call, dropped turns included. A conversation is removed 90 days after its session ended; the index stays, so names and counts outlive the text. These are the defaults; a per-org setting comes later.</li>
+          <li><strong>One format for every CLI.</strong> Each turn has an <code>index</code> (stable as the log grows), a time, the model, a reasoning marker (<code>full</code>, <code>summary</code>, <code>encrypted</code> or <code>none</code>), and tool calls with the CLI's own <code>native_id</code>, the MCP server, <code>is_error</code> and, for a skill, its name. A fact a CLI never records is left out and named under <code>unavailable</code> with the reason (Codex records no <code>is_error</code>, Claude's log holds no cost). Nothing is inferred. A view shows what exists and skips the rest.</li>
+          <li><strong>Skills.</strong> Claude's <code>Skill</code> tool and OpenCode's <code>skill</code> tool mark the call with the skill's name. A prompt whose first word is <code>/name</code> or <code>$name</code> for a skill the session's agent provides gets one <code>skill-prompt</code> row; a prompt that only mentions a skill, or names one the agent was not started with, gets none.</li>
+          <li><strong>States.</strong> A conversation read is <code>present</code>, <code>truncated</code>, <code>absent</code> (nothing stored yet, or no such session), <code>expired</code>, <code>unsupported</code> (interactive OpenCode), or <code>unavailable</code> when final capture could not obtain its saved session record or that durable record has no linked native ID. Unavailable includes a reason, never an empty list standing in for one. A hand-started Claude in a CodeSense tab is captured; a hand-started Codex has no record, so it reads <code>absent</code> before capture is attempted and <code>unavailable</code> if final capture reaches the record deadline.</li>
+          <li><strong>Capture ordering.</strong> Final capture waits off the async runtime for the record write, for at most two seconds. A timeout keeps the native scoped home for a later session-end delivery or startup sweep. For example, a read can return <code>{"state":"unavailable","reason":"session_record_timeout: session record was not persisted before the capture deadline","unavailable":{"conversation":"session_record_timeout: session record was not persisted before the capture deadline"}}</code>. A failed record write uses <code>session_record_write_failed</code>. A durable record that has no linked native ID instead uses <code>native_session_id_missing</code>; this is distinct from record timeout or write failure. Previously stored conversations and their tool-call index survive failed later capture attempts.</li>
+        </ul>
+        <p>Not followed: a Claude <code>/clear</code> or <code>--resume</code> that changes the CLI's own session id mid-tab (the conversation is kept under the id the record holds), and sub-agent logs (only the main log is read).</p>
+      </section>
+      <section id="stories" data-search="Authoring and validating stories">
+        <h2>Authoring and validating stories</h2>
+        <h3 id="tool-get_story_format"><code>get_story_format</code></h3>
+        <p>Returns the decision-first contract for creating CodeSense content: whether frontmatter is needed at all (most content is a plain doc and needs none), the pipeline-story frontmatter schema, the <code>validate_story</code> finding codes, and cross-references to <code>list_source_repos</code> and <code>validate_story</code>. It takes no arguments; call it first.</p>
+        <pre data-tool-example="get_story_format"><code>{
+  &quot;tool&quot;: &quot;get_story_format&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-validate_story"><code>validate_story</code></h3>
+        <p>Validates a candidate file before it is written. Pass <code>path</code> (preferred, since it anchors <code>depends_on</code> and <code>supporting_docs</code> checks) and/or inline <code>content</code>. It detects the intent (plain doc, pipeline story or epic main doc) and does not nag a plain doc. For a story it returns blocking and advisory findings <code>{code, field, severity, message, hint}</code>, and never returns <code>valid:true</code> for a file it could not fully evaluate.</p>
+        <pre data-tool-example="validate_story"><code>{
+  &quot;tool&quot;: &quot;validate_story&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/path/to/content/stories/DEMO-1.md&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="source-repos" data-search="Source repos and epic repos">
+        <h2>Source repos and epic repos</h2>
+        <h3 id="tool-list_source_repos"><code>list_source_repos</code></h3>
+        <p>Lists the legal <code>source_repo</code> values and structured repository identities, including each repo's local clone (<code>attachment</code>: <code>attached</code>, <code>missing</code> or <code>unattached</code>, plus <code>localPath</code>). Use <code>sourceRepoIdentities</code> for explicit provider, host and remote key. Never invent a <code>source_repo</code>; resolve it here.</p>
+        <pre data-tool-example="list_source_repos"><code>{
+  &quot;tool&quot;: &quot;list_source_repos&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-read_epic_repos"><code>read_epic_repos</code></h3>
+        <p>Reads the source repos an epic workspace is configured to assemble, from the epic doc's <code>repos:</code> frontmatter. Pass <code>epicFilePath</code> (the epic main-doc path, <code>$CODESENSE_EPIC_DOC_PATH</code>). Returns an array of canonical <code>owner/repo</code> slugs, empty if none. Read-only.</p>
+        <pre data-tool-example="read_epic_repos"><code>{
+  &quot;tool&quot;: &quot;read_epic_repos&quot;,
+  &quot;arguments&quot;: {
+    &quot;epicFilePath&quot;: &quot;/abs/path/to/epic.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-set_epic_repos"><code>set_epic_repos</code></h3>
+        <p>Replaces the epic doc's <code>repos:</code> frontmatter. It is read-modify-write: pass the full desired <code>repos</code> list, not a delta (an empty list clears it); entries are normalised to <code>owner/repo</code>. Rejected if the target is not an epic doc. CodeSense then re-assembles the epic's integration worktrees in the background, and the call returns the re-read list immediately.</p>
+        <pre data-tool-example="set_epic_repos"><code>{
+  &quot;tool&quot;: &quot;set_epic_repos&quot;,
+  &quot;arguments&quot;: {
+    &quot;epicFilePath&quot;: &quot;/abs/path/to/epic.md&quot;,
+    &quot;repos&quot;: [
+      &quot;owner/repo&quot;
+    ]
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc H pages</a> ·
+        <a href="./weft-coordination.html">Weft coordination tools</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc H · Pipelines and SDLC</div>
+    </footer>
+  </body>
+</html>

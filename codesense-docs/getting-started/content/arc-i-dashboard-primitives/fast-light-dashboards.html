@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Fast, light dashboards</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/fast-light-dashboards">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Fast, light dashboards: cached list, visible-only totals, per-section loading">
+        <span class="cs-docs-eyebrow">Arc I · Dashboard patterns</span>
+        <h1>Fast, light dashboards</h1>
+        <p class="lede">
+          A dashboard that opens at once and never floods the Mac: a cached list, totals only for the
+          rows on screen, and each section reading when it is opened. The patterns are in the kit
+          already, with the same names in the app (<code>codesense.kit</code>, also
+          <code>window.CS</code>) and on a shared page (<code>CS</code>). Use them instead of writing
+          your own cache, queue or loading states.
+        </p>
+      </section>
+
+      <section id="rules" data-search="Rules for a fast light dashboard one boot cache visible budget section">
+        <h2>Six rules</h2>
+        <ol>
+          <li><strong>One entry, one boot.</strong> <code>CS.boot</code> picks the host from the bridge that is present. Never test <code>script[src]</code>, <code>currentScript</code> or a file name: the share host strips every <code>script src</code>, and the page would stay blank.</li>
+          <li><strong>Paint the last answer first.</strong> Read the list with <code>CS.cachedQuery</code>. It paints from storage at once, then reads once.</li>
+          <li><strong>Ask totals for visible rows only.</strong> <code>CS.visibleTotals</code> watches the rows and asks one <code>storyTotals</code> call for the ids on screen.</li>
+          <li><strong>Read detail when it is opened.</strong> <code>CS.section</code> loads a <code>&lt;details&gt;</code> or a region when it opens or scrolls into view, with its own states.</li>
+          <li><strong>One budget per page.</strong> Every kit read goes through <code>CS.budget</code>: at most 2 in flight. A Mac that answers busy shows "Waiting for the Mac", never an error. A read frees its slot when it answers, when it is cancelled, or at the engine's 900-second backstop in the app (pass <code>timeoutMs</code> to an ask to change that). On a shared page each read also has the page's own limit of about 20 seconds; a read that goes over reads "The Mac didn't answer in time".</li>
+          <li><strong>Never a false zero.</strong> Show every figure through <code>CS.value</code>: known, <em>Counting…</em>, <em>Loading…</em>, <em>Unknown · reason</em> or <em>Not loaded</em>.</li>
+        </ol>
+      </section>
+
+      <section id="no-reload" data-search="Tabbing away and back never reloads visibilitychange focus pageshow hidden shown">
+        <h2>Tabbing away and back never reloads</h2>
+        <p>
+          A dashboard's state stays in memory and shows at once when you come back. The kit makes no read on
+          <code>visibilitychange</code>, <code>focus</code>, <code>blur</code>, <code>pageshow</code> or <code>online</code>: hiding the page
+          only pauses timers (poll intervals, totals follow-ups), and showing it only starts them again. A section that has read shows it
+          again however long the page was hidden or scrolled away. Write your own page the same way: never read from those events.
+        </p>
+      </section>
+
+      <section id="patch-in-place" data-search="Live data events patch in place dataChanged changed ids keys">
+        <h2>Live data patches in place</h2>
+        <p>
+          A data-change event names what changed, and only that is read again. <code>CS.dataChanged({ids, keys})</code> asks
+          <code>visibleTotals</code> again for the visible rows named by <code>ids</code> (one ask, just those ids; the others are marked and
+          asked when they scroll in) and re-reads only the sections named by <code>keys</code>, quietly, in place; paint the result with
+          <code>CS.keyedRegion</code> so only the changed rows move. In the app, a hub <code>codesense:delta</code> carries the ids
+          (<code>upserts[].id</code> and <code>removes</code>). The payloadless nudges (<code>agent-activity-changed</code>,
+          <code>worktrees-changed</code> and the like) and the hosted viewer and subscribe notices carry none, so they name nothing: nothing
+          requeries a whole list or story on an event. Call <code>refresh()</code> yourself, deliberately, when you want everything again.
+        </p>
+      </section>
+
+      <section id="api" data-search="CS.boot CS.cachedQuery CS.section CS.budget CS.visibleTotals CS.value CS.keyedRegion API">
+        <h2>The pieces</h2>
+        <table>
+          <thead>
+            <tr><th>Call</th><th>What you get</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CS.boot({render, queries, key})</code></td>
+              <td>One entry for both hosts. <code>render(ctx)</code> runs at once, from cached answers, and again whenever a query changes; keep it idempotent. <code>ctx.host</code> is <code>"app"</code> or <code>"hosted"</code>. Returns <code>{host, call, subscribe, state, refresh, stop}</code>.</td>
+            </tr>
+            <tr>
+              <td><code>CS.cachedQuery(name, args, {maxAgeMs, key})</code></td>
+              <td><code>peek()</code> gives <code>{value, ageMs, state}</code> with <code>state</code> one of <code>cached</code> (from storage, younger than <code>maxAgeMs</code>), <code>stale</code> (older; one read is revalidating it), <code>fresh</code> (just read) or <code>none</code> (nothing yet). A failed read keeps the value and sets <code>error</code>. Storage is keyed by host, dashboard <code>key</code> and args; a frame with no storage uses memory. <code>maxAgeMs</code> is required.</td>
+            </tr>
+            <tr>
+              <td><code>CS.visibleTotals(container, {rowSelector, idAttr, root})</code></td>
+              <td>Gathers the ids of visible rows, batches and debounces them into <code>storyTotals</code>, and caches each id with its <code>computedAtMs</code>. A pending id, or one that failed in a way that clears by itself, is asked again with backoff (2, 4, 8, then every 16 s) while it is visible. A row that already shows values and is only refreshing is asked at most every 60 s, backing off to 240 s, while it is visible. An id that was never in view is never asked. Hiding or showing the page, or rows coming back into view, asks nothing for an id that was already asked: only an id never asked (or one a data-change event named while off screen) is asked when it scrolls in, and a pending row that scrolls back in is picked up by the follow-up timer. An ask refused for some ids is halved down to the single ids refused; only a refusal of the whole verb (<code>query_not_declared</code>, <code>not_declared</code>, <code>undeclared</code>, <code>access_ended</code>, a verb that is not allowlisted) is known from one ask. <code>arg_not_allowed</code> on many ids is probed with the first, middle and last id in one round: if all three are refused before the page has had any answer, the page is treated as unpinned (every id refused, one console warning) until <code>refresh({refused: true})</code>, so check the <code>storyIds</code> pin in your manifest. That is a deliberate trade-off: a page whose first, middle and last visible ids are all out of pin on its very first read looks the same as one with no pin at all. Once any answer has come back, nothing is inferred: only the ids actually refused are marked, and the rest are asked. A named id is asked at once; if it comes back pending or failed in transit it is asked again, alone, after 2, 4, 8 then every 16 seconds, and if it comes back refreshing it moves to the 60 to 240 s interval. A story that fails (refused, or left out of an answer) is left out of every automatic pull; <code>refresh({refused: true})</code> asks refused ones again. An ask refused with <code>invalid_args</code>, <code>not_approved</code>, <code>arg_not_allowed</code> or <code>query_invalid</code> is halved and asked again to isolate the refused ids; any other thrown error is asked again whole, with backoff. <code>get(id)</code> returns <code>{kind: ready|pending|error, totals, computedAtMs}</code>.</td>
+            </tr>
+            <tr>
+              <td><code>CS.batchTotals(ids)</code></td>
+              <td>The same reader for a fixed list: one <code>storyTotals</code> call per 500 ids (fewer on a shared page, where an ask is 2 KB).</td>
+            </tr>
+            <tr>
+              <td><code>CS.section(el, {key, load, render, when, scope})</code></td>
+              <td>One bounded read when a <code>&lt;details&gt;</code> opens (<code>when: "open"</code>) or a region scrolls into view (<code>"visible"</code>). It draws a skeleton, empty, <em>Unknown · reason</em> (when <code>load</code> resolves <code>{unknown: reason}</code>), an error with Retry, "Read N min ago", and "Still reading (N s)" with Cancel, which frees the read at once. A read a minute old offers a small Refresh button. <code>scope</code> names the owner of the answer (the selected story): an answer for another scope, or one for a scope closed with <code>CS.closeScope</code>, is dropped.</td>
+            </tr>
+            <tr>
+              <td><code>CS.budget({inFlight, minGapMs, bytesPerMinute})</code></td>
+              <td>Configures the page-wide queue every kit read goes through (default 2 in flight). <code>stats()</code> and <code>onChange</code> report calls, bytes, in flight, queued, waiting and busy. Add <code>?csmeter=1</code> to the page URL for a meter.</td>
+            </tr>
+            <tr>
+              <td><code>CS.paced(query, {key, inFlight, ttlMs, minGapMs})</code></td>
+              <td>A paced read: runs no closer than <code>minGapMs</code> apart, shares one trailing run among a burst, retries a busy Mac with backoff and restarts a dead cursor silently. <code>observe(el, args)</code> reads when the element nears the viewport.</td>
+            </tr>
+            <tr>
+              <td><code>CS.value(v, {pending, waiting, loading, error, unavailable, stale, ageMs})</code></td>
+              <td>An element for a figure. A known <code>0</code> stays <code>0</code>; <code>pending</code> reads <em>Counting…</em>, distinct from loading, unknown and error; <code>waiting</code> (pass <code>CS.budget().stats().busy</code>) or a busy error reads <em>Waiting for the Mac</em>. <code>CS.errorText(err)</code> turns any kit read's error into a sentence, never a raw code: "The Mac didn't answer in time", "The Mac is offline", "The Mac is busy", "This page can't show this" (a refusal), "Access to this dashboard has ended", "The Mac couldn't answer", "Too much to show at once", else "Could not read this". <code>CS.errorKind(err)</code> says whether it is a <code>refusal</code>, <code>transient</code> or <code>other</code>. And <code>CS.value({error})</code> uses it. <code>CS.stateBanner({offline, stale, asOf})</code> says when the page shows old data; <code>CS.partial(known, total)</code> says "Totals loading · 3 of 9 stories".</td>
+            </tr>
+            <tr>
+              <td><code>CS.keyedRegion(el, scope)</code></td>
+              <td>Repaints a list in place when the selection changes, keeping focus, text selection, scroll and a click in progress. <code>paint(items, {key, render}, forScope)</code> drops a paint for a scope that is no longer current.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="handles" data-search="Handles and options cachedQuery refresh onChange ready section isEmpty emptyText stillMs visibleTotals changed onChange onError keyedRegion setScope">
+        <h2>Handles and options</h2>
+        <table>
+          <thead>
+            <tr><th>Call</th><th>Handle and options</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CS.cachedQuery</code></td>
+              <td>Returns <code>{peek(), refresh(), onChange(cb), ready}</code>. <code>refresh()</code> reads again and resolves the new <code>peek()</code>; <code>onChange(cb)</code> calls <code>cb(result)</code> on each answer or failure and returns an unsubscribe; <code>ready</code> is the promise of the read in flight. Asking again for the same name, args and <code>key</code> returns the same handle; the same with another <code>maxAgeMs</code> gets its own (same stored answer, own label). <strong>On a shared page the frame is sandboxed (an opaque origin) and has no storage, so the answer is kept in memory for the page's life</strong>: warm within the page, not across loads.</td>
+            </tr>
+            <tr>
+              <td><code>CS.section</code></td>
+              <td>Options: <code>key</code>, <code>load</code>, <code>render</code>, <code>when</code>, <code>scope</code>, <code>isEmpty(value)</code> (default: an empty array or null), <code>emptyText</code>, <code>stillMs</code> (default 15000). Returns <code>{refresh(), cancel(), stop(), loaded}</code>. A section reads once: after Cancel or an error it shows that again however often it scrolls back in, and only Retry or Refresh (a small button once a read is a minute old), <code>dataChanged({keys})</code> naming it, or its busy backoff reads again. A <code>render</code> that throws shows "Could not show this."</td>
+            </tr>
+            <tr>
+              <td><code>CS.visibleTotals</code></td>
+              <td>Options: <code>rowSelector</code>, <code>idAttr</code> (default <code>data-id</code>), <code>root</code>, <code>debounceMs</code>, <code>onChange(handle)</code> (after each answer), <code>onError(err)</code> (a failed ask; it is asked again with backoff). Returns <code>{get(id), ids(), known(), refresh({refused}), changed(ids), stop()}</code>. <code>stop()</code> cancels its reads in flight.</td>
+            </tr>
+            <tr>
+              <td><code>CS.keyedRegion</code></td>
+              <td>Returns <code>{paint(items, {key, render, version, update}, forScope), setScope(scope), text, defer, flush, stop()}</code>. Without <code>version</code> a row's version is the JSON of its item, so a changed row repaints. <code>setScope(next)</code> names the scope that may paint now; a paint for another scope is dropped.</td>
+            </tr>
+            <tr>
+              <td><code>kit.call</code></td>
+              <td>The raw bridge verb, in the app only, and <strong>not budgeted</strong>: use it for actions. Reads go through <code>kit.query</code>, <code>queryAll</code>, <code>storyTotals</code> and the patterns above, which share the budget. Bytes are counted only when <code>bytesPerMinute</code> is set or <code>?csmeter=1</code> is on.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="example" data-search="Example fast light dashboard list with sections cached list visible totals">
+        <h2>A complete example</h2>
+        <p>
+          A story list that opens warm, asks totals for the rows on screen and reads a story's
+          commits only when its section opens. The same file runs in the app and on a shared page: load
+          <code>cs-live.js</code> there (or nothing extra in the app, where the kit is injected).
+        </p>
+        <pre><code>&lt;div id="banner"&gt;&lt;/div&gt;
+&lt;div id="list" style="height: 480px; overflow: auto"&gt;&lt;/div&gt;
+&lt;details id="commits"&gt;&lt;summary&gt;Commits&lt;/summary&gt;&lt;/details&gt;
+&lt;script&gt;
+  var list = document.getElementById("list");
+  var selected = null;       // the story the page shows; also the scope of its sections
+  var section = null, totals = null, rows = [];
+
+  CS.budget({ inFlight: 2 });
+  var region = CS.keyedRegion(list, "list");
+
+  // Rows are painted in place, by key. A row's version names what it shows, so it repaints only when that changes.
+  function paint() {
+    region.paint(rows, {
+      key: function (story) { return story.id; },
+      version: function (story) {
+        var entry = totals &amp;&amp; totals.get(story.id);
+        return [story.title, entry ? entry.kind + ":" + (entry.computedAtMs || entry.error || "") : "-"].join("|");
+      },
+      render: function (story) {
+        var entry = totals &amp;&amp; totals.get(story.id);
+        var sessions = entry &amp;&amp; entry.kind === "ready" ? entry.totals.sessions : null;
+        var row = document.createElement("div");
+        row.className = "row";
+        row.setAttribute("data-id", story.id);
+        row.innerHTML = "&lt;span class=title&gt;&lt;/span&gt; &lt;span class=sessions&gt;&lt;/span&gt;";
+        row.querySelector(".title").textContent = story.title || story.id;
+        row.querySelector(".sessions").replaceChildren(
+          CS.value(sessions, {
+            waiting: CS.budget().stats().busy,
+            pending: !entry || entry.kind === "pending",
+            error: entry &amp;&amp; entry.kind === "error" ? entry.error : false,
+            unavailable: entry &amp;&amp; entry.unavailable &amp;&amp; entry.unavailable.sessions,
+          }),
+        );
+        row.addEventListener("click", function () { choose(story.id); });
+        return row;
+      },
+    }, "list");
+  }
+
+  CS.boot({
+    key: "story-list",
+    queries: { stories: { name: "queryContext", args: { where: { kinds: ["story"] }, limit: 50 }, maxAgeMs: 60000 } },
+    render: function (ctx) {
+      var stories = ctx.state.data.stories;
+      document.getElementById("banner").replaceChildren(
+        CS.stateBanner({ stale: stories.state === "stale", asOf: Date.now() - (stories.ageMs || 0) }) || "",
+        stories.error ? CS.errorText(stories.error) : "",
+      );
+      rows = (stories.value &amp;&amp; stories.value.rows) || [];
+      paint();
+      // Totals are asked for the rows on screen only; a live event naming ids is CS.dataChanged({ids}).
+      if (!totals) totals = CS.visibleTotals(list, { rowSelector: ".row", root: list, onChange: paint });
+    },
+  });
+
+  // One section per region, loaded when it opens; a late answer for the story you left is dropped.
+  function choose(id) {
+    selected = id;
+    if (section) section.stop();
+    section = CS.section(document.getElementById("commits"), {
+      key: "commits:" + id,
+      scope: function () { return selected; },
+      load: function (ctx) { return ctx.read("storyChanges", { storyId: id, limit: 20 }); },
+      isEmpty: function (value) { return !value.commits || !value.commits.length; },
+      render: function (value, into) { into.textContent = value.commits.length + " of " + value.total + " commits"; },
+    });
+  }
+&lt;/script&gt;</code></pre>
+      </section>
+
+      <section id="states" data-search="Dashboard states cold warm section switch offline screenshots harness">
+        <h2>Review the six states</h2>
+        <p>
+          Every dashboard is reviewed in six states, and ships a screenshot of each:
+        </p>
+        <ul>
+          <li><strong>cold</strong>: nothing cached. Skeletons and <em>Counting…</em>, never a zero.</li>
+          <li><strong>warm</strong>: the last answers are cached. The page paints them at once and says how old they are.</li>
+          <li><strong>section</strong>: a section is reading slowly. It shows "Still reading (N s)" with Cancel.</li>
+          <li><strong>switch</strong>: the selection changed. The shell stays; late answers for the old selection are dropped.</li>
+          <li><strong>offline</strong>: every read fails. The page shows its offline banner and keeps what it had.</li>
+          <li><strong>return</strong>: the page was hidden for ten minutes and is shown again. Zero reads, the DOM identical, scroll and focus kept.</li>
+        </ul>
+        <p>
+          Source checkouts get <code>scripts/lib/dashboard-state-fixtures.mjs</code>
+          (<code>stateFixture</code>, <code>bridgeScript</code>, <code>shootStates</code>) for a Playwright test on a virtual clock
+          (<code>page.clock</code>), and <code>scripts/lib/dashboard-check-rules.mjs</code> for the source rules below.
+        </p>
+      </section>
+
+      <section id="checks" data-search="Dashboard check rules F1 F4 F5 F8 F10 visibleTotals budget maxAgeMs">
+        <h2>What the checker flags</h2>
+        <table>
+          <thead>
+            <tr><th>Rule</th><th>Shape</th><th>Fix</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>F1 (reported now; the publisher will refuse it)</td><td><code>script[src]</code> or <code>currentScript</code> in dashboard code</td><td><code>CS.boot</code></td></tr>
+            <tr><td>F4</td><td>a detail query (<code>storyChanges</code>, <code>whyLine</code>) inside a loop over rows</td><td><code>CS.visibleTotals</code> for the list, <code>CS.section</code> for detail</td></tr>
+            <tr><td>F5</td><td><code>?? 0</code> or <code>|| 0</code> on a nullable total</td><td><code>CS.value</code></td></tr>
+            <tr><td>F8</td><td><code>waitForTimeout</code> or a real-time sleep in a browser test</td><td>advance <code>page.clock</code></td></tr>
+            <tr><td>F10</td><td>a query without <code>limit</code></td><td>pass a limit</td></tr>
+            <tr><td>K6+</td><td>a list page that reads totals without <code>visibleTotals</code> and <code>budget</code>; <code>CS.section</code> inside a row loop; <code>cachedQuery</code> without <code>maxAgeMs</code></td><td>use the patterns above</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p class="ref">
+        <a href="./getting-data-into-a-dashboard.html">Getting data into a dashboard</a> ·
+        <a href="./testing.html">Edit. Reload. Confirm.</a> ·
+        <a href="./index.html">All Arc I pages</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

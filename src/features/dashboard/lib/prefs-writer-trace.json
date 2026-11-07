@@ -1,0 +1,579 @@
+{
+  "deltas": [
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 1,
+        "delta": {
+          "removes": [],
+          "rev": 2,
+          "topic": "prefs",
+          "total": 3,
+          "upserts": [
+            {
+              "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+              "path": [
+                "viewer",
+                "settings",
+                "editorLineWrap"
+              ],
+              "value": "on"
+            }
+          ],
+          "viewKey": "prefs:global"
+        },
+        "subscriptionId": "native:prefs:global:[\"prefs\",\"prefs:global\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 2,
+        "topic": "prefs",
+        "upserts": [
+          {
+            "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+            "path": [
+              "viewer",
+              "settings",
+              "editorLineWrap"
+            ],
+            "value": "on"
+          }
+        ],
+        "viewKey": "prefs:global"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 1,
+        "delta": {
+          "removes": [],
+          "rev": 2,
+          "topic": "prefs",
+          "total": 4,
+          "upserts": [
+            {
+              "id": "[\"dashboardPolicy\",\"preset\"]",
+              "path": [
+                "dashboardPolicy",
+                "preset"
+              ],
+              "value": "team-safe"
+            },
+            {
+              "id": "[\"dashboardPolicy\",\"switches\",\"confirmTeamSendAsYou\"]",
+              "path": [
+                "dashboardPolicy",
+                "switches",
+                "confirmTeamSendAsYou"
+              ],
+              "value": true
+            }
+          ],
+          "viewKey": "prefs:42:native"
+        },
+        "subscriptionId": "native:prefs:principal:[\"prefs\",\"prefs:42:native\"]"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 2,
+        "delta": {
+          "removes": [
+            "[\"shortcuts\",\"shortcuts\"]"
+          ],
+          "rev": 3,
+          "topic": "prefs",
+          "total": 4,
+          "upserts": [
+            {
+              "id": "[\"shortcuts\",\"shortcuts\",\"settings.open\"]",
+              "path": [
+                "shortcuts",
+                "shortcuts",
+                "settings.open"
+              ],
+              "value": "CmdOrCtrl+Shift+Y"
+            },
+            {
+              "id": "[\"viewer\",\"settings\",\"sidebarWidth\"]",
+              "path": [
+                "viewer",
+                "settings",
+                "sidebarWidth"
+              ],
+              "value": 333
+            }
+          ],
+          "viewKey": "prefs:global"
+        },
+        "subscriptionId": "native:prefs:global:[\"prefs\",\"prefs:global\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 2,
+        "topic": "prefs",
+        "upserts": [
+          {
+            "id": "[\"dashboardPolicy\",\"preset\"]",
+            "path": [
+              "dashboardPolicy",
+              "preset"
+            ],
+            "value": "team-safe"
+          },
+          {
+            "id": "[\"dashboardPolicy\",\"switches\",\"confirmTeamSendAsYou\"]",
+            "path": [
+              "dashboardPolicy",
+              "switches",
+              "confirmTeamSendAsYou"
+            ],
+            "value": true
+          }
+        ],
+        "viewKey": "prefs:42:native"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [
+          "[\"shortcuts\",\"shortcuts\"]"
+        ],
+        "rev": 3,
+        "topic": "prefs",
+        "upserts": [
+          {
+            "id": "[\"shortcuts\",\"shortcuts\",\"settings.open\"]",
+            "path": [
+              "shortcuts",
+              "shortcuts",
+              "settings.open"
+            ],
+            "value": "CmdOrCtrl+Shift+Y"
+          },
+          {
+            "id": "[\"viewer\",\"settings\",\"sidebarWidth\"]",
+            "path": [
+              "viewer",
+              "settings",
+              "sidebarWidth"
+            ],
+            "value": 333
+          }
+        ],
+        "viewKey": "prefs:global"
+      }
+    },
+    {
+      "event": "codesense:subscription-delta",
+      "payload": {
+        "baseRev": 2,
+        "delta": {
+          "removes": [],
+          "rev": 3,
+          "topic": "prefs",
+          "total": 5,
+          "upserts": [
+            {
+              "id": "[\"dashboardPolicy\",\"switches\",\"confirmMessageDestructive\"]",
+              "path": [
+                "dashboardPolicy",
+                "switches",
+                "confirmMessageDestructive"
+              ],
+              "value": true
+            },
+            {
+              "id": "[\"viewer\",\"activeWorkspace\",\"acme:dev\"]",
+              "path": [
+                "viewer",
+                "activeWorkspace",
+                "acme:dev"
+              ],
+              "value": "second"
+            },
+            {
+              "id": "[\"viewer\",\"workspaces\",\"acme:dev\"]",
+              "path": [
+                "viewer",
+                "workspaces",
+                "acme:dev"
+              ],
+              "value": [
+                {
+                  "cwd": "/second",
+                  "id": "second",
+                  "kind": "story",
+                  "status": "ready"
+                }
+              ]
+            }
+          ],
+          "viewKey": "prefs:42:native"
+        },
+        "subscriptionId": "native:prefs:principal:[\"prefs\",\"prefs:42:native\"]"
+      }
+    },
+    {
+      "event": "codesense:delta",
+      "payload": {
+        "removes": [],
+        "rev": 3,
+        "topic": "prefs",
+        "upserts": [
+          {
+            "id": "[\"dashboardPolicy\",\"switches\",\"confirmMessageDestructive\"]",
+            "path": [
+              "dashboardPolicy",
+              "switches",
+              "confirmMessageDestructive"
+            ],
+            "value": true
+          },
+          {
+            "id": "[\"viewer\",\"activeWorkspace\",\"acme:dev\"]",
+            "path": [
+              "viewer",
+              "activeWorkspace",
+              "acme:dev"
+            ],
+            "value": "second"
+          },
+          {
+            "id": "[\"viewer\",\"workspaces\",\"acme:dev\"]",
+            "path": [
+              "viewer",
+              "workspaces",
+              "acme:dev"
+            ],
+            "value": [
+              {
+                "cwd": "/second",
+                "id": "second",
+                "kind": "story",
+                "status": "ready"
+              }
+            ]
+          }
+        ],
+        "viewKey": "prefs:42:native"
+      }
+    }
+  ],
+  "final": [
+    {
+      "rev": 3,
+      "snapshot": [
+        {
+          "id": "[\"shortcuts\",\"shortcuts\",\"settings.open\"]",
+          "path": [
+            "shortcuts",
+            "shortcuts",
+            "settings.open"
+          ],
+          "value": "CmdOrCtrl+Shift+Y"
+        },
+        {
+          "id": "[\"shortcuts\",\"version\"]",
+          "path": [
+            "shortcuts",
+            "version"
+          ],
+          "value": 2
+        },
+        {
+          "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+          "path": [
+            "viewer",
+            "settings",
+            "editorLineWrap"
+          ],
+          "value": "on"
+        },
+        {
+          "id": "[\"viewer\",\"settings\",\"sidebarWidth\"]",
+          "path": [
+            "viewer",
+            "settings",
+            "sidebarWidth"
+          ],
+          "value": 333
+        }
+      ],
+      "topic": "prefs",
+      "viewKey": "prefs:global"
+    },
+    {
+      "rev": 3,
+      "snapshot": [
+        {
+          "id": "[\"dashboardPolicy\",\"preset\"]",
+          "path": [
+            "dashboardPolicy",
+            "preset"
+          ],
+          "value": "team-safe"
+        },
+        {
+          "id": "[\"dashboardPolicy\",\"switches\",\"confirmMessageDestructive\"]",
+          "path": [
+            "dashboardPolicy",
+            "switches",
+            "confirmMessageDestructive"
+          ],
+          "value": true
+        },
+        {
+          "id": "[\"dashboardPolicy\",\"switches\",\"confirmTeamSendAsYou\"]",
+          "path": [
+            "dashboardPolicy",
+            "switches",
+            "confirmTeamSendAsYou"
+          ],
+          "value": true
+        },
+        {
+          "id": "[\"viewer\",\"activeWorkspace\",\"acme:dev\"]",
+          "path": [
+            "viewer",
+            "activeWorkspace",
+            "acme:dev"
+          ],
+          "value": "second"
+        },
+        {
+          "id": "[\"viewer\",\"workspaces\",\"acme:dev\"]",
+          "path": [
+            "viewer",
+            "workspaces",
+            "acme:dev"
+          ],
+          "value": [
+            {
+              "cwd": "/second",
+              "id": "second",
+              "kind": "story",
+              "status": "ready"
+            }
+          ]
+        }
+      ],
+      "topic": "prefs",
+      "viewKey": "prefs:42:native"
+    }
+  ],
+  "gap": {
+    "events": [
+      {
+        "event": "codesense:delta",
+        "payload": {
+          "removes": [],
+          "rev": 260,
+          "topic": "prefs",
+          "upserts": [
+            {
+              "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+              "path": [
+                "viewer",
+                "settings",
+                "editorLineWrap"
+              ],
+              "value": "off"
+            }
+          ],
+          "viewKey": "prefs:global"
+        }
+      },
+      {
+        "event": "codesense:subscription-delta",
+        "payload": {
+          "baseRev": 259,
+          "delta": {
+            "removes": [],
+            "rev": 260,
+            "topic": "prefs",
+            "total": 4,
+            "upserts": [
+              {
+                "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+                "path": [
+                  "viewer",
+                  "settings",
+                  "editorLineWrap"
+                ],
+                "value": "off"
+              }
+            ],
+            "viewKey": "prefs:global"
+          },
+          "subscriptionId": "native:prefs:global:[\"prefs\",\"prefs:global\"]"
+        }
+      }
+    ],
+    "view": {
+      "rev": 260,
+      "snapshot": [
+        {
+          "id": "[\"shortcuts\",\"shortcuts\",\"settings.open\"]",
+          "path": [
+            "shortcuts",
+            "shortcuts",
+            "settings.open"
+          ],
+          "value": "CmdOrCtrl+Shift+Y"
+        },
+        {
+          "id": "[\"shortcuts\",\"version\"]",
+          "path": [
+            "shortcuts",
+            "version"
+          ],
+          "value": 2
+        },
+        {
+          "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+          "path": [
+            "viewer",
+            "settings",
+            "editorLineWrap"
+          ],
+          "value": "off"
+        },
+        {
+          "id": "[\"viewer\",\"settings\",\"sidebarWidth\"]",
+          "path": [
+            "viewer",
+            "settings",
+            "sidebarWidth"
+          ],
+          "value": 333
+        }
+      ],
+      "topic": "prefs",
+      "viewKey": "prefs:global"
+    }
+  },
+  "initial": [
+    {
+      "rev": 1,
+      "snapshot": [
+        {
+          "id": "[\"shortcuts\",\"shortcuts\"]",
+          "path": [
+            "shortcuts",
+            "shortcuts"
+          ],
+          "value": {}
+        },
+        {
+          "id": "[\"shortcuts\",\"version\"]",
+          "path": [
+            "shortcuts",
+            "version"
+          ],
+          "value": 2
+        },
+        {
+          "id": "[\"viewer\",\"settings\",\"editorLineWrap\"]",
+          "path": [
+            "viewer",
+            "settings",
+            "editorLineWrap"
+          ],
+          "value": "off"
+        }
+      ],
+      "topic": "prefs",
+      "viewKey": "prefs:global"
+    },
+    {
+      "rev": 1,
+      "snapshot": [
+        {
+          "id": "[\"dashboardPolicy\",\"preset\"]",
+          "path": [
+            "dashboardPolicy",
+            "preset"
+          ],
+          "value": "open"
+        },
+        {
+          "id": "[\"viewer\",\"activeWorkspace\",\"acme:dev\"]",
+          "path": [
+            "viewer",
+            "activeWorkspace",
+            "acme:dev"
+          ],
+          "value": "first"
+        },
+        {
+          "id": "[\"viewer\",\"workspaces\",\"acme:dev\"]",
+          "path": [
+            "viewer",
+            "workspaces",
+            "acme:dev"
+          ],
+          "value": [
+            {
+              "cwd": "/first",
+              "id": "first",
+              "kind": "story",
+              "status": "ready"
+            }
+          ]
+        }
+      ],
+      "topic": "prefs",
+      "viewKey": "prefs:42:native"
+    }
+  ],
+  "other": {
+    "rev": 1,
+    "snapshot": [
+      {
+        "id": "[\"dashboardPolicy\",\"preset\"]",
+        "path": [
+          "dashboardPolicy",
+          "preset"
+        ],
+        "value": "open"
+      },
+      {
+        "id": "[\"viewer\",\"activeWorkspace\",\"acme:dev\"]",
+        "path": [
+          "viewer",
+          "activeWorkspace",
+          "acme:dev"
+        ],
+        "value": "other"
+      },
+      {
+        "id": "[\"viewer\",\"workspaces\",\"acme:dev\"]",
+        "path": [
+          "viewer",
+          "workspaces",
+          "acme:dev"
+        ],
+        "value": [
+          {
+            "cwd": "/other",
+            "id": "other",
+            "kind": "story",
+            "status": "ready"
+          }
+        ]
+      }
+    ],
+    "topic": "prefs",
+    "viewKey": "prefs:43:native"
+  }
+}

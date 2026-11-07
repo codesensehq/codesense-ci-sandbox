@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="trees" />
+    <title>CodeSense — Workspaces & worktrees</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* -----------------------------------------------------------------
+       * Arc-C scoped styles (cs-docs-arcC-*). Kept per-page
+       * so the shared layer stays lean until a second arc wants the same
+       * patterns. Mirrors the arc-A pattern.
+       * --------------------------------------------------------------- */
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1080px;
+      }
+      .arcC-hero {
+        display: block;
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .arcC-hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 260px;
+      }
+      .arcC-hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      .arcC-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-6);
+      }
+      .arcC-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .arcC-card:hover,
+      .arcC-card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+        text-decoration: none;
+      }
+      .arcC-card__step {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .arcC-card__title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 2px 0;
+      }
+      .arcC-card__hook {
+        font-size: var(--cs-docs-text-md);
+        color: var(--cs-muted-fg);
+        margin: 0;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Workspaces and worktrees overview" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Workspaces &amp; worktrees</span>
+        </p>
+        <h1>A workspace per thing you're doing.</h1>
+        <p class="lede" style="max-width: 62ch; color: var(--cs-muted-fg)">
+          Every piece of work in CodeSense opens into its own <strong>workspace</strong>: a story,
+          an epic, a team, or a plain working dir. The ones that need code get a real
+          <strong>git worktree</strong> on disk — created on first open, given the context its agent
+          declares when the agent launches, isolated enough to run five of them side by side. CodeSense
+          never commits, pushes or merges; your agents do.
+        </p>
+
+        <figure class="arcC-hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 240"
+            role="img"
+            aria-label="A single story card fans into five parallel worktree folders, each tagged with a story id."
+          >
+            <title>Arc C — one story graph, five parallel worktrees</title>
+            <desc>
+              A central card labelled "epic" fades in, then five labelled folders fan out below:
+              DEMO-1 through DEMO-5, each with its own branch slug caption.
+            </desc>
+            <style>
+              .arcC-surface {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .arcC-accent {
+                fill: var(--cs-accent, #7aa2ff);
+              }
+              .arcC-stroke {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.4;
+                fill: none;
+                stroke-dasharray: 90;
+                stroke-dashoffset: 90;
+                animation: arcC-draw 3.6s ease-out infinite;
+              }
+              .arcC-text {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcC-muted {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcC-epic {
+                opacity: 0;
+                animation: arcC-fade 3.6s ease-in-out infinite;
+              }
+              .arcC-wt {
+                opacity: 0;
+                animation: arcC-fade 3.6s ease-in-out infinite;
+                animation-delay: 1.2s;
+              }
+              @keyframes arcC-draw {
+                0%,
+                25% {
+                  stroke-dashoffset: 90;
+                }
+                65%,
+                100% {
+                  stroke-dashoffset: 0;
+                }
+              }
+              @keyframes arcC-fade {
+                0%,
+                20% {
+                  opacity: 0;
+                }
+                55%,
+                100% {
+                  opacity: 1;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .arcC-stroke {
+                  animation: none;
+                  stroke-dashoffset: 0;
+                }
+                .arcC-epic,
+                .arcC-wt {
+                  animation: none;
+                  opacity: 1;
+                }
+              }
+            </style>
+
+            <!-- Epic card (center top) -->
+            <g class="arcC-epic" transform="translate(270 30)">
+              <rect class="arcC-surface" width="100" height="48" rx="6" />
+              <rect class="arcC-accent" x="0" y="0" width="100" height="3" rx="2" />
+              <text class="arcC-text" x="50" y="22" text-anchor="middle">
+                per-agent-kill-switch
+              </text>
+              <text class="arcC-muted" x="50" y="38" text-anchor="middle">epic · 5 stories</text>
+            </g>
+
+            <!-- Fan-out strokes -->
+            <path class="arcC-stroke" d="M320 85 L80 150" />
+            <path class="arcC-stroke" d="M320 85 L200 150" style="animation-delay: 0.08s" />
+            <path class="arcC-stroke" d="M320 85 L320 150" style="animation-delay: 0.16s" />
+            <path class="arcC-stroke" d="M320 85 L440 150" style="animation-delay: 0.24s" />
+            <path class="arcC-stroke" d="M320 85 L560 150" style="animation-delay: 0.32s" />
+
+            <!-- Five worktree folders -->
+            <g class="arcC-wt" transform="translate(30 150)">
+              <path class="arcC-surface" d="M0 10 L18 10 L24 16 L100 16 L100 60 L0 60 Z" />
+              <text class="arcC-text" x="12" y="34">DEMO-1</text>
+              <text class="arcC-muted" x="12" y="48">wt · foundation</text>
+            </g>
+            <g class="arcC-wt" transform="translate(150 150)" style="animation-delay: 1.3s">
+              <path class="arcC-surface" d="M0 10 L18 10 L24 16 L100 16 L100 60 L0 60 Z" />
+              <text class="arcC-text" x="12" y="34">DEMO-2</text>
+              <text class="arcC-muted" x="12" y="48">wt · ui-toggle</text>
+            </g>
+            <g class="arcC-wt" transform="translate(270 150)" style="animation-delay: 1.4s">
+              <path class="arcC-surface" d="M0 10 L18 10 L24 16 L100 16 L100 60 L0 60 Z" />
+              <text class="arcC-text" x="12" y="34">DEMO-3</text>
+              <text class="arcC-muted" x="12" y="48">wt · mcp-cmd</text>
+            </g>
+            <g class="arcC-wt" transform="translate(390 150)" style="animation-delay: 1.5s">
+              <path class="arcC-surface" d="M0 10 L18 10 L24 16 L100 16 L100 60 L0 60 Z" />
+              <text class="arcC-text" x="12" y="34">DEMO-4</text>
+              <text class="arcC-muted" x="12" y="48">wt · persist</text>
+            </g>
+            <g class="arcC-wt" transform="translate(510 150)" style="animation-delay: 1.6s">
+              <path class="arcC-surface" d="M0 10 L18 10 L24 16 L100 16 L100 60 L0 60 Z" />
+              <text class="arcC-text" x="12" y="34">DEMO-5</text>
+              <text class="arcC-muted" x="12" y="48">wt · rerender</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            One epic · five stories · five worktrees · five agents running in parallel
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== Why =============== -->
+      <section data-search="Why workspaces exist in CodeSense" id="why">
+        <h2>Why workspaces exist</h2>
+        <p>
+          You've got five feature branches, two decisions outstanding, and an epic you're actively
+          refining. You want one of each on screen without them tripping on each other's working
+          tree. CodeSense gives every unit of work its own <em>workspace</em>: story workspaces open
+          against a git worktree; epic workspaces hold the surrounding plan; team workspaces are the
+          whole team view; a generic workspace is a plain dir. Agents open workspaces the same way
+          people do, through the same <code>open_workspace</code> MCP tool, so the dashboards and
+          the automation see the same thing you do.
+        </p>
+      </section>
+
+      <!-- =============== The eight pages =============== -->
+      <section data-search="What arc C covers" id="pages">
+        <h2>The eight pages</h2>
+        <div class="arcC-grid" role="list">
+          <a class="arcC-card" href="./workspace-kinds.html" role="listitem">
+            <span class="arcC-card__step">Page 1</span>
+            <h3 class="arcC-card__title">Workspace kinds</h3>
+            <p class="arcC-card__hook">
+              Story, epic, team, generic — what each one is for and how to tell them apart.
+            </p>
+          </a>
+          <a class="arcC-card" href="./worktree-creation.html" role="listitem">
+            <span class="arcC-card__step">Page 2</span>
+            <h3 class="arcC-card__title">Worktree creation</h3>
+            <p class="arcC-card__hook">
+              When a worktree appears on disk, step by step, with a diagram you can click into.
+            </p>
+          </a>
+          <a class="arcC-card" href="./hydration.html" role="listitem">
+            <span class="arcC-card__step">Page 3</span>
+            <h3 class="arcC-card__title">Hydration</h3>
+            <p class="arcC-card__hook">
+              A story's docs arrive when an agent calls <code>hydrate_story</code>, and the policy that widens them.
+            </p>
+          </a>
+          <a class="arcC-card" href="./parallelism.html" role="listitem">
+            <span class="arcC-card__step">Page 4</span>
+            <h3 class="arcC-card__title">Parallelism</h3>
+            <p class="arcC-card__hook">
+              N stories, N worktrees, N agents. The five-column layout the factory lives on.
+            </p>
+          </a>
+          <a class="arcC-card" href="./git-is-yours.html" role="listitem">
+            <span class="arcC-card__step">Page 5</span>
+            <h3 class="arcC-card__title">Git is yours</h3>
+            <p class="arcC-card__hook">
+              CodeSense never commits, pushes or merges; your agents do. Here's why that matters.
+            </p>
+          </a>
+          <a class="arcC-card" href="./troubleshooting.html" role="listitem">
+            <span class="arcC-card__step">Page 6</span>
+            <h3 class="arcC-card__title">Troubleshooting</h3>
+            <p class="arcC-card__hook">
+              Stale locks, mismatched branches, the index entry that lost its directory.
+            </p>
+          </a>
+          <a class="arcC-card" href="./move-workspace.html" role="listitem">
+            <span class="arcC-card__step">Page 7</span>
+            <h3 class="arcC-card__title">Move a workspace</h3>
+            <p class="arcC-card__hook">
+              Re-home a story workspace to another machine with <code>move_workspace</code>.
+            </p>
+          </a>
+          <a class="arcC-card" href="./workspace-and-tab-lifecycle.html" role="listitem">
+            <span class="arcC-card__step">Reference</span>
+            <h3 class="arcC-card__title">Workspace and tab lifecycle tools</h3>
+            <p class="arcC-card__hook">
+              Open, read, drive, rename and close tabs; close and rename workspaces; custom groups.
+            </p>
+          </a>
+          <a class="arcC-card" href="./index.html#primitives" role="listitem">
+            <span class="arcC-card__step">Reference</span>
+            <h3 class="arcC-card__title">Primitives in play</h3>
+            <p class="arcC-card__hook">
+              The MCP tools and <code>worktree.yaml</code> schema this arc touches.
+            </p>
+          </a>
+        </div>
+      </section>
+
+      <!-- =============== Primitives in play =============== -->
+      <section data-search="Primitives arc C touches" id="primitives">
+        <h2>Primitives in play</h2>
+        <ul>
+          <li>
+            <code>open_workspace</code> — launch any workspace. Takes a target (story id, team name,
+            dir handle) and settles with <code>opened</code>, <code>alreadyLive</code>,
+            <code>busy</code>, or <code>invalid</code>.
+          </li>
+          <li>
+            <code>list_worktrees</code> — every managed worktree on this Mac, with its story id,
+            branch, path, machine, and last check-in.
+          </li>
+          <li>
+            <code>hydrate_worktree</code> / <code>hydrate_story</code> — copy team content into a
+            worktree when an agent asks: exact paths or folders, or a story's epic.
+          </li>
+          <li>
+            <code>read_worktree_config</code> / <code>write_worktree_config</code> — the
+            <code>worktree.yaml</code> schema seat: setup commands, env, timeouts, branch prefix.
+          </li>
+          <li><code>list_hydrated</code> — what's currently hydrated into a given worktree.</li>
+        </ul>
+        <p style="color: var(--cs-muted-fg); font-size: var(--cs-docs-text-sm)">
+          Live schemas:
+          <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> ·
+          <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> ·
+          <a href="../mcp-explorer.html#tool/hydrate_worktree">hydrate_worktree</a> ·
+          <a href="../schema-browser.html#schema/worktree-yaml">worktree.yaml schema</a>.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list my worktrees" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          List every managed worktree CodeSense knows about on this Mac. A fresh install shows an
+          empty list; once you've opened a story workspace, that row appears here.
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="List my worktrees"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to tour arc C via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            Every page in this arc is reproducible from an agent through MCP, no UI required. A
+            warm-up tour:
+          </p>
+          <pre><code>codesense.invoke('list_worktrees', {})
+codesense.invoke('open_workspace', { target: 'DEMO-1' })
+codesense.invoke('read_worktree_config', { source_repo: 'acme/sample-source-repo' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Docs home</a> ·
+        <a href="./workspace-kinds.html">Workspace kinds →</a> · Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_workspace">mcp-explorer</a> ·
+        <a href="../schema-browser.html#schema/worktree-yaml">worktree.yaml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Workspaces &amp; worktrees</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

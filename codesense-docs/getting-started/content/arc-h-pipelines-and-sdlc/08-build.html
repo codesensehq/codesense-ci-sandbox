@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 8 · Build (parallel)</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="8"
+    data-page="arc-h-pipelines-and-sdlc/08-build"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 8 — Build (parallel)" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>08</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>BUILD</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>08</span> ·
+                  <span data-cs-phase-name>Build (parallel)</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Amelia claims stories off the <code>builder</code> inbox and
+                  turns each into shipping code. CodeSense gives every story
+                  its own worktree, so five Amelias can work in parallel without
+                  stepping on each other.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"
+                    ><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Skill</strong><code data-cs-phase-skill>…</code></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span
+                  >
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What build phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              This is where the code shows up. Each builder (Amelia × N) is an
+              instance of <code>bmad-build</code> bound to one worktree + one
+              story. A routine with a <code>role_pending</code> trigger hears of
+              each message queued for the <code>builder</code> role, and a builder
+              takes it with <code>claim_role_messages</code>.
+            </p>
+            <p>
+              This phase does not run blind — Scout monitors CI, Reviewer waits
+              in the queue, and if Amelia hits a decision she can't make she
+              escalates up to the <a href="./09-decisions.html">Resolver</a>
+              and sleeps until the answer lands.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO build" id="worked">
+            <h2>Worked example — DEMO in parallel</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               MASSIVELY PARALLEL SUBSECTION
+               Three distribution patterns, each with a glyph + Excalidraw
+               sketch spec reference.
+               ================================================================ -->
+          <section
+            class="cs-h-section"
+            data-search="Massively parallel — shipping 5 stories at once"
+            id="parallel"
+          >
+            <h2>Massively parallel — shipping 5 stories at once</h2>
+            <p>
+              A sprint committed 5 stories. CodeSense creates 5 worktrees
+              (one per story) via <code>open_workspace</code>. Each Amelia
+              session binds to its own worktree + branch. Scout
+              (<code>role_pending</code> on <code>scout</code>) catches a CI
+              failure and inboxes the builder. Reviewer (<code>role_pending</code>
+              on <code>reviewer</code>) picks up a merge-ready PR. The whole
+              shape is <em>N copies of the single-story loop</em>, not a
+              bespoke orchestration.
+            </p>
+
+            <div class="cs-h-par">
+              <article class="cs-h-par__card" data-pattern="all-local">
+                <span class="mix">All local</span>
+                <h3>5 Amelias on your Mac</h3>
+                <div class="cs-h-par__row" role="img" aria-label="distribution: five local slots">
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                </div>
+                <p style="color: var(--cs-muted-fg); font-size: 13px">
+                  Everything on-device. Fastest feedback loop, bounded by your
+                  CPU and the number of context windows you can open.
+                </p>
+                <!--
+                  `<img>` referencing
+                  `../diagrams/sdlc/all-local.excalidraw.png` removed with the
+                  build-time `.excalidraw.png` sidecar — `render_canvas` now
+                  returns the PNG inline. See
+                  `../diagrams/sdlc/all-local.excalidraw.sketch.md` for the
+                  authoring spec; the slot row above is the shipped visual.
+                -->
+              </article>
+
+              <article class="cs-h-par__card" data-pattern="hybrid">
+                <span class="mix">Hybrid</span>
+                <h3>2 local + 3 remote</h3>
+                <div class="cs-h-par__row" role="img" aria-label="distribution: 2 local, 3 remote">
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="local"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                </div>
+                <p style="color: var(--cs-muted-fg); font-size: 13px">
+                  Keep the touchy ones local (where you want eyes on the diff)
+                  and offload the long-running builds to the private-account
+                  remote.
+                </p>
+                <!--
+                  `<img>` referencing
+                  `../diagrams/sdlc/hybrid.excalidraw.png` removed with the
+                  build-time `.excalidraw.png` sidecar — `render_canvas` now
+                  returns the PNG inline. See
+                  `../diagrams/sdlc/hybrid.excalidraw.sketch.md` for the
+                  authoring spec; the slot row above is the shipped visual.
+                -->
+              </article>
+
+              <article class="cs-h-par__card" data-pattern="all-remote">
+                <span class="mix">All remote</span>
+                <h3>5 remote tabs, drive from the laptop</h3>
+                <div class="cs-h-par__row" role="img" aria-label="distribution: five remote slots">
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                  <span class="cs-h-par__slot" data-fill="remote"></span>
+                </div>
+                <p style="color: var(--cs-muted-fg); font-size: 13px">
+                  All five builders on the remote macbook. You drive from your
+                  laptop; merged work comes home through each story's PR.
+                </p>
+                <!--
+                  `<img>` referencing
+                  `../diagrams/sdlc/all-remote.excalidraw.png` removed with the
+                  build-time `.excalidraw.png` sidecar — `render_canvas` now
+                  returns the PNG inline. See
+                  `../diagrams/sdlc/all-remote.excalidraw.sketch.md` for the
+                  authoring spec; the slot row above is the shipped visual.
+                -->
+              </article>
+            </div>
+
+            <p style="margin-top: 10px; color: var(--cs-muted-fg)">
+              The three diagrams are specified at
+              <code>diagrams/sdlc/{all-local,hybrid,all-remote}.excalidraw.sketch.md</code>.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — build" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in build" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml Amelia builder" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml builder-claim" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <p>
+              Drop this into
+              <code>config/agents/amelia-builder/routines/builder-claim/routine.yml</code>.
+              A <code>role_pending</code> trigger fires once for each message
+              queued for the <code>builder</code> role
+              (<code>send_role_message</code>); in <code>fresh</code> mode it
+              starts a new builder session, which claims the message with
+              <code>claim_role_messages</code>. To nudge one long-running Amelia
+              instead, use an <code>inbox_idle</code> trigger in
+              <code>wake</code> mode: it types the task into her session when it
+              sits idle at its prompt with unread mail.
+            </p>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — build" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Each builder's worktree is made beside your clone of the
+                  story's repo, at <code>../&lt;repo&gt;-wt/&lt;story&gt;</code>, on
+                  the story's <code>branch_name</code> or <code>feat/&lt;story&gt;</code>.
+                  The <code>agent-dag.html</code> dashboard shows all five at once;
+                  click a node to go to that agent. Stop one from the
+                  <strong>Agents</strong> list (<strong>Stop…</strong>).
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Open the story workspace on the machine
+                  (<code>open_workspace</code> with <code>machine_id</code>) and
+                  its worktree is made there. A claim
+                  (<code>claim_role_messages</code>) is atomic, so a sixth
+                  builder started locally while three are busy remote can't
+                  take a story another builder holds.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — build" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Spin up a builder against your top-of-queue story.
+              <code>bmad-build</code> is the one skill a CodeSense factory can't
+              live without.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-build"}'
+              label="Start a builder"
+              confirm="Run bmad-build in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to build via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>open_workspace { target: "story", story_id: "DEMO-2",
+                 agent: "amelia-builder", initial_prompt: "/bmad-build" }
+send_role_message { team: { org, team }, role: "reviewer", text: "…" }</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-8">factory playbook · phase 8</a>
+            &nbsp;·&nbsp; Previous: <a href="./07-atdd.html">← 07 ATDD</a> ·
+            Next: <a href="./09-decisions.html">09 Decisions →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 8 · Build</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

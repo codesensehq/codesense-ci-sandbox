@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 11 · QA</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="11"
+    data-page="arc-h-pipelines-and-sdlc/11-qa"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 11 — QA" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>11</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>VERIFY</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>11</span> ·
+                  <span data-cs-phase-name>QA</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Murat generates end-to-end tests against a release candidate
+                  and audits NFR evidence — perf, security, reliability,
+                  maintainability.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What QA phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              QA runs against a release candidate — not every commit. Murat uses
+              <code>bmad-qa-generate-e2e-tests</code> to grow coverage against
+              the shipped behaviour and <code>bmad-testarch-nfr</code> to audit
+              perf, security, reliability, and maintainability evidence.
+            </p>
+            <p>
+              The output is new <code>e2e/*.spec.ts</code> files, an NFR audit
+              table, and a signed-off release note that goes out with the next push
+              of the context repo.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO QA" id="worked">
+            <h2>Worked example — DEMO QA coverage</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — QA" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in QA" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml Murat QA" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml QA" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — QA" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Murat runs the generated tests via <code>pnpm e2e</code> in a
+                  terminal tab. The DOM, keyboard, and screenshot captures all
+                  come from the real app running on your Mac.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Playwright drives the remote macbook; your local tab shows
+                  the test transcript stream back. The NFR audit uses the
+                  remote's perf baselines when the release-candidate build
+                  lives there.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — QA" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Generate end-to-end tests for your most recently shipped story.
+              Murat reads the merged PR, infers the behaviour, and emits a
+              Playwright or Cypress spec.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-qa-generate-e2e-tests"}'
+              label="Generate e2e tests"
+              confirm="Run bmad-qa-generate-e2e-tests in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to QA via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-qa-generate-e2e-tests' })
+codesense.invoke('runSkill', { skill: 'bmad-testarch-nfr' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-11">factory playbook · phase 11</a>
+            &nbsp;·&nbsp; Previous: <a href="./10-review.html">← 10 Review</a> ·
+            Next: <a href="./12-retro.html">12 Retro →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 11 · QA</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

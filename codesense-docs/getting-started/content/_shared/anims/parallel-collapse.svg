@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  parallel-collapse — 5 parallel lanes converge into a single ship lane.
+  Used in factory-playbook phase 8 (build-parallel → merge).
+  Duration: 3.0s per loop. Reduced-motion fallback: static end state.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Five parallel lanes converge into one">
+  <title>Parallel collapse</title>
+  <desc>Five horizontal lanes on the left (one per worker) converge toward a single ship lane on the right.</desc>
+  <style>
+    .lane  { stroke: var(--cs-border, #262c38); stroke-width: 1.5; fill: none; }
+    .lane-anim { stroke: var(--cs-accent, #7aa2ff); stroke-width: 2; fill: none;
+                 stroke-dasharray: 240; stroke-dashoffset: 240;
+                 animation: draw 3.0s ease-out infinite; }
+    .dot   { fill: var(--cs-accent, #7aa2ff); animation: pulse 3.0s ease-in-out infinite; }
+    .text  { fill: var(--cs-muted-fg, #a3abbb); font: 9px -apple-system, system-ui, sans-serif; }
+    .ship  { fill: var(--cs-surface, #161b22); stroke: var(--cs-accent, #7aa2ff); stroke-width: 1.5; }
+    .ship-text { fill: var(--cs-fg, #e6edf3); font: 500 11px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes pulse {
+      0%, 70% { r: 4; opacity: 1; }
+      85%     { r: 7; opacity: 0.8; }
+      100%    { r: 4; opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lane-anim { animation: none; stroke-dashoffset: 0; }
+      .dot { animation: none; }
+    }
+  </style>
+
+  <!-- Worker labels (left) -->
+  <text class="text" x="20" y="34">builder-1</text>
+  <text class="text" x="20" y="74">builder-2</text>
+  <text class="text" x="20" y="114">builder-3</text>
+  <text class="text" x="20" y="154">builder-4</text>
+  <text class="text" x="20" y="194">builder-5</text>
+
+  <!-- Lanes converging to centre (y=110) -->
+  <path class="lane" d="M70 30 L160 30 Q210 30 220 110 L240 110"/>
+  <path class="lane" d="M70 70 L170 70 Q215 70 220 110 L240 110"/>
+  <path class="lane" d="M70 110 L240 110"/>
+  <path class="lane" d="M70 150 L170 150 Q215 150 220 110 L240 110"/>
+  <path class="lane" d="M70 190 L160 190 Q210 190 220 110 L240 110"/>
+
+  <!-- Highlight overlay (animated draw) -->
+  <path class="lane-anim" d="M70 30 L160 30 Q210 30 220 110 L240 110"/>
+  <path class="lane-anim" d="M70 70 L170 70 Q215 70 220 110 L240 110" style="animation-delay: 0.1s"/>
+  <path class="lane-anim" d="M70 110 L240 110" style="animation-delay: 0.2s"/>
+  <path class="lane-anim" d="M70 150 L170 150 Q215 150 220 110 L240 110" style="animation-delay: 0.3s"/>
+  <path class="lane-anim" d="M70 190 L160 190 Q210 190 220 110 L240 110" style="animation-delay: 0.4s"/>
+
+  <!-- Ship node -->
+  <g>
+    <rect class="ship" x="240" y="90" width="70" height="40" rx="8"/>
+    <text class="ship-text" x="275" y="115">ship</text>
+    <circle class="dot" cx="275" cy="110" r="4"/>
+  </g>
+</svg>

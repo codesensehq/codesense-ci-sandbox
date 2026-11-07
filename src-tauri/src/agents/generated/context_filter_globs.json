@@ -1,0 +1,72 @@
+{
+  "vcs_dirs": [
+    ".git",
+    ".hg",
+    ".svn"
+  ],
+  "managed_destinations": [
+    ".claude/settings.json",
+    ".claude/settings.local.json",
+    ".mcp.json",
+    ".codex/config.toml"
+  ],
+  "junk": [
+    ".claude/settings.local.json",
+    ".claude/scheduled_tasks.lock",
+    "**/wvbuild-lock",
+    "**/wv-ci-gate"
+  ],
+  "ignore": [
+    "**/.DS_Store",
+    "**/*.swp",
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.idea/**",
+    "**/.gitkeep"
+  ],
+  "secret": [
+    "**/.env",
+    "**/.env.*",
+    "**/*.env",
+    "**/*.pem",
+    "**/*.key",
+    "**/*.p8",
+    "**/*.p12",
+    "**/*.pfx",
+    "**/*.ppk",
+    "**/*.jks",
+    "**/*.keystore",
+    "**/*.pkcs12",
+    "**/*.asc",
+    "**/*.gpg",
+    "**/id_rsa",
+    "**/id_dsa",
+    "**/id_ecdsa",
+    "**/id_ed25519",
+    "**/credentials",
+    "**/.git-credentials",
+    "**/.npmrc",
+    "**/.pypirc",
+    "**/.netrc"
+  ],
+  "runtime_state": [
+    "**/*.sqlite3",
+    "**/*.sqlite3-wal",
+    "**/*.sqlite3-shm",
+    "**/*.sqlite3-journal",
+    "**/*.sqlite",
+    "**/*.sqlite-wal",
+    "**/*.sqlite-shm",
+    "**/*.sqlite-journal",
+    "**/*.db-wal",
+    "**/*.db-shm",
+    "**/*.db-journal"
+  ],
+  "case_insensitive": [
+    "vcs_dirs",
+    "junk",
+    "ignore",
+    "secret",
+    "runtime_state"
+  ]
+}

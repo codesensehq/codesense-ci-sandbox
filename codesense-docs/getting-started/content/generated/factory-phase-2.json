@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "name": "Spec",
+  "group": "Plan",
+  "describedBy": "./phases.yml#phase-2",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "planning", "title": "Per-agent kill switch"}
+    ],
+    "edges": []
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-2-mary", "agent": "mary-analyst", "status": "running", "startedAt": "2026-10-02T09:40:00Z", "endedAt": null, "story": null}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch"],
+    "focus": "fake-triage-dispatch-002"
+  },
+  "sprint": {
+    "active": null,
+    "stories": []
+  },
+  "note": "Phase 2 — Mary distills the ask into a spec kernel. The epic exists; stories do not yet."
+}

@@ -1,0 +1,215 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * SW-IB1-A1 — Inbox HTML sandbox fallback.
+ *
+ * The human inbox renders message bodies inside a scoped Shadow DOM
+ * (primary path) or a `<section class="inbox-html">` wrapper (fallback
+ * path). This stylesheet carries the FIVE layout rules the fallback path
+ * requires, scoped under `.inbox-html` with high specificity so they beat
+ * author styles that leaked in from the message body itself. See
+ * `_bmad-output/v019-inbox-polish/ux/DESIGN.md` §
+ * `components.human-inbox.html-containment.rules`.
+ *
+ * NOTE: the aggressive mid-word `word-break` value is BANNED here — it
+ * fractures legible words. The correct rule for long-token wrapping is
+ * `overflow-wrap: anywhere; word-break: normal` (used below on the root).
+ * Do NOT introduce the banned value to resolve a wrap bug — the sandbox
+ * perimeter is already the hard fix for that class of issue.
+ *
+ * No `box-shadow`, no `filter: drop-shadow`, no `filter: blur`: the inbox
+ * is tonal depth only (DESIGN § Elevation & Depth).
+ */
+
+/* 1. Root body text wraps on token boundaries first and ANYWHERE as a
+      last resort — never mid-word for legible sequences. Preserves author
+      whitespace via `pre-wrap`. */
+.inbox-html {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  white-space: pre-wrap;
+}
+
+/* 2. Preformatted blocks are allowed to scroll horizontally, but never
+      wider than the pane. Mirrors DESIGN § detail-view.code-blocks. */
+.inbox-html pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 3. Tables render inside a `.inbox-table-scroll` wrapper injected at
+      render time; the wrapper carries the horizontal scroll so the <table>
+      itself does not blow out of the pane. */
+.inbox-html .inbox-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 4. Images are constrained to the pane width and keep their aspect
+      ratio; `display: block` kills the baseline whitespace that otherwise
+      leaves a hairline gap under inline images. */
+.inbox-html img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 5. Links adopt the accent role and sit 3px off the text baseline (per
+      DESIGN § detail-view.links `underline: 'on hover only'`). The
+      underline flips on hover/focus-visible only; at rest the link reads
+      as colored body copy, not chrome. */
+.inbox-html a {
+  color: var(--theme-accent-text, var(--accent));
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.inbox-html a:hover,
+.inbox-html a:focus-visible {
+  text-decoration: underline;
+}
+
+/*
+ * Message-scale markdown, shared by every inbox surface (the docked inbox, the per-tab
+ * inbox, the rollup and an agent's Messages). A message sits in a bubble a few hundred
+ * pixels wide, so the document viewer's prose scale and per-theme heading colours do not
+ * apply: headings read as bold body text, colour is inherited, tables scroll in their own
+ * box with columns wide enough to read, and code blocks scroll rather than widen the pane.
+ * Doubled class selectors outrank any stray `.prose` theme rule.
+ */
+.inbox-md.inbox-md {
+  white-space: normal;
+  color: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+}
+.inbox-md.inbox-md > :first-child {
+  margin-top: 0;
+}
+.inbox-md.inbox-md > :last-child {
+  margin-bottom: 0;
+}
+.inbox-md.inbox-md
+  :where(p, ul, ol, pre, blockquote, table, .inbox-table-scroll, hr, h1, h2, h3, h4, h5, h6) {
+  margin: 0.55em 0 0;
+}
+.inbox-md.inbox-md :where(h1, h2, h3, h4, h5, h6) {
+  color: inherit !important;
+  font-weight: 600;
+  line-height: 1.35;
+  border: 0;
+  padding: 0;
+  letter-spacing: 0;
+}
+.inbox-md.inbox-md h1 {
+  font-size: 15px;
+}
+.inbox-md.inbox-md h2 {
+  font-size: 14px;
+}
+.inbox-md.inbox-md :where(h3, h4, h5, h6) {
+  font-size: 13px;
+}
+.inbox-md.inbox-md :where(p, li, td, th, em, blockquote) {
+  color: inherit !important;
+}
+.inbox-md.inbox-md strong {
+  color: inherit !important;
+  font-weight: 600;
+}
+.inbox-md.inbox-md :where(ul, ol) {
+  padding-left: 1.3em;
+}
+.inbox-md.inbox-md ul {
+  list-style: disc;
+}
+.inbox-md.inbox-md ol {
+  list-style: decimal;
+}
+.inbox-md.inbox-md li + li {
+  margin-top: 0.2em;
+}
+.inbox-md.inbox-md li > :where(ul, ol) {
+  margin-top: 0.2em;
+}
+.inbox-md.inbox-md li:has(> input[type="checkbox"]) {
+  list-style: none;
+  margin-left: -1.2em;
+}
+.inbox-md.inbox-md blockquote {
+  border-left: 2px solid var(--ibx-border, var(--border));
+  padding-left: 0.8em;
+  color: var(--ibx-mfg, var(--muted-foreground)) !important;
+  background: none;
+  font-style: normal;
+}
+.inbox-md.inbox-md hr {
+  border: 0;
+  border-top: 1px solid var(--ibx-border, var(--border));
+}
+.inbox-md.inbox-md code {
+  font: 0.9em var(--ibx-mono, ui-monospace, monospace);
+  color: inherit !important;
+  background: var(--ibx-raise, var(--muted));
+  padding: 1px 4px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.inbox-md.inbox-md code::before,
+.inbox-md.inbox-md code::after {
+  content: none;
+}
+.inbox-md.inbox-md pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--ibx-raise, var(--muted));
+  border: 1px solid var(--ibx-hair, var(--border));
+  font: 11.5px/1.5 var(--ibx-mono, ui-monospace, monospace);
+}
+.inbox-md.inbox-md pre code {
+  background: none;
+  padding: 0;
+  font: inherit;
+  overflow-wrap: normal;
+}
+/* The scroll box takes the bubble's width; the table inside keeps its natural width. */
+.inbox-md.inbox-md .inbox-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--ibx-hair, var(--border));
+  border-radius: 6px;
+}
+.inbox-md.inbox-md table {
+  margin: 0;
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.inbox-md.inbox-md :where(th, td) {
+  /* Wrap on words only: `anywhere` lets a squeezed column break after every letter. */
+  overflow-wrap: normal;
+  word-break: normal;
+  min-width: 72px;
+  max-width: 320px;
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+  border: 0;
+  border-top: 1px solid var(--ibx-hair, var(--border));
+  background: none !important;
+}
+.inbox-md.inbox-md tr:first-child > :where(th, td) {
+  border-top: 0;
+}
+.inbox-md.inbox-md th {
+  font-weight: 600;
+  background: var(--ibx-raise, var(--muted)) !important;
+  white-space: nowrap;
+}
+.inbox-md.inbox-md img {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,0 +1,53 @@
+# Thread 2 of 4 — Decision escalation (builder → resolver)
+#
+# Builder (Amelia) is implementing DEMO-3 and hits an ambiguous spec: the error
+# vocabulary says `PermissionDenied` but there's no admin/non-admin distinction in
+# agent.yaml. Escalates to the resolver (human or Resolver agent) via the `resolver`
+# role. The resolution comes back; the builder acknowledges and resumes.
+#
+# Read-only on the docs org.
+
+thread_id: fake-thread-decision-escalation
+title: "Clarify PermissionDenied semantics for kill_agent"
+subject_story: DEMO-3
+flow: decision-escalation
+roles: [builder, resolver]
+status: resolved
+created_at: "2026-10-04T11:03:00Z"
+
+messages:
+  - message_id: fake-decision-escalation-001
+    from: agent:amelia-builder
+    to: role:resolver
+    sent_at: "2026-10-04T11:03:00Z"
+    content_type: markdown
+    body: |
+      Escalating DEMO-3 AC-2: the story lists `PermissionDenied` as an error
+      case but there is no admin/non-admin distinction in agent.yaml today. Do we
+      add an `admin: bool` field, or do we interpret "admin" as "the agent that
+      opened the session"? Blocked until this is decided.
+    on_click:
+      type: open-file
+      path: content/examples/sample-epic/DEMO-3-mcp-command.md
+
+  - message_id: fake-decision-escalation-002
+    from: human
+    to: agent:amelia-builder
+    sent_at: "2026-10-04T11:21:00Z"
+    content_type: markdown
+    body: |
+      Interpret as "the human who owns the session." No new field. The host already
+      threads principal through — reuse that. Update AC-2 copy to clarify, then
+      resume.
+    on_click:
+      type: show-message
+
+  - message_id: fake-decision-escalation-003
+    from: agent:amelia-builder
+    to: human
+    sent_at: "2026-10-04T11:24:00Z"
+    content_type: markdown
+    body: |
+      Got it. Rewriting AC-2 in the story and continuing. Thanks.
+    on_click:
+      type: show-message

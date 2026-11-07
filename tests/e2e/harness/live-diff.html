@@ -1,0 +1,26 @@
+<!doctype html>
+<!--
+  SLW-DV-5 real-layout test harness. Mounts the REAL <CodeDiffReview> so a
+  Playwright/Chromium spec can exercise the live-follow paths that jsdom cannot
+  (flash decoration rendering, in-place patch, and scroll geometry all need real
+  layout — getBoundingClientRect/coordsAtPos return 0 in jsdom). Dev-server only;
+  never part of the production bundle (vite build's input is index.html).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SLW-DV-5 live-diff harness</title>
+    <style>
+      html,
+      body,
+      #harness-root {
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="harness-root"></div>
+    <script type="module" src="./live-diff-entry.tsx"></script>
+  </body>
+</html>

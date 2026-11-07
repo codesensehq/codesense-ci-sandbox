@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  worktree-create — a story card splits into a working folder.
+  Duration: 3.2s per loop. Reduced-motion fallback: static end state via
+  <style>@media (prefers-reduced-motion: reduce)</style>.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="A story card splits into a working folder">
+  <title>Worktree create</title>
+  <desc>A card labelled "Story" slides to the left and a folder labelled "Worktree" fades in on the right, connected by a line.</desc>
+  <style>
+    .surface { fill: var(--cs-surface, #161b22); stroke: var(--cs-border, #262c38); stroke-width: 1; }
+    .accent  { fill: var(--cs-accent, #7aa2ff); }
+    .text    { fill: var(--cs-fg, #e6edf3); font: 500 11px -apple-system, system-ui, sans-serif; }
+    .muted   { fill: var(--cs-muted-fg, #a3abbb); font: 10px -apple-system, system-ui, sans-serif; }
+    .link    { stroke: var(--cs-accent, #7aa2ff); stroke-width: 1.5; fill: none; stroke-dasharray: 4 4; }
+
+    .card    { animation: slide-left 3.2s ease-in-out infinite; }
+    .folder  { opacity: 0; animation: fade-in 3.2s ease-in-out infinite; }
+    .link-anim { stroke-dashoffset: 32; animation: dash 3.2s linear infinite; }
+
+    @keyframes slide-left {
+      0%, 20% { transform: translateX(70px); }
+      60%, 100% { transform: translateX(0); }
+    }
+    @keyframes fade-in {
+      0%, 30% { opacity: 0; }
+      70%, 100% { opacity: 1; }
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .folder, .link-anim { animation: none; }
+      .card   { transform: translateX(0); }
+      .folder { opacity: 1; }
+    }
+  </style>
+
+  <!-- Story card (left) -->
+  <g class="card">
+    <rect class="surface" x="20" y="50" width="100" height="80" rx="8"/>
+    <rect class="accent" x="20" y="50" width="100" height="3" rx="2"/>
+    <text class="text" x="30" y="75">DEMO-1</text>
+    <text class="muted" x="30" y="92">Story card</text>
+    <text class="muted" x="30" y="110">status: planning</text>
+  </g>
+
+  <!-- Link line -->
+  <path class="link link-anim" d="M130 90 L190 90"/>
+
+  <!-- Worktree folder (right) -->
+  <g class="folder">
+    <path class="surface" d="M200 60 L230 60 L240 70 L300 70 L300 130 L200 130 Z"/>
+    <text class="text" x="212" y="100">worktree/</text>
+    <text class="muted" x="212" y="117">DEMO-1</text>
+  </g>
+</svg>

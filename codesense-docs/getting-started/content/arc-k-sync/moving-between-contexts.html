@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="repeat" />
+    <title>CodeSense — Moving between contexts</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/moving-between-contexts">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Moving between contexts">
+        <span class="cs-docs-eyebrow">Arc K · Sync</span>
+        <h1>Moving between contexts</h1>
+        <p class="lede">
+          Reference for the tools that copy, move, route and remove content between contexts, track the explicit context operations, and read sync state.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>A context is identified by a stable id such as <code>personal:&lt;org&gt;</code> or <code>team:&lt;org&gt;:&lt;team&gt;</code>; <code>list_context_content</code> returns the <code>logicalName</code> of each item. Copy and move run the same gate ladder as the app and return <code>{status:&quot;gate&quot;, reason, ...}</code> naming the first unmet gate and its resolution, so a retry is deterministic.</p>
+      </section>
+      <section id="between-contexts" data-search="Copy, move and remove">
+        <h2>Copy, move and remove</h2>
+        <h3 id="tool-move_between_contexts"><code>move_between_contexts</code></h3>
+        <p>Moves a content item by <code>logicalName</code> from one context to another, in either direction. Gates run one at a time in fixed order: cross-org, then privacy, then collision. An unmet gate returns <code>{status:&quot;gate&quot;, reason}</code> with its resolution (an explicit <code>org</code>, <code>confirmMakeShared: true</code>, or a collision <code>policy</code> of <code>keep_both</code>, <code>replace</code> or <code>keep_mine</code>). A move out of the private space writes the target before removing the source; if the source cannot be removed the outcome is <code>movedSourceKept</code>. Markdown moved into a team records <code>shared_by</code>, <code>shared_from</code> and <code>shared_on</code>. Returns <code>{status:&quot;ok&quot;, outcome, renamedTo?}</code>.</p>
+        <pre data-tool-example="move_between_contexts"><code>{
+  &quot;tool&quot;: &quot;move_between_contexts&quot;,
+  &quot;arguments&quot;: {
+    &quot;from&quot;: &quot;personal:acme&quot;,
+    &quot;to&quot;: &quot;team:acme:engineering&quot;,
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;,
+    &quot;confirmMakeShared&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-copy_between_contexts"><code>copy_between_contexts</code></h3>
+        <p>The source-retaining sibling of <code>move_between_contexts</code>: the item is duplicated into the target and the source keeps it. Same gates, parameters and <code>gate</code> result. Copying between two orgs' private spaces (<code>personal:&lt;a&gt;</code> to <code>personal:&lt;b&gt;</code>) needs no org switch. Returns <code>{status:&quot;ok&quot;, outcome:&quot;copied&quot;, renamedTo?}</code>.</p>
+        <pre data-tool-example="copy_between_contexts"><code>{
+  &quot;tool&quot;: &quot;copy_between_contexts&quot;,
+  &quot;arguments&quot;: {
+    &quot;from&quot;: &quot;personal:acme&quot;,
+    &quot;to&quot;: &quot;team:acme:engineering&quot;,
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;,
+    &quot;confirmMakeShared&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-remove_from_context"><code>remove_from_context</code></h3>
+        <p>Deletes a content item by <code>logicalName</code> from a single context. Removing a private item first returns <code>{status:&quot;gate&quot;, reason:&quot;sole_copy&quot;}</code>, because the private space may hold the only copy; re-call with <code>allowSoleCopyMove: true</code> to delete permanently. Removing an item that is already gone returns <code>{status:&quot;ok&quot;, outcome:&quot;rejectedSourceMissing&quot;}</code>.</p>
+        <pre data-tool-example="remove_from_context"><code>{
+  &quot;tool&quot;: &quot;remove_from_context&quot;,
+  &quot;arguments&quot;: {
+    &quot;context&quot;: &quot;personal:acme&quot;,
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="routing" data-search="Routing worktree files into team content">
+        <h2>Routing worktree files into team content</h2>
+        <h3 id="tool-route_file_to_context"><code>route_file_to_context</code></h3>
+        <p>Adopts a worktree file into the team content layer and hides it from git (<code>.git/info/exclude</code>). It is an explicit adopt: CodeSense never does this on its own. Idempotent. Returns an <code>outcome</code> of <code>routed</code>, <code>alreadyRouted</code>, <code>refused</code>, <code>collision</code>, <code>alreadyTracked</code> or <code>notProjectable</code>.</p>
+        <pre data-tool-example="route_file_to_context"><code>{
+  &quot;tool&quot;: &quot;route_file_to_context&quot;,
+  &quot;arguments&quot;: {
+    &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+    &quot;codeRepoSlug&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    },
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-unroute_file_from_context"><code>unroute_file_from_context</code></h3>
+        <p>The inverse of <code>route_file_to_context</code>: stops managing the file and un-hides it from git. The team copy is deleted only when routing created it and it still holds what was routed; a file that was hydrated, launched or adopted is only unmanaged. Each step is idempotent, so re-running after an interruption completes cleanly.</p>
+        <pre data-tool-example="unroute_file_from_context"><code>{
+  &quot;tool&quot;: &quot;unroute_file_from_context&quot;,
+  &quot;arguments&quot;: {
+    &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+    &quot;codeRepoSlug&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    },
+    &quot;logicalName&quot;: &quot;notes/plan.md&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="operations" data-search="Context operations">
+        <h2>Context operations</h2>
+        <p><code>hydrate_worktree</code>, <code>hydrate_story</code> and <code>reverse_sync_worktree</code> run as explicit operations with an <code>operationId</code>.</p>
+        <h3 id="tool-context_operation_status"><code>context_operation_status</code></h3>
+        <p>Reads the state of one explicit context operation by <code>operationId</code> (a selected request's <code>requestId</code> also works): <code>{operationId, kind, state, target, startedAtMs, finishedAtMs, result}</code>, with state <code>running</code>, <code>ready</code>, <code>failed</code> or <code>cancelled</code>. Read-only.</p>
+        <pre data-tool-example="context_operation_status"><code>{
+  &quot;tool&quot;: &quot;context_operation_status&quot;,
+  &quot;arguments&quot;: {
+    &quot;operationId&quot;: &quot;&lt;operationId from the operation&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-cancel_context_operation"><code>cancel_context_operation</code></h3>
+        <p>Cancels a running context operation by <code>operationId</code>. A hydrate stops between files locally, or before its Apply on a machine, leaving no partial file; a publish stops before it writes team content. Returns <code>{operationId, cancelling:true}</code> when it was running, else <code>{cancelling:false, state}</code>.</p>
+        <pre data-tool-example="cancel_context_operation"><code>{
+  &quot;tool&quot;: &quot;cancel_context_operation&quot;,
+  &quot;arguments&quot;: {
+    &quot;operationId&quot;: &quot;&lt;operationId from the operation&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="state" data-search="Sync state and history">
+        <h2>Sync state and history</h2>
+        <h3 id="tool-get_sync_status"><code>get_sync_status</code></h3>
+        <p>Reads sync status: <code>{setupState, recentOperations, unpublished}</code>. <code>unpublished</code> lists team files changed in the active team's workspaces and not yet back in the team, per workspace and file, with a <code>state</code> such as <code>checked</code>, <code>offline</code> or <code>missing</code>. Local workspaces are counted on every call; pass <code>target:{kind:&quot;remote&quot;, machineId, workspaceHandle}</code> to count a machine workspace now. Read-only.</p>
+        <pre data-tool-example="get_sync_status"><code>{
+  &quot;tool&quot;: &quot;get_sync_status&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-list_hydrated"><code>list_hydrated</code></h3>
+        <p>Lists what CodeSense copied into a workspace, from its managed record. Pass <code>target</code> as <code>{kind:&quot;local&quot;, codeRepoPath, sessionId}</code> or <code>{kind:&quot;remote&quot;, machineId, workspaceHandle}</code>. Returns <code>hydratedEpics</code>, <code>managedFiles</code> with <code>byOrigin</code> counts and up to 500 files, and the declared context prefixes. Read-only.</p>
+        <pre data-tool-example="list_hydrated"><code>{
+  &quot;tool&quot;: &quot;list_hydrated&quot;,
+  &quot;arguments&quot;: {
+    &quot;target&quot;: {
+      &quot;kind&quot;: &quot;local&quot;,
+      &quot;codeRepoPath&quot;: &quot;/Users/me/worktrees/app-example&quot;,
+      &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+    }
+  }
+}</code></pre>
+        <h3 id="tool-forget_missing_workspace"><code>forget_missing_workspace</code></h3>
+        <p>Removes a machine workspace whose folder is gone from the unsaved-team-edits list. It re-counts first and refuses unless the folder is still missing, and deletes no files, folders or branches on the machine. Take <code>machineId</code> and <code>workspaceHandle</code> from the remote target in <code>get_sync_status</code>. Returns <code>{status:&quot;removed&quot;}</code> or <code>{status:&quot;refused&quot;, state, reason}</code>.</p>
+        <pre data-tool-example="forget_missing_workspace"><code>{
+  &quot;tool&quot;: &quot;forget_missing_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;workspaceHandle&quot;: &quot;&lt;workspaceHandle from get_sync_status&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-context_repo_history"><code>context_repo_history</code></h3>
+        <p>Reads the team context repo's history, locally and read-only, newest first and paged. Optional <code>branch</code> (<code>all</code>, <code>main</code> or a branch name), <code>team</code>, <code>paths</code>, <code>limit</code> (default 60, max 500), <code>cursor</code>, and <code>org</code> or <code>sessionId</code> to choose the repo. Returns <code>{commits, nextCursor, openPrs, branches}</code>.</p>
+        <pre data-tool-example="context_repo_history"><code>{
+  &quot;tool&quot;: &quot;context_repo_history&quot;,
+  &quot;arguments&quot;: {
+    &quot;branch&quot;: &quot;main&quot;,
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <h3 id="tool-remove_source_repo"><code>remove_source_repo</code></h3>
+        <p>Removes a source repo from a team so the team stops tracking it. When no team in any of your orgs still tracks it, the record binding its local clone is forgotten; the clone stays on disk. Pass <code>org</code>, <code>team</code> and <code>repo</code>. Returns <code>{status:&quot;ok&quot;, data:{remoteKey, unboundClone}}</code>.</p>
+        <pre data-tool-example="remove_source_repo"><code>{
+  &quot;tool&quot;: &quot;remove_source_repo&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;repo&quot;: &quot;acme/app&quot;
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc K pages</a> ·
+        <a href="./file-tools.html">Content file tools</a> ·
+        <a href="./layer-tools.html">Legacy sense_sync tools</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc K · Sync</div>
+    </footer>
+  </body>
+</html>

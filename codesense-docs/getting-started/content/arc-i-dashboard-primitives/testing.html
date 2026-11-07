@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="flask-conical" />
+    <title>CodeSense — Testing &amp; iterating</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/testing">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Testing iterating dashboard inside app bridge" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · Loop</span>
+        <h1>Edit. Reload. Confirm.</h1>
+        <p class="lede">
+          A dashboard is a text file in your context repo. You edit it in any editor, you
+          reload the tab in CodeSense, you see the change. There is no build step, no
+          hot-module tooling, no sourcemap drama. This page walks the loop end to end —
+          inspecting the bridge, catching errors, previewing the file standalone before you
+          plug it into the viewer.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="Four-step cycle around a circle: edit the file, save, reload the tab, confirm. A branch at reload goes to standalone preview if the viewer is unavailable."
+          >
+            <title>Edit · reload · confirm</title>
+
+            <defs>
+              <marker id="t-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- cycle -->
+            <circle class="i-ins" cx="320" cy="110" r="80" />
+            <g>
+              <rect class="i-surf" x="265" y="20" width="110" height="36" rx="6" />
+              <text class="i-txt" x="320" y="42" text-anchor="middle">edit the file</text>
+            </g>
+            <g>
+              <rect class="i-surf" x="395" y="92" width="110" height="36" rx="6" />
+              <text class="i-txt" x="450" y="114" text-anchor="middle">⌘S save</text>
+            </g>
+            <g>
+              <rect class="i-surf" x="265" y="164" width="110" height="36" rx="6" />
+              <text class="i-txt" x="320" y="186" text-anchor="middle">⌘R reload</text>
+            </g>
+            <g>
+              <rect class="i-surf" x="135" y="92" width="110" height="36" rx="6" />
+              <text class="i-txt" x="190" y="114" text-anchor="middle">confirm change</text>
+            </g>
+
+            <!-- arrows -->
+            <path class="i-acc" d="M375 38 Q440 56 420 92" marker-end="url(#t-arrow)" />
+            <path class="i-acc" d="M450 128 Q440 162 375 182" marker-end="url(#t-arrow)" />
+            <path class="i-acc" d="M265 182 Q200 162 220 128" marker-end="url(#t-arrow)" />
+            <path class="i-acc" d="M190 92 Q200 56 265 38" marker-end="url(#t-arrow)" />
+          </svg>
+          <figcaption id="hero-cap">
+            under a second per round · no restart, no reindex
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== The loop =============== -->
+      <section data-search="The edit reload confirm loop" id="loop">
+        <h2>The inner loop</h2>
+        <ol class="steps">
+          <li>
+            <h3>Edit the HTML in any editor</h3>
+            <p>
+              Your dashboard file lives under <code>dashboards/</code> (or wherever you put it)
+              inside the active context repo on disk. CodeSense doesn't lock the file; open it
+              in your editor of choice, save normally.
+            </p>
+          </li>
+          <li>
+            <h3>Reload the tab</h3>
+            <p>
+              Focus the dashboard tab and hit <code>⌘R</code>. The viewer reloads the iframe,
+              re-injects the bridge, and your doc runs fresh. State you kept in JS memory
+              resets — persisted state (via <code>codesense.setField</code> or your own
+              <code>localStorage</code>) survives.
+            </p>
+          </li>
+          <li>
+            <h3>Confirm the change in place</h3>
+            <p>
+              If your dashboard renders a list, add a row via the matching write verb and
+              watch the list update. If it reacts to state, make a small change in another
+              surface (toggle a routine, send a message) and watch the handler fire.
+            </p>
+          </li>
+          <li>
+            <h3>Error? Inspect in place.</h3>
+            <p>
+              The viewer forwards <code>window.onerror</code> and
+              <code>unhandledrejection</code> to the host via
+              <code>codesense:doc-error</code>, which renders a red banner inside the frame
+              with the message, source, and line. For deeper poking, open the WebKit inspector
+              from the viewer's debug menu (⌘⌥I on macOS).
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Inspecting the bridge =============== -->
+      <section data-search="Inspecting the bridge window codesense console" id="inspect">
+        <h2>Inspecting the bridge from the console</h2>
+        <p>
+          With the inspector open on your dashboard, the <code>window.codesense</code> object
+          is right there. Every method is callable from the console the same way your doc
+          calls it. Use this to probe a verb before you wire it into UI code:
+        </p>
+        <pre><code>// What verbs are exposed?
+Object.keys(window.codesense).sort();
+
+// Dry-run a verb to see the result shape
+await codesense.invoke("worktrees", {});
+
+// Snapshot the current theme palette
+await codesense.theme();
+
+// Simulate what a parent nudge would do
+window.dispatchEvent(new MessageEvent("message", {
+  data: { type: "codesense:context-changed", orgs: [], allOrgs: 0, truncated: false }
+}));</code></pre>
+        <p>
+          The last line is the trick for exercising a subscriber without the host actually
+          moving — paste it, watch your handler fire. Pair with the console log the handler
+          produces to verify filter logic.
+        </p>
+      </section>
+
+      <!-- =============== Standalone preview =============== -->
+      <section data-search="Standalone preview file protocol bridge mock" id="standalone">
+        <h2>Previewing the file standalone (file://)</h2>
+        <p>
+          Sometimes the fastest round-trip is opening the file directly in a browser from
+          <code>file://</code> — no viewer, no bridge. The viewer-injected
+          <code>window.codesense</code> isn't there, so you need to feature-detect and provide
+          a stub for the shapes you render. The pattern:
+        </p>
+        <pre><code>const bridge = window.codesense || {
+  // Minimal stub for standalone preview. Return a fake result for every verb
+  // your doc exercises; log the call so you can see the flow.
+  invoke(verb, args) {
+    console.log("[stub] invoke", verb, args);
+    const fakes = {
+      context: { org: "you/context", team: "default", layer: "team", contentRoot: "/tmp/ctx" },
+      worktrees: [
+        { kind: "story", storyId: "DEMO-1", branch: "feat/DEMO-1" },
+      ],
+    };
+    return Promise.resolve(fakes[verb] || null);
+  },
+  subscribeContext(_query, fn) {
+    fn({ rows: [] }, null);
+    return () => {};
+  },
+  onTheme() { return () => {}; },
+};
+
+// Use the stub when the real bridge is absent
+bridge.invoke("worktrees", {}).then(render);</code></pre>
+        <p>
+          The stub stays in the file; the viewer's real <code>codesense</code> takes
+          precedence when the dashboard runs inside CodeSense. The upshot: you can iterate on
+          layout and render logic by double-clicking the HTML, then plug it into the viewer to
+          verify the live bridge.
+        </p>
+      </section>
+
+      <!-- =============== Snapshot for diffs =============== -->
+      <section data-search="Snapshot button diff baseline" id="snapshot">
+        <h2>Snapshot — freezing a view for later</h2>
+        <p>
+          Centre-tab dashboards have a <strong>Snapshot</strong> band at the top of the
+          chrome. Click it to serialize the current DOM — the host archives it under
+          <code>snapshots/</code> in the context repo. The next time you open the same
+          dashboard, a baseline toggle appears; clicking it loads the frozen HTML in the
+          baseline shape (opaque origin, no bridge) so you can diff the current state against
+          the recorded one.
+        </p>
+        <p>
+          Snapshots are the right tool when:
+        </p>
+        <ul>
+          <li>You want to review what a dashboard showed a human during a decision.</li>
+          <li>You want to compare "before and after" an agent run without screenshotting.</li>
+          <li>You want to attach a reference view to a story or inbox message.</li>
+        </ul>
+        <p>
+          Trigger a snapshot programmatically from your doc:
+        </p>
+        <pre><code>document.getElementById("save-view").addEventListener("click", () =&gt; {
+  codesense.snapshot({ selected: state.selectedId });
+});</code></pre>
+      </section>
+
+      <!-- =============== Common pitfalls =============== -->
+      <section data-search="Pitfalls dashboard bridge timing errors" id="pitfalls">
+        <h2>Common pitfalls</h2>
+        <ul>
+          <li>
+            <strong>Calling <code>invoke</code> before the bridge is ready.</strong> The viewer
+            injects the bridge before your scripts run; relying on a late network fetch is
+            fine. If you're <em>sure</em> the race exists, wait for
+            <code>codesense:ready</code> from the parent before firing the first call.
+          </li>
+          <li>
+            <strong>Expecting <code>⌘W</code> to close a right pane.</strong> Right panes
+            ignore the close chord; the person closes a pane from the right pane's own controls.
+          </li>
+          <li>
+            <strong>Writing a long dashboard as an inbox message.</strong> Inbox messages
+            auto-size; anything over ~500 px of content wants to be its own tab. Link to a
+            centre-tab dashboard from the message instead.
+          </li>
+          <li>
+            <strong>Hard-coding colours.</strong> If the dashboard reads fine on one theme and
+            disappears on the other, you've authored a hex instead of consuming a token. Grep
+            your file for <code>#</code> + <code>rgb</code> + <code>hsl</code>.
+          </li>
+          <li>
+            <strong>Forgetting to clean up subscribers across view swaps.</strong> If your
+            dashboard is a mini-SPA with routes, call <code>unsubscribe()</code> on your way
+            out of a view. The viewer only drops listeners when the whole frame unloads.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now theme snapshot invoke" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the WebKit inspector on this page (<code>⌘⌥I</code>) and type
+          <code>codesense.theme()</code> at the console prompt. You'll see the live palette
+          object the viewer handed you. Then click the button to issue a plain read through
+          the Try-this wrapper the training manual uses — if it answers, your bridge is live:
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="Verify the bridge via worktrees()"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP test dashboard agent" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            An agent iterating on a dashboard follows the same loop with different levers:
+          </p>
+          <pre><code># Edit: with the agent's own file tools, in the team's content folder
+
+# Read what the open page rendered (select it in CodeSense first)
+read_rendered_document { format: "text" }</code></pre>
+          <p>
+            Agents don't get a browser inspector; they read the rendered page with
+            <code>read_rendered_document</code> to catch failures.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#events/codesense:doc-error"
+          >codesense:doc-error</a>
+        ·
+        <a href="../primitives-explorer.html#events/codesense:snapshot-request"
+          >codesense:snapshot-request</a>
+        ·
+        <a href="../primitives-explorer.html#kit/codesense.snapshot"
+          >codesense.snapshot</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Testing &amp; iterating</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

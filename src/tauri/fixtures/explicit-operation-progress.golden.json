@@ -1,0 +1,130 @@
+{
+  "cancelled": [
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "operationId": "op-1",
+      "phase": "diff",
+      "total": 2,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "operationId": "op-1",
+      "phase": "transfer",
+      "total": 14,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "note": "Prepared 2 files (14 B) from team content in 0.0 s. To get more, call hydrate_worktree.",
+      "operationId": "op-1",
+      "phase": "cancelled",
+      "summary": {
+        "bytesWritten": 0,
+        "elapsedMs": 0,
+        "failed": [],
+        "failedCount": 0,
+        "keptModified": [],
+        "keptModifiedCount": 0,
+        "keptUnmanaged": [],
+        "keptUnmanagedCount": 0,
+        "leftovers": 0,
+        "pinnedDrift": [],
+        "skippedOther": [],
+        "skippedOtherCount": 0,
+        "skippedTracked": [],
+        "skippedTrackedCount": 0,
+        "status": "cancelled",
+        "unchanged": 0,
+        "wanted": 2,
+        "written": 0
+      },
+      "total": 2,
+      "workspace": "ws"
+    }
+  ],
+  "event": "agent-prepare-progress",
+  "ready": [
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "operationId": "op-1",
+      "phase": "diff",
+      "total": 1,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "operationId": "op-1",
+      "phase": "transfer",
+      "total": 6,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 6,
+      "files": 1,
+      "operationId": "op-1",
+      "phase": "transfer",
+      "total": 6,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 0,
+      "files": 0,
+      "operationId": "op-1",
+      "phase": "apply",
+      "total": 6,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 6,
+      "files": 1,
+      "operationId": "op-1",
+      "phase": "apply",
+      "total": 6,
+      "workspace": "ws"
+    },
+    {
+      "agent": "Barb",
+      "bytes": 6,
+      "files": 1,
+      "note": "Prepared 1 file (6 B) from team content in 0.0 s (1 copied, 6 B). To get more, call hydrate_worktree.",
+      "operationId": "op-1",
+      "phase": "ready",
+      "summary": {
+        "bytesWritten": 6,
+        "elapsedMs": 0,
+        "failed": [],
+        "failedCount": 0,
+        "keptModified": [],
+        "keptModifiedCount": 0,
+        "keptUnmanaged": [],
+        "keptUnmanagedCount": 0,
+        "leftovers": 0,
+        "pinnedDrift": [],
+        "skippedOther": [],
+        "skippedOtherCount": 0,
+        "skippedTracked": [],
+        "skippedTrackedCount": 0,
+        "status": "ready",
+        "unchanged": 0,
+        "wanted": 1,
+        "written": 1
+      },
+      "total": 1,
+      "workspace": "ws"
+    }
+  ]
+}

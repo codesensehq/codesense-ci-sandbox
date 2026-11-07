@@ -1,0 +1,2932 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="codesense:surface" content="notes" />
+    <meta name="codesense:slots" content="right-pane" />
+    <meta
+      name="codesense:capabilities"
+      content="records:read:own records:write:own sessions:read sessions:send context:read commands:run"
+    />
+    <meta
+      name="codesense:commands"
+      content='[
+        {"id":"new","label":"New note","defaultChord":"CmdOrCtrl+N","scope":"slot-focused"},
+        {"id":"find","label":"Find note…","scope":"global"},
+        {"id":"goto-heading","label":"Go to heading…","scope":"global"},
+        {"id":"toggle-list","label":"Toggle notes list","scope":"slot-focused"}
+      ]'
+    />
+    <title>Notes</title>
+    <link rel="stylesheet" href="/kit/v1/editor.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+      }
+      .nt-pane,
+      .nt-pop {
+        --nt-ground: var(--cs-bg);
+        --nt-ink: var(--cs-fg);
+        --nt-quiet: var(--cs-muted-fg);
+        --nt-hair: color-mix(in srgb, var(--nt-ink) 14%, transparent);
+        --nt-line: color-mix(in srgb, var(--nt-ink) 20%, transparent);
+        --nt-wash: color-mix(in srgb, var(--cs-fg) 6%, transparent);
+        --nt-wash-2: color-mix(in srgb, var(--cs-fg) 10%, transparent);
+        --nt-raised: color-mix(in srgb, var(--cs-fg) 4%, var(--nt-ground));
+        --nt-float: color-mix(in srgb, var(--cs-fg) 7%, var(--nt-ground));
+        --nt-font-note: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+        --nt-font-mono: "SF Mono", "MesloLGS NF", ui-monospace, Menlo, monospace;
+        color: var(--nt-ink);
+        font: 13px/1.4 var(--cs-font-sans, system-ui, sans-serif);
+      }
+      .nt-pane {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        background: var(--nt-ground);
+        -webkit-font-smoothing: antialiased;
+        font-variant-numeric: tabular-nums;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      :where(button, input) {
+        font: inherit;
+        color: inherit;
+      }
+      :where(button) {
+        border: 0;
+        background: none;
+        cursor: pointer;
+      }
+      :where(input) {
+        min-width: 0;
+      }
+      :where(button, input, [tabindex]):focus-visible {
+        outline: 2px solid var(--cs-highlight);
+        outline-offset: 1px;
+        border-radius: 4px;
+      }
+      /* The note body is a writing surface: the caret marks it, plus a faint ring so
+         keyboard focus stays visible. A click into editable text also matches
+         :focus-visible, so the ring stays quiet for both. */
+      .scratch-note-editor:focus,
+      .scratch-note-editor:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--cs-highlight) 25%, transparent);
+      }
+      ::selection {
+        background: color-mix(in srgb, var(--cs-highlight) 32%, transparent);
+      }
+      input::placeholder {
+        color: var(--nt-quiet);
+      }
+      .nt-icon {
+        width: 15px;
+        height: 15px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .nt-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 26px;
+        padding: 0 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .nt-btn:hover,
+      .nt-btn[aria-pressed="true"],
+      .nt-btn[aria-expanded="true"] {
+        background: var(--nt-wash-2);
+      }
+      .nt-btn.icon {
+        width: 28px;
+        padding: 0;
+        color: var(--nt-quiet);
+      }
+      .nt-btn.primary {
+        background: var(--cs-accent);
+        color: var(--cs-accent-fg);
+        font-weight: 500;
+      }
+      .nt-btn.outline {
+        box-shadow: inset 0 0 0 1px var(--nt-line);
+      }
+      .nt-btn.danger {
+        background: var(--cs-danger);
+        color: var(--nt-ground);
+      }
+      .nt-kbd {
+        font: 500 10.5px var(--nt-font-mono);
+        color: var(--nt-quiet);
+        border: 1px solid var(--nt-line);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 4px;
+        line-height: 15px;
+      }
+      .nt-chrome {
+        height: 40px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        border-bottom: 1px solid var(--nt-hair);
+      }
+      .nt-find {
+        flex: 1 1 300px;
+        max-width: 300px;
+        min-width: 0;
+        justify-content: flex-start;
+        color: var(--nt-quiet);
+        background: var(--nt-raised);
+      }
+      .nt-find span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .nt-find kbd {
+        margin-left: auto;
+      }
+      .nt-gap {
+        flex: 1;
+      }
+      .nt-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+      }
+      .nt-main {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .nt-list {
+        width: 248px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border-right: 1px solid var(--nt-hair);
+        background: var(--nt-ground);
+      }
+      .nt-pane[data-layout="narrow"] .nt-list {
+        display: none;
+      }
+      .nt-pane[data-layout="narrow"][data-drawer="true"] .nt-list {
+        display: flex;
+        position: absolute;
+        top: 40px;
+        bottom: 0;
+        left: 0;
+        z-index: 20;
+        width: min(300px, 100%);
+        box-shadow: var(--cs-shadow);
+      }
+      .nt-pane:not([data-layout="narrow"]) #toggle-list {
+        display: none;
+      }
+      .nt-list-head {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--nt-hair);
+      }
+      .nt-list-search {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        color: var(--nt-quiet);
+      }
+      .nt-list-search input {
+        width: 100%;
+        border: 0;
+        background: none;
+        padding: 3px 0;
+        font-size: 12px;
+      }
+      .nt-scroll {
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in srgb, var(--nt-ink) 22%, transparent) transparent;
+        scroll-behavior: auto;
+      }
+      .nt-list-rows {
+        flex: 1;
+        padding: 6px;
+      }
+      .nt-group {
+        color: var(--nt-quiet);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 9px 8px 5px;
+      }
+      .nt-note-row {
+        display: flex;
+        position: relative;
+        border-radius: 6px;
+        margin: 1px 0;
+      }
+      .nt-note-row:hover,
+      .nt-note-row[aria-current="true"] {
+        background: var(--nt-wash);
+      }
+      .nt-note-open {
+        flex: 1;
+        min-width: 0;
+        text-align: left;
+        padding: 9px 9px 8px;
+        display: block;
+      }
+      .nt-note-name {
+        font-size: 13px;
+        font-weight: 500;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 14px;
+      }
+      .nt-note-preview {
+        display: block;
+        font-size: 12px;
+        color: var(--nt-quiet);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-top: 3px;
+      }
+      .nt-note-foot {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--nt-quiet);
+        margin-top: 6px;
+        font-size: 10.5px;
+      }
+      .nt-note-foot time {
+        margin-left: auto;
+      }
+      .nt-face {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .nt-agent-name {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .nt-mark {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--cs-state-idle);
+      }
+      .nt-mark.live {
+        background: var(--cs-state-running);
+      }
+      .nt-row-more {
+        position: absolute;
+        right: 3px;
+        top: 5px;
+        width: 22px !important;
+        height: 22px;
+        opacity: 0;
+      }
+      .nt-note-row:hover .nt-row-more,
+      .nt-row-more:focus-visible {
+        opacity: 1;
+      }
+      .nt-row-rename {
+        width: 100%;
+        border: 1px solid var(--cs-border-control);
+        border-radius: 4px;
+        background: var(--nt-ground);
+        padding: 3px;
+      }
+      mark {
+        color: inherit;
+        background: color-mix(in srgb, var(--cs-warning) 26%, transparent);
+      }
+      .nt-pane:not([data-can-send="true"]) .scratch-code-block-send {
+        display: none;
+      }
+      .nt-editor-port {
+        flex: 1;
+        min-height: 0;
+      }
+      .nt-editor-port {
+        position: relative;
+      }
+      .nt-line-send {
+        position: absolute;
+        z-index: 8;
+        width: 26px;
+        height: 26px;
+        padding: 5px;
+        border: 1px solid var(--nt-line);
+        border-radius: 6px;
+        background: var(--nt-float);
+        box-shadow: var(--cs-shadow);
+        animation: nt-pop-in 120ms ease-out;
+      }
+      .nt-line-send::before {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        right: 25px;
+        top: -1px;
+        width: 28px;
+        height: 26px;
+        background: linear-gradient(to right, transparent, var(--nt-ground));
+      }
+      .nt-send-context {
+        display: flex;
+        gap: 6px;
+        padding: 10px;
+        border-top: 1px solid var(--nt-line);
+      }
+      .nt-send-list {
+        max-height: 260px;
+        overflow: auto;
+      }
+      .nt-send-status {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--nt-quiet);
+      }
+      .nt-overlap {
+        border-left: 3px solid var(--cs-warning);
+        padding: 10px 12px;
+        margin: 12px 0;
+        background: color-mix(in srgb, var(--cs-warning) 9%, var(--nt-ground));
+      }
+      .nt-overlap pre {
+        white-space: pre-wrap;
+        font: inherit;
+        margin: 4px 0 10px;
+      }
+      .nt-overlap-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .nt-selmenu .nt-separator {
+        height: 18px;
+        border-left: 1px solid var(--nt-line);
+        margin: 0 4px;
+      }
+      .nt-selmenu .nt-send-selection svg {
+        width: 13px;
+        height: 13px;
+      }
+      .nt-selmenu .nt-send-selection {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .nt-pane[data-presentation="overlay"] .nt-title {
+        font-size: 24px;
+      }
+      .nt-pane[data-presentation="overlay"] .nt-sheet {
+        max-width: calc(72ch + 36px);
+      }
+      .nt-sheet {
+        max-width: calc(68ch + 36px);
+        margin: 0 auto;
+        padding: 22px 18px 80px;
+      }
+      .nt-title {
+        display: block;
+        width: 100%;
+        font: 600 21px/1.25 var(--nt-font-note);
+        letter-spacing: -0.012em;
+        margin: 2px 0 6px;
+        padding: 0;
+        border: 0;
+        background: none;
+        outline: none;
+      }
+      .nt-meta {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 12px;
+        line-height: 1.3;
+        color: var(--nt-quiet);
+        margin-bottom: 20px;
+      }
+      .nt-meta-dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.6;
+      }
+      .nt-meta .nt-icon {
+        width: 11px;
+        height: 11px;
+      }
+      .nt-banner {
+        flex: none;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        padding: 8px 12px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--nt-hair);
+        background: color-mix(in srgb, var(--cs-state-running) 7%, var(--nt-ground));
+      }
+      .nt-banner.fail {
+        background: color-mix(in srgb, var(--cs-danger) 9%, var(--nt-ground));
+      }
+      .nt-banner.fail .nt-icon,
+      .nt-unsaved {
+        color: var(--cs-danger);
+        font-weight: 500;
+      }
+      .nt-notice {
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        z-index: 60;
+        margin: auto;
+        width: fit-content;
+        max-width: calc(100% - 32px);
+        padding: 9px 12px;
+        border: 1px solid var(--nt-line);
+        border-radius: 8px;
+        background: var(--nt-float);
+        box-shadow: var(--cs-shadow);
+        font-size: 12px;
+      }
+      .nt-side {
+        width: 250px;
+        flex: none;
+        border-left: 1px solid var(--nt-hair);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .nt-pane[data-layout="full"] .nt-list {
+        width: 280px;
+      }
+      .nt-pane:not([data-layout="full"]) .nt-side {
+        display: none;
+      }
+      .nt-side-tabs {
+        display: flex;
+        padding: 7px;
+        gap: 4px;
+        border-bottom: 1px solid var(--nt-hair);
+      }
+      .nt-outline,
+      .nt-history-list {
+        padding: 12px;
+      }
+      .nt-outline button {
+        display: flex;
+        width: 100%;
+        gap: 6px;
+        border-radius: 5px;
+        text-align: left;
+        padding: 5px 6px;
+        color: var(--nt-quiet);
+        font-size: 12px;
+      }
+      .nt-outline button:hover,
+      .nt-outline button[aria-current="true"] {
+        color: var(--nt-ink);
+        background: var(--nt-wash);
+      }
+      .nt-outline-count {
+        margin-left: auto;
+        font-size: 10px;
+      }
+      .nt-history-entry {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--nt-hair);
+        font-size: 12px;
+      }
+      .nt-history-who {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+      }
+      .nt-history-entry p {
+        color: var(--nt-quiet);
+        font-size: 11px;
+        margin: 5px 0 7px;
+      }
+      .nt-history-sheet {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(360px, 100%);
+        z-index: 30;
+        background: var(--nt-ground);
+        border-left: 1px solid var(--nt-hair);
+        box-shadow: var(--cs-shadow);
+        display: flex;
+        flex-direction: column;
+      }
+      .nt-history-sheet header {
+        display: flex;
+        align-items: center;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--nt-hair);
+        font-weight: 500;
+      }
+      .nt-history-sheet .nt-history-list {
+        overflow: auto;
+      }
+      .nt-sticky {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 5;
+        pointer-events: none;
+        background: color-mix(in srgb, var(--nt-ground) 92%, transparent);
+        backdrop-filter: blur(6px);
+      }
+      .nt-sticky:empty {
+        display: none;
+      }
+      .nt-sticky button {
+        display: block;
+        height: 28px;
+        width: 100%;
+        text-align: left;
+        pointer-events: auto;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--nt-quiet);
+        padding-right: 18px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .nt-sticky button:last-child {
+        color: var(--nt-ink);
+        border-bottom: 1px solid var(--nt-hair);
+      }
+      .nt-empty {
+        margin: auto;
+        max-width: 380px;
+        padding: 36px 26px;
+        color: var(--nt-quiet);
+      }
+      .nt-empty h3 {
+        color: var(--nt-ink);
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        margin: 0 0 9px;
+      }
+      .nt-empty p {
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 0 0 20px;
+      }
+      .nt-pop-sep {
+        border-top: 1px solid var(--nt-hair);
+        margin: 6px 0;
+      }
+      .nt-pop-note {
+        color: var(--nt-quiet);
+        font-size: 11px;
+        padding: 8px 10px;
+      }
+      .nt-empty-routine {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-top: 24px;
+      }
+      .nt-link {
+        color: var(--nt-ink);
+        background: none;
+        border: 0;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .nt-empty-keys {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 10px 12px;
+        font-size: 12px;
+        margin-top: 26px;
+      }
+      .nt-pop {
+        position: fixed;
+        z-index: 80;
+        min-width: 190px;
+        max-width: calc(100vw - 16px);
+        padding: 5px;
+        border: 1px solid var(--nt-line);
+        border-radius: 10px;
+        background: var(--nt-float);
+        box-shadow: var(--cs-shadow);
+        animation: nt-pop-in 140ms ease-out;
+      }
+      .nt-row {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
+        min-height: 30px;
+        padding: 0 8px;
+        border-radius: 6px;
+        text-align: left;
+        font-size: 13px;
+      }
+      .nt-row:hover,
+      .nt-row[aria-selected="true"] {
+        background: color-mix(in srgb, var(--cs-fg) 8%, transparent);
+      }
+      .nt-row .nt-icon {
+        width: 14px;
+        height: 14px;
+        color: var(--nt-quiet);
+      }
+      .nt-row-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .nt-row-sub {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--nt-quiet);
+      }
+      .nt-pop-label {
+        padding: 7px 8px 4px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--nt-quiet);
+      }
+      .nt-pop-search {
+        width: 100%;
+        padding: 8px;
+        border: 0;
+        border-bottom: 1px solid var(--nt-hair);
+        background: none;
+        outline: none;
+        caret-color: var(--cs-highlight);
+      }
+      .nt-pop-results {
+        max-height: 300px;
+        overflow: auto;
+      }
+      .nt-selmenu {
+        display: flex;
+        min-width: 0;
+        gap: 1px;
+        padding: 3px;
+        border-radius: 8px;
+      }
+      .nt-selmenu button {
+        height: 26px;
+        min-width: 26px;
+        padding: 0 6px;
+        border-radius: 5px;
+        color: var(--nt-quiet);
+      }
+      .nt-selmenu button:hover,
+      .nt-selmenu button[aria-pressed="true"] {
+        background: var(--nt-wash-2);
+        color: var(--nt-ink);
+      }
+      .nt-selmenu .nt-icon {
+        width: 14px;
+        height: 14px;
+      }
+      .nt-dialog-backdrop {
+        position: absolute;
+        inset: 0;
+        z-index: 90;
+        background: color-mix(in srgb, var(--nt-ground) 75%, transparent);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .nt-dialog {
+        width: min(340px, 100%);
+        border: 1px solid var(--nt-line);
+        border-radius: 10px;
+        background: var(--nt-float);
+        box-shadow: var(--cs-shadow);
+        padding: 20px;
+      }
+      .nt-dialog h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .nt-dialog p {
+        color: var(--nt-quiet);
+        margin: 0 0 20px;
+      }
+      .nt-dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      @keyframes nt-pop-in {
+        from {
+          transform: translateY(-2px) scale(0.985);
+        }
+        to {
+          transform: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .nt-pop {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="nt-pane" id="notes" data-ui data-layout="narrow" data-drawer="false">
+      <header class="nt-chrome">
+        <button
+          class="nt-btn icon"
+          id="toggle-list"
+          aria-label="Show notes"
+          aria-expanded="false"
+          data-icon="panel"
+        ></button>
+        <button class="nt-btn nt-find" id="find-note">
+          <span data-icon="search"></span><span>Find a note</span><kbd class="nt-kbd">⌘O</kbd>
+        </button>
+        <span class="nt-gap"></span>
+        <button
+          class="nt-btn icon"
+          id="new-note"
+          aria-label="New note (⌘N)"
+          data-icon="plus"
+        ></button>
+        <button
+          class="nt-btn icon"
+          id="outline-button"
+          aria-label="On this note"
+          data-icon="outline"
+        ></button>
+        <button
+          class="nt-btn icon"
+          id="history-button"
+          aria-label="Note history"
+          data-icon="history"
+        ></button>
+        <button class="nt-btn" id="agent-menu" aria-label="Agent actions">
+          <span data-icon="send"></span>Agent
+        </button>
+        <button
+          class="nt-btn icon"
+          id="note-menu"
+          aria-label="Note actions"
+          data-icon="more"
+        ></button>
+      </header>
+      <div class="nt-body">
+        <nav class="nt-list" aria-label="Notes">
+          <div class="nt-list-head">
+            <label class="nt-list-search"
+              ><span data-icon="search"></span
+              ><input id="list-search" placeholder="Search notes" aria-label="Search notes"
+            /></label>
+          </div>
+          <div class="nt-list-rows nt-scroll" id="note-rows"></div>
+        </nav>
+        <section class="nt-main">
+          <div class="nt-banner fail" id="save-error" role="alert" hidden>
+            <span data-icon="alert"></span><span>Couldn't save this note.</span
+            ><span class="nt-gap"></span
+            ><button class="nt-btn outline" id="retry-save">Retry</button>
+          </div>
+          <div class="nt-banner" id="recovery" hidden>
+            <span id="recovery-copy">An unsaved draft is available.</span
+            ><button class="nt-btn outline" id="recover-draft">Recover draft</button
+            ><button class="nt-btn" id="discard-draft">Discard</button>
+          </div>
+          <div class="nt-banner" id="changes-banner" hidden>
+            <span id="changes-copy">Agent changed this</span><span class="nt-gap"></span
+            ><button class="nt-btn" id="review-changes">Review</button
+            ><button class="nt-btn" id="undo-changes" aria-label="Undo all changes">Undo all</button
+            ><button class="nt-btn" id="done-changes" hidden>Done</button>
+          </div>
+          <div class="nt-editor-port nt-scroll" id="editor-port" hidden>
+            <div class="nt-sheet">
+              <input
+                class="nt-title"
+                id="note-title"
+                placeholder="Untitled"
+                aria-label="Note title"
+              />
+              <div class="nt-meta">
+                <span data-icon="lock"></span
+                ><span title="Only you can see your notes">Private</span
+                ><span class="nt-meta-dot"></span><span id="org-name"></span
+                ><span class="nt-meta-dot"></span
+                ><span id="save-state" aria-live="polite">Saved</span>
+              </div>
+              <section id="overlap-groups" aria-label="Both edited this note" hidden></section>
+              <div id="editor"></div>
+              <p id="note-keyboard-hint" hidden>
+                Tab indents lists and code. Escape dismisses menus, leaves the editor, or exits full
+                screen. After Escape closes suggestions or the selection toolbar, Tab or Shift+Tab
+                leaves the editor.
+              </p>
+            </div>
+            <button
+              class="nt-line-send nt-btn"
+              id="line-send"
+              title="Send to… (⌘↵)"
+              aria-label="Send to… (⌘↵)"
+              hidden
+            >
+              <span data-icon="send"></span>
+            </button>
+          </div>
+          <div class="nt-sticky" id="sticky-headings" aria-hidden="true"></div>
+          <div class="nt-empty" id="empty-state">
+            <h3 id="empty-title">Notes</h3>
+            <p>
+              Private to you and kept on this Mac, with history. Jot plans, prompts and todos, then
+              hand any line to an agent.
+            </p>
+            <button class="nt-btn primary" id="empty-new">
+              <span data-icon="plus"></span>New note <kbd class="nt-kbd">⌘N</kbd>
+            </button>
+            <div class="nt-empty-keys">
+              <kbd class="nt-kbd">- [ ]</kbd><span>starts a task</span><kbd class="nt-kbd">/</kbd
+              ><span>inserts a heading, code, checklist…</span><kbd class="nt-kbd">[[</kbd
+              ><span>links a note or a story</span><kbd class="nt-kbd">⌘↵</kbd
+              ><span>Send the caret’s line or the selection to an agent</span>
+            </div>
+            <div class="nt-empty-routine" id="empty-routine" hidden>
+              <span data-icon="clock"></span
+              ><span>Want an agent to keep these tidy every evening?</span>
+              <button type="button" class="nt-link" id="empty-setup-routine">
+                Set up a routine
+              </button>
+            </div>
+          </div>
+          <section class="nt-history-sheet" id="history-sheet" aria-label="Note history" hidden>
+            <header>
+              Note history<span class="nt-gap"></span
+              ><button
+                class="nt-btn icon"
+                id="close-history"
+                aria-label="Close history"
+                data-icon="close"
+              ></button>
+            </header>
+            <div class="nt-history-list" id="sheet-history"></div>
+          </section>
+        </section>
+        <aside class="nt-side" aria-label="Note details">
+          <div class="nt-side-tabs">
+            <button class="nt-btn" id="tab-outline" aria-pressed="true">On this note</button
+            ><button class="nt-btn" id="tab-history" aria-pressed="false">Changes</button>
+          </div>
+          <div class="nt-outline nt-scroll" id="side-outline"></div>
+          <div class="nt-history-list nt-scroll" id="side-history" hidden></div>
+        </aside>
+      </div>
+      <div class="nt-notice" id="notice" role="status" hidden></div>
+      <div class="nt-dialog-backdrop" id="delete-backdrop" hidden>
+        <section class="nt-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+          <h3 id="delete-title">Delete this note?</h3>
+          <p>This removes the note from your list.</p>
+          <div class="nt-dialog-actions">
+            <button class="nt-btn outline" id="cancel-delete">Cancel</button
+            ><button class="nt-btn danger" id="confirm-delete">Delete note</button>
+          </div>
+        </section>
+      </div>
+    </main>
+    <div class="nt-pop" id="float" hidden></div>
+    <div class="nt-pop" id="suggestions" role="listbox" hidden></div>
+    <div class="nt-pop nt-selmenu" id="selection-menu" hidden></div>
+    <script type="module">
+      import { createEditor } from "/kit/v1/editor.js";
+
+      const cs = window.codesense;
+      const $ = (id) => document.getElementById(id);
+      const paths = {
+        send: "m22 2-7 20-4-9-9-4Zm0 0L11 13",
+        plus: "M12 5v14M5 12h14",
+        search: "m21 21-4.4-4.4M19 10.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0",
+        more: "M5 12h.01M12 12h.01M19 12h.01",
+        close: "m6 6 12 12M6 18 18 6",
+        panel: "M9 3v18M3 3h18v18H3z",
+        outline: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+        clock: "M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0",
+        history: "M3 11a9 9 0 1 1 2.5 7M3 4v7h7M12 7v5l3 2",
+        lock: "M5 10h14v11H5zM8 10V7a4 4 0 0 1 8 0v3",
+        alert: "M12 8v5M12 17h.01M12 3 2 21h20Z",
+        pin: "m16 3 5 5-4 1-4 4v4l-3-3-6 6M10 14l-3-3h4l4-4 1-4",
+        rename: "m16 3 5 5L8 21H3v-5Z",
+        trash: "M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7",
+        note: "M5 3h14v14l-4 4H5zM15 21v-4h4",
+        file: "M14 2H5v20h14V7Zm0 0v5h5",
+        story: "M4 4h6v6H4zM14 14h6v6h-6zM7 10v7h7",
+        bold: "M6 4h7a4 4 0 0 1 0 8H6zm0 8h8a4 4 0 0 1 0 8H6z",
+        italic: "M19 4h-9M14 20H5M15 4 9 20",
+        code: "m8 7-5 5 5 5M16 7l5 5-5 5",
+        link: "m10 13 4-4M8 15l-2 2a4 4 0 0 1-5-5l4-4a4 4 0 0 1 5 0m4 1 2-2a4 4 0 1 1 5 5l-4 4a4 4 0 0 1-5 0",
+        checklist: "M9 5h12M9 12h12M9 19h12M2 5l2 2 3-4M2 12l2 2 3-4M2 19h4",
+        heading: "M4 4v16M16 4v16M4 12h12M20 10v10",
+        quote: "M3 5h7v7H3zm11 0h7v7h-7M10 12l-4 7M21 12l-4 7",
+        divider: "M4 12h16",
+        list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+      };
+      function icon(name) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("class", "nt-icon");
+        svg.setAttribute("aria-hidden", "true");
+        const path = document.createElementNS(svg.namespaceURI, "path");
+        path.setAttribute("d", paths[name] || paths.note);
+        svg.append(path);
+        return svg;
+      }
+      document
+        .querySelectorAll("[data-icon]")
+        .forEach((node) => node.append(icon(node.dataset.icon)));
+      function element(tag, cls, text) {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+      function button(text, action, cls = "nt-btn") {
+        const node = element("button", cls, text);
+        node.type = "button";
+        node.onclick = () => run(action);
+        return node;
+      }
+      function run(action) {
+        return Promise.resolve()
+          .then(action)
+          .catch((error) => notice(error.message || String(error)));
+      }
+      let noticeTimer;
+      function notice(text, duration = 2500) {
+        clearTimeout(noticeTimer);
+        $("notice").textContent = text;
+        $("notice").hidden = false;
+        if (duration > 0) noticeTimer = setTimeout(() => ($("notice").hidden = true), duration);
+      }
+      const collection = "notes";
+      const record = (operation, args = {}) => cs.records?.[operation]({ collection, ...args }); // api-skew-ok: records is optional-chained; operation names a records verb
+      const requestId = () => crypto.randomUUID();
+      let rows = [],
+        active = null,
+        body = "",
+        base = "",
+        savedTitle = "",
+        context = {},
+        sessions = [],
+        contextFiles = [],
+        contextLoading = null,
+        pickerQuery = "";
+      let dirty = false,
+        editSequence = 0,
+        readEpoch = 0,
+        navigation = 0,
+        saving = null,
+        saveTimer,
+        disposed = false,
+        failed = false;
+      let prefs = {},
+        seen = {},
+        mirror = null,
+        recovery = null,
+        history = [],
+        historyEpoch = 0,
+        reviewing = false,
+        reviewedCommit = null,
+        allHistory = false,
+        headings = [];
+      let menu = null,
+        menuTrigger = null,
+        suggestion = null,
+        query = "",
+        searchHits = [],
+        searchTimer,
+        paletteTimer,
+        paletteSequence = 0;
+      let deleteId = null,
+        deleteTrigger = null,
+        renamingId = null;
+      let renameWrite = Promise.resolve();
+      let canSend = false,
+        includeContext = true,
+        presentation = "docked",
+        hoverBlock = null,
+        sendRequest = null,
+        sendBusy = false,
+        overlaps = [];
+      const agentPrompts = {
+        organize:
+          "Organize this note into clear sections. Keep every useful detail, preserve the author's intent, and turn actionable work into a checklist.",
+        tidy: "Tidy this note: fix spelling and formatting, remove repetition, and improve clarity without changing its meaning.",
+      };
+      const launcherAvailable = () => cs.has?.("openLauncher");
+      const opened = new Map();
+      function titleOf(row) {
+        return row.title || row.fields?.title || "Untitled note";
+      }
+      function formatAgo(at, now = Date.now()) {
+        const secs = Math.max(0, Math.round((now - Number(at || now)) / 1000));
+        if (secs < 5) return "just now";
+        if (secs < 60) return `${secs}s ago`;
+        const mins = Math.floor(secs / 60);
+        if (mins < 60) return `${mins}m ago`;
+        const hours = Math.floor(mins / 60);
+        return hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
+      }
+      function partitionNotes(notes) {
+        return {
+          pinned: notes
+            .filter((n) => n.fields?.pinned)
+            .sort((a, b) =>
+              titleOf(a).localeCompare(titleOf(b), undefined, { sensitivity: "base" }),
+            ),
+          recent: notes
+            .filter((n) => !n.fields?.pinned)
+            .sort(
+              (a, b) =>
+                (opened.get(b.id) || b.updatedAt || 0) - (opened.get(a.id) || a.updatedAt || 0),
+            ),
+        };
+      }
+      function markMatches(text, match) {
+        const span = element("span");
+        const at = match ? text.toLowerCase().indexOf(match.toLowerCase()) : -1;
+        if (at < 0) span.textContent = text;
+        else
+          span.append(
+            document.createTextNode(text.slice(0, at)),
+            element("mark", "", text.slice(at, at + match.length)),
+            document.createTextNode(text.slice(at + match.length)),
+          );
+        return span;
+      }
+      function agent(handle) {
+        return sessions.find((s) => s.handle === handle);
+      }
+      function agentFace(actor) {
+        if (!actor?.avatar) return null;
+        const [pack, face] = actor.avatar.split(":");
+        if (!pack || !face) return null;
+        const image = element("img", "nt-face");
+        image.src = `/kit/v1/avatars/${encodeURIComponent(pack)}/${encodeURIComponent(face)}`;
+        image.alt = "";
+        return image;
+      }
+      function agentLook(handle) {
+        const s = agent(handle);
+        if (!s) return null;
+        const name = s.displayName || s.rowNames?.primary || s.name || handle;
+        const marks = {
+          running: "thinking",
+          idle: "ready",
+          "needs-you": "question",
+          exited: "ended",
+          offline: "offline",
+          unknown: "unknown",
+        };
+        const words = {
+          running: "working",
+          idle: "ready",
+          "needs-you": "needs you",
+          exited: "not running",
+          offline: "offline",
+          unknown: "activity unknown",
+        };
+        const status = s.status?.mark
+          ? s.status
+          : { mark: marks[s.state] || "unknown", word: words[s.state] || "activity unknown" };
+        return {
+          name,
+          status,
+          avatar: s.avatar ? `/kit/v1/avatars/${s.avatar.replace(":", "/")}` : undefined,
+        };
+      }
+      function renderList() {
+        if (renamingId && $("note-rows").querySelector(".nt-row-rename")) return;
+        const match = query.toLowerCase().trim();
+        const hitIds = new Set(searchHits.map((h) => h.id));
+        const filtered = rows.filter(
+          (row) =>
+            !match ||
+            titleOf(row).toLowerCase().includes(match) ||
+            (row.preview || "").toLowerCase().includes(match) ||
+            hitIds.has(row.id),
+        );
+        const { pinned, recent } = partitionNotes(filtered);
+        const list = $("note-rows");
+        const focused = document.activeElement?.closest("[data-note-id]")?.dataset.noteId;
+        list.replaceChildren();
+        let first = true;
+        for (const [name, group] of [
+          ["Pinned", pinned],
+          ["Recent", recent],
+        ]) {
+          if (!group.length) continue;
+          list.append(element("div", "nt-group", name));
+          for (const row of group) {
+            const outer = element("div", "nt-note-row");
+            outer.dataset.noteId = row.id;
+            outer.setAttribute("aria-current", String(row.id === active?.id));
+            const open = button("", () => openNote(row.id), "nt-note-open");
+            open.id = `note-row-${row.id}`;
+            outer.oncontextmenu = (e) => {
+              if (e.target.closest("input,textarea,[contenteditable]")) return;
+              e.preventDefault();
+              run(async () => {
+                const actions = noteActions(row.id, open);
+                const answer = await cs.showMenu?.({
+                  anchorRect: { x: e.clientX, y: e.clientY, width: 0, height: 0 },
+                  anchorId: open.id,
+                  row: { noteId: row.id },
+                  items: actions.map(({ id, label }) => ({ id, label })),
+                });
+                await actions.find((action) => action.id === answer.itemId)?.run();
+              });
+            };
+            open.tabIndex = (focused ? focused === row.id : first) ? 0 : -1;
+            first = false;
+            const name = element("span", "nt-note-name");
+            name.append(markMatches(titleOf(row), match));
+            open.append(name);
+            const preview = element("span", "nt-note-preview");
+            preview.append(markMatches(row.preview || "Empty note", match));
+            open.append(preview);
+            const foot = element("span", "nt-note-foot");
+            for (const ref of row.refs || []) {
+              const a = agent(ref.handle);
+              const chip = element("span", "nt-agent-name");
+              chip.title = ref.name + (a ? " · " + (a.state || "running") : " · not running");
+              const face = agentFace(a || ref);
+              if (face) chip.append(face);
+              else chip.append(element("span", "", ref.name));
+              chip.append(element("span", "nt-mark" + (a?.state === "running" ? " live" : "")));
+              foot.append(chip);
+            }
+            foot.append(element("time", "", formatAgo(opened.get(row.id) || row.updatedAt)));
+            open.append(foot);
+            outer.append(open);
+            const more = button("", () => showNoteMenu(row.id, more), "nt-btn icon nt-row-more");
+            more.tabIndex = -1;
+            more.append(icon("more"));
+            more.setAttribute("aria-label", `Actions for ${titleOf(row)}`);
+            more.onclick = (e) => {
+              e.stopPropagation();
+              showNoteMenu(row.id, more);
+            };
+            outer.append(more);
+            list.append(outer);
+            if (renamingId === row.id) {
+              const input = element("input", "nt-row-rename");
+              input.value = row.fields?.title || "";
+              input.setAttribute("aria-label", "Rename note");
+              name.replaceChildren(input);
+              open.onclick = null;
+              input.onclick = (e) => e.stopPropagation();
+              input.onblur = () => {
+                // Architecture: the shim owns the text-menu focus boundary.
+                if (!cs.textMenuOpen) run(commitRename);
+              };
+              input.onkeydown = (e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  run(commitRename);
+                }
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  renamingId = null;
+                  renderList();
+                }
+              };
+              queueMicrotask(() => {
+                input.focus();
+                input.select();
+              });
+            }
+          }
+        }
+        if (focused)
+          $("note-rows")
+            .querySelector(`[data-note-id="${focused}"] .nt-note-open`)
+            ?.focus({ preventScroll: true });
+        if (!filtered.length)
+          list.append(
+            element(
+              "p",
+              "nt-group",
+              match ? "No matching notes. Press Enter to create one." : "No notes yet.",
+            ),
+          );
+      }
+      function status() {
+        $("save-error").hidden = !failed;
+        $("save-state").className = failed ? "nt-unsaved" : "";
+        $("save-state").textContent = failed
+          ? "Not saved"
+          : saving
+            ? "Saving…"
+            : dirty
+              ? "Unsaved"
+              : active?.fields?.updatedBy?.kind === "agent"
+                ? `${active.fields.updatedBy.name} edited ${formatAgo(active.fields.updatedAt)}`
+                : "Saved";
+      }
+      function budgetPrefs() {
+        const output = {
+          ...prefs,
+          notes: { seen: { ...seen }, mirror: mirror ? { ...mirror } : null, includeContext },
+        };
+        const size = () => new TextEncoder().encode(JSON.stringify(output)).length;
+        if (output.notes.mirror && size() > 16 * 1024) output.notes.mirror = null;
+        while (size() > 16 * 1024 && Object.keys(output.notes.seen).length)
+          delete output.notes.seen[Object.keys(output.notes.seen)[0]];
+        return output.notes;
+      }
+      let prefsWrite = Promise.resolve();
+      function persist() {
+        const next = budgetPrefs();
+        seen = next.seen;
+        prefsWrite = prefsWrite.catch(() => {}).then(() => cs.setPrefs({ notes: next }));
+        return prefsWrite;
+      }
+      function mirrorBody(id, text) {
+        mirror = { id, body: text, base, at: Date.now() };
+        return persist();
+      }
+      async function flush(force = false) {
+        clearTimeout(saveTimer);
+        if (saving) {
+          await saving;
+          if (failed) return;
+        }
+        if (!active || (!dirty && force !== true) || disposed) return;
+        const id = active.id,
+          text = body,
+          from = base,
+          sequence = editSequence;
+        saving = (async () => {
+          try {
+            const result = await record("write", {
+              id,
+              body: text,
+              base: from,
+              requestId: requestId(),
+            });
+            if (active?.id !== id) return;
+            readEpoch++;
+            if (result.deleted) {
+              dirty = false;
+              active = null;
+              body = base = "";
+              editor.setMarkdown("");
+              showActive();
+              return;
+            }
+            active = { ...active, ...result };
+            if (result.overlaps?.length) {
+              overlaps.push(
+                ...result.overlaps.map((overlap) => ({
+                  ...overlap,
+                  span: overlapSpan(result.body, overlap, from),
+                })),
+              );
+              renderOverlaps();
+            }
+            if (sequence === editSequence) {
+              base = body = result.body;
+              dirty = false;
+              if (editor.getMarkdown() !== body) {
+                clearHover();
+                editor.setMarkdown(body);
+              }
+            } else {
+              /* New typing started from the submitted text; let the next write merge it with the returned body. */ base =
+                text;
+              dirty = true;
+            }
+            failed = false;
+            if (mirror?.id === id) {
+              mirror = dirty ? { id, body, base, at: Date.now() } : null;
+              void persist().catch(() => {});
+            }
+          } catch (error) {
+            failed = true;
+            if (active?.id === id) await mirrorBody(id, body).catch(() => {});
+          } finally {
+            saving = null;
+            status();
+          }
+        })();
+        status();
+        await saving;
+        if (dirty && !failed) return flush();
+      }
+      function clearHover() {
+        hoverBlock = null;
+        $("line-send").hidden = true;
+      }
+      function changed(markdown) {
+        clearHover();
+        if (!active) return;
+        body = markdown;
+        dirty = body !== base;
+        editSequence++;
+        failed = false;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => run(flush), 1000);
+        status();
+        renderOutline();
+      }
+      function showActive(forceTitle = false) {
+        clearHover();
+        const exists = !!active;
+        $("editor-port").hidden = !exists;
+        $("empty-state").hidden = exists;
+        for (const id of ["note-menu", "history-button", "outline-button", "agent-menu"])
+          $(id).disabled = !exists;
+        if (exists) {
+          savedTitle = active.fields?.title || "";
+          if (forceTitle || document.activeElement !== $("note-title"))
+            $("note-title").value = savedTitle;
+        }
+        status();
+      }
+      function updateRecovery() {
+        recovery =
+          !mirror?.truncated &&
+          mirror?.id === active?.id &&
+          mirror.at > Number(active?.fields?.updatedAt || 0)
+            ? { ...mirror }
+            : null;
+        $("recovery").hidden = !recovery;
+        $("recovery-copy").textContent = "An unsaved draft is available.";
+      }
+      const uiWriter = `${requestId()}:`;
+      async function shareNote(id) {
+        if (disposed) return;
+        await cs
+          .setUiState?.("ui:right-pane", { noteId: id }, uiWriter + requestId())
+          .catch((error) =>
+            notice(`Couldn't keep the selected note: ${error.message || error}`, 0),
+          );
+      }
+      async function openNote(id, heading, publish = true) {
+        clearHover();
+        const ticket = ++navigation;
+        closeFloat(false);
+        hideSelection();
+        await commitTitle();
+        await flush();
+        if (dirty || ticket !== navigation) return;
+        ++readEpoch;
+        editor.setEditable(false);
+        const unlock = setTimeout(() => {
+          if (ticket === navigation) editor.setEditable(true);
+        }, 3000);
+        try {
+          const note = await record("read", { id });
+          if (ticket !== navigation || disposed) return;
+          if (dirty) {
+            await flush();
+            if (dirty || ticket !== navigation) return;
+          }
+          active = note;
+          overlaps = [];
+          renderOverlaps();
+          base = body = note.body;
+          dirty = false;
+          failed = false;
+          editSequence++;
+          reviewing = false;
+          reviewedCommit = null;
+          editor.setChangeOverlay(null);
+          editor.setMarkdown(body);
+          opened.set(id, Date.now());
+          $("editor-port").scrollTop = 0;
+          showActive(true);
+          updateRecovery();
+          renderList();
+          setDrawer(false);
+          await loadHistory();
+          if (heading) jumpHeading(heading);
+          if (publish && ticket === navigation) await shareNote(id);
+        } finally {
+          clearTimeout(unlock);
+          if (ticket === navigation) editor.setEditable(true);
+        }
+      }
+      async function refreshActive() {
+        if (!active) return;
+        const id = active.id,
+          ticket = navigation;
+        // Read after any local write response so a later agent edit cannot be replaced by it.
+        await flush();
+        if (dirty || failed || id !== active?.id || ticket !== navigation || disposed) return;
+        const epoch = ++readEpoch,
+          sequence = editSequence;
+        const note = await record("read", { id });
+        if (epoch !== readEpoch || id !== active?.id || ticket !== navigation || disposed) return;
+        if (dirty || saving || sequence !== editSequence) return refreshActive();
+        active = note;
+        base = body = note.body;
+        if (editor.getMarkdown() !== body) editor.setMarkdown(body);
+        showActive();
+        await loadHistory();
+      }
+      async function createNote(title = "", linkTo) {
+        await commitTitle();
+        await flush();
+        if (dirty) return;
+        const result = await record("create", {
+          fields: { title },
+          body: linkTo ? `[${title || "Link"}](${linkTo})\n\n` : "",
+          requestId: requestId(),
+        });
+        await openNote(result.id);
+        $("note-title").focus();
+        $("note-title").select();
+        query = "";
+        $("list-search").value = "";
+        renderList();
+      }
+      async function setFields(id, fields) {
+        const submittedTitle = fields.title ?? savedTitle;
+        const result = await record("setFields", { id, fields, requestId: requestId() });
+        rows = rows.map((row) =>
+          row.id === id
+            ? { ...row, fields: { ...row.fields, ...fields }, title: fields.title ?? row.title }
+            : row,
+        );
+        if (active?.id === id) {
+          active.fields = { ...active.fields, ...result.fields };
+          savedTitle = active.fields.title || "";
+          if ($("note-title").value === submittedTitle) $("note-title").value = savedTitle;
+        }
+        renderList();
+      }
+      async function commitTitle() {
+        if (active && $("note-title").value !== savedTitle)
+          await setFields(active.id, { title: $("note-title").value });
+      }
+      function commitRename() {
+        const input = document.querySelector(".nt-row-rename");
+        if (renamingId && input) {
+          const id = renamingId;
+          renamingId = null;
+          if (active?.id === id) $("note-title").value = input.value;
+          renameWrite = setFields(id, { title: input.value });
+        }
+        return renameWrite;
+      }
+      async function flushEdits() {
+        await commitTitle();
+        await commitRename();
+        await flush();
+      }
+      function setDrawer(open) {
+        $("notes").dataset.drawer = String(open);
+        $("toggle-list").setAttribute("aria-expanded", String(open));
+        if (open) $("list-search").focus();
+      }
+      function noteActions(id, trigger) {
+        const row = rows.find((r) => r.id === id) || active;
+        if (!row) return [];
+        return [
+          {
+            id: "pin",
+            label: row.fields?.pinned ? "Unpin" : "Pin",
+            icon: "pin",
+            run: async () => {
+              closeFloat();
+              await setFields(id, { pinned: !row.fields?.pinned });
+            },
+          },
+          {
+            id: "rename",
+            label: "Rename",
+            icon: "rename",
+            run: () => {
+              closeFloat(false);
+              renamingId = id;
+              renderList();
+              if ($("notes").dataset.layout === "narrow") setDrawer(true);
+            },
+          },
+          {
+            id: "delete",
+            label: "Delete…",
+            icon: "trash",
+            run: () => {
+              closeFloat(false);
+              deleteId = id;
+              deleteTrigger = trigger;
+              $("delete-backdrop").hidden = false;
+              $("cancel-delete").focus();
+            },
+          },
+        ];
+      }
+      function showNoteMenu(id, trigger) {
+        const actions = noteActions(id, trigger);
+        if (!actions.length) return;
+        openFloat("actions", trigger);
+        for (const action of actions) {
+          const row = button(action.label, action.run, "nt-row");
+          row.prepend(icon(action.icon));
+          $("float").append(row);
+        }
+        positionFloat(trigger.getBoundingClientRect());
+      }
+      function openFloat(kind, trigger) {
+        closeFloat(false);
+        hideSelection();
+        $("line-send").hidden = true;
+        menu = kind;
+        menuTrigger = trigger;
+        $("float").replaceChildren();
+        $("float").classList.remove("nt-outline");
+        $("float").hidden = false;
+        trigger?.setAttribute("aria-expanded", "true");
+      }
+      function closeFloat(restore = true) {
+        clearTimeout(paletteTimer);
+        paletteSequence++;
+        const trigger = menuTrigger,
+          wasSend = menu === "send";
+        menu = null;
+        menuTrigger = null;
+        $("float").hidden = true;
+        trigger?.setAttribute("aria-expanded", "false");
+        if (restore) {
+          if (wasSend) editor.focus();
+          else trigger?.focus();
+        }
+      }
+      function positionFloat(rect, above = false) {
+        const float = $("float");
+        float.style.width =
+          menu === "palette"
+            ? Math.min(440, innerWidth - 16) + "px"
+            : menu === "send"
+              ? Math.min(290, innerWidth - 16) + "px"
+              : "";
+        place(float, rect, above);
+      }
+      function place(node, rect, above = false) {
+        node.style.left =
+          Math.max(8, Math.min(rect.left, innerWidth - node.offsetWidth - 8)) + "px";
+        const below = rect.bottom + 6,
+          up = rect.top - node.offsetHeight - 6;
+        node.style.top =
+          Math.max(
+            8,
+            Math.min(
+              above && up >= 8
+                ? up
+                : below + node.offsetHeight > innerHeight - 8 && up >= 8
+                  ? up
+                  : below,
+              innerHeight - node.offsetHeight - 8,
+            ),
+          ) + "px";
+      }
+      function renderSuggestions(state, kind) {
+        if (state) $("line-send").hidden = true;
+        const openingLink = kind === "link" && state && suggestion?.kind !== "link";
+        suggestion = state ? { state, kind } : null;
+        if (openingLink)
+          run(async () => {
+            if (contextLoading) await contextLoading.catch(() => {});
+            await loadContextFiles();
+            if (disposed || suggestion?.kind !== "link") return;
+            const current = suggestion.state;
+            const items = pickerItems(pickerQuery);
+            if (JSON.stringify(current.items) === JSON.stringify(items)) return;
+            const key = current.items[current.selectedIndex]?.key;
+            current.items.splice(0, current.items.length, ...items);
+            current.setIndex(
+              Math.max(
+                0,
+                items.findIndex((item) => item.key === key),
+              ),
+            );
+          });
+        const pop = $("suggestions");
+        pop.replaceChildren();
+        pop.hidden = !state?.items.length;
+        const root = $("editor").querySelector("[contenteditable]");
+        root?.removeAttribute("aria-activedescendant");
+        root?.setAttribute("aria-expanded", String(!pop.hidden));
+        if (pop.hidden) return;
+        hideSelection();
+        pop.style.width = (kind === "slash" ? 240 : 288) + "px";
+        pop.style.maxHeight = (kind === "slash" ? 300 : 256) + "px";
+        pop.style.overflowY = "auto";
+        pop.setAttribute(
+          "aria-label",
+          kind === "slash" ? "Insert a block" : "Insert link to note or doc",
+        );
+        if (kind === "slash") pop.append(element("div", "nt-pop-label", "Insert"));
+        state.items.forEach((item, i) => {
+          const row = button("", () => state.select(item), "nt-row");
+          row.id = kind === "slash" ? `nt-slash-${i}` : `note-link-opt-${i}`;
+          row.setAttribute("role", "option");
+          row.setAttribute("aria-selected", String(i === state.selectedIndex));
+          row.onmousedown = (e) => e.preventDefault();
+          row.onmouseenter = () => {
+            if (i !== state.selectedIndex) state.setIndex(i);
+          };
+          row.prepend(
+            icon(
+              kind === "slash"
+                ? item.id === "task"
+                  ? "checklist"
+                  : item.id.startsWith("h")
+                    ? "heading"
+                    : item.id === "code"
+                      ? "code"
+                      : item.id === "quote"
+                        ? "quote"
+                        : item.id === "divider"
+                          ? "divider"
+                          : "list"
+                : item.kind,
+            ),
+          );
+          row.append(element("span", "nt-row-label", item.label));
+          const hint = kind === "slash" ? item.hint : item.sublabel;
+          if (hint)
+            row.append(
+              element(
+                kind === "slash" ? "kbd" : "span",
+                kind === "slash" ? "nt-kbd" : "nt-row-sub",
+                hint,
+              ),
+            );
+          pop.append(row);
+        });
+        const rect = state.clientRect?.();
+        if (rect) place(pop, rect);
+        const selected = pop.querySelector('[aria-selected="true"]');
+        root?.setAttribute("aria-activedescendant", selected?.id || "");
+        if (selected) {
+          const row = selected.getBoundingClientRect(),
+            port = pop.getBoundingClientRect();
+          if (row.bottom > port.bottom) pop.scrollTop += row.bottom - port.bottom;
+          else if (row.top < port.top) pop.scrollTop += row.top - port.top;
+        }
+      }
+      function pickerItems(q) {
+        pickerQuery = q;
+        const items = rows
+          .filter((row) => row.id !== active?.id)
+          .map((row) => ({
+            key: "note:" + row.id,
+            label: titleOf(row),
+            kind: "note",
+            link: { kind: "note", target: row.id },
+          }));
+        const keys = new Set(items.map((item) => item.key));
+        for (const file of contextFiles) {
+          const kind = file.fields?.story_id || file.story_id || file.storyId ? "story" : "file",
+            target =
+              kind === "story"
+                ? file.fields?.story_id || file.story_id || file.storyId
+                : file.relPath || file.rel_path || "";
+          if (
+            !target ||
+            (kind === "file" && !/\.(md|html?|txt|json|ya?ml|toml|csv)$/i.test(target))
+          )
+            continue;
+          const key = kind + ":" + target;
+          if (keys.has(key)) continue;
+          keys.add(key);
+          items.push({
+            key,
+            label: file.title || file.name || target.split("/").pop(),
+            sublabel: target,
+            kind,
+            link: { kind, target },
+          });
+        }
+        const query = q.trim().toLowerCase();
+        return items
+          .filter(
+            (item) =>
+              !query ||
+              item.label.toLowerCase().includes(query) ||
+              item.sublabel?.toLowerCase().includes(query),
+          )
+          .slice(0, 20);
+      }
+      function hideSelection() {
+        $("selection-menu").hidden = true;
+      }
+      function renderSelection(info) {
+        const pop = $("selection-menu");
+        pop.replaceChildren();
+        pop.hidden = !info || !!suggestion || !!menu;
+        if (pop.hidden) return;
+        for (const [name, label, command] of [
+          ["bold", "Bold", "toggleBold"],
+          ["italic", "Italic", "toggleItalic"],
+          ["code", "Code", "toggleCode"],
+          ["link", "Link to a note or story", "linkSelection"],
+        ]) {
+          const item = button("", () => {
+            editor.commands[command]();
+            if (name === "link") hideSelection();
+          });
+          item.setAttribute("aria-label", label);
+          item.setAttribute("aria-pressed", String(!!info.marks[name]));
+          item.append(icon(name));
+          item.onmousedown = (e) => e.preventDefault();
+          pop.append(item);
+        }
+        if (canSend) {
+          pop.append(element("span", "nt-separator"));
+          const send = button(
+            "",
+            () => openSend(editor.commands.sendTarget(), info.rect),
+            "nt-btn nt-send-selection",
+          );
+          send.append(icon("send"), document.createTextNode("Send"));
+          send.onmousedown = (e) => e.preventDefault();
+          pop.append(send);
+        }
+        $("line-send").hidden = true;
+        positionSelection(info.rect);
+      }
+      function positionSelection(rect) {
+        const pop = $("selection-menu");
+        if (pop.hidden) return;
+        if (!rect) {
+          const selection = window.getSelection();
+          if (!selection?.rangeCount || selection.isCollapsed) return hideSelection();
+          rect = selection.getRangeAt(0).getBoundingClientRect();
+        }
+        place(
+          pop,
+          {
+            ...rect,
+            left: rect.left + rect.width / 2 - pop.offsetWidth / 2,
+            top: rect.top,
+            bottom: rect.bottom,
+          },
+          true,
+        );
+      }
+      async function openLink(href) {
+        if (href === "cs:launch") return organizeNote();
+        if (href === "cs:routines") return setupRoutine();
+        const match = /^cs:(note|story|file):(.+)$/.exec(href);
+        if (!match) {
+          if (/^https?:|^mailto:/.test(href)) window.open(href, "_blank");
+          return;
+        }
+        const hash = match[2].indexOf("#");
+        const target = decodeURIComponent(hash < 0 ? match[2] : match[2].slice(0, hash)),
+          heading = hash < 0 ? undefined : decodeURIComponent(match[2].slice(hash + 1));
+        if (match[1] === "note") {
+          if (!rows.some((row) => row.id === target)) {
+            notice("Link target not found");
+            return;
+          }
+          await openNote(target, heading);
+          return;
+        }
+        const matches = (file) =>
+          match[1] === "story"
+            ? (file.fields?.story_id || file.story_id || file.storyId) === target
+            : (file.relPath || file.rel_path) === target;
+        let file = contextFiles.find(matches);
+        if (!file) {
+          const result = await cs.queryContext({
+            where: { orgs: [context.org], ...(match[1] === "file" ? { pathPrefix: target } : {}) },
+            ...(match[1] === "story" ? { match: { story_id: target } } : {}),
+            limit: 500,
+          });
+          file = (result.rows || []).find(matches);
+        }
+        if (!file) {
+          notice("Link target not found");
+          return;
+        }
+        await cs.openFile({ path: file.path || file.filePath || target });
+      }
+      function jumpHeading(slug) {
+        const heading = editor.getHeadings().find((h) => h.slug === slug || h.text === slug);
+        if (!heading) {
+          notice("Link target not found");
+          return;
+        }
+        editor.scrollToHeading(heading.slug);
+        editor.focus();
+        scheduleSpy();
+      }
+      function headingNodes() {
+        return [...$("editor").querySelectorAll("h1,h2,h3,h4,h5,h6")].filter((node) => {
+          const copy = node.cloneNode(true);
+          copy.querySelectorAll(".nt-heading-count").forEach((count) => count.remove());
+          return copy.textContent.trim();
+        });
+      }
+      function headingTaskCounts() {
+        const result = new Map(),
+          stack = [],
+          nodes = headingNodes();
+        for (const node of $("editor").querySelectorAll(
+          'h1,h2,h3,h4,h5,h6,li[data-type="taskItem"]',
+        )) {
+          if (/^H/.test(node.tagName)) {
+            const heading = headings[nodes.indexOf(node)];
+            if (!heading) continue;
+            while (stack.length && stack.at(-1).level >= heading.level) stack.pop();
+            stack.push(heading);
+            result.set(heading.slug, 0);
+          } else if (node.dataset.checked !== "true") {
+            for (const heading of stack)
+              result.set(heading.slug, (result.get(heading.slug) || 0) + 1);
+          }
+        }
+        return result;
+      }
+      function outlineRows(container) {
+        container.replaceChildren();
+        const counts = headingTaskCounts();
+        if (!headings.length) {
+          container.append(element("p", "nt-group", "Headings appear here."));
+          return;
+        }
+        for (const heading of headings) {
+          const row = button(
+            heading.text,
+            () => {
+              jumpHeading(heading.slug);
+              closeFloat(false);
+            },
+            "",
+          );
+          row.dataset.slug = heading.slug;
+          row.style.paddingLeft = 6 + (heading.level - 1) * 10 + "px";
+          if (counts.get(heading.slug))
+            row.append(element("span", "nt-outline-count", String(counts.get(heading.slug))));
+          container.append(row);
+        }
+      }
+      function renderOutline() {
+        outlineRows($("side-outline"));
+        scheduleSpy();
+      }
+      let spyFrame;
+      function scheduleSpy() {
+        if (!spyFrame)
+          spyFrame = requestAnimationFrame(() => {
+            spyFrame = 0;
+            spy();
+          });
+      }
+      function spy() {
+        const nodes = headingNodes();
+        const threshold = $("editor-port").getBoundingClientRect().top + 4;
+        $("sticky-headings").style.top = $("editor-port").offsetTop + "px";
+        let current = -1;
+        for (let i = 0; i < nodes.length; i++)
+          if (nodes[i].getBoundingClientRect().top <= threshold) current = i;
+          else break;
+        const stack = [];
+        for (let i = 0; i <= current; i++) {
+          const heading = headings[i];
+          if (!heading) continue;
+          while (stack.length && stack.at(-1).level >= heading.level) stack.pop();
+          stack.push(heading);
+        }
+        const sticky = $("sticky-headings");
+        sticky.replaceChildren();
+        for (const heading of stack.slice(-3)) {
+          const row = button(heading.text, () => jumpHeading(heading.slug), "");
+          row.tabIndex = -1;
+          row.style.paddingLeft = 18 + (heading.level - 1) * 8 + "px";
+          sticky.append(row);
+        }
+        for (const row of $("side-outline").querySelectorAll("button"))
+          row.setAttribute(
+            "aria-current",
+            String(row.dataset.slug === (headings[current]?.slug || headings[0]?.slug)),
+          );
+      }
+      function setSide(tab) {
+        $("side-outline").hidden = tab !== "outline";
+        $("side-history").hidden = tab !== "history";
+        $("tab-outline").setAttribute("aria-pressed", String(tab === "outline"));
+        $("tab-history").setAttribute("aria-pressed", String(tab === "history"));
+      }
+      async function loadHistory() {
+        if (!active) return;
+        const id = active.id,
+          epoch = ++historyEpoch;
+        const entries = await record("history", { id, limit: allHistory ? 500 : 50 });
+        if (active?.id !== id || epoch !== historyEpoch) return;
+        history = entries;
+        renderHistory();
+        status();
+        const latest = history[0];
+        const unseen = latest?.actor?.kind === "agent" && seen[id] !== latest.commit;
+        $("changes-banner").hidden = !unseen && !reviewing;
+        $("changes-copy").textContent =
+          latest?.actor?.kind === "agent"
+            ? `${latest.actor.name} changed this`
+            : "Agent changed this";
+        if (unseen && !reviewing) await reviewChanges(false);
+        else if (!unseen && !reviewing) {
+          reviewedCommit = null;
+          editor.setChangeOverlay(null);
+        }
+      }
+      async function reviewChanges(review = true, commit = history[0]?.commit) {
+        const id = active?.id,
+          epoch = historyEpoch;
+        const at = history.findIndex((h) => h.commit === commit);
+        const previous = history[at + 1];
+        if (!id || !previous) {
+          if (review) notice("This was the note's first version — nothing to compare.");
+          return;
+        }
+        const note = await record("readAt", { id, commit: previous.commit });
+        if (
+          active?.id !== id ||
+          (!review && (epoch !== historyEpoch || reviewing || seen[id] === commit))
+        )
+          return;
+        reviewing = review;
+        reviewedCommit = commit;
+        if (review) {
+          $("history-sheet").hidden = true;
+          editor.focus();
+        }
+        editor.setChangeOverlay({ baseline: note.body, review });
+        $("done-changes").hidden = !review;
+        $("review-changes").hidden = review;
+        $("changes-banner").hidden = false;
+      }
+      async function doneReview() {
+        const commit = reviewedCommit;
+        reviewing = false;
+        reviewedCommit = null;
+        editor.setChangeOverlay(null);
+        $("changes-banner").hidden = true;
+        $("done-changes").hidden = true;
+        $("review-changes").hidden = false;
+        if (active && commit) {
+          delete seen[active.id];
+          seen[active.id] = commit;
+          await persist();
+        }
+        await loadHistory();
+      }
+      function renderHistory() {
+        for (const container of [$("side-history"), $("sheet-history")]) {
+          container.replaceChildren();
+          for (const revision of allHistory ? history : history.slice(0, 3)) {
+            const entry = element("div", "nt-history-entry");
+            const who = element("div", "nt-history-who");
+            const face = agentFace(revision.actor);
+            if (face) who.append(face);
+            who.append(document.createTextNode(revision.actor?.name || "You"));
+            entry.append(
+              who,
+              element("p", "", `${formatAgo(revision.at)} · ${revision.summary || "Edited note"}`),
+            );
+            entry.append(
+              button(
+                revision.actor?.kind === "agent" ? "Review" : "Restore",
+                () =>
+                  revision.actor?.kind === "agent"
+                    ? reviewChanges(true, revision.commit)
+                    : restoreRevision(revision.commit, false),
+                "nt-btn outline",
+              ),
+            );
+            entry.append(button("Undo", () => restoreRevision(revision.commit, true), "nt-btn"));
+            container.append(entry);
+          }
+          if (history.length > 3 && !allHistory)
+            container.append(
+              button("All note history", () => {
+                allHistory = true;
+                renderHistory();
+              }),
+            );
+          if (!history.length) container.append(element("p", "nt-group", "No history yet."));
+        }
+      }
+      async function restoreRevision(commit, undo) {
+        const id = active?.id;
+        if (!id) return;
+        await flush();
+        if (dirty) return;
+        await record("restore", { id, commit, undo, requestId: requestId() });
+        await doneReview();
+        await refreshActive();
+        notice(undo ? "Undid those changes." : "Restored that version.");
+      }
+      async function showHistory() {
+        await loadHistory();
+        if ($("notes").dataset.layout === "full") setSide("history");
+        else {
+          $("history-sheet").hidden = false;
+          $("close-history").focus();
+        }
+      }
+      async function palette(kind) {
+        if (kind === "heading" && !active) return;
+        openFloat("palette", kind === "heading" ? $("outline-button") : $("find-note"));
+        const input = element("input", "nt-pop-search");
+        input.id = "palette-search";
+        input.placeholder = kind === "heading" ? "Go to heading" : "Find a note";
+        input.setAttribute("aria-label", input.placeholder);
+        const results = element("div", "nt-pop-results");
+        results.id = "palette-results";
+        $("float").append(input, results);
+        positionFloat(menuTrigger.getBoundingClientRect());
+        const draw = (hits = []) => {
+          if (menu !== "palette") return;
+          results.replaceChildren();
+          const q = input.value.trim().toLowerCase();
+          const titles =
+            kind === "heading"
+              ? editor.getHeadings().filter((h) => h.text.toLowerCase().includes(q))
+              : rows.filter((row) => titleOf(row).toLowerCase().includes(q));
+          const ids = new Set(titles.map((row) => row.id));
+          const options = [
+            ...titles.map((row) => ({
+              label: kind === "heading" ? row.text : titleOf(row),
+              action: () => (kind === "heading" ? jumpHeading(row.slug) : openNote(row.id)),
+            })),
+            ...hits
+              .filter((hit) => !ids.has(hit.id))
+              .map((hit) => ({
+                label: hit.title || "Untitled note",
+                sub: hit.snippet,
+                action: () => openNote(hit.id),
+              })),
+          ];
+          for (const item of options) {
+            const row = button(
+              "",
+              () => {
+                closeFloat(false);
+                return item.action();
+              },
+              "nt-row",
+            );
+            row.setAttribute("data-nt-row", "");
+            const label = element("span", "nt-row-label");
+            label.append(markMatches(item.label, input.value));
+            row.append(label);
+            if (item.sub) {
+              row.title = item.sub;
+              row.append(element("span", "nt-row-sub", "In the text"));
+            }
+            results.append(row);
+          }
+          if (!options.length) results.append(element("p", "nt-pop-label", "No matches"));
+        };
+        input.oninput = () => {
+          draw();
+          clearTimeout(paletteTimer);
+          const ticket = ++paletteSequence;
+          if (kind === "notes" && input.value.trim())
+            paletteTimer = setTimeout(
+              () =>
+                record("search", { query: input.value, limit: 30 })
+                  .then((hits) => {
+                    if (ticket === paletteSequence) draw(hits);
+                  })
+                  .catch((error) => notice(error.message)),
+              150,
+            );
+        };
+        input.onkeydown = (e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            results.querySelector("button")?.focus();
+          }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            results.querySelector("button")?.click();
+          }
+        };
+        draw();
+        input.focus();
+      }
+      function noteContext() {
+        return `The note: “${$("note-title").value || "Untitled note"}” (note id ${active.id} in org ${context.org}). Read it with notes_read and change it with notes_write (pass that id and org), not by editing its file.`;
+      }
+      async function organizeNote() {
+        closeFloat(false);
+        const done = "When you're done, post a short summary of what you changed to my inbox.";
+        await cs.openLauncher?.({
+          task: [agentPrompts.organize, noteContext(), done].filter(Boolean).join("\n\n"),
+        });
+      }
+      async function setupRoutine() {
+        closeFloat(false);
+        const contextLine = active ? noteContext() : "The note: “Untitled note”.";
+        await cs.openRoutineDraft?.({
+          name: "Tidy my notes",
+          task: [agentPrompts.tidy, contextLine].filter(Boolean).join("\n\n"),
+          when: "weekday 18:00",
+        });
+      }
+      function sendTask(request) {
+        return (
+          request.text + (includeContext && !request.namesNote ? `\n\n${request.context}` : "")
+        );
+      }
+      function startNewAgent() {
+        const request = sendRequest;
+        if (!request) return;
+        sendRequest = null;
+        closeFloat(false);
+        return cs.openLauncher?.({ task: sendTask(request) });
+      }
+      function showAgentMenu() {
+        if (!active) return;
+        openFloat("agent", $("agent-menu"));
+        $("float").append(element("div", "nt-group", "This note"));
+        if (launcherAvailable())
+          $("float").append(
+            button("Organize with an agent…", () => openLink("cs:launch"), "nt-row"),
+          );
+        if (canSend)
+          $("float").append(
+            button(
+              "Send to a running agent…",
+              () =>
+                openSend({ text: `Read my note. ${noteContext()}`, block: null, namesNote: true }),
+              "nt-row",
+            ),
+          );
+        $("float").append(
+          element("div", "nt-pop-sep"),
+          element("div", "nt-group", "Keep notes organized"),
+        );
+        if (cs.has?.("openRoutineDraft"))
+          $("float").append(button("Set up a routine…", () => openLink("cs:routines"), "nt-row"));
+        const agentChanges = history.filter((entry) => entry.actor?.kind === "agent").length;
+        const changes = button(
+          "Changes by agents",
+          () => {
+            closeFloat(false);
+            return showHistory();
+          },
+          "nt-row",
+        );
+        if (agentChanges > 0) changes.append(element("span", "nt-row-sub", String(agentChanges)));
+        $("float").append(changes);
+        $("float").append(
+          element(
+            "div",
+            "nt-pop-note",
+            "Uses your agents and the normal launch. Results land in your Inbox.",
+          ),
+        );
+        positionFloat($("agent-menu").getBoundingClientRect());
+      }
+      function openSend(target, rect) {
+        if (!canSend || !active || !target?.text.trim() || sendBusy) return;
+        sendRequest = { ...target, id: active.id, context: noteContext() };
+        const selection = window.getSelection();
+        const anchor =
+          rect ||
+          (selection?.rangeCount
+            ? selection.getRangeAt(0).getBoundingClientRect()
+            : $("agent-menu").getBoundingClientRect());
+        openFloat("send", null);
+        $("line-send").hidden = true;
+        const input = element("input", "nt-pop-search");
+        input.id = "send-search";
+        input.placeholder = "Send to";
+        input.setAttribute("aria-label", "Send to agent");
+        const list = element("div", "nt-send-list");
+        list.id = "send-agents";
+        list.setAttribute("aria-label", "Agents in this org");
+        const label = element("label", "nt-send-context");
+        const check = element("input");
+        check.type = "checkbox";
+        check.checked = includeContext;
+        check.onchange = () => {
+          includeContext = check.checked;
+          run(persist);
+        };
+        label.append(check, document.createTextNode("Include note as context"));
+        $("float").append(input, element("div", "nt-group", "Agents in this org"), list, label);
+        if (launcherAvailable())
+          $("float").append(button("Start a new agent with this", startNewAgent, "nt-row"));
+        input.oninput = renderSendAgents;
+        input.onkeydown = (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            list.querySelector("button")?.click();
+          }
+        };
+        renderSendAgents();
+        positionFloat(anchor);
+        input.focus();
+      }
+      function renderSendAgents() {
+        if (menu !== "send") return;
+        const list = $("send-agents"),
+          focused = document.activeElement?.dataset.agent;
+        const match = $("send-search").value.toLowerCase();
+        list.replaceChildren();
+        for (const session of sessions.filter(
+          (s) => s.alive && s.sessionId && s.handle && (!s.team?.org || s.team.org === context.org),
+        )) {
+          const look = agentLook(session.handle);
+          if (!`${look.name} ${session.handle}`.toLowerCase().includes(match)) continue;
+          const row = button("", () => deliverSend(session.handle), "nt-row");
+          row.dataset.agent = session.handle;
+          row.disabled = sendBusy;
+          const face = agentFace(session);
+          if (face) row.append(face);
+          const mark = element("span", "nt-mark" + (session.state === "running" ? " live" : ""));
+          mark.dataset.status = look.status.mark;
+          row.append(mark);
+          row.append(
+            element("span", "", look.name),
+            element("span", "nt-send-status", look.status.word),
+          );
+          list.append(row);
+        }
+        if (!list.childElementCount) list.append(element("p", "nt-group", "No running agents"));
+        if (focused)
+          [...list.querySelectorAll("button")]
+            .find((node) => node.dataset.agent === focused)
+            ?.focus();
+      }
+      async function deliverSend(handle) {
+        if (sendBusy || !sendRequest) return;
+        const request = sendRequest;
+        sendBusy = true;
+        $("float")
+          .querySelectorAll("button")
+          .forEach((node) => (node.disabled = true));
+        try {
+          const result = await cs.sendPrompt?.({
+            handle,
+            text: sendTask(request),
+            submit: true,
+          });
+          if (result.status !== "submitted" && result.status !== "typed") {
+            if (result.status === "unknown" || result.submitted !== false) {
+              if (menu === "send" && sendRequest === request) closeFloat(false);
+              sendRequest = null;
+              const where = result.machine ? ` on ${result.machine}` : "";
+              notice(
+                `Sent to ${agentLook(handle)?.name || handle}${where}, but couldn't confirm it arrived. Check its terminal before sending again.`,
+                6500,
+              );
+            } else notice(result.message || "The prompt was not sent.", 5000);
+            return;
+          }
+          if (menu === "send" && sendRequest === request) closeFloat(false);
+          if (active?.id === request.id && request.block) {
+            const pos = editor.commands.relocateBlock(request.block);
+            if (pos !== null)
+              editor.commands.appendAgentRef(pos, {
+                handle,
+                name: agentLook(handle)?.name || handle,
+              });
+          }
+          notice(`Sent to ${agentLook(handle)?.name || handle}`);
+          if (active?.id === request.id) editor.focus();
+        } finally {
+          sendBusy = false;
+          if (menu === "send") renderSendAgents();
+        }
+      }
+      function renderOverlaps() {
+        const region = $("overlap-groups");
+        region.replaceChildren();
+        region.hidden = !overlaps.length;
+        if (overlaps.length)
+          region.append(element("p", "", "Both edited this note. Choose what to keep."));
+        for (const overlap of overlaps) {
+          const group = element("div", "nt-overlap");
+          group.append(
+            element("strong", "", "Yours"),
+            element("pre", "", overlap.ours),
+            element("strong", "", "Theirs"),
+            element("pre", "", overlap.theirs),
+          );
+          const actions = element("div", "nt-overlap-actions");
+          for (const [label, choice] of [
+            ["Keep yours", "ours"],
+            ["Keep theirs", "theirs"],
+            ["Keep both", "both"],
+          ])
+            actions.append(button(label, () => resolveOverlap(overlap, choice), "nt-btn outline"));
+          group.append(actions);
+          region.append(group);
+        }
+      }
+      function overlapSpan(text, overlap, origin) {
+        const chunks = text.match(/[^\n]*\n|[^\n]+$/g) || [];
+        const lines = (value) =>
+          (value.match(/[^\n]*\n|[^\n]+$/g) || []).map((line) => line.replace(/\n$/, ""));
+        const ours = lines(overlap.ours),
+          theirs = lines(overlap.theirs),
+          merged = chunks.map((line) => line.replace(/\n$/, ""));
+        const candidates = [];
+        let start = 0;
+        // A union preserves both sides' line order, but can share common lines.
+        // Follow both sequences through the actual merged body rather than joining them.
+        for (let first = 0; first < merged.length; start += chunks[first++].length) {
+          let states = new Set(["0,0"]),
+            end = start;
+          for (
+            let line = first;
+            line < Math.min(merged.length, first + ours.length + theirs.length);
+            line++
+          ) {
+            const next = new Set();
+            for (const state of states) {
+              const [i, j] = state.split(",").map(Number);
+              const own = i < ours.length && ours[i] === merged[line];
+              const other = j < theirs.length && theirs[j] === merged[line];
+              if (own) next.add(`${i + 1},${j}`);
+              if (other) next.add(`${i},${j + 1}`);
+              if (own && other) next.add(`${i + 1},${j + 1}`);
+            }
+            end += chunks[line].length;
+            if (!next.size) break;
+            if (next.has(`${ours.length},${theirs.length}`)) {
+              candidates.push({ start, end, text: text.slice(start, end) });
+              break;
+            }
+            states = next;
+          }
+        }
+        // `at` is one-based in the base, usable directly only while that prefix is unchanged.
+        if (origin !== undefined && overlap.at) {
+          const prefix = (origin.match(/[^\n]*\n|[^\n]+$/g) || [])
+            .slice(0, overlap.at - 1)
+            .join("");
+          const located = candidates.find(
+            (span) => span.start === prefix.length && text.startsWith(prefix),
+          );
+          if (located) return located;
+        }
+        return candidates.length === 1 ? candidates[0] : null;
+      }
+      async function resolveOverlap(overlap, choice) {
+        const id = active?.id;
+        await flush();
+        if (failed || active?.id !== id) return;
+        let next = body;
+        if (choice !== "both") {
+          const saved = overlap.span;
+          const span = saved && body.slice(saved.start, saved.end) === saved.text ? saved : null;
+          if (!span) {
+            notice(
+              "This passage changed. Keep the text you want in the note, then choose Keep both.",
+              5000,
+            );
+            return;
+          }
+          let chosen = overlap[choice];
+          if (chosen && span.text.endsWith("\n") && !chosen.endsWith("\n")) chosen += "\n";
+          next = body.slice(0, span.start) + chosen + body.slice(span.end);
+        }
+        editor.setMarkdown(next);
+        changed(next);
+        await flush(true);
+        if (!failed && active?.id === id) {
+          overlaps = overlaps.filter((entry) => entry !== overlap);
+          renderOverlaps();
+        }
+      }
+      $("editor-port").addEventListener("mousemove", (event) => {
+        const send = $("line-send");
+        if (send.contains(event.target)) return;
+        const selection = window.getSelection();
+        hoverBlock =
+          canSend &&
+          !menu &&
+          !suggestion &&
+          selection?.isCollapsed !== false &&
+          $("editor").contains(event.target)
+            ? editor.blockAt({ x: event.clientX, y: event.clientY })
+            : null;
+        send.hidden = !hoverBlock?.text.trim();
+        if (send.hidden) return;
+        const line = event.target.closest("li")?.querySelector("p");
+        const lineRect = line?.getBoundingClientRect() || hoverBlock.rect;
+        const port = $("editor-port"),
+          rect = port.getBoundingClientRect(),
+          editorRect = $("editor").getBoundingClientRect();
+        send.style.top = lineRect.top - rect.top + port.scrollTop - 1 + "px";
+        send.style.left = editorRect.right - rect.left - 22 + "px";
+      });
+      $("editor-port").addEventListener("mouseleave", clearHover);
+      $("editor-port").addEventListener("scroll", clearHover, {
+        passive: true,
+      });
+      $("line-send").onmousedown = (e) => e.preventDefault();
+      $("line-send").onclick = () =>
+        hoverBlock && openSend({ text: hoverBlock.text, block: hoverBlock }, hoverBlock.rect);
+      function layout(width) {
+        const next =
+          presentation === "overlay" || width >= 1080 ? "full" : width >= 720 ? "split" : "narrow";
+        $("notes").dataset.layout = next;
+        if (next !== "narrow") setDrawer(false);
+        $("notes").dataset.presentation = presentation;
+        if (next === "full" && !$("history-sheet").hidden) {
+          $("history-sheet").hidden = true;
+          setSide("history");
+        }
+        renderOutline();
+      }
+      const editor = createEditor($("editor"), {
+        placeholder: "Type, or press / for blocks",
+        scrollContainer: $("editor-port"),
+        onChange: changed,
+        onSelection: renderSelection,
+        onHeadings: (next) => {
+          headings = next;
+          renderOutline();
+        },
+        onSend: (paste) => {
+          if (!paste && canSend) {
+            const target = editor.commands.sendTarget();
+            if (target) openSend(target);
+            else notice("Put the caret on a line, or select text, to send it.", 2000);
+          }
+          return true;
+        },
+        onCodeSend: (text, rect) => openSend({ text, block: null }, rect),
+        onLinkClick: (href) => run(() => openLink(href)),
+        agents: { lookup: agentLook },
+        onAgentClick: (handle) => {
+          const current = agent(handle);
+          if (current) run(() => cs.gotoAgent?.({ agentId: handle }));
+          else notice(`${handle} is not running.`, 2000);
+        },
+        suggestions: {
+          link: { items: pickerItems, onState: (state) => renderSuggestions(state, "link") },
+          slash: { onState: (state) => renderSuggestions(state, "slash") },
+        },
+      });
+      $("editor")
+        .querySelector("[contenteditable]")
+        .setAttribute("aria-describedby", "note-keyboard-hint");
+      $("editor").addEventListener("focusout", () => run(flush));
+      $("toggle-list").onclick = () => setDrawer($("notes").dataset.drawer !== "true");
+      $("new-note").onclick = () => run(() => createNote());
+      $("empty-new").onclick = $("new-note").onclick;
+      $("empty-setup-routine").onclick = () => run(() => openLink("cs:routines"));
+      $("find-note").onclick = () => run(() => palette("notes"));
+      $("agent-menu").onclick = showAgentMenu;
+      $("note-menu").onclick = () => active && showNoteMenu(active.id, $("note-menu"));
+      $("history-button").onclick = () => run(showHistory);
+      $("close-history").onclick = () => {
+        $("history-sheet").hidden = true;
+        $("history-button").focus();
+      };
+      $("outline-button").onclick = () => {
+        if ($("notes").dataset.layout === "full") {
+          setSide("outline");
+          return;
+        }
+        openFloat("outline", $("outline-button"));
+        $("float").classList.add("nt-outline");
+        outlineRows($("float"));
+        positionFloat($("outline-button").getBoundingClientRect());
+      };
+      $("tab-outline").onclick = () => setSide("outline");
+      $("tab-history").onclick = () =>
+        run(async () => {
+          await loadHistory();
+          setSide("history");
+        });
+      $("retry-save").onclick = () => run(flush);
+      $("review-changes").onclick = () => run(() => reviewChanges());
+      $("undo-changes").onclick = () =>
+        run(() => restoreRevision(reviewedCommit || history[0]?.commit, true));
+      $("done-changes").onclick = () => run(doneReview);
+      $("recover-draft").onclick = () => {
+        if (!recovery) return;
+        base = recovery.base ?? base;
+        editor.setMarkdown(recovery.body);
+        changed(recovery.body);
+        recovery = null;
+        $("recovery").hidden = true;
+      };
+      $("discard-draft").onclick = () => {
+        mirror = recovery = null;
+        $("recovery").hidden = true;
+        run(persist);
+      };
+      $("note-title").onblur = () => {
+        if (!cs.textMenuOpen) run(commitTitle);
+      };
+      $("note-title").onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === "ArrowDown") {
+          e.preventDefault();
+          run(async () => {
+            await commitTitle();
+            editor.focus("start");
+          });
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          $("note-title").value = savedTitle;
+          $("note-title").blur();
+        }
+      };
+      $("list-search").oninput = () => {
+        query = $("list-search").value;
+        searchHits = [];
+        renderList();
+        clearTimeout(searchTimer);
+        if (query.trim()) {
+          const value = query;
+          searchTimer = setTimeout(
+            () =>
+              record("search", { query: value, limit: 100 })
+                .then((hits) => {
+                  if (query === value) {
+                    searchHits = hits;
+                    renderList();
+                  }
+                })
+                .catch((error) => notice(error.message)),
+            150,
+          );
+        }
+      };
+      $("list-search").onkeydown = (e) => {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          $("note-rows").querySelector("button")?.focus();
+        } else if (
+          e.key === "Enter" &&
+          !$("note-rows").querySelector(".nt-note-row") &&
+          query.trim()
+        ) {
+          e.preventDefault();
+          run(() => createNote(query.trim()));
+        } else if (e.key === "Escape" && query) {
+          e.preventDefault();
+          e.stopPropagation();
+          query = "";
+          $("list-search").value = "";
+          renderList();
+        }
+      };
+      $("note-rows").onkeydown = (e) => {
+        if (e.target.matches("input")) return;
+        if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+        e.preventDefault();
+        const buttons = [...$("note-rows").querySelectorAll(".nt-note-open")];
+        const at = buttons.indexOf(document.activeElement),
+          next = Math.max(0, Math.min(buttons.length - 1, at + (e.key === "ArrowDown" ? 1 : -1)));
+        buttons.forEach((button, i) => (button.tabIndex = i === next ? 0 : -1));
+        buttons[next]?.focus();
+      };
+      function cancelDelete() {
+        deleteId = null;
+        $("delete-backdrop").hidden = true;
+        deleteTrigger?.focus();
+      }
+      $("cancel-delete").onclick = cancelDelete;
+      $("confirm-delete").onclick = () =>
+        run(async () => {
+          const id = deleteId;
+          if (!id) return;
+          await flush();
+          if (dirty) return;
+          await record("delete", { id, requestId: requestId() });
+          rows = rows.filter((row) => row.id !== id);
+          cancelDelete();
+          if (active?.id === id) {
+            active = null;
+            body = base = "";
+            dirty = false;
+            editor.setMarkdown("");
+            editor.setChangeOverlay(null);
+            $("changes-banner").hidden = true;
+            showActive();
+            if (rows[0]) await openNote(rows[0].id);
+          }
+          renderList();
+        });
+      const commands = {
+        new: () => createNote(),
+        find: () => palette("notes"),
+        "goto-heading": () => palette("heading"),
+        "toggle-list": () => {
+          if ($("notes").dataset.layout === "narrow")
+            setDrawer($("notes").dataset.drawer !== "true");
+        },
+      };
+      document.addEventListener("keydown", (e) => {
+        if (e.defaultPrevented || e.isComposing) return;
+        if (deleteId && e.key === "Tab") {
+          const target = e.shiftKey ? $("cancel-delete") : $("confirm-delete");
+          e.preventDefault();
+          target.focus();
+          return;
+        }
+        if (e.key === "Escape" && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+          let handled = true;
+          if (!$("selection-menu").hidden) hideSelection();
+          else if (menu) closeFloat();
+          else if (deleteId) cancelDelete();
+          else if (!$("history-sheet").hidden) {
+            $("history-sheet").hidden = true;
+            $("history-button").focus();
+          } else if ($("notes").dataset.drawer === "true") setDrawer(false);
+          else if (reviewing) run(doneReview);
+          else handled = false;
+          if (handled) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          return;
+        }
+        if (menu && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+          const options = [...$("float").querySelectorAll("button")];
+          if (!options.length) return;
+          e.preventDefault();
+          const at = options.indexOf(document.activeElement);
+          options[
+            (at + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length
+          ]?.focus();
+          return;
+        }
+        if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+        const key = e.key.toLowerCase();
+        let id;
+        if (key === "n" && !e.shiftKey) id = "new";
+        else if (key === "o") id = e.shiftKey ? "goto-heading" : "find";
+        else if (key === "b" && !e.shiftKey) id = "toggle-list";
+        if (id) {
+          e.preventDefault();
+          runCommand(id);
+        }
+      });
+      document.addEventListener("pointerdown", (e) => {
+        if (menu && !$("float").contains(e.target) && !menuTrigger?.contains(e.target))
+          closeFloat(false);
+        if (!$("selection-menu").contains(e.target) && !$("editor").contains(e.target))
+          hideSelection();
+      });
+      $("editor-port").addEventListener("scroll", scheduleSpy, { passive: true });
+      window.addEventListener("resize", () => {
+        layout(document.documentElement.clientWidth);
+        positionSelection();
+      });
+      window.addEventListener("scroll", () => positionSelection(), {
+        capture: true,
+        passive: true,
+      });
+      window.addEventListener("blur", () => run(flush));
+      window.addEventListener("pagehide", () => run(flushEdits));
+      function enterPane() {
+        if (!document.hasFocus()) return;
+        const focused = document.activeElement;
+        if (focused && focused !== document.body && focused !== document.documentElement) return;
+        // Tiptap's focus command defers to rAF and can steal a later drawer/opener click.
+        // Host focus entry only needs the editor's DOM focus, synchronously.
+        if (active)
+          $("editor").querySelector('[contenteditable="true"]')?.focus({ preventScroll: true });
+        else $("empty-new").focus();
+      }
+      cs.onFocusIn?.(enterPane);
+      cs.onFlush?.(flushEdits);
+      cs.onVisibility((visible) => {
+        if (!visible) return flushEdits();
+      });
+      cs.onSlotContext?.((slot) => {
+        presentation = slot.presentation;
+        layout(slot.width);
+      });
+      cs.onTheme(() => scheduleSpy());
+      let readyResolve;
+      const ready = new Promise((resolve) => (readyResolve = resolve));
+      const pendingCommands = [];
+      let commandQueue = ready;
+      function runCommand(id) {
+        pendingCommands.push(id);
+        commandQueue = commandQueue.then(() =>
+          run(async () => {
+            for (const id of pendingCommands.splice(0)) await commands[id]?.();
+          }),
+        );
+      }
+      cs.onCommand?.((command) => runCommand(command.id));
+      let hasIntent = false,
+        uiInitialized = false,
+        uiRevision = -1;
+      function uiChanged(snapshot, delta) {
+        // Architecture: the initial callback is arbitrated after subscribe resolves, alongside intents
+        // and newer local navigation. Later updates follow normally; local echoes never navigate.
+        if (disposed || !uiInitialized || delta?.requestId?.startsWith(uiWriter)) return;
+        const id = snapshot.snapshot[0]?.noteId;
+        if (id)
+          run(async () => {
+            await ready;
+            if (disposed || snapshot.rev <= uiRevision) return;
+            uiRevision = snapshot.rev;
+            if (id !== active?.id) await openNote(id, undefined, false);
+          });
+      }
+      cs.onIntent?.((intent) => {
+        hasIntent = true;
+        return run(async () => {
+          await ready;
+          if (intent.create) await createNote(intent.create.title || "", intent.create.linkTo);
+          else if (intent.noteId) await openNote(intent.noteId, intent.heading);
+        });
+      });
+      cs.onTeardown?.(() => {
+        disposed = true;
+        clearTimeout(saveTimer);
+        clearTimeout(searchTimer);
+        clearTimeout(paletteTimer);
+        clearInterval(clock);
+        cancelAnimationFrame(spyFrame);
+        editor.destroy();
+        cs.unsubscribe?.("records", recordsChanged);
+        cs.unsubscribe?.("sessions", sessionsChanged);
+        cs.unsubscribe?.("ui:right-pane", uiChanged);
+      });
+      function recordsChanged(snapshot) {
+        const before = rows.find((row) => row.id === active?.id);
+        rows = snapshot.snapshot;
+        renderList();
+        if (!active) return;
+        const after = rows.find((row) => row.id === active.id);
+        if (!after) {
+          if (!dirty && !saving) {
+            active = null;
+            body = base = "";
+            editor.setMarkdown("");
+            showActive();
+          }
+          return;
+        }
+        if (before && JSON.stringify(before) !== JSON.stringify(after)) run(refreshActive);
+      }
+      let sessionsEpoch = 0;
+      async function sessionsChanged(snapshot) {
+        const epoch = ++sessionsEpoch;
+        const next = await cs.sessions().catch(() => snapshot.snapshot);
+        if (epoch !== sessionsEpoch || disposed) return;
+        sessions = next;
+        editor.refreshAgents();
+        renderList();
+        if (menu === "send") renderSendAgents();
+      }
+
+      const clock = setInterval(() => {
+        renderList();
+        renderHistory();
+      }, 30000);
+      function loadContextFiles() {
+        if (contextLoading) return contextLoading;
+        contextLoading = (async () => {
+          let cursor,
+            files = [],
+            restart = true;
+          while (!disposed) {
+            try {
+              const result = await cs.queryContext({
+                where: { orgs: [context.org] },
+                limit: 500,
+                ...(cursor ? { cursor } : {}),
+              });
+              files.push(...(result.rows || []));
+              cursor = result.nextCursor;
+              if (!cursor) {
+                contextFiles = files;
+                return;
+              }
+            } catch (error) {
+              if (
+                !cursor ||
+                !restart ||
+                !String(error.message || error).includes(
+                  "results changed since this page was fetched",
+                )
+              )
+                throw error;
+              restart = false;
+              cursor = undefined;
+              files = [];
+            }
+          }
+        })().finally(() => {
+          contextLoading = null;
+        });
+        return contextLoading;
+      }
+      async function start() {
+        layout(document.documentElement.clientWidth);
+        showActive();
+        cs.ready?.();
+        [prefs, context] = await Promise.all([cs.prefs(), cs.context()]);
+        context = context || {};
+        seen = prefs.notes?.seen || {};
+        mirror = prefs.notes?.mirror || null;
+        includeContext = prefs.notes?.includeContext !== false;
+        canSend = cs.has?.("sendPrompt");
+        $("empty-routine").hidden = !cs.has?.("openRoutineDraft");
+        $("notes").dataset.canSend = String(canSend);
+        $("org-name").textContent = context.org || "";
+        $("empty-title").textContent = `Notes for ${context.org || "you"}`;
+        let snapshot = await cs.subscribe?.("records", { collection, onChange: recordsChanged });
+        rows = snapshot.snapshot;
+        while (snapshot.cursor) {
+          snapshot = await cs.page?.("records", snapshot.cursor, { collection });
+        }
+        renderList();
+        cs.subscribe?.("sessions", { onChange: sessionsChanged }).catch(() => {});
+        loadContextFiles().catch(() => {});
+        try {
+          if (rows.length && !active) await openNote(rows[0].id, undefined, false);
+        } finally {
+          readyResolve();
+        }
+        const initialNavigation = navigation;
+        // Architecture: shared selection follows the first paint; it cannot hold readiness or intents.
+        await new Promise(requestAnimationFrame);
+        if (disposed) return;
+        const shared = await cs.subscribe?.("ui:right-pane", { onChange: uiChanged });
+        if (disposed) return;
+        uiRevision = shared.rev;
+        uiInitialized = true;
+        if (!hasIntent && navigation === initialNavigation) {
+          const id = shared.snapshot[0]?.noteId;
+          if (id && rows.some((row) => row.id === id)) {
+            if (id !== active?.id) await openNote(id, undefined, false);
+          } else if (active) {
+            await shareNote(active.id);
+          }
+        }
+      }
+      run(start);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,437 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Parity pane</title>
+    <meta name="codesense:icon" content="git-pull-request" />
+    <style>
+      :root {
+        font: 12px/1.45 var(--cs-font-sans, system-ui, sans-serif);
+      }
+      body {
+        margin: 0;
+        padding: 10px 12px 16px;
+        color: var(--cs-fg, CanvasText);
+        background: transparent;
+      }
+      h2 {
+        margin: 14px 0 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg, GrayText);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .stat {
+        border: 1px solid var(--cs-border, GrayText);
+        background: var(--cs-surface, transparent);
+        border-radius: 6px;
+        padding: 6px 8px;
+      }
+      .stat b {
+        display: block;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .stat span {
+        color: var(--cs-muted-fg, GrayText);
+      }
+      table {
+        font-size: inherit;
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 4px 6px;
+        border-bottom: 1px solid var(--cs-border, GrayText);
+        vertical-align: middle;
+      }
+      th {
+        font-weight: 500;
+        color: var(--cs-muted-fg, GrayText);
+      }
+      .chip {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 999px;
+        border: 1px solid var(--cs-border, GrayText);
+        font-size: 11px;
+      }
+      .chip.review {
+        border-color: var(--cs-warning, orange);
+        color: var(--cs-warning, orange);
+      }
+      .chip.done {
+        border-color: var(--cs-success, green);
+        color: var(--cs-success, green);
+      }
+      .state {
+        font-size: 11px;
+        color: var(--cs-muted-fg, GrayText);
+      }
+      .state.stale,
+      .state.error {
+        color: var(--cs-danger, red);
+      }
+      button {
+        font: inherit;
+        font-size: 11px;
+        color: inherit;
+        background: var(--cs-surface, transparent);
+        border: 1px solid var(--cs-border, GrayText);
+        border-radius: 4px;
+        padding: 1px 6px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      a {
+        color: var(--cs-link, LinkText);
+      }
+      ul {
+        margin: 0;
+        padding-left: 16px;
+      }
+      .swatches {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      .swatch {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        border: 1px solid var(--cs-border, GrayText);
+      }
+      .muted {
+        color: var(--cs-muted-fg, GrayText);
+      }
+      .md strong {
+        color: var(--cs-accent, inherit);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- A test fixture, not shipped: one HTML pane exercising every JSON-widget
+         capability through plain HTML and the window.codesense SDK. -->
+
+    <!-- P1 stat -->
+    <div class="stats">
+      <div class="stat" data-row="P1-stat"><b id="story-count">…</b><span>stories</span></div>
+      <div class="stat"><b id="session-count">…</b><span>sessions</span></div>
+      <div class="stat"><b id="scheme">…</b><span>theme</span></div>
+    </div>
+
+    <!-- P1 text + markdown; P2 external link -->
+    <h2>About</h2>
+    <p class="md" data-row="P1-markdown">
+      Every row here is <strong>plain HTML</strong> over the page SDK.
+      <a id="external" href="https://github.com/alderco/codesense">Source</a>
+    </p>
+
+    <!-- P3/P4 live story query, P1 table + chip, P6 setStatus, P7 interpolation,
+         P8 confirm picker, P16 cell states -->
+    <h2>Stories <span id="query-state" class="state">loading</span></h2>
+    <table data-row="P3">
+      <thead>
+        <tr>
+          <th>Story</th>
+          <th>Status</th>
+          <th>Owner</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="stories"></tbody>
+    </table>
+    <p class="muted" id="summary" data-template="{{first.id}} is {{first.status}}"></p>
+
+    <!-- P5 polled workspace status, paused while hidden -->
+    <h2>Workspace</h2>
+    <p>
+      <span id="workspace">…</span>
+      <span class="muted">· polled <span id="poll-count">0</span>×</span>
+      <span id="poll-state" class="state">polling</span>
+    </p>
+
+    <!-- P9 a Web Worker served from panes/ beside the pane (copy parity-worker.js with it) -->
+    <h2>Worker</h2>
+    <p id="worker-state" class="muted">…</p>
+
+    <!-- P10 live agent sessions with Stop -->
+    <h2>Running agents</h2>
+    <ul id="sessions"></ul>
+
+    <!-- P11 launchable agents -->
+    <h2>Agents</h2>
+    <ul id="agents"></ul>
+
+    <!-- P17 theme -->
+    <h2>Theme</h2>
+    <div class="swatches" id="swatches"></div>
+    <p class="muted">theme changes seen: <span id="theme-changes">0</span></p>
+
+    <script>
+      (function () {
+        var cs = window.codesense;
+        var POLL_MS = Number((location.hash.match(/poll=(\d+)/) || [])[1]) || 3000;
+        var el = function (id) {
+          return document.getElementById(id);
+        };
+        function text(tag, value, cls) {
+          var node = document.createElement(tag);
+          node.textContent = value == null ? "" : String(value);
+          if (cls) node.className = cls;
+          return node;
+        }
+        // P7: {{key.field}} interpolation, the widget arg template, in plain JS.
+        function interpolate(template, data) {
+          return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, function (_, path) {
+            var v = path.split(".").reduce(function (o, k) {
+              return o == null ? o : o[k];
+            }, data);
+            return v == null ? "" : String(v);
+          });
+        }
+
+        // P8: a confirm picker with a trust state; only a confirmed row may act.
+        var trust = {};
+        function nextTrust(state) {
+          return state === "unset" ? "inferred" : state === "inferred" ? "confirmed" : "unset";
+        }
+
+        var stories = [];
+        var firstStory = null;
+        function renderStories() {
+          var body = el("stories");
+          body.textContent = "";
+          stories.forEach(function (row) {
+            var status = (row.fields && row.fields.status) || "";
+            var tr = document.createElement("tr");
+            tr.setAttribute("data-kind", row.kind);
+            tr.appendChild(text("td", row.id));
+            var chipCell = document.createElement("td");
+            chipCell.appendChild(text("span", status, "chip " + status));
+            tr.appendChild(chipCell);
+            var state = trust[row.path] || "unset";
+            var owner = document.createElement("td");
+            var picker = text("button", state);
+            picker.setAttribute("data-trust", row.id);
+            picker.onclick = function () {
+              trust[row.path] = nextTrust(state);
+              renderStories();
+            };
+            owner.appendChild(picker);
+            tr.appendChild(owner);
+            var act = document.createElement("td");
+            var review = text("button", "→ review");
+            review.setAttribute("data-review", row.id);
+            review.disabled = state !== "confirmed";
+            review.onclick = function () {
+              cs.act("setStatus", { path: row.path, status: "review" }).then(
+                function () {
+                  review.textContent = "sent";
+                },
+                function (err) {
+                  review.textContent = err.message;
+                },
+              );
+            };
+            act.appendChild(review);
+            tr.appendChild(act);
+            body.appendChild(tr);
+          });
+          el("story-count").textContent = String(stories.length);
+          var first = stories[0];
+          el("summary").textContent = first
+            ? interpolate(el("summary").getAttribute("data-template"), {
+                first: { id: first.id, status: (first.fields || {}).status },
+              })
+            : "";
+          // P14: a chrome badge for the stories waiting on review.
+          var inReview = stories.filter(function (r) {
+            return (r.fields || {}).status === "review";
+          }).length;
+          cs.setBadge(inReview ? { count: inReview, severity: "warning" } : null);
+        }
+
+        // P3 + P4: every story (no other kind), live, with a stale cue on error.
+        cs.subscribeContext(
+          { where: { kinds: ["story"] }, select: ["status"], limit: 10000 },
+          function (result, err) {
+            var state = el("query-state");
+            if (err) {
+              state.textContent = "stale: " + err.message;
+              state.className = "state stale";
+              return;
+            }
+            state.textContent = "ready";
+            state.className = "state ready";
+            stories = (result && result.rows) || [];
+            inferInWorker();
+            var hadFirst = !!firstStory;
+            firstStory = stories[0] || null;
+            renderStories();
+            if (!hadFirst && firstStory) poll();
+          },
+        );
+
+        // P9: the pane's own worker infers which stories are ready for review, off the
+        // pane's thread, from a script that sits beside it in panes/.
+        var worker = null;
+        function inferInWorker() {
+          var state = el("worker-state");
+          if (typeof Worker !== "function") {
+            state.textContent = "no Worker in this environment";
+            return;
+          }
+          try {
+            if (!worker) {
+              worker = new Worker("parity-worker.js");
+              worker.onmessage = function (e) {
+                state.textContent = e.data.ready + " ready for review (inferred in a worker)";
+              };
+              worker.onerror = function (e) {
+                e.preventDefault();
+                state.textContent =
+                  "worker failed: " + (e.message || "could not load parity-worker.js");
+              };
+            }
+            worker.postMessage(
+              stories.map(function (r) {
+                return { id: r.id, status: (r.fields || {}).status };
+              }),
+            );
+          } catch (err) {
+            state.textContent = "worker failed: " + err.message;
+          }
+        }
+        // P5: poll a story's workspace while the pane is on screen, never while hidden.
+        var timer = null;
+        var polls = 0;
+        function poll() {
+          if (!firstStory) return;
+          polls += 1;
+          el("poll-count").textContent = String(polls);
+          var storyId = firstStory.id;
+          cs.invoke("getWorkspaceStatus", { storyId: storyId }).then(
+            function (s) {
+              el("workspace").textContent =
+                storyId + ": " + (s && s.live ? "running" : s && s.exists ? "open" : "not open");
+            },
+            function (err) {
+              el("workspace").textContent = storyId + ": " + err.message;
+            },
+          );
+        }
+        cs.onVisibility(function (visible) {
+          el("poll-state").textContent = visible ? "polling" : "paused (hidden)";
+          if (visible && timer === null) {
+            poll();
+            timer = setInterval(poll, POLL_MS);
+          } else if (!visible && timer !== null) {
+            clearInterval(timer);
+            timer = null;
+          }
+        });
+
+        // P10: the live session roster, each with Stop.
+        cs.subscribe("sessions", {
+          onChange: function (snapshot) {
+            var list = snapshot.snapshot;
+            var err = null;
+            var ul = el("sessions");
+            ul.textContent = "";
+            if (err) {
+              ul.appendChild(text("li", "unavailable: " + err.message, "muted"));
+              return;
+            }
+            el("session-count").textContent = String(list.length);
+            if (!list.length) ul.appendChild(text("li", "none", "muted"));
+            list.forEach(function (s) {
+              var li = text(
+                "li",
+                s.displayName + " · " + (s.agent || "shell") + " · " + s.state + " ",
+              );
+              li.setAttribute("data-session", s.handle);
+              var stop = text("button", "Stop");
+              stop.setAttribute("data-stop", s.handle);
+              stop.onclick = function () {
+                stop.disabled = true;
+                cs.act("stopSession", { handle: s.handle }).catch(function (e) {
+                  stop.textContent = e.message;
+                });
+              };
+              li.appendChild(stop);
+              ul.appendChild(li);
+            });
+          },
+        });
+
+        // P11: the agents this user can launch, each launchable in the background
+        // in the pane's own folder.
+        cs.agents().then(
+          function (list) {
+            var ul = el("agents");
+            list.forEach(function (a) {
+              var li = text("li", a.name + " ");
+              li.setAttribute("data-agent", a.key);
+              li.appendChild(text("span", a.key + " ", "muted"));
+              var launch = text("button", "Launch");
+              launch.setAttribute("data-launch", a.key);
+              launch.onclick = function () {
+                launch.disabled = true;
+                cs.invoke("getDocDir")
+                  .then(function (dir) {
+                    return cs.act("openWorkspace", {
+                      target: { kind: "dir", path: dir, agent: a.key },
+                      headed: false,
+                    });
+                  })
+                  .then(
+                    function () {
+                      launch.textContent = "launched";
+                    },
+                    function (err) {
+                      launch.textContent = err.message;
+                    },
+                  );
+              };
+              li.appendChild(launch);
+              ul.appendChild(li);
+            });
+          },
+          function (err) {
+            el("agents").appendChild(text("li", err.message, "muted"));
+          },
+        );
+
+        // P17: the app's theme tokens, as CSS custom properties and on change.
+        var themeChanges = 0;
+        cs.onTheme(function (theme) {
+          themeChanges += 1;
+          el("theme-changes").textContent = String(themeChanges);
+          el("scheme").textContent = theme.scheme;
+          var sw = el("swatches");
+          sw.textContent = "";
+          Object.keys(theme.tokens).forEach(function (name) {
+            if (name.indexOf("font") >= 0) return;
+            var s = document.createElement("span");
+            s.className = "swatch";
+            s.title = name + ": " + theme.tokens[name];
+            s.style.background = "var(" + name + ")";
+            sw.appendChild(s);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

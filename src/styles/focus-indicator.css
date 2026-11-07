@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: MIT */
+/* The terminal focus indicator: one blue line per level, painted only from the
+   `data-focus-indicator` attribute that `features/viewer/lib/focus-indicator.ts`
+   derives from real DOM focus ("on" while the element holds keyboard focus in a
+   focused window, "dim" once focus has left for app chrome or another window).
+   Store selection never paints it. This blue is reserved for focus: nothing else
+   in the terminal chrome uses it as a status colour.
+   - tile level: the tile chrome's bottom border (`.cs-focus-line`), at every N;
+   - pane level: a terminal-grid cell's outline (`.cs-focus-pane`). The cells
+     are parted by the mosaic's dividers, so an unfocused cell has no outline. */
+
+.cs-focus-line {
+  border-bottom-color: #30363d;
+}
+.cs-focus-line[data-focus-indicator="on"] {
+  border-bottom-color: #388bfd;
+}
+.cs-focus-line[data-focus-indicator="dim"] {
+  border-bottom-color: #388bfd59;
+}
+
+.cs-focus-pane[data-focus-indicator] {
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  z-index: 10;
+}
+.cs-focus-pane[data-focus-indicator="on"] {
+  outline-color: #388bfd;
+}
+.cs-focus-pane[data-focus-indicator="dim"] {
+  outline-color: #388bfd59;
+}

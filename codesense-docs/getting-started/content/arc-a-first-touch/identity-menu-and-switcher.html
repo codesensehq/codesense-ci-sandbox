@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Identity menu &amp; switcher</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .cs-docs-arcA {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA ol,
+      .cs-docs-arcA ul {
+        padding-left: 1.1em;
+      }
+      .cs-docs-arcA li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+
+      .cs-docs-arcA__hero {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        padding: var(--cs-docs-space-5);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      /* Mini identity-menu diagram — purely SVG, labels only, no screenshot
+         dependency. Reduced-motion safe: static (no animation). */
+      .cs-docs-arcA__menu-diagram {
+        display: block;
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        height: auto;
+      }
+
+      .cs-docs-arcA__step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .cs-docs-arcA__step:first-of-type {
+        border-top: 0;
+      }
+      .cs-docs-arcA__step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .cs-docs-arcA__step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .cs-docs-arcA__step p {
+        margin: 0 0 10px;
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      details.cs-docs-arcA__mcp {
+        margin-top: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+
+      /* Shortcut row. */
+      .cs-docs-arcA__kbd-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0 0;
+        font-size: var(--cs-docs-text-sm);
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/identity-menu-and-switcher">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Identity menu switcher top-left" id="hero">
+        <h1>Identity menu &amp; switcher</h1>
+        <p class="lede">
+          The top-left of every CodeSense window carries one little menu — your name, the
+          active org, and the active team. It's the only place you need to go to switch
+          between a repo you're reading and one you're editing. One keystroke
+          (<kbd class="cs-docs-kbd">⌘</kbd><kbd class="cs-docs-kbd">⇧</kbd><kbd
+            class="cs-docs-kbd"
+            >G</kbd
+          >) opens it focused on the switcher.
+        </p>
+
+        <div class="cs-docs-arcA__hero">
+          <figure>
+            <!-- Diagram: a mini identity-menu rendered inline as an SVG, so the
+                 hero works even before the real screenshot is captured. -->
+            <svg
+              class="cs-docs-arcA__menu-diagram"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 440 280"
+              role="img"
+              aria-label="Mock-up of the identity menu: trigger at the top-left, open panel listing you, orgs, and teams."
+            >
+              <title>Identity menu — trigger and panel</title>
+              <desc>
+                A rectangle on the top-left represents the title-bar trigger with your name and
+                active team. Below it an open panel lists "You", "Orgs on this Mac" (docs-org
+                read-only + my-codesense editable), and "Teams in my-codesense"
+                (getting-started, default).
+              </desc>
+              <style>
+                .idm-surface {
+                  fill: var(--cs-surface, #161b22);
+                  stroke: var(--cs-border, #262c38);
+                  stroke-width: 1;
+                }
+                .idm-inset {
+                  fill: var(--cs-inset, #11161e);
+                  stroke: var(--cs-border, #262c38);
+                  stroke-width: 1;
+                }
+                .idm-accent-ring {
+                  fill: none;
+                  stroke: var(--cs-accent, #7aa2ff);
+                  stroke-width: 1.5;
+                }
+                .idm-text {
+                  fill: var(--cs-fg, #e6edf3);
+                  font: 500 11px -apple-system, system-ui, sans-serif;
+                }
+                .idm-muted {
+                  fill: var(--cs-muted-fg, #a3abbb);
+                  font: 10px -apple-system, system-ui, sans-serif;
+                }
+                .idm-dot-active {
+                  fill: var(--cs-accent, #7aa2ff);
+                }
+                .idm-eyebrow {
+                  fill: var(--cs-faint-fg, #868fa0);
+                  font: 9px -apple-system, system-ui, sans-serif;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                }
+              </style>
+
+              <!-- Trigger (title-bar region) -->
+              <rect class="idm-inset" x="20" y="20" width="200" height="24" rx="4" />
+              <circle cx="35" cy="32" r="4" fill="var(--cs-accent, #7aa2ff)" />
+              <text class="idm-text" x="46" y="36">you · my-codesense / default</text>
+              <text class="idm-muted" x="226" y="36">▾</text>
+              <!-- Focus ring on the trigger -->
+              <rect class="idm-accent-ring" x="18" y="18" width="204" height="28" rx="6" />
+
+              <!-- Panel -->
+              <rect class="idm-surface" x="20" y="56" width="400" height="208" rx="8" />
+
+              <text class="idm-eyebrow" x="32" y="76">You</text>
+              <circle cx="36" cy="92" r="7" fill="var(--cs-accent, #7aa2ff)" />
+              <text class="idm-text" x="50" y="95">octocat</text>
+              <text class="idm-muted" x="200" y="95">change display name…</text>
+
+              <text class="idm-eyebrow" x="32" y="124">Orgs on this Mac</text>
+              <text class="idm-text" x="36" y="142">codesense-docs</text>
+              <text class="idm-muted" x="200" y="142">read-only</text>
+              <circle class="idm-dot-active" cx="408" cy="162" r="4" />
+              <text class="idm-text" x="36" y="164">my-codesense</text>
+              <text class="idm-muted" x="200" y="164">editable · active</text>
+
+              <text class="idm-eyebrow" x="32" y="192">Teams in my-codesense</text>
+              <circle class="idm-dot-active" cx="408" cy="210" r="4" />
+              <text class="idm-text" x="36" y="212">getting-started</text>
+              <text class="idm-muted" x="200" y="212">active</text>
+              <text class="idm-text" x="36" y="232">default</text>
+              <text class="idm-muted" x="200" y="232">switch →</text>
+
+              <text class="idm-muted" x="32" y="252">⌘⇧G focus here</text>
+              <text class="idm-muted" x="200" y="252">Create / Connect…</text>
+            </svg>
+            <figcaption>Trigger · panel · one place to switch</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- =============== What & why =============== -->
+      <section data-search="One place for identity org team" id="why">
+        <p>
+          The menu answers three questions at once: <strong>who you are</strong>,
+          <strong>which org you're reading</strong>, and <strong>which team of that org is
+          active</strong>. Every CodeSense action — opening a file, running a routine, writing
+          a story — honours the active row.
+        </p>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="How to use identity menu and switcher" id="steps">
+        <h2>Three moves you'll make here</h2>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">1</span>
+          <div>
+            <h3>Open it</h3>
+            <p>
+              Click the trigger (your name + the current team) in the top-left — right after
+              the macOS traffic lights. Or press
+              <kbd class="cs-docs-kbd">⌘</kbd><kbd class="cs-docs-kbd">⇧</kbd><kbd
+                class="cs-docs-kbd"
+                >G</kbd
+              >
+              — the menu opens focused on the <strong>Orgs</strong> section, which is the one
+              you want 90% of the time.
+            </p>
+            <div class="cs-docs-arcA__kbd-row">
+              <span><kbd class="cs-docs-kbd">⌘</kbd><kbd class="cs-docs-kbd">⇧</kbd><kbd
+                  class="cs-docs-kbd"
+                  >G</kbd
+                >
+                — open with Orgs focused</span
+              >
+              <span>·</span>
+              <span><kbd class="cs-docs-kbd">⌘</kbd><kbd class="cs-docs-kbd">⌥</kbd><kbd
+                  class="cs-docs-kbd"
+                  >⇧</kbd
+                ><kbd class="cs-docs-kbd">T</kbd> — open with Teams focused</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">2</span>
+          <div>
+            <h3>Switch active org or team</h3>
+            <p>
+              Click any row to make it active. The window reloads and every pane re-anchors —
+              the file tree, open tabs, the identity trigger itself. Nothing you had unsaved
+              is lost; CodeSense persists tab state per org.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">3</span>
+          <div>
+            <h3>Reach for Create / Connect from here too</h3>
+            <p>
+              The same menu holds <strong>Create a new context repo…</strong> and
+              <strong>Connect an existing context repo…</strong>. These are the two paths you
+              took to get here — now they're one click away forever, no matter where you are
+              in the app.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now switch active team from arc A" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge which org and team this page belongs to — the same org and team
+          the switcher shows when you open it from here. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Which org and team is this?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to switch team via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            An agent lists the orgs and teams, then switches the app's active team — the same
+            switch as clicking a team in the switcher:
+          </p>
+          <pre><code>list_orgs_teams {}
+set_active_team { org: 'you/context', team: 'getting-started' }</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema:
+            <a href="../mcp-explorer.html#tool/set_active_team">set_active_team</a> ·
+            <a href="../mcp-explorer.html#tool/list_orgs_teams">list_orgs_teams</a>.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml schema</a>
+        ·
+        <a href="../ui-mcp-crossref.html#setActiveTeam">UI↔MCP crossref</a>
+        ·
+        <a href="./files-on-disk.html">files on disk</a>
+      </p>
+          <!--tool-reference-->
+      <section id="tool-reference" data-search="Tool reference">
+        <h2>Tool reference</h2>
+        <p>Reference for the three tools an agent can call to see where it is, read the overview of CodeSense right now and refresh the bundled docs.</p>
+        <p id="orient"><strong>Orientation</strong></p>
+        <h3 id="tool-who_am_i"><code>who_am_i</code></h3>
+        <p>Reports who you are in CodeSense: your own <code>list_sessions</code> row, <code>{handle, sessionId, displayName, machine, machineId?, workspaceHandle?, workspace, story?, role?, avatar?, agent?, launchedBy, state}</code>. <code>session_id</code> is optional: omitted, it is the tab the connection runs in; pass your <code>$CODESENSE_TAB_SESSION_ID</code> to name a session. <code>displayName</code> is your tab's current name, which your inbox messages show as; rename yourself with <code>rename_terminal_tab</code>. <code>handle</code> is how others address you. <code>machineId</code> is present for a remote tab only. It errors when the session is not running.</p>
+        <pre data-tool-example="who_am_i"><code>{
+  &quot;tool&quot;: &quot;who_am_i&quot;,
+  &quot;arguments&quot;: {
+    &quot;session_id&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-codesense_overview"><code>codesense_overview</code></h3>
+        <p>Gives an overview of CodeSense right now in one read-only call: <code>{generatedAt, context, machines, sessions, agents, routines, inbox, roleQueues, workspaces, docs}</code>. Each section has <code>detail</code>, the tools to call for the full data, and a section that could not be read has <code>error</code> instead of data. Lists are capped (<code>truncated: true</code>). With <code>guide: true</code> it returns the concepts guide instead.</p>
+        <pre data-tool-example="codesense_overview"><code>{
+  &quot;tool&quot;: &quot;codesense_overview&quot;,
+  &quot;arguments&quot;: {
+    &quot;guide&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-update_codesense_docs"><code>update_codesense_docs</code></h3>
+        <p>Updates the canonical profile's CodeSense docs to this app's bundled version, offline and independently of the caller's working directory. The replacement preserves local HEAD and history, staged content, tracked edits and non-ignored untracked files on a named local branch before checkout; ignored machine state stays in place and collisions are refused. A current clean copy is a no-op. No network or remote is used. Returns docs versions and state, root, <code>preservationBranch</code> and <code>changedPaths</code>.</p>
+        <pre data-tool-example="update_codesense_docs"><code>{
+  &quot;tool&quot;: &quot;update_codesense_docs&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+      </section>
+      <!--/tool-reference-->
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · Identity menu</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

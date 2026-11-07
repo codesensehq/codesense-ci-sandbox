@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-branch" />
+    <title>CodeSense — Getting data into a dashboard</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/getting-data-into-a-dashboard">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Getting data into a dashboard">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Getting data into a dashboard</h1>
+        <p class="lede">
+          Pick the source before you write the page: an engine query for what CodeSense already
+          knows, a content folder for files an agent writes, or records for structured items. This
+          page says which to use, shows one example of each, and lists the limits that apply today.
+        </p>
+      </section>
+      <section id="decide" data-search="Which path to use engine query content folder records in-app hosted">
+        <h2>Which path to use</h2>
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Pick it when</th>
+              <th>Agent side</th>
+              <th>In-app dashboard reads with</th>
+              <th>Hosted dashboard reads with</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Engine query</strong></td>
+              <td>The data is something CodeSense already holds and must be live: sessions, inbox, runs, usage.</td>
+              <td>Nothing to write.</td>
+              <td><code>sessions()</code>, <code>inbox()</code>, <code>runs()</code>, <code>sessionUsage()</code>, <code>subscribe(topic)</code>, <code>onSessions</code>, <code>onInboxChanged</code></td>
+              <td>The declared catalog queries <code>sessions</code>, <code>inbox</code>, <code>runs</code>, <code>sessionUsage</code>; the <code>inbox</code> stream</td>
+            </tr>
+            <tr>
+              <td><strong>Content folder</strong></td>
+              <td>Anything else: a report, a feed, a JSON or Markdown file an agent produces.</td>
+              <td><code>create_content_file</code> into a team content folder</td>
+              <td><code>files.list</code>, <code>files.read</code>, <code>subscribe('files')</code>, <code>queryContext</code>, <code>subscribeContext</code></td>
+              <td>Frontmatter fields through <code>queryContext</code> only (no file text), or a data file listed in the manifest</td>
+            </tr>
+            <tr>
+              <td><strong>Records</strong></td>
+              <td>Many small structured items with named fields: tasks, events, checklist rows.</td>
+              <td><code>records_create</code>, <code>records_write</code>, <code>records_set_fields</code></td>
+              <td><code>subscribe('records', {collection})</code>, <code>records.list</code>, <code>records.read</code></td>
+              <td>Frontmatter fields through <code>queryContext</code>; no collection selector, so mark each record with a shared field (see <a href="#records">example c</a>)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Core, fast data comes from the engine's queries. Everything else is content an agent
+          writes, and the dashboard reads it back through the generic files and records reads, with
+          no Rust change and no new query.
+        </p>
+        <h3>In-app versus hosted</h3>
+        <p>
+          An in-app dashboard runs in CodeSense on the Mac and has <code>window.codesense</code>.
+          A published (hosted) dashboard has no <code>window.codesense</code>: it asks a fixed catalog
+          of read-only queries through the live link and the Mac answers them.
+          <code>publish_dashboard</code> refuses a page that calls <code>window.codesense</code>. Hosted
+          answers are redacted and cut to fit 256 KB, each list query has its own row cap, and a hosted
+          query is refreshed by polling no faster than every 15 seconds. Only the streams push.
+          Private records and private notes are not reachable from a hosted dashboard at all: the
+          hosted <code>queryContext</code> reads the dashboard's team content only.
+        </p>
+        <p>
+          Build and check the page in-app first, then publish. Anything that depends on a verb or a
+          field the hosted catalog does not offer will not survive the move; the
+          <a href="#limits">limits</a> below say where the two differ.
+        </p>
+        <h3>Pin a hosted query's arguments</h3>
+        <pre><code>live:
+  queries: [storyChanges, whyLine]
+  args:
+    storyChanges: {storyId: [DEMO-46, {epic: DEMO}]}
+    whyLine: {repo: [acme/codesense]}</code></pre>
+        <p>
+          Before adding viewers, pin <code>storyChanges.storyId</code> and <code>whyLine.repo</code>,
+          including with <code>queries: all</code>. Owner-only publishing and owner asks may omit
+          these pins. Once present, pins apply to owners too. Every pinned argument must be sent;
+          a missing argument or a value outside its list returns <code>arg_not_allowed</code>.
+          Lists hold 1–64 literal strings or integers, matched by exact JSON type and value:
+          <code>5</code> differs from <code>"5"</code>. Other arguments remain open, so pin
+          <code>whyLine.path</code> too when only one path should be shared.
+        </p>
+        <p>
+          The generated starter sends the first literal for each pinned argument of its selected
+          query, preserving JSON types. A selector-only argument gets a named placeholder such as
+          <code>SET_storyId</code> in <code>app.js</code>. The rendered error, creation warnings and
+          next steps name the argument to configure and the epic or team it must belong to.
+        </p>
+        <p>
+          The Mac checks before running a query. The relay checks before serving live or cached
+          answers, and never serves a cache fallback for this refusal. Edits take effect when the
+          watcher saves the block, without republishing; until then asks fail closed. Changing a
+          query's pins deletes its cached answers. Unknown live keys and invalid pin declarations
+          are refused. These pins cover queries only; streams are unchanged.
+        </p>
+        <p>
+          Only <code>storyChanges.storyId</code> also accepts <code>{epic: DEMO}</code> or
+          <code>{team: web}</code> selectors, mixed with literals. Selectors need a known
+          saved team scope at publish; the team selector must name that team. The Mac resolves
+          current stories through the context-query engine in that scope, by
+          <code>parent_epic</code>/<code>epic</code> or epic folder. Unknown ids, another team's
+          stories, a moved folder scope, and an index that is not ready are refused. Editing a
+          story's epic takes effect without republishing. A selector satisfies the viewer pin rule.
+          Requests carry <code>live_scope</code>, an opaque SHA-256 fingerprint of the saved org
+          and team. A changed or removed scope retires all cached and in-flight query
+          answers, even with identical selectors; an unchanged scope preserves them.
+        </p>
+        <p>
+          The share server checks literal args and leaves selector args to the Mac. While the Mac
+          is offline, viewers see the last answer it approved under the current pins, which can
+          still include a story that has since left the epic; the Mac's next answer replaces it. Online rate limits, timeouts,
+          failures and oversized answers never use a selector cache fallback. Changing the pins
+          deletes that query's cache and prevents new asks from joining old requests. The relay
+          also checks the viewer permission computed on the Mac. An authoritative
+          <code>arg_not_allowed</code> or <code>not_approved</code> deletes that exact cached answer
+          and prevents pending older answers from restoring it, including after a disconnect.
+        </p>
+      </section>
+      <section id="session-tool-evidence" data-search="Session conversation tools failure firstError firstRetainedError sessionId retained dropped">
+      <h2>Session identity and tool failures</h2>
+      <p>Internal <code>sessions()</code> rows and agent instances expose an optional
+        <code>sessionId</code> for matching a stored conversation to its live terminal.
+        Do not use reusable <code>id</code> or <code>handle</code> values as conversation identity.
+        Published session rows retain their existing allowlist.</p>
+      <p><code>sessionRead()</code> tool summaries include <code>firstError: {turn, toolUseId}</code>
+        from the tool-call index, or <code>null</code> when no confirmed failure is recorded.
+        <code>firstRetainedError: {turn, toolUseId}</code> is the first failure outside the
+        conversation's dropped-turn interval, including a failure before the recent excerpt.
+        It is <code>null</code> when no failure text is retained. The original
+        <code>firstError</code> and counts keep their full-index meaning.
+        Confirm a retained jump with <code>sessionRead({sessionId, include: ['conversation'], toolUseId, limit: 1})</code>;
+        omit the link when that lookup is unavailable or missing. <code>errorUnknown</code>
+        counts calls without a recorded success/error status and does not mean zero errors.</p>
+      </section>
+      <section id="engine" data-search="Engine query worked example sessions inbox subscribe">
+        <h2>(a) Engine: recent sessions and the inbox</h2>
+        <p>
+          Read the built-in sources directly. <code>onSessions</code> pushes the session list and
+          calls back again on every change; <code>inbox({limit})</code> returns the newest messages
+          as <code>{messages, hasMore}</code>, and <code>onInboxChanged</code> tells you when to
+          read again. Declare the grants in the page's meta tag
+          (<a href="./calling-codesense.html">Calling CodeSense</a> lists them).
+        </p>
+        <pre><code>&lt;meta name=&quot;codesense:capabilities&quot; content=&quot;sessions:read inbox:read:team&quot;&gt;
+&lt;ul id=&quot;sessions&quot;&gt;&lt;/ul&gt;
+&lt;ul id=&quot;inbox&quot;&gt;&lt;/ul&gt;
+&lt;script&gt;
+const cs = window.codesense;
+const sessionList = document.getElementById(&#x27;sessions&#x27;);
+const inboxList = document.getElementById(&#x27;inbox&#x27;);
+
+function showSessions(rows) {
+  sessionList.replaceChildren(...(rows || []).map((row) =&gt; {
+    const li = document.createElement(&#x27;li&#x27;);
+    li.textContent = row.displayName + &#x27; · &#x27; + row.state;
+    return li;
+  }));
+}
+async function readInbox() {
+  const view = await cs.inbox({limit: 20});
+  inboxList.replaceChildren(...view.messages.map((m) =&gt; {
+    const li = document.createElement(&#x27;li&#x27;);
+    li.textContent = m.fromName + &#x27;: &#x27; + m.text;
+    return li;
+  }));
+}
+
+const stopSessions = cs.onSessions((rows, error) =&gt; { if (!error) showSessions(rows); });
+const stopInbox = cs.onInboxChanged(() =&gt; readInbox());
+cs.onTeardown(() =&gt; { stopSessions(); stopInbox(); });
+readInbox().then(() =&gt; cs.ready());
+&lt;/script&gt;</code></pre>
+        <p>
+          The first-paint read and later changes both come from the same engine: you do not poll.
+          <code>subscribe('sessions')</code> and <code>subscribe('inbox')</code> give the same data
+          as topics with deltas; see <a href="../generated/live-hub.md">LiveHub topics and rows</a>.
+          Always render message text with <code>textContent</code>. On a hosted dashboard the same
+          sources are the catalog queries <code>sessions</code> and <code>inbox</code>, declared in
+          the manifest's <code>live</code> block and read with <code>CS.query</code> or the
+          <code>inbox</code> stream (see
+          the "Agent builds a dashboard" handbook guide and <code>get_live_data_contract</code>,
+          section <code>hosted</code>).
+        </p>
+      </section>
+      <section id="content-folder" data-search="Content folder worked example files list read subscribe create_content_file">
+        <h2>(b) Content folder: an agent writes a file, the page shows it</h2>
+        <p>
+          The agent writes a JSON or Markdown file into a team content folder. If the agent writes with its own filesystem tools instead, it calls
+          <code>refresh_frontmatter_cache</code> so the index sees the file.
+        </p>
+        <h3 id="tool-create_content_file"><code>create_content_file</code></h3>
+        <p>
+          The agent writes the feed. Use an absolute path inside the team's content folder; the
+          example creates <code>feeds/standup.json</code>. With <code>onCollision: "fail"</code>
+          a second create of the same path is refused; <code>keep-both</code> writes the next free
+          numbered name instead. The tools are listed in
+          <a href="../arc-k-sync/file-tools.html">Content file tools</a>.
+        </p>
+        <pre data-tool-example="create_content_file"><code>{
+  &quot;tool&quot;: &quot;create_content_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/feeds/standup.json&quot;,
+    &quot;content&quot;: &quot;{\&quot;date\&quot;:\&quot;2026-10-26\&quot;,\&quot;items\&quot;:[\&quot;Ship the docs page\&quot;,\&quot;Review DEMO-27\&quot;]}&quot;,
+    &quot;onCollision&quot;: &quot;fail&quot;
+  }
+}</code></pre>
+        <p>
+          The dashboard lists the folder, reads the file and re-renders when the folder changes.
+          <code>files.list</code> returns <code>{rows}</code> (each row has <code>id</code>,
+          <code>path</code>, <code>name</code>, <code>kind</code>); pass a folder row's
+          <code>path</code> as <code>dir</code>. <code>files.read</code> returns
+          <code>{text, truncated, size, sha256}</code>.
+        </p>
+        <pre><code>&lt;meta name=&quot;codesense:capabilities&quot; content=&quot;files:read&quot;&gt;
+&lt;pre id=&quot;feed&quot;&gt;&lt;/pre&gt;
+&lt;script&gt;
+const cs = window.codesense;
+const out = document.getElementById(&#x27;feed&#x27;);
+const rootOptions = {scope: &#x27;team&#x27;, window: [0, 200]};
+let folderOptions = null;
+
+function fail(error) { out.textContent = String(error.message || error); }
+
+async function show() {
+  const root = await cs.files.list({scope: &#x27;team&#x27;});
+  const folder = root.rows.find((row) =&gt; row.kind === &#x27;dir&#x27; &amp;&amp; row.name === &#x27;feeds&#x27;);
+  if (!folder) { out.textContent = &#x27;No feeds folder yet&#x27;; return; }
+  if (!folderOptions) {
+    // The folder appeared (or was there at load): watch inside it from now on.
+    folderOptions = {scope: &#x27;team&#x27;, dir: folder.path, window: [0, 200]};
+    await cs.subscribe(&#x27;files&#x27;, {...folderOptions, onChange: () =&gt; show().catch(fail)});
+  }
+  const listing = await cs.files.list({scope: &#x27;team&#x27;, dir: folder.path});
+  const file = listing.rows.find((row) =&gt; row.name === &#x27;standup.json&#x27;);
+  if (!file) { out.textContent = &#x27;No standup yet&#x27;; return; }
+  const read = await cs.files.read({path: file.path});
+  const feed = JSON.parse(read.text);
+  out.textContent = feed.date + &#x27;\n&#x27; + feed.items.join(&#x27;\n&#x27;);
+}
+
+// Watch the team root first, so a feeds folder created later is picked up.
+cs.onTeardown(() =&gt; {
+  cs.unsubscribe(&#x27;files&#x27;, undefined, rootOptions);
+  if (folderOptions) cs.unsubscribe(&#x27;files&#x27;, undefined, folderOptions);
+});
+cs.subscribe(&#x27;files&#x27;, {...rootOptions, onChange: () =&gt; show().catch(fail)})
+  .then(show).catch(fail).finally(() =&gt; cs.ready());
+&lt;/script&gt;</code></pre>
+        <p>
+          If the feed has frontmatter (a Markdown file with <code>status</code>, <code>owner</code>
+          and so on), <code>subscribeContext</code> over a <code>queryContext</code> query is simpler:
+          it reruns the query whenever the context changes. It sends no deltas, so the whole result
+          arrives each time (<a href="./your-first-dashboard.html">Your first dashboard</a>). The
+          <code>files</code> and <code>queryContext</code> reads are the in-app path; a hosted
+          dashboard gets only frontmatter fields through its <code>queryContext</code> query, or a
+          data file the manifest lists and the agent rewrites.
+        </p>
+        <h3 id="tool-list_context_content"><code>list_context_content</code></h3>
+        <p>
+          The agent can check what it wrote with the same listing the page uses: by context id,
+          or by <code>scope</code> and <code>dir</code> like <code>files.list</code>.
+        </p>
+        <pre data-tool-example="list_context_content"><code>{
+  &quot;tool&quot;: &quot;list_context_content&quot;,
+  &quot;arguments&quot;: {
+    &quot;context&quot;: &quot;team:acme:engineering&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="records" data-search="Records worked example calendar sync records_create records_list records_collections hosted discriminator">
+        <h2>(c) Records: an agent syncs a calendar, the page shows it</h2>
+        <p>
+          Declare the collection once, then let the agent write one record per event. The schema
+          file is the one <a href="./records.html">Records</a> describes; write it with
+          <code>create_content_file</code> at the team's <code>content/schema/calendar.yaml</code>.
+          Add a <code>source</code> field. In-app pages do not need it, but it is the discriminator a
+          hosted page will need below.
+        </p>
+        <pre><code>collection: calendar
+scope: team
+folder: content/calendar
+id: slug
+title: title
+fields:
+  title: { type: text, required: true }
+  starts: { type: date }
+  source: { type: text }
+order: [starts]</code></pre>
+        <h3 id="tool-records_collections"><code>records_collections</code></h3>
+        <p>The agent confirms the collection is declared before it writes.</p>
+        <pre data-tool-example="records_collections"><code>{
+  &quot;tool&quot;: &quot;records_collections&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-records_create"><code>records_create</code></h3>
+        <p>
+          One call per new event. Slug collections need an <code>id</code>; use the calendar's
+          event id. Creating an id that already exists fails ("record already exists"), so on a
+          later sync use <code>records_write</code> or <code>records_set_fields</code> for events
+          that changed. Keep the same <code>requestId</code> when you retry an uncertain create.
+        </p>
+        <pre data-tool-example="records_create"><code>{
+  &quot;tool&quot;: &quot;records_create&quot;,
+  &quot;arguments&quot;: {
+    &quot;collection&quot;: &quot;calendar&quot;,
+    &quot;id&quot;: &quot;standup-2026-10-26&quot;,
+    &quot;fields&quot;: {
+      &quot;title&quot;: &quot;Standup&quot;,
+      &quot;starts&quot;: &quot;2026-10-26&quot;,
+      &quot;source&quot;: &quot;calendar&quot;
+    },
+    &quot;body&quot;: &quot;Daily sync, room 4&quot;,
+    &quot;requestId&quot;: &quot;calendar-sync-standup-2026-10-26&quot;
+  }
+}</code></pre>
+        <h3 id="tool-records_list"><code>records_list</code></h3>
+        <p>
+          Read back what the page will see. <code>records_list</code> pages with <code>window</code>
+          (<code>[start, end]</code>), not <code>limit</code>: it ignores <code>limit</code>.
+        </p>
+        <pre data-tool-example="records_list"><code>{
+  &quot;tool&quot;: &quot;records_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;collection&quot;: &quot;calendar&quot;,
+    &quot;window&quot;: [
+      0,
+      50
+    ]
+  }
+}</code></pre>
+        <p>
+          <strong>In-app</strong>, the dashboard subscribes to the collection and renders the rows;
+          this is the same pattern as <a href="./records.html#subscribe">Records › Read and subscribe</a>:
+        </p>
+        <pre><code>&lt;meta name=&quot;codesense:capabilities&quot; content=&quot;records:read:team&quot;&gt;
+&lt;ul id=&quot;events&quot;&gt;&lt;/ul&gt;
+&lt;script&gt;
+const cs = window.codesense;
+const list = document.getElementById(&#x27;events&#x27;);
+function receive(view) {
+  list.replaceChildren(...view.snapshot.map((record) =&gt; {
+    const li = document.createElement(&#x27;li&#x27;);
+    li.textContent = (record.fields.starts || &#x27;&#x27;) + &#x27; · &#x27; + (record.title || record.id);
+    return li;
+  }));
+}
+cs.onTeardown(() =&gt; cs.unsubscribe(&#x27;records&#x27;, receive, {collection: &#x27;calendar&#x27;}));
+cs.subscribe(&#x27;records&#x27;, {collection: &#x27;calendar&#x27;, onChange: receive}).then(receive).finally(() =&gt; cs.ready());
+&lt;/script&gt;</code></pre>
+        <h3>What a hosted dashboard can do with records today</h3>
+        <p>
+          A hosted page has no <code>records</code> topic and no folder or collection selector. Its
+          only route to records is the catalog query <code>queryContext</code>, which reads the
+          dashboard's own team content, returns only the frontmatter fields the manifest shares
+          (never the body, preview or file text), and accepts <code>where.kinds</code>, eq/in
+          <code>filters</code>, <code>match</code>, <code>sort</code>, <code>limit</code> and
+          <code>select</code>. A record does not store which collection it belongs to, so
+          you cannot ask for "the calendar collection".
+        </p>
+        <p>
+          The workaround is a shared discriminator field. The agent sets <code>source: calendar</code>
+          on every record (the schema above declares it), the manifest shares the fields the page
+          needs, and the page filters on the discriminator. Rows that are not calendar events never
+          match. Share only keys you want public to the invited viewers; <code>summary</code>,
+          <code>body</code>, <code>text</code>, <code>path</code>, <code>content</code> and
+          <code>relationships</code> can never be shared. To show a short text, have the agent
+          copy it into a shared frontmatter field such as <code>previewText</code>.
+        </p>
+        <pre><code># dashboard.yml, the live block
+live:
+  queries: [queryContext]
+  fields:
+    queryContext: [title, starts, source, previewText]</code></pre>
+        <pre><code>// inside the published page; CS comes from the cs-live.js the starter ships
+// markup: &lt;ul id=&quot;events&quot;&gt;&lt;/ul&gt;; a rejection's message is the error code, e.g. mac_offline
+const list = document.getElementById(&#x27;events&#x27;);
+
+function render(rows) {
+  list.replaceChildren(...rows.map((row) =&gt; {
+    const li = document.createElement(&#x27;li&#x27;);
+    // Frontmatter fields sit under row.fields; only title is also top level.
+    li.textContent = (row.fields.starts || &#x27;&#x27;) + &#x27; · &#x27; + (row.title || row.fileName)
+      + (row.fields.previewText ? &#x27; — &#x27; + row.fields.previewText : &#x27;&#x27;);
+    return li;
+  }));
+}
+
+CS.query(&#x27;queryContext&#x27;, {
+  filters: [{key: &#x27;source&#x27;, op: &#x27;eq&#x27;, value: &#x27;calendar&#x27;}],
+  select: [&#x27;title&#x27;, &#x27;starts&#x27;, &#x27;previewText&#x27;],
+  sort: [&#x27;starts&#x27;],
+  limit: 100
+}).then((reply) =&gt; {
+  const answer = reply.answer;
+  render(answer.rows);
+  if (answer.truncated) list.append(&#x27;Showing &#x27; + answer.rows.length + &#x27; of &#x27; + answer.total);
+}).catch((error) =&gt; { list.textContent = &#x27;Could not load events: &#x27; + error.message; });</code></pre>
+        <p>
+          Filtering happens on the Mac before the row cap, so the discriminator is reliable. Filtering
+          in the page after the query is not: the cap has already dropped rows. Use <a href="#paged-lists">the shared paging helper</a> for continuation and honest coverage; see <a href="#limits">Limits</a> for per-answer bounds.
+        </p>
+      </section>
+      <section id="paged-lists" data-search="queryAll subscribeAll partialList manual Load more Retry refresh cursor usage unknown total">
+        <h2>Page any list with the shared kit</h2>
+        <pre><code>const list = kit.partialList({ container, render: c =&gt; kit.h('li', {}, c.sha.slice(0, 7)),
+  subscribe: cb =&gt; kit.subscribeAll('storyChanges', {storyId, limit: 20}, 30, cb, {manual: true}) });
+// Hosted: replace kit with CS; render with document.createElement and textContent.</code></pre>
+        <p>
+          Here <code>kit = codesense.kit</code>; <code>container</code> and <code>storyId</code>
+          belong to your page. This paints the first 20 commits, then gives the reader Load more.
+          Hosted pages declare <code>live.queries: [storyChanges]</code> and load <code>cs-live.js</code>.
+          Use <code>CS.partialList</code> and <code>CS.subscribeAll</code> with the same arguments;
+          <code>CS</code> has no <code>h</code> helper, so the renderer creates its own element.
+        </p>
+        <pre><code>const list = CS.partialList({ container, render: c =&gt; Object.assign(document.createElement('li'), {textContent: c.sha.slice(0, 7)}),
+  subscribe: cb =&gt; CS.subscribeAll('storyChanges', {storyId, limit: 20}, 30, cb, {manual: true}) });
+window.addEventListener('pagehide', () =&gt; list.stop(), {once: true});</code></pre>
+        <p>
+          In-app pages use <code>const sdk = codesense.kit;</code>. Hosted pages load their local
+          <code>cs-live.js</code> before the page script and use <code>const sdk = CS;</code> instead;
+          list the SDK in <code>publish.files</code> and declare <code>live.queries: [queryContext]</code>
+          for this example. Both expose the same API below. The hosted SDK uses wire
+          envelope <code>v: 1</code>.
+        </p>
+        <p>
+          Default <code>partialList</code> styling is bundled in the SDK and installed once when
+          needed; no extra stylesheet or published asset is required. It honors inherited
+          <code>--cs-*</code> tokens and the page's color scheme. Binding existing
+          <code>status</code> and <code>button</code> elements keeps your authored controls and styles
+          and does not install the default component styles.
+        </p>
+        <pre><code>&lt;div id="items"&gt;&lt;/div&gt;
+&lt;button id="refresh" type="button"&gt;Refresh&lt;/button&gt;
+&lt;script&gt;
+const sdk = codesense.kit; // hosted: use CS instead
+const view = sdk.partialList({
+  container: document.getElementById('items'),
+  subscribe: receive =&gt; sdk.subscribeAll('queryContext', {}, 15, receive, {manual: true}),
+  render: row =&gt; {
+    const item = document.createElement('div');
+    item.textContent = row.title || row.fileName || row.id || row.path;
+    return item;
+  }
+});
+document.getElementById('refresh').addEventListener('click', () =&gt; view.refresh());
+window.addEventListener('pagehide', () =&gt; view.stop(), {once: true});
+&lt;/script&gt;</code></pre>
+        <p>
+          The component binds the callable handle returned by <code>subscribeAll</code>: its
+          <code>loadMore()</code> fetches one next page, <code>refresh()</code> begins a fresh walk,
+          and calling the handle stops it. <code>manual: true</code> keeps continuation behind
+          Load more; omit it for automatic sequential paging. Heads remain live at the requested interval (hosted minimum 15 seconds);
+          default automatic reconciliation walks again at <code>restEveryS</code> (60 by default)
+          or a changed total. Manual head updates retain loaded depth and a usable deeper cursor.
+          An identical cached head does not overwrite newer continuation rows or summaries.
+        </p>
+        <p>
+          For a one-time walk use <code>await sdk.queryAll('sessionUsage', {}, {maxRows: 5000})</code>
+          inside <code>try/catch</code>. Results contain <code>rows, total, returned, complete,
+          truncated, loading, error, canLoadMore, atCeiling</code>, plus authoritative usage
+          <code>totals</code> and <code>days</code>. Hosted results retain actual <code>source</code>,
+          <code>answered_at</code> and <code>server_time</code> when supplied; do not invent freshness.
+          Totals are replaced by the latest accepted summary, never summed from loaded pages.
+        </p>
+        <p>
+          Built-in list shapes are <code>sessionUsage.sessions</code> (identity: CLI/session pair),
+          <code>queryContext.rows</code> (ID or path), and <code>storyChanges.commits</code> (SHA).
+          These producers support the same paging contract in the app and on hosted pages.
+          Other answer facts stay in the result: for example,
+          <code>storyChanges.sessions</code> stays alongside the accumulated commit <code>rows</code>.
+          Only the selected rows key and paging bookkeeping are removed from metadata.
+          In-app context and usage keep their existing subscriptions; other verbs poll while visible.
+          Hosted subscriptions keep their existing minimum interval of 15 seconds and limit of 20.
+        </p>
+        <table>
+          <thead><tr><th>Option on queryAll / subscribeAll</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>rows</code></td><td>Rows key path (such as <code>'data.items'</code>) or <code>answer =&gt; array</code>. Enables paging for an unknown verb.</td></tr>
+            <tr><td><code>id</code></td><td>Row key string or <code>row =&gt; stableId</code>. Overrides the built-in identity.</td></tr>
+            <tr><td><code>cursor: {arg, next}</code></td><td>Request argument name and response key path or <code>answer =&gt; cursor|null</code>. For example <code>{arg:'after', next:'continuation'}</code>.</td></tr>
+            <tr><td><code>total</code></td><td>Response key path or <code>answer =&gt; number</code>. Omit when unknown; exhaustion alone does not claim complete coverage.</td></tr>
+          </tbody>
+        </table>
+        <pre><code>const result = await sdk.queryAll('myList', {}, {
+  rows: 'data.items', id: 'key', cursor: {arg: 'after', next: 'continuation'}, total: 'count'
+});</code></pre>
+        <p>
+          Options override built-in shapes too. An <code>undefined</code> option keeps its default;
+          <code>cursor</code> merges its <code>arg</code> and <code>next</code> fields individually.
+          An unknown verb without <code>rows</code> keeps its previous single-answer behavior.
+          Each traversal keeps filters and its cursor argument together.
+        </p>
+        <p>
+          App-only inbox paging uses caller options for its <code>messages</code> and
+          <code>before/hasMore</code> shape. This example uses <code>codesense.kit</code> directly:
+        </p>
+        <pre><code>const result = await codesense.kit.queryAll('inbox', {scope: 'to-human', limit: 50}, {
+  rows: 'messages', id: 'messageId',
+  cursor: {arg: 'before', next: a =&gt; a.hasMore ? a.messages.at(-1)?.messageId ?? null : null}
+});</code></pre>
+        <p>
+          The app's <code>routineRuns</code> similarly uses <code>rows: 'runs'</code>,
+          <code>id: 'run_id'</code> and <code>cursor: {arg: 'before', next: a =&gt; a.next_before}</code>.
+          Hosted inbox answers are bounded and have no continuation cursor; the hosted catalog
+          has no <code>routineRuns</code> query. Caller options describe an available producer's
+          shape; they do not add a query or continuation support to the hosted catalog.
+        </p>
+        <h3>One owner per resource and scope</h3>
+        <p>
+          Keep one handle for the selected story. Stop it before changing scope or rebinding a
+          <code>partialList</code> to the same status and button. Stopping the component also stops
+          its handle. In-flight pages settle without emitting into the replacement view;
+          the revision fence keeps an older page from overwriting a newer head's rows.
+        </p>
+        <pre><code>let view;
+function selectStory(storyId) {
+  if (view) view.stop();
+  const resource = 'story:' + storyId, scope = resource;
+  view = sdk.partialList({status, button,
+    subscribe: cb =&gt; sdk.subscribeAll('storyChanges', {storyId, limit: 20}, 30, cb, {manual: true}),
+    onResult: result =&gt; store.run(resource, scope, async () =&gt; result)
+  });
+}
+window.addEventListener('pagehide', () =&gt; { if (view) view.stop(); }, {once: true});</code></pre>
+        <p>
+          Here <code>store</code> is your application's resource store: <code>run(resource, scope, fn)</code>
+          owns each slot's value, error, token and scope, accepting only its current completion.
+          Render charts from that slot. The paging handle owns continuation; the resource store owns
+          accepting the result into application state. Other resources keep their own tokens.
+          For a one-time resource, wrap the whole read:
+          <code>store.run('story:'+storyId, scope, () =&gt; sdk.queryAll('storyChanges', {storyId}))</code>.
+          This pattern uses the existing paging options and your store; no extra paging API is needed.
+        </p>
+        <p>
+          Completion requires a known numeric total equal to distinct loaded rows and no next
+          cursor; zero is complete, an unknown total or an overshoot stays partial. Usage identity
+          is the exact <code>(cli, sessionId)</code> pair; context uses stable ID/path. The helper
+          preserves filters and effective limit (default 100), makes one explicit page request at
+          a time, tries one stale-cursor restart and at most two full same-limit mismatch recovery
+          walks, and stops at <code>maxRows</code> (default and hard maximum 5000). This is a moving
+          view, not a snapshot. Old membership disappears only after a successful complete fresh walk.
+        </p>
+        <p>
+          The component shows loading, unknown totals, exact completion, partial coverage, the
+          row ceiling and Retry. It handles rejected controls without an unhandled Promise and
+          prevents double clicks. To keep an existing layout, pass <code>status</code> and
+          <code>button</code> elements instead of <code>container/render</code>, with
+          <code>onResult(result)</code> for your charts; no duplicate row list is created.
+          Explicit page asks back off <code>5s × retry</code>, up to six retries. Server-owned hosted
+          head errors remain visible until the next subscription tick (at least 15 seconds).
+          <code>queryAll</code> rejects ordinary errors; live results expose <code>error</code> and
+          retain rows. <code>view.stop()</code> stops its handle, settles its pending lifecycle
+          promises and clears its own retry timers; an already dispatched protected transport may finish.
+        </p>
+      </section>
+      <section id="limits" data-search="Limits caps records window truncated returned answer_too_large 256 KB polling 15 seconds inbox runs files.read">
+        <h2>Limits that apply today</h2>
+        <p>
+          These are the bounds at this build. Where a bound is missing, the table says so and what
+          to do about it; none of them is a promise of new behaviour.
+        </p>
+        <h3>Records tools</h3>
+        <table class="cmp">
+          <thead>
+            <tr><th>Call</th><th>Bound</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>records_list</code></td>
+              <td>Reads <code>window</code> only, <code>[start, end]</code>, default <code>[0, 200]</code>; at most 200 rows per call. <code>limit</code> is ignored. The answer carries <code>total</code> (the whole collection), so page by moving the window.</td>
+            </tr>
+            <tr>
+              <td><code>records_search</code></td>
+              <td><code>limit</code> defaults to 20 and is capped at 200.</td>
+            </tr>
+            <tr>
+              <td><code>records_create</code>, <code>records_write</code>, <code>records_set_fields</code></td>
+              <td>At most 64 fields per call; a larger call is refused with <code>at most 64 fields per write</code>.</td>
+            </tr>
+            <tr>
+              <td><code>records_history</code></td>
+              <td><code>limit</code> defaults to 50 and is capped at 500.</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>In-app dashboards</h3>
+        <table class="cmp">
+          <thead>
+            <tr><th>Read</th><th>Bound now</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>inbox</code></td><td>Default and maximum 500 newest messages; <code>hasMore</code> is true when there were more. Pass <code>limit</code> for fewer.</td></tr>
+            <tr><td><code>runs</code></td><td>Default 50, maximum 500, no flag when more exist.</td></tr>
+            <tr><td><code>sessions</code></td><td>No cap: every session in the engine snapshot. Filter and slice in the page.</td></tr>
+            <tr><td><code>setup</code></td><td>No args, no rows: <code>{attribution}</code>, this Mac's line-attribution and capture status. In-app it matches <code>describe_setup.attribution</code>; a hosted dashboard declares <code>live: {queries: [setup]}</code> and gets the allow-listed subset (no git-ai path, warnings or status messages). Capture counts are since the app started. See <a href="../examples/dashboards/setup-status.html">setup-status.html</a>.</td></tr>
+            <tr><td><code>sessionUsage</code></td><td>Returns <code>sessions, total, totals, days, nextCursor?</code>. Pass the same filters and limit with the next cursor; <code>kit.queryAll</code> or <code>kit.subscribeAll</code> handles the walk with a default page size of 100 and hard collection ceiling of 5000.</td></tr>
+            <tr><td><code>files.read</code></td><td>Text up to 1.5 MiB (<code>maxBytes</code> cannot exceed it); <code>truncated</code> says it was cut.</td></tr>
+            <tr><td><code>files</code> and <code>records</code> topics</td><td>A view starts with at most 200 rows; ask for more with <code>page(topic, cursor)</code>.</td></tr>
+            <tr><td><code>queryContext</code></td><td>Default 200 rows, up to 10000 per direct call, with a cursor to page. The shared helper uses a default page size of 100 and a hard 5000-row collection ceiling.</td></tr>
+          </tbody>
+        </table>
+        <h3>Hosted dashboards</h3>
+        <ul>
+          <li>
+            <strong>Size.</strong> An answer is at most 256 KB as JSON. List queries
+            (<code>sessionUsage</code>, <code>sessions</code>, <code>runs</code>, <code>inbox</code>,
+            <code>queryContext</code>) keep the rows that fit, measured after redaction, and cut from
+            the end of their own order. When rows were cut for size the answer object carries
+            <code>truncated: true</code> and <code>returned</code> (the rows sent). The first row is always
+            kept, so a later row that does not fit just ends the list early, flagged as above. Only a
+            first or only row over the cap, or a single non-list value over it, is an error,
+            <code>answer_too_large</code>: show "too big, narrow the query".
+          </li>
+          <li>
+            <strong>Row caps.</strong> <code>sessionUsage</code>, <code>runs</code>: default 50,
+            maximum 500. <code>sessions</code> and <code>inbox</code>: at most 500.
+            <code>queryContext</code>: <code>limit</code> defaults to 500 and is capped at 500.
+          </li>
+          <li>
+            <strong>Cuts that are not flagged.</strong> <code>runs</code> is a bare array, so it has
+            nowhere to say it was cut: compare its length with your <code>limit</code>.
+            <code>sessionUsage</code> carries full-window <code>total</code>, <code>totals</code> and <code>days</code> even when rows are partial; its <code>nextCursor</code> allows continuation. Use the helper rather than inferring completeness from page length.
+            <code>sessions</code> cuts in handle order, not by recency.
+          </li>
+          <li>
+            <strong><code>queryContext</code> marker.</strong> <code>truncated</code> means the
+            query matched more rows than it returned (<code>total</code> is the match count), and
+            <code>returned</code> appears only when a size cut was added. Treat
+            <code>truncated</code> as "the list is partial".
+          </li>
+          <li>
+            <strong>Paging.</strong> Hosted <code>queryContext</code> and <code>sessionUsage</code> accept <code>cursor</code>
+            and returns <code>nextCursor</code> when rows follow the last row sent, including after
+            a size cut. Pass it back as <code>cursor</code> with the same other arguments until
+            <code>nextCursor</code> is absent. If the index changes, the cursor is refused; restart
+            without a cursor, or use <a href="#paged-lists">queryAll/subscribeAll</a> for bounded recovery and status. Narrow with <code>filters</code>, <code>match</code> and
+            <code>where.kinds</code> when needed. A hosted collection or folder selector is not
+            available yet.
+          </li>
+          <li>
+            <strong>Freshness.</strong> A hosted query repeats by polling, no faster than every 15
+            seconds (<code>every_s</code> is raised to 15), with at most 20 subscriptions per page.
+            Only streams such as <code>inbox</code> push.
+          </li>
+        </ul>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/live-data-contract.json">Live-data contract</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./records.html">Records</a> ·
+        <a href="./pane-shapes.html#file-nav">File navigation panes</a> ·
+        <a href="./calling-codesense.html">Calling CodeSense</a> ·
+        <a href="./your-first-dashboard.html">Your first dashboard</a> ·
+        <a href="./reacting-to-state.html">Reacting to state</a> ·
+        <a href="../arc-k-sync/file-tools.html">Content file tools</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

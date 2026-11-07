@@ -1,0 +1,3 @@
+activity.jsonl holds selected hook payload lines recorded from Hermes 0.22.5 (bf0203a794a07aac3ff764972ab9087baa4e4f4e): one line per observer event and platform the recording saw. They were recorded with a keyless mock; tests do not launch Hermes. Main turn-start data is also covered by turns.jsonl. In both files the recording's sandbox paths and probe labels are renamed to `demo01`; every other field is as recorded.
+
+turns.jsonl contains five payload objects from a second recording: initial start, first/later main turns, /new, and /resume A. Only the recorded envelope is omitted. No recording is rerun.

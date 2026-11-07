@@ -1,0 +1,597 @@
+{
+  "src/app/mock/handlers/agents-team.ts": {
+    "#2f7d6d": 1,
+    "#b5562e": 1,
+    "#4b5fb8": 1,
+    "#9a3f8c": 1,
+    "#c29a1e": 1,
+    "#fff": 3
+  },
+  "src/app/mock/handlers/notes.ts": {
+    "#2032": 2
+  },
+  "src/app/mock/handlers/session-timers.ts": {
+    "#1973": 1
+  },
+  "src/app/mock/handlers/worktree-editor.ts": {
+    "#0969da": 1
+  },
+  "src/app/mock/progress-harness.tsx": {
+    "#0d1117": 1
+  },
+  "src/app/mock/source-diff-harness.tsx": {
+    "#0b0d10": 1,
+    "#9aa4b2": 1
+  },
+  "src/app/mock/worktree-editor-harness.tsx": {
+    "#0b0d10": 1,
+    "#9aa4b2": 1
+  },
+  "src/components/ui/inline-alert.tsx": {
+    "bg-amber-500": 1
+  },
+  "src/features/attachment/components/attach-success-notice.tsx": {
+    "border-emerald-500": 1,
+    "bg-emerald-500": 1,
+    "text-emerald-600": 1,
+    "text-emerald-400": 1
+  },
+  "src/features/dashboard-publishing/dashboards-tab.tsx": {
+    "text-amber-600": 1
+  },
+  "src/features/dashboard/components/add-repo-form.tsx": {
+    "text-blue-600": 2,
+    "text-blue-400": 2
+  },
+  "src/features/dashboard/components/csquery/connectivity-view.tsx": {
+    "text-red-600": 2,
+    "text-red-400": 2,
+    "border-red-500": 1,
+    "bg-red-500": 1
+  },
+  "src/features/dashboard/components/csquery/cs-query-view.tsx": {
+    "bg-green-500": 1,
+    "bg-amber-500": 1
+  },
+  "src/features/dashboard/components/csquery/health-config.tsx": {
+    "text-red-600": 1,
+    "text-red-400": 1,
+    "bg-red-500": 2,
+    "border-red-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1,
+    "bg-amber-500": 1,
+    "border-amber-500": 1,
+    "text-emerald-600": 1,
+    "text-emerald-400": 1,
+    "bg-emerald-500": 1,
+    "border-emerald-500": 1
+  },
+  "src/features/dashboard/components/html-viewer.tsx": {
+    "text-red-500": 1
+  },
+  "src/features/dashboard/components/image-viewer.tsx": {
+    "text-red-500": 1
+  },
+  "src/features/dashboard/components/manage-repos-tab.tsx": {
+    "text-emerald-600": 1,
+    "text-emerald-400": 1,
+    "text-green-600": 1,
+    "text-green-400": 1
+  },
+  "src/features/dashboard/components/markdown-viewer.tsx": {
+    "text-green-500": 1,
+    "#caf": 1,
+    "text-red-500": 1
+  },
+  "src/features/dashboard/components/status-nav/rows.tsx": {
+    "text-sky-500": 1,
+    "#d97706": 1
+  },
+  "src/features/inbox/model.ts": {
+    "#58a6ff": 1,
+    "#56d4dd": 1,
+    "#f0883e": 1,
+    "#3fb950": 1,
+    "#d2a8ff": 1,
+    "#ffa657": 1,
+    "#79c0ff": 1,
+    "#7ee787": 1,
+    "#ff7b72": 1,
+    "#e3b341": 1,
+    "#8b949e": 1,
+    "#e6edf3": 1
+  },
+  "src/features/machines/components/machine-appearance-popover.tsx": {
+    "#0d1117": 2
+  },
+  "src/features/machines/components/machine-location-badge.tsx": {
+    "#d29922": 1
+  },
+  "src/features/machines/components/machine-status-label.tsx": {
+    "bg-amber-500": 1,
+    "text-amber-700": 1,
+    "text-amber-300": 1
+  },
+  "src/features/machines/components/machines-group.tsx": {
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/machines/components/remote-file-viewer.tsx": {
+    "bg-amber-500": 1,
+    "text-amber-700": 1,
+    "text-amber-300": 1
+  },
+  "src/features/machines/components/remote-workspace-offline.tsx": {
+    "#0d1117": 1,
+    "#30363d": 1,
+    "#161b22": 1,
+    "#e6edf3": 1,
+    "#8b949e": 2,
+    "#d29922": 1,
+    "#ffa198": 1,
+    "#238636": 1
+  },
+  "src/features/machines/components/unreadable-machine-files.tsx": {
+    "border-amber-500": 1,
+    "text-amber-500": 1
+  },
+  "src/features/machines/components/workspace-where-dialog.tsx": {
+    "#0d1117": 1,
+    "#30363d": 1,
+    "#161b22": 1,
+    "#e6edf3": 2,
+    "#8b949e": 7,
+    "#21262d": 2,
+    "#388bfd": 1
+  },
+  "src/features/machines/lib/machine-color.ts": {
+    "#58a6ff": 1,
+    "#bc8cff": 1,
+    "#f0883e": 1,
+    "#39c5cf": 1,
+    "#f778ba": 1,
+    "#56d4bc": 1,
+    "#8b9eff": 1,
+    "#a5d6ff": 1
+  },
+  "src/features/machines/lib/machine-status.ts": {
+    "text-green-600": 1,
+    "text-green-400": 1,
+    "text-sky-600": 1,
+    "text-sky-400": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/org/workspaces-virtual-tab.tsx": {
+    "text-green-600": 1,
+    "text-green-400": 1
+  },
+  "src/features/settings/components/general-section.tsx": {
+    "border-amber-500": 1,
+    "bg-amber-500": 1
+  },
+  "src/features/settings/components/phases-section/phases-panel.tsx": {
+    "#94a3b8": 1
+  },
+  "src/features/settings/components/shortcut-row.tsx": {
+    "text-red-600": 1,
+    "text-red-400": 1
+  },
+  "src/features/shell/components/manage-teams-tab.tsx": {
+    "text-green-600": 1,
+    "text-green-400": 1
+  },
+  "src/features/shell/components/terminal-server-notice.tsx": {
+    "#c9d1d9": 2,
+    "#8b949e": 2,
+    "#da3633": 1,
+    "#f85149": 2,
+    "#30363d": 1,
+    "#ffffff10": 1,
+    "#1f6feb": 1,
+    "#388bfd": 1,
+    "#6e7681": 1
+  },
+  "src/features/shell/right-pane/panes/pane-chrome.tsx": {
+    "bg-amber-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/shell/right-pane/right-pane-stack.tsx": {
+    "#004": 2
+  },
+  "src/features/shell/right-pane/use-reparenting-panel-bodies.tsx": {
+    "#004": 1
+  },
+  "src/features/shell/slots/slot-fallback-strip.tsx": {
+    "border-amber-500": 1
+  },
+  "src/features/story-authoring/components/story-findings.tsx": {
+    "text-emerald-600": 1,
+    "text-amber-600": 1
+  },
+  "src/features/viewer/components/agent-identity.tsx": {
+    "#fff": 1
+  },
+  "src/features/viewer/components/agents-tree-view.tsx": {
+    "border-amber-500": 1,
+    "text-amber-700": 1,
+    "text-amber-400": 1
+  },
+  "src/features/viewer/components/commit-graph-rail.tsx": {
+    "#b58900": 1
+  },
+  "src/features/viewer/components/conflict-banners.tsx": {
+    "border-amber-500": 3,
+    "bg-amber-500": 4,
+    "text-amber-700": 1,
+    "text-amber-400": 1
+  },
+  "src/features/viewer/components/context-editor-inset.tsx": {
+    "bg-sky-500": 1,
+    "border-amber-500": 2,
+    "bg-amber-500": 3,
+    "text-amber-700": 1,
+    "text-amber-400": 1
+  },
+  "src/features/viewer/components/context-landing-chip.tsx": {
+    "border-sky-500": 1,
+    "text-sky-700": 1,
+    "text-sky-300": 1,
+    "border-emerald-500": 1,
+    "text-emerald-700": 1,
+    "text-emerald-300": 1,
+    "border-amber-500": 1,
+    "text-amber-700": 1,
+    "text-amber-300": 1
+  },
+  "src/features/viewer/components/find-bar.tsx": {
+    "bg-yellow-300": 2,
+    "bg-yellow-500": 2
+  },
+  "src/features/viewer/components/merge-preview-panel.tsx": {
+    "text-sky-500": 1
+  },
+  "src/features/viewer/components/metadata-band.tsx": {
+    "#16a34a": 1,
+    "#d97706": 3,
+    "#dc2626": 2
+  },
+  "src/features/viewer/components/metadata-field-controls.tsx": {
+    "#d97706": 1
+  },
+  "src/features/viewer/components/metadata-list-chip-editor.tsx": {
+    "#dc2626": 1,
+    "#d97706": 1
+  },
+  "src/features/viewer/components/new-terminal-chooser.tsx": {
+    "#0d1117": 3,
+    "#30363d": 5,
+    "#161b22": 1,
+    "#e6edf3": 3,
+    "#1f6feb": 1,
+    "#21262d": 3,
+    "#c9d1d9": 1,
+    "#ffa198": 3,
+    "#8b949e": 9,
+    "#58a6ff": 1,
+    "#238636": 1,
+    "#388bfd": 1
+  },
+  "src/features/viewer/components/pane-startup-overlay.tsx": {
+    "#c9d1d9": 2,
+    "#8b949e": 2,
+    "#30363d": 1,
+    "#ffffff10": 1
+  },
+  "src/features/viewer/components/parked-question-expansion.tsx": {
+    "border-amber-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/viewer/components/pending-remote-opens.tsx": {
+    "#58a6ff": 4,
+    "#0d1117": 1,
+    "#e6edf3": 2,
+    "#8b949e": 2,
+    "#30363d": 1,
+    "#161b22": 1,
+    "#c9d1d9": 1
+  },
+  "src/features/viewer/components/progress-chip-row.tsx": {
+    "#10b981": 1
+  },
+  "src/features/viewer/components/remote-server-update.tsx": {
+    "#58a6ff": 1
+  },
+  "src/features/viewer/components/remote-terminal-pane.tsx": {
+    "#8b949e": 5,
+    "#e6edf3": 2,
+    "#ffa198": 2,
+    "#c9d1d9": 1,
+    "#30363d": 5,
+    "#161b22": 3,
+    "#58a6ff": 2,
+    "#d29922": 1,
+    "#1f6feb": 1,
+    "#388bfd": 1,
+    "#21262d": 1
+  },
+  "src/features/viewer/components/run-evidence-view.tsx": {
+    "bg-amber-500": 1,
+    "text-amber-700": 1,
+    "text-amber-400": 1
+  },
+  "src/features/viewer/components/session-timers-popover.tsx": {
+    "#e6edf3": 1
+  },
+  "src/features/viewer/components/shell-terminal-panel.tsx": {
+    "#0d1117": 4
+  },
+  "src/features/viewer/components/source-diff-rail.tsx": {
+    "text-amber-600": 1,
+    "text-amber-500": 1
+  },
+  "src/features/viewer/components/terminal-constants.ts": {
+    "#161b22": 1,
+    "#0d1117": 1,
+    "#e6edf3": 2,
+    "#264f78": 1,
+    "#484f58": 1,
+    "#ff7b72": 1,
+    "#3fb950": 1,
+    "#d29922": 1,
+    "#58a6ff": 1,
+    "#bc8cff": 1,
+    "#39d353": 1,
+    "#b1bac4": 1,
+    "#6e7681": 1,
+    "#ffa198": 1,
+    "#56d364": 2,
+    "#e3b341": 1,
+    "#79c0ff": 1,
+    "#d2a8ff": 1,
+    "#f0f6fc": 1,
+    "#343746": 1,
+    "#282a36": 1,
+    "#f8f8f2": 3,
+    "#44475a": 1,
+    "#21222c": 1,
+    "#ff5555": 1,
+    "#50fa7b": 1,
+    "#f1fa8c": 1,
+    "#bd93f9": 1,
+    "#ff79c6": 1,
+    "#8be9fd": 1,
+    "#6272a4": 1,
+    "#ff6e6e": 1,
+    "#69ff94": 1,
+    "#ffffa5": 1,
+    "#d6acff": 1,
+    "#ff92df": 1,
+    "#a4ffff": 1,
+    "#ffffff": 1,
+    "#3b4252": 2,
+    "#2e3440": 1,
+    "#d8dee9": 2,
+    "#434c5e": 1,
+    "#bf616a": 2,
+    "#a3be8c": 2,
+    "#ebcb8b": 2,
+    "#81a1c1": 2,
+    "#b48ead": 2,
+    "#88c0d0": 1,
+    "#e5e9f0": 1,
+    "#4c566a": 1,
+    "#8fbcbb": 1,
+    "#eceff4": 1,
+    "#313244": 1,
+    "#1e1e2e": 1,
+    "#cdd6f4": 1,
+    "#f5e0dc": 1,
+    "#45475a": 2,
+    "#f38ba8": 2,
+    "#a6e3a1": 2,
+    "#f9e2af": 2,
+    "#89b4fa": 2,
+    "#f5c2e7": 2,
+    "#94e2d5": 2,
+    "#bac2de": 1,
+    "#585b70": 1,
+    "#a6adc8": 1,
+    "#073642": 3,
+    "#002b36": 1,
+    "#839496": 3,
+    "#dc322f": 1,
+    "#859900": 1,
+    "#b58900": 1,
+    "#268bd2": 1,
+    "#d33682": 1,
+    "#2aa198": 1,
+    "#eee8d5": 1,
+    "#586e75": 2,
+    "#cb4b16": 1,
+    "#657b83": 1,
+    "#6c71c4": 1,
+    "#93a1a1": 1,
+    "#fdf6e3": 1
+  },
+  "src/features/viewer/components/terminal-empty-state.tsx": {
+    "#0d1117": 1
+  },
+  "src/features/viewer/components/terminal-ended-bar.tsx": {
+    "#30363d": 3,
+    "#e6edf3": 4,
+    "#388bfd": 1,
+    "#161b22": 1,
+    "#8b949e": 3
+  },
+  "src/features/viewer/components/terminal-find-bar.tsx": {
+    "#5a4a12": 1,
+    "#d29922": 2,
+    "#f2cc60": 1,
+    "#8b949e": 2,
+    "#ffffff14": 1,
+    "#e6edf3": 3,
+    "#388bfd": 1,
+    "#30363d": 1,
+    "#161b22": 1,
+    "#6e7681": 1,
+    "#ffffff1f": 1
+  },
+  "src/features/viewer/components/terminal-grid-caption.tsx": {
+    "#1973": 1,
+    "#e6edf3": 2
+  },
+  "src/features/viewer/components/terminal-prompt-segment.tsx": {
+    "#e6edf3": 1
+  },
+  "src/features/viewer/components/terminal-tab-bar.tsx": {
+    "#161b22": 1,
+    "#30363d": 2,
+    "#e6edf3": 4,
+    "#8b949e": 5,
+    "#ffffff10": 2,
+    "#388bfd": 1,
+    "#6e7681": 1,
+    "#d29922": 1
+  },
+  "src/features/viewer/components/terminal-tile-chrome.tsx": {
+    "#8b949e": 4,
+    "#e6edf3": 7,
+    "#161b22": 2,
+    "#0d1117": 1,
+    "#30363d": 2
+  },
+  "src/features/viewer/components/terminal-tile-group.tsx": {
+    "#30363d": 1,
+    "#388bfd": 1
+  },
+  "src/features/viewer/components/tile-needs-you-slot.tsx": {
+    "text-amber-600": 2,
+    "text-amber-400": 2,
+    "outline-amber-500": 2
+  },
+  "src/features/viewer/components/weft-findings-view.tsx": {
+    "bg-amber-500": 1,
+    "text-amber-600": 1
+  },
+  "src/features/viewer/components/workspace-pill.tsx": {
+    "text-red-400": 1
+  },
+  "src/features/viewer/components/workspace-terminal-panels.tsx": {
+    "text-red-400": 1,
+    "text-green-500": 1,
+    "#d29922": 6,
+    "#6e7681": 1,
+    "#388bfd": 3,
+    "#8b949e": 3,
+    "#1f6feb": 1,
+    "#58a6ff": 1
+  },
+  "src/features/viewer/components/workspace-tray.tsx": {
+    "#388bfd": 1,
+    "#000": 4
+  },
+  "src/features/viewer/components/worktree-editor/editor-tab-strip.tsx": {
+    "#000": 4
+  },
+  "src/features/viewer/lib/export-pdf.ts": {
+    "#24292f": 1,
+    "#fff": 1,
+    "#d0d7de": 6,
+    "#f6f8fa": 3,
+    "#57606a": 1,
+    "#0969da": 1,
+    "#24292e": 4,
+    "#ffffff": 1,
+    "#d73a49": 1,
+    "#6f42c1": 1,
+    "#005cc5": 2,
+    "#032f62": 1,
+    "#e36209": 1,
+    "#6a737d": 1,
+    "#22863a": 2,
+    "#735c0f": 1,
+    "#f0fff4": 1,
+    "#b31d28": 1,
+    "#ffeef0": 1
+  },
+  "src/features/weft/components/endorsement-pill.tsx": {
+    "bg-emerald-500": 3,
+    "text-emerald-600": 2,
+    "text-emerald-400": 2,
+    "bg-amber-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/weft/components/inbox-message-content.tsx": {
+    "#1937": 1
+  },
+  "src/features/weft/components/weft-attention-row.tsx": {
+    "border-amber-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/features/workspace-chat/lib/role-colour.ts": {
+    "#6ea8f0": 1,
+    "#4ec28a": 1,
+    "#a898ff": 1,
+    "#e0ac55": 1,
+    "#ea6a5a": 1,
+    "#5ec6dc": 1
+  },
+  "src/shared/components/agent-session-picker.tsx": {
+    "border-amber-500": 1,
+    "bg-amber-500": 1,
+    "text-amber-600": 1
+  },
+  "src/shared/components/launch-target-picker.tsx": {
+    "bg-emerald-500": 1,
+    "text-emerald-600": 1,
+    "text-emerald-400": 1
+  },
+  "src/shared/components/managed-question-panel.tsx": {
+    "border-amber-500": 1,
+    "bg-amber-500": 1,
+    "text-amber-600": 1,
+    "text-amber-400": 1
+  },
+  "src/shared/components/supervised-agent-session/connection-dot.tsx": {
+    "bg-emerald-500": 1,
+    "bg-amber-500": 1
+  },
+  "src/shared/lib/pipeline-graph/doc-type-icon.ts": {
+    "#6366f1": 1,
+    "#f43f5e": 1,
+    "#14b8a6": 1,
+    "#64748b": 2,
+    "#8b5cf6": 1,
+    "#0ea5e9": 1
+  },
+  "src/shared/lib/pipeline-graph/status-config.ts": {
+    "#94a3b8": 2,
+    "#64748b": 1,
+    "#0ea5e9": 1,
+    "#ef4444": 1,
+    "#8b5cf6": 1,
+    "#f59e0b": 1,
+    "#10b981": 1
+  },
+  "src/shared/lib/workspace-bar-size.ts": {
+    "#2094": 1
+  },
+  "src/shared/lib/workspace-kind-capabilities.ts": {
+    "#1904": 1
+  },
+  "src/shared/terminal/buffer-dump.ts": {
+    "#6189": 1
+  },
+  "src/shared/terminal/terminal-manager.ts": {
+    "#c9d1d9": 1
+  },
+  "src/tauri/commands.ts": {
+    "#1431": 3
+  }
+}

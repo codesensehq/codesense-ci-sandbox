@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Lifecycle and liveness</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/lifecycle-and-liveness">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Lifecycle and liveness">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Lifecycle and liveness</h1>
+        <p class="lede">
+          A frame can be loaded without being live. Render a useful initial state, install handlers,
+          then explicitly signal readiness.
+        </p>
+      </section>
+      <section id="ready" data-search="Readiness and first paint">
+        <h2>Readiness and first paint</h2>
+        <p>
+          Render a useful initial state, install handlers, then call <code>codesense.ready()</code>.
+          An admitted <code>subscribe()</code> also marks the frame live, before its initial snapshot
+          resolves, so install handlers before either call. Subscribe-only panes can be live too;
+          a shim handshake or a successful fetch alone does not signal liveness. If neither readiness
+          nor subscription admission arrives within <strong>30 seconds</strong>, the slot falls back. This is one absolute deadline from the document attempt start; load events and renders do not restart it. While starting, the host shows a themed skeleton (or retains the previous working view during recovery), with host menus available;
+          an uncaught startup failure can fall back sooner. Do not wait for a network request before
+          rendering loading, empty and error states. Shipped examples require an explicit readiness
+          call in static lint; only a runtime check proves the page becomes live.
+        </p>
+        <p>
+          <code>codesense.firstPaint</code> is the page's own JSON data element when present,
+          otherwise an injected LiveHub snapshot, otherwise null. Narrow the shape before using it
+          and subscribe for subsequent snapshots and deltas. Do not assume its rows are fresh
+          forever.
+        </p>
+      </section>
+      <section id="pane-saves" data-search="Saving panes without a flash; onBeforeReload reloadState">
+        <h2>Saving a pane keeps its view</h2>
+        <p>
+          Saving a visible pane keeps its last working frame on screen. The host briefly blocks
+          pointer input and edits without moving focus; Tab, Shift+Tab, Escape and app shortcuts stay
+          available. It flushes pending edits and starts one
+          replacement behind it. Source changes use a trailing 150 ms debounce; manual Reload is
+          immediate. The replacement receives live data and becomes visible only when it signals
+          readiness. There is no empty pane between versions. The outgoing frame retires after the
+          swap paints, through the normal bounded flush and teardown path. The host preserves the
+          document window’s scroll position; use the snapshot hook for inner scroll areas and other
+          local UI state.
+        </p>
+        <p>
+          A broken save or an attempt that reaches its absolute 30 second deadline keeps the
+          previous version and shows the fallback strip. The previous pane becomes interactive
+          again. Correct the source and save again, or use Reload. Hidden panes defer source
+          reloads until shown. Directory events refresh affected descendants, while team activation
+          and dropped-event recovery reread retained pane sources through the live hub and preserve
+          revisions when pane metadata is unchanged. Host-persisted <code>ui:*</code> view state already restores; use
+          the optional snapshot for local view details such as a scroll offset or a draft.
+        </p>
+        <pre><code>&lt;input id="draft" aria-label="Draft"&gt;
+&lt;div id="scroll" style="height:100px;overflow:auto"&gt;
+  &lt;div style="height:800px"&gt;Scrollable view&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+const draft = document.querySelector('#draft');
+const scroll = document.querySelector('#scroll');
+const stop = codesense.onBeforeReload(() =&gt; ({
+  draft: draft.value,
+  scroll: scroll.scrollTop
+}));
+
+async function start() {
+  const saved = await codesense.reloadState();
+  if (saved &amp;&amp; typeof saved === 'object' &amp;&amp; !Array.isArray(saved)) {
+    if (typeof saved.draft === 'string') draft.value = saved.draft;
+    if (typeof saved.scroll === 'number') scroll.scrollTop = saved.scroll;
+  }
+  codesense.ready();
+}
+start();
+codesense.onTeardown(stop);
+&lt;/script&gt;</code></pre>
+        <p>
+          <code>onBeforeReload(fn)</code> installs the latest hook and returns an unsubscribe.
+          Return JSON or a promise for JSON, at most <strong>64 KB</strong> in UTF-8 and within
+          <strong>100 ms</strong>. Oversize, late or non-JSON results are dropped and logged with
+          <code>console.warn</code> in the frame and a host log line. Snapshot capture never gates
+          readiness or delays the swap. Keep persistent edits in your normal save/flush path.
+          <code>reloadState()</code> returns a promise that resolves exactly once to that JSON or
+          <code>null</code>; a cold load or missing hook resolves null promptly at the host
+          handshake, without waiting for the 100 ms deadline. Await it before restoring the view
+          and announcing readiness. It is a handoff for one reload, not a persistent state store.
+        </p>
+      </section>
+      <section id="focus" data-search="Focus and Escape">
+        <h2>Focus and Escape</h2>
+        <pre><code>cs.onFocusIn(() =&gt; document.getElementById(&#x27;filter&#x27;).focus());
+cs.onFocusReturn(() =&gt; document.getElementById(&#x27;filter&#x27;).focus());
+document.addEventListener(&#x27;keydown&#x27;, event =&gt; {
+  if (event.key === &#x27;Escape&#x27;) {
+    event.preventDefault();
+    cs.focusOut().catch(showError);
+  }
+});</code></pre>
+        <p>
+          Keep a visible focus indicator. Give focus back with <code>focusOut()</code> when Escape
+          closes your own interaction; <code>focusTerminal()</code> explicitly returns to the
+          terminal. The host also forwards navigation chords. Do not trap Tab or swallow unrelated
+          keys.
+        </p>
+      </section>
+      <section id="flush" data-search="Flush before retirement">
+        <h2>Flush before retirement</h2>
+        <pre><code>cs.onFlush(async () =&gt; {
+  await savePendingEdits(); // resolve only after writes settle; keep failures visible
+});
+cs.onTeardown(() =&gt; releaseLocalResources());</code></pre>
+        <p>
+          The host asks for flush before a pane replacement reads its data, and before closing or moving a
+          frame, with a bounded acknowledgement wait. Reload preparation also freezes and flushes
+          the pane’s owned embedded message frames. A discarded replacement unfreezes that same group. Return a promise for pending work. A read-only page may use an empty flush handler;
+          never claim an unsaved change succeeded just to acknowledge. Avoid timers and duplicate
+          watchers.
+        </p>
+      </section>
+      <section id="visibility" data-search="Hidden and stale states">
+        <h2>Hidden and stale states</h2>
+        <p>
+          <code>onVisibility</code> tells you whether the frame is shown. LiveHub suppresses hidden
+          deliveries, marks the view stale once and resyncs it when shown. Keep a cheap
+          stale/loading cue; let <code>subscribe(topic, {onChange})</code> apply the resumed full
+          snapshot. The SDK handles revision gaps and team rebinding. Do not issue polling reads
+          while hidden. Release a subscription with <code>unsubscribe(topic, callback)</code>, and
+          dispose local listeners on teardown.
+        </p>
+        <p>
+          See <a href="./testing-and-conformance.html">testing and conformance</a> for proof
+          boundaries and <a href="../generated/page-sdk.md">the generated SDK</a> for exact
+          lifecycle signatures.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

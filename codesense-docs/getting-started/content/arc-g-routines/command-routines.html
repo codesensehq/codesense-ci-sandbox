@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="cs:type" content="content" /><meta name="codesense:icon" content="file-code" />
+<title>CodeSense — Command routines: argv commands and an agent chain</title><link rel="stylesheet" href="../_shared/cs-docs.css" />
+<script src="../_shared/nav.js" defer></script>
+<style>pre {overflow:auto}</style>
+</head><body class="cs-page cs-docs" data-page="arc-g-routines/command-routines"><nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+<main class="cs-main"><section data-hero data-search="Command routines: argv commands and an agent chain" id="hero"><p><span class="cs-docs-chip">Arc G · Routines</span></p><h1>Command routines: argv commands and an agent chain</h1></section>
+
+<section data-search="command routine action command argv no shell" id="commands"><p>Use a command routine for deterministic work: validate a file, run a script, collect a small report. Use an agent routine when the work needs judgment, tools selected by the agent, or a conversation. A command routine launches no agent and makes no model call.</p>
+<p>Set <code>action: command</code> and an argv array: the program is the first element, each argument is its own element. Omit <code>agent</code>, <code>task</code> and <code>mode</code>. Commands have no wake mode and run on this Mac. They live under <code>config/agents/_command/routines/&lt;id&gt;/routine.yml</code>.</p>
+<pre><code>command: [python3, scripts/check-review.py, --format, json]</code></pre>
+<p>The program may be a name found on PATH or a path inside the team's files; absolute program paths, parent traversal and whitespace in the program name are refused. Prefer <code>python3 scripts/check-review.py</code> or <code>node scripts/check-review.mjs</code> as separate argv entries because sync does not preserve executable permission. Pipes, redirects and shell expansion are not interpreted. The working directory follows <code>where.kind</code>: <code>team_workspace</code> uses the team content root, while <code>repo:owner/repo</code> uses that managed repository clone. Relative program paths in argv[0] still resolve under the team content root. Each template expands within one argv element; it is never split into shell words.</p></section>
+<section data-search="command routine exit code outcomes result_text CODESENSE_ROUTINE_ID CODESENSE_RUN_ID" id="outcomes"><h2>Outputs and outcomes</h2><p>Exit 0 records <code>succeeded</code>; a nonzero code records <code>failed</code>. Cancellation and a runtime deadline record <code>cancelled</code> and <code>timed_out</code>. Use <code>routine_runs</code> then <code>routine_run</code> for the exit code, stdout/stderr tails, argv and working directory. Captured output is bounded (4096-byte tails), so save large artifacts to a file.</p>
+<p>The child receives <code>CODESENSE_ROUTINE_ID</code> and <code>CODESENSE_RUN_ID</code>. Stdout becomes the run's <code>result_text</code>. A chained routine reads it as <code>{{trigger.result_text}}</code>; also available are <code>{{trigger.run_id}}</code>, <code>{{trigger.routine}}</code>, <code>{{trigger.phase}}</code> and <code>{{trigger.detail}}</code>. <code>result_text</code> is what the command produced; <code>detail</code> is CodeSense's explanation of why the run ended (a command that did not start, such as <code>unresolved:itemId</code>). Wake, machine and admission runs still explain themselves in <code>result_text</code>. Command stdout is plain result text; <code>result_schema</code> does not parse or validate it as a structured published payload.</p></section>
+<section data-search="metadata trigger command routine after chaining agent example" id="chain"><h2>Metadata → command → agent</h2><p>A story changing from in-progress to review fires the command. On its successful completion, an agent gets the stdout as its task input. Save the command first, then the agent routine; the predecessor must exist in the same space. <code>after.routine</code> is its bare routine id. Chains reject cycles. <code>on: succeeded</code> continues only after success; <code>on: finished</code> continues after <code>succeeded</code>, <code>failed</code>, <code>timed_out</code>, <code>needs_you</code> or <code>ended</code>; <code>cancelled</code> does not fire a chain. An independent schedule or event may coexist with an after trigger.</p>
+<p>Choose a saved agent id for the final step (the example uses <code>default</code>). Dry-run both blocks, save them with <code>dryRun:false</code>, inspect with <code>routine_get</code>, then enable both. If installing the YAML by hand, arm each <code>one_mac</code> definition with <code>routine_arm_on {id, machine:"this_mac"}</code> before enabling; preserve the placement of MCP-created drafts. Existing metadata matches are baselined, so make a new controlled transition after enabling. The command receives <code>{{trigger.path}}</code> as a separate argv element and prints that original document path. Its stdout reaches the agent as <code>{{trigger.result_text}}</code>, so the agent can open the exact changed story. Replace the print step with your validator while preserving that identity in its output.</p>
+<!-- chain:start -->
+<h3>Metadata review command</h3>
+<h3>MCP: routine_create dry run</h3>
+<pre><code class="language-json">{
+  "maxRuntime": "5m",
+  "enabled": false,
+  "dryRun": true,
+  "id": "review-command",
+  "name": "Metadata review command",
+  "action": "command",
+  "command": [
+    "python3",
+    "-c",
+    "import sys; print(sys.argv[1])",
+    "{{trigger.path}}"
+  ],
+  "metadataTriggers": [
+    {
+      "selection": {
+        "where": {
+          "kinds": [
+            "story"
+          ]
+        }
+      },
+      "target": {
+        "key": "status",
+        "op": "eq",
+        "value": "review"
+      },
+      "previous": {
+        "key": "status",
+        "op": "eq",
+        "value": "in-progress"
+      }
+    }
+  ]
+}</code></pre>
+<h3>Complete routine.yml</h3>
+<pre><code class="language-yaml">id: "review-command"
+name: "Metadata review command"
+owner: "codesense"
+where:
+  kind: "team_workspace"
+policy:
+  max_runtime: "5m"
+  overlap: "queue"
+revision: 1
+action: "command"
+command:
+  - "python3"
+  - "-c"
+  - "import sys; print(sys.argv[1])"
+  - "{{trigger.path}}"
+triggers:
+  -
+    event:
+      kind: "metadata_change"
+      metadata:
+        selection:
+          where:
+            kinds:
+              - "story"
+        target:
+          key: "status"
+          op: "eq"
+          value: "review"
+        previous:
+          key: "status"
+          op: "eq"
+          value: "in-progress"</code></pre>
+<h3>Agent follows the command</h3>
+<h3>MCP: routine_create dry run</h3>
+<pre><code class="language-json">{
+  "agent": "default",
+  "mode": "fresh",
+  "maxRuntime": "5m",
+  "enabled": false,
+  "dryRun": true,
+  "id": "review-agent",
+  "name": "Agent follows the command",
+  "task": "The upstream result names the changed story: {{trigger.result_text}}. Open that path, review the story and report your findings.",
+  "after": {
+    "routine": "review-command",
+    "on": "succeeded"
+  }
+}</code></pre>
+<h3>Complete routine.yml</h3>
+<pre><code class="language-yaml">id: "review-agent"
+name: "Agent follows the command"
+owner: "codesense"
+where:
+  kind: "team_workspace"
+policy:
+  max_runtime: "5m"
+revision: 1
+agent: "default"
+mode: "fresh"
+task: "The upstream result names the changed story: {{trigger.result_text}}. Open that path, review the story and report your findings."
+after:
+  routine: "review-command"
+  on: "succeeded"</code></pre>
+<!-- chain:end -->
+<p>The <a href="./trigger-cookbook.html">trigger cookbook</a> explains baselines, event fallbacks and reading a run. For team responsibilities and permissions, use the <a href="../arc-e-agents/agent-design.html">agent design guide</a> and <a href="../examples/skills/agent-design/SKILL.md">agent-design skill</a>.</p></section>
+<p><a href="./index.html">← Routines overview</a> · <a href="./routine-yml.html">Field reference</a> · <a href="./trigger-cookbook.html">Trigger cookbook</a> · <a href="./command-routines.html">Command routines</a></p>
+</main><footer class="cs-footer"><div class="cs-footer__inner"><span>CodeSense docs · Routines</span></div></footer></body></html>

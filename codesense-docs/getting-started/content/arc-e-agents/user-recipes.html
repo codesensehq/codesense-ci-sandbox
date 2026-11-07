@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="book-open-check" />
+    <title>CodeSense — User recipes</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 24px 28px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arce-hero p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--cs-muted-fg);
+      }
+      .arce-recipe {
+        display: block;
+        padding: 16px 18px;
+        margin: 10px 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arce-recipe:hover,
+      .arce-recipe:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arce-recipe h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-recipe p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+      .arce-recipe .arce-tools {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .arce-recipe .arce-tool {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--cs-fg) 8%, transparent);
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/user-recipes">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="User recipes — copy-pasteable agents already in the docs" id="hero">
+        <figure class="cs-docs-card arce-hero">
+          <p>
+            CodeSense already ships three working recipes under
+            <code>setting-up-agents/</code>. They're the fastest way from a
+            fresh workspace to a factory with agents on it. The pages are
+            under the <em>Setting up agents</em> group in your file tree;
+            each one is a copy-paste pair of files you drop into your team.
+          </p>
+        </figure>
+      </section>
+
+      <section data-search="Why they're not duplicated here" id="why">
+        <p>
+          Arc E teaches you how an agent is shaped. The recipes under
+          <em>Setting up agents</em> are the shaped agents, already written,
+          with the skill they need alongside them. Rather than re-print the
+          YAML on this page and have two sources of truth, this page is a
+          door — click through to the recipe you want.
+        </p>
+      </section>
+
+      <section data-search="The three shipped recipes — codesense-setup, machine-setup, manager" id="recipes">
+        <h2>What you can set up today</h2>
+
+        <a class="arce-recipe" href="../setting-up-agents/codesense-setup-agent.md">
+          <h3>CodeSense setup agent</h3>
+          <p>
+            Walks you through workspace, teams, source repos, agents and
+            routines. Checks what's done, shows what's left, and asks before
+            every change. Safe to run again at any time.
+          </p>
+          <div class="arce-tools">
+            <span class="arce-tool">describe_setup</span>
+            <span class="arce-tool">create_local_organization</span>
+            <span class="arce-tool">attach_context_repository</span>
+            <span class="arce-tool">agent_create</span>
+            <span class="arce-tool">routine_create</span>
+          </div>
+        </a>
+
+        <a class="arce-recipe" href="../setting-up-agents/machine-setup-agent.md">
+          <h3>Machine setup agent</h3>
+          <p>
+            Gets a remote machine ready for CodeSense and adds teammates to
+            it. Pinned host key, SSH posture, terminal-server install.
+            Cross-link: <a
+              href="../arc-d-terminals-and-machines/setup-machine.html"
+              >arc D → setup machine</a
+            >.
+          </p>
+          <div class="arce-tools">
+            <span class="arce-tool">save_machine</span>
+            <span class="arce-tool">test_machine_connection</span>
+            <span class="arce-tool">prepare_machine_terminal_server_replacement</span>
+            <span class="arce-tool">restart_machine_terminal_server</span>
+          </div>
+        </a>
+
+        <a class="arce-recipe" href="../setting-up-agents/manager-agent.md">
+          <h3>Build a manager agent</h3>
+          <p>
+            An agent that holds a <code>manager</code> role queue, triages
+            incoming work, launches and tracks workers, and reports to you.
+            CodeSense has no built-in controller — this recipe builds one
+            from generic tools so you can see every piece and change it.
+          </p>
+          <div class="arce-tools">
+            <span class="arce-tool">register_role</span>
+            <span class="arce-tool">claim_role_messages</span>
+            <span class="arce-tool">accept_role_message</span>
+            <span class="arce-tool">open_workspace</span>
+            <span class="arce-tool">list_sessions</span>
+            <span class="arce-tool">send_message</span>
+          </div>
+        </a>
+      </section>
+
+      <section data-search="How to follow a recipe — by hand or ask an agent" id="follow">
+        <h2>Two ways to follow a recipe</h2>
+        <p>
+          Each recipe page spells both out. The short version:
+        </p>
+        <ul>
+          <li>
+            <strong>By hand.</strong> The recipe lists the files to copy and
+            where they go. Copy them into your team, then push with git.
+          </li>
+          <li>
+            <strong>Ask an agent.</strong> These docs are plain files on your
+            Mac under
+            <code>~/.codesense/users/&lt;profile&gt;/codesense-docs/</code>.
+            Any agent you can launch can read them. Say:
+            <em
+              >"Set up the CodeSense setup agent from the CodeSense docs, in
+              my team."</em
+            >
+            The agent reads the recipe, copies the skill into your team, and
+            calls <code>agent_preview</code> + <code>agent_create</code> with
+            the fields the recipe lists. Pushing stays yours — CodeSense
+            never commits or pushes.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="One MCP primer before the first recipe — add-codesense-mcp" id="primer">
+        <h2>Before the first recipe</h2>
+        <p>
+          If you want to run these recipes from your own
+          <code>claude</code> or <code>codex</code> outside the CodeSense
+          app, start here:
+        </p>
+        <a class="arce-recipe" href="../setting-up-agents/add-codesense-mcp.md">
+          <h3>Add the CodeSense MCP to your own agents</h3>
+          <p>
+            Connect Claude Code, Codex or another MCP client you run
+            yourself outside CodeSense. Agents launched from CodeSense
+            already have it, and so does a <code>claude</code> or
+            <code>codex</code> you type in any CodeSense tab.
+          </p>
+        </a>
+      </section>
+
+      <section data-search="Try this now — list the agents and spot which recipes you still need" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List the agents the active team already has. Compare against the
+          three recipes above — whichever one you don't see is the one to
+          set up next.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_list", "args": {"scope": "team"}}'
+          label="List this team's agents"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// What agents are on this team right now?
+codesense.invoke('agent_list', { scope: 'team' })
+
+// Preview the recipe's agent.yaml before saving.
+codesense.invoke('agent_preview', { name, runtime, launch, startup, defaultPrompt })
+
+// Create it, team-scoped. Pass scope: "personal" + org for Only me.
+codesense.invoke('agent_create', { name, runtime, startup, scope: 'team' })</code></pre>
+          <p>
+            Each recipe page lists the exact tools and arguments it uses.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Previous: <a href="./bundled-example.html">Bundled example</a> ·
+        Next: <a href="./mcp-only-agents.html">MCP-only agents →</a> ·
+        See also →
+        <a href="../setting-up-agents/README.md">Setting up agents</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · User recipes</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

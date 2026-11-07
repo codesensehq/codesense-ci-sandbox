@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="circle-dollar-sign" />
+    <title>CodeSense — Spend caps</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/spend-caps">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="start" data-search="spend caps daily weekly agent routine budgetUsd">
+        <h1>Give unattended work a spend cap.</h1>
+        <p>A spend cap refuses new launches and automatic turns after the measured limit is reached.
+          It lets the current turn finish. It does not promise an exact provider bill or stop a person typing.</p>
+      </section>
+      <section id="example" data-search="Set a cap example agent yaml 50 200">
+        <h2>One working example</h2>
+        <p>Open a saved agent in <strong>Agents → Overview → Spend cap</strong>. Choose <strong>Set a cap</strong>,
+          enter <strong>50</strong> in Per day and <strong>200</strong> in Per week, then <strong>Save</strong>.
+          The native Save writes and accepts these values. The agent file now includes:</p>
+        <pre><code>budget_usd:
+  per_day: 50
+  per_week: 200</code></pre>
+        <p>At $40 today, the row turns amber and Needs-you posts once for the daily 80% threshold.
+          At $50 it reads <strong>Cap reached</strong> and another notice opens this agent's cap block.
+          A fresh routine fire is skipped with <code>budget_reached</code>. A person can raise Per day to 75
+          and Save here, allowing work again while weekly spend stays below $200.</p>
+      </section>
+      <section id="counting" data-search="counting Claude Codex usage all machines day Monday week">
+        <h2>What counts</h2>
+        <p>The engine uses the same local usage store and model pricing as <code>session_usage</code> and
+          <code>model_rates</code>. Attributed Claude and Codex usage from every stored machine is summed
+          for the saved agent. Fresh routine runs also aggregate under their routine handle, so either
+          the agent's cap or the routine's cap can refuse a fire. Days follow this Mac's local calendar;
+          weeks start Monday at local midnight.</p>
+        <p>Each window may have its own limit; an empty input means no cap for that window. The row shows
+          whichever window is closest to its limit. Details show today and this week even without a cap.
+          A threshold notice is posted once per scope and window, at 80% and 100%.</p>
+        <p>Live sessions use their saved agent's scoped identity and current cap, independently of the
+          organization being viewed. For example, keep a private agent running in organization A and
+          view organization B: the same cap still applies, and an uncapped agent remains usable.
+          Changing the view does not pause the agent or freeze an older cap.</p>
+        <p>Usage comes from each CLI's own telemetry, which CodeSense points at its local receiver at launch.
+          Each <code>session_usage</code> row also shows its <code>runId</code>, from the session's durable
+          record, so a run's cost can be matched to its outcome.</p>
+        <h3 id="codex-export">Codex's own export is off</h3>
+        <p>Codex exports metrics and analytics to OpenAI by default. A CodeSense-managed Codex launch turns
+          both off with <code>-c otel.metrics_exporter="none"</code> and <code>-c analytics.enabled=false</code>
+          (checked against codex-cli 0.164.0); its usage still reaches CodeSense. To opt back in, put your own
+          <code>-c otel.metrics_exporter=…</code> or <code>-c analytics.enabled=true</code> in the saved agent's
+          launch args. A key you set yourself is left as you set it.</p>
+      </section>
+      <section id="holds" data-search="local terminal server wake hold inbox mail typing">
+        <h2>What waits at the cap</h2>
+        <p>New saved-agent launches, resumes and routine wakes are refused. On the local terminal server,
+          an agent's live sessions receive a versioned wake hold: queued idle submissions, mail wakes,
+          recovery and waiter wakes start no new turn. Mail is still stored and delivered to the inbox.
+          A person typing is always allowed, and a turn already running finishes.</p>
+        <p>At window rollover, or after a native cap change brings spend below the limit, the hold lifts
+          and waiting notices can start their turns normally. A restarting local host waits for the
+          desktop's current hold before submitting queued work.</p>
+      </section>
+      <section id="acceptance" data-search="pending raise removal tightening ratchet accepted cap">
+        <h2>A raise needs a person</h2>
+        <p>The team file expresses a request. The local engine also remembers the last cap a person
+          accepted. Each effective field is the lower of the file value and the accepted value.
+          A first cap is accepted immediately. Tightening applies immediately and moves the accepted
+          value down too: changing 50 to 20 and back to 50 still leaves an effective cap of 20.</p>
+        <p>File edits, sync and MCP updates can save a raise or removal, including <code>budgetUsd: null</code>,
+          but they leave it pending. <strong>Accept</strong> applies exactly the request displayed in the native
+          cap block; a changed request must be reviewed again. <strong>Keep $X</strong> restores the effective
+          cap in the file. A person can also edit and Save directly in this block. Embedded pages and
+          MCP cannot loosen the accepted cap. The cap size remains the person's decision.</p>
+      </section>
+      <section id="rates" data-search="unpriced model rate guard set_model_rate pending">
+        <h2>Unpriced usage and rate changes</h2>
+        <p>Any unpriced usage in a capped window refuses new automatic work and names the model:
+          missing prices never mean free usage. Check <code>model_rates</code> and the usage page.</p>
+        <p>Through MCP or the page bridge, lowering an existing model rate or pricing an unpriced model
+          saves a pending rate request. It changes counted spend only after native acceptance; an agent
+          cannot price itself back under its cap through CodeSense. Rate increases apply immediately.
+          Requests that lower counted spend or price unknown usage stay pending when made from a page or MCP;
+          only native acceptance applies them. Open <strong>Agents → Overview → Spend cap</strong>, review the model,
+          effective date and exact prices, then choose <strong>Accept</strong> beside the pending rate.
+          For a routine-only cap, review and accept the rate in that routine's Spend cap block instead.
+          The rate Needs-you item opens the affected agent or routine block. MCP and embedded pages cannot accept requests.</p>
+      </section>
+      <p>A capped agent gets no automatic mail offers on an older local terminal server without spend-hold support;
+        update it through the app. Mail queued there before the cap first existed may still start a turn.</p>
+      <section id="authority" data-search="Architecture boundary unrestricted shell sandbox">
+        <h2>What the cap can and can't stop</h2>
+        <p><strong>Architecture boundary.</strong> The cap can't be bypassed through CodeSense surfaces:
+          MCP, the agent's own config files, sync, pages, rates or messages.</p>
+        <p>Agents run as you, so the cap covers what an agent does through CodeSense, not what an agent
+          with unrestricted shell access does elsewhere on your Mac. To cap an agent you don't fully trust,
+          give it sandboxed permissions. See <a href="https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents">How CodeSense trusts agents</a>.</p>
+      </section>
+      <section id="bounds" data-search="remote disconnected overshoot machine armed">
+        <h2>The current boundary</h2>
+        <p>Caps use usage received so far. Remote usage is pulled every minute while connected, and a
+          disconnected machine catches up on reconnect. Spend that has not arrived can overshoot a cap,
+          as can a turn already in progress. Holds apply on this Mac; remote terminal servers don't
+          receive them.</p>
+        <p>Adding a cap to a machine-armed routine, or arming a capped routine, is refused.
+          Wake routines must cap their agent; command routines cannot have a spend cap. A fresh agent
+          routine may set <code>policy.budget_usd</code>. See <a href="../arc-g-routines/routine-yml.html">routine.yml</a>
+          and <a href="./agent-yaml.html">agent.yaml</a>.</p>
+      </section>
+    </main>
+    <footer class="cs-footer">CodeSense docs · Spend caps</footer>
+  </body>
+</html>

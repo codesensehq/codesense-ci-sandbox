@@ -1,0 +1,14 @@
+# X4: the only production files under src-tauri/src and src that may
+# still use the directory-ownership vocabulary (see NEEDLES in
+# explicit_sync_ownership_guard.rs). Test code is exempt and never listed.
+# Format: <path> <reason> <exact non-test hit count> # note
+# Reasons: pins (the team nav pins in designations.yml, K8), migration (older
+# clients' data carried through untouched or still parsed for display).
+src-tauri/src/install/team_pins.rs migration 5 # pins file keeps its designations.yml name; designation keys carried through untouched
+src-tauri/src/commands/worktree.rs migration 1 # the opaque WorktreeConfig.scope passthrough
+src-tauri/src/commands/pipeline_format/mod.rs migration 2 # retired epic scope_* still count as metadata so existing docs display
+src-tauri/src/commands/pipeline_format/html.rs migration 2 # retired epic scope_* still parsed from cs: meta for display
+src/features/viewer/lib/metadata-schema.ts migration 1 # RETIRED_FIELDS doc: never offered, still rendered
+src/features/dashboard/components/status-nav/use-nav-items.ts pins 1 # team pins are read from designations.yml
+src/shared/stores/viewer-store.ts pins 1 # personal vs team pins (team pins live in designations.yml)
+src/tauri/commands.ts pins 1 # setTeamNavPin writes the pin list in designations.yml

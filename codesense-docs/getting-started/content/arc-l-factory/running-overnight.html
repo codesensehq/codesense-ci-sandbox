@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Running overnight</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/running-overnight"] figure.diag {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/running-overnight"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+      }
+      /* Factory hero inline-SVG stand-in — mirrors
+         diagrams/factory/overnight.excalidraw.sketch.md coord space (1280x720).
+         Swapped for the rendered PNG once render_canvas lands. */
+      .fac-hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 980px;
+        margin: 16px auto 8px;
+      }
+      .fac-hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .fac-hero-fig .night {
+        fill: var(--cs-inset-strong, var(--cs-inset));
+        stroke: none;
+      }
+      .fac-hero-fig .moon {
+        fill: var(--cs-muted-fg);
+      }
+      .fac-hero-fig .timeline {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1;
+      }
+      .fac-hero-fig .tick {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1;
+      }
+      .fac-hero-fig .trigger {
+        stroke: #6ea8f0;
+        stroke-width: 1.4;
+        stroke-dasharray: 3 3;
+        fill: none;
+      }
+      .fac-hero-fig .sleep {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1;
+        stroke-dasharray: 4 4;
+        fill: none;
+      }
+      .fac-hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .title {
+        fill: var(--cs-fg);
+        font: 600 18px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .role-builder { fill: #4ec28a; }
+      .fac-hero-fig .role-reviewer { fill: #a898ff; }
+      .fac-hero-fig .role-resolver { fill: #f0a93b; }
+      .fac-hero-fig .summary {
+        fill: var(--cs-surface-raised, var(--cs-surface));
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1;
+      }
+      .fac-hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 980px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/running-overnight">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Running overnight — hands-off loop with inbox_idle wake"
+        id="hero"
+      >
+        <h1>Running overnight · hands-off loop</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Set the loop at 22:00. Wake up at 07:00 to a morning summary and five open PRs. The
+          factory ran six wake cycles while you slept, each triggered by
+          <code>inbox_idle</code>, each isolated to its own worktree, each one honest about what it
+          couldn't resolve.
+        </p>
+        <figure class="fac-hero-fig" aria-labelledby="fac-overnight-cap">
+          <svg
+            viewBox="0 0 1280 720"
+            role="img"
+            aria-label="A night-scene timeline from 22:00 to 08:00. Six dashed inbox_idle arcs rise from the timeline to a row of role-labeled wake points — builder, reviewer, builder, resolver, builder, reviewer. A long dashed pill between the arcs and the timeline marks the human-asleep span. A morning-summary card in the top-right reports five PRs opened and three escalations queued."
+          >
+            <title>Running overnight · hands-off loop</title>
+
+            <!-- Night frame -->
+            <rect class="night" x="60" y="60" width="1160" height="600" rx="18" />
+            <!-- Moon -->
+            <circle class="moon" cx="1180" cy="100" r="8" />
+            <circle fill="var(--cs-inset-strong, var(--cs-inset))" cx="1176" cy="97" r="6" />
+
+            <!-- Title + sub -->
+            <text class="title" x="100" y="110">Running overnight · hands-off loop</text>
+            <text class="mut" x="100" y="132">no humans in the hot path · morning summary waits</text>
+
+            <!-- Morning summary card -->
+            <rect class="summary" x="960" y="140" width="220" height="80" rx="10" />
+            <text class="lbl" x="1070" y="170" text-anchor="middle">morning summary</text>
+            <text class="mut" x="1070" y="192" text-anchor="middle">+5 PRs opened</text>
+            <text class="mut" x="1070" y="210" text-anchor="middle">3 escalations queued</text>
+
+            <!-- Role column labels -->
+            <text class="lbl role-builder" x="300" y="210" text-anchor="middle">builder wake</text>
+            <text class="lbl role-reviewer" x="460" y="210" text-anchor="middle">reviewer wake</text>
+            <text class="lbl role-builder" x="620" y="210" text-anchor="middle">builder wake</text>
+            <text class="lbl role-resolver" x="780" y="210" text-anchor="middle">resolver wake</text>
+            <text class="lbl role-builder" x="940" y="210" text-anchor="middle">builder wake</text>
+            <text class="lbl role-reviewer" x="1100" y="210" text-anchor="middle">reviewer wake</text>
+
+            <!-- Six inbox_idle arcs from timeline (y=540) up to role labels (y=220) -->
+            <path class="trigger" d="M 220 540 Q 220 380 300 220" />
+            <polygon fill="#6ea8f0" points="300,220 294,232 306,230" />
+            <text class="mut" x="248" y="376" text-anchor="middle">inbox_idle</text>
+
+            <path class="trigger" d="M 360 540 Q 360 380 460 220" />
+            <polygon fill="#6ea8f0" points="460,220 454,232 466,230" />
+            <text class="mut" x="408" y="376" text-anchor="middle">inbox_idle</text>
+
+            <path class="trigger" d="M 500 540 Q 500 380 620 220" />
+            <polygon fill="#6ea8f0" points="620,220 614,232 626,230" />
+            <text class="mut" x="562" y="376" text-anchor="middle">inbox_idle</text>
+
+            <path class="trigger" d="M 640 540 Q 640 380 780 220" />
+            <polygon fill="#6ea8f0" points="780,220 774,232 786,230" />
+            <text class="mut" x="712" y="376" text-anchor="middle">inbox_idle</text>
+
+            <path class="trigger" d="M 780 540 Q 780 380 940 220" />
+            <polygon fill="#6ea8f0" points="940,220 934,232 946,230" />
+            <text class="mut" x="862" y="376" text-anchor="middle">inbox_idle</text>
+
+            <path class="trigger" d="M 920 540 Q 920 380 1100 220" />
+            <polygon fill="#6ea8f0" points="1100,220 1094,232 1106,230" />
+            <text class="mut" x="1012" y="376" text-anchor="middle">inbox_idle</text>
+
+            <!-- Human sleep pill -->
+            <rect class="sleep" x="120" y="440" width="1060" height="20" rx="10" />
+            <text class="mut" x="650" y="455" text-anchor="middle">human: asleep</text>
+
+            <!-- Timeline -->
+            <line class="timeline" x1="120" y1="540" x2="1180" y2="540" />
+            <!-- ticks at 22:00, 00:00, 02:00, 04:00, 06:00, 08:00 (every 212px approx) -->
+            <g>
+              <line class="tick" x1="120" y1="536" x2="120" y2="548" />
+              <text class="mut" x="120" y="568" text-anchor="middle">22:00</text>
+
+              <line class="tick" x1="332" y1="536" x2="332" y2="548" />
+              <text class="mut" x="332" y="568" text-anchor="middle">00:00</text>
+
+              <line class="tick" x1="544" y1="536" x2="544" y2="548" />
+              <text class="mut" x="544" y="568" text-anchor="middle">02:00</text>
+
+              <line class="tick" x1="756" y1="536" x2="756" y2="548" />
+              <text class="mut" x="756" y="568" text-anchor="middle">04:00</text>
+
+              <line class="tick" x1="968" y1="536" x2="968" y2="548" />
+              <text class="mut" x="968" y="568" text-anchor="middle">06:00</text>
+
+              <line class="tick" x1="1180" y1="536" x2="1180" y2="548" />
+              <text class="mut" x="1180" y="568" text-anchor="middle">08:00</text>
+            </g>
+
+            <!-- Primitives footer -->
+            <text class="mut" x="640" y="635" text-anchor="middle">
+              routines · inbox_idle · worktrees · agent-dag · morning summary
+            </text>
+          </svg>
+        </figure>
+        <p class="fac-hero-cap" id="fac-overnight-cap">
+          This is the shape; the live
+          <code>factory/overnight.excalidraw</code> canvas has the editable
+          version — click the diagram to open it.
+        </p>
+      </section>
+
+      <section data-search="What makes overnight safe" id="why">
+        <h2>What makes overnight safe</h2>
+        <ol>
+          <li>
+            <strong>Routines don't need a human.</strong> <code>inbox_idle</code> triggers wake
+            agents from the running daemon; no interactive host-agent needed for the build + review
+            loop.
+          </li>
+          <li>
+            <strong>Escalations don't block the loop.</strong> If a Builder hits a frozen-spec
+            contradiction, it posts to <code>resolver</code> and claims the next story. The
+            escalation waits for you in the morning.
+          </li>
+          <li>
+            <strong>Lease-based claims.</strong> If a Builder dies mid-story, the claim times out
+            and the next wake reclaims it.
+          </li>
+          <li>
+            <strong>Caps.</strong> Every routine honors a <code>maxConcurrent</code> and a per-hour
+            quota — the loop can't melt the Mac even if the inbox is deep.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Step-by-step — the 22:00 ritual" id="ritual">
+        <h2>Step-by-step: the 22:00 ritual</h2>
+        <ol>
+          <li>
+            <p>
+              <strong>Fill the inbox.</strong> Make sure the <code>builder</code> inbox has 5–20
+              claimable stories. Nothing is more disappointing than waking up to an empty DAG
+              because every builder claim resolved into "waiting on upstream."
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Open the agent-dag.</strong> Confirm current Builders show green or amber, not
+              red. A red session before you go to sleep stays red all night.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Flip the overnight-wake routines on</strong> — enable the Builder wake + the
+              Reviewer wake. Each fires when its agent sits idle with unread mail, so they cost
+              nothing while the queues are empty.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Set a scheduled morning summary.</strong> One routine at 07:00 drops a
+              summary message in the <code>analyst</code> inbox: live sessions, PRs opened,
+              escalations queued, red sessions.
+            </p>
+            <pre><code># config/agents/mary-analyst/routines/morning-summary/routine.yml
+id: morning-summary
+name: Morning summary
+mode: fresh
+task: |
+  Summarise the night: live sessions (list_sessions), PRs opened,
+  escalations queued, red sessions. Send it to the analyst role
+  with send_role_message, then call signal_done.
+where:
+  kind: team_workspace
+triggers:
+  - schedule:
+      cron: "0 7 * * *"
+      tz: UTC  # use your own IANA time zone, e.g. Europe/Berlin
+policy:
+  max_runtime: 30m
+revision: 1</code></pre>
+          </li>
+          <li>
+            <p>
+              <strong>Plug in. Close the lid gently (if you need to).</strong> If the factory shape
+              is <a href="./solo-with-remote.html">solo + remote</a>, the mini carries on.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="The morning check-in" id="morning">
+        <h2>The morning check-in</h2>
+        <p>Coffee first. Then, in order:</p>
+        <ol>
+          <li>Open the <code>analyst</code> inbox. Read the morning summary.</li>
+          <li>Open the <strong>agent-dag</strong>. Scan for red (crashes) or amber (stalls).</li>
+          <li>Open the <code>resolver</code> inbox. Answer the two or three escalations.</li>
+          <li>Open the <strong>pipeline-graph</strong>. See which stories moved into Review.</li>
+          <li>Review the first PR. The loop was never a replacement for your eyes on the merge.</li>
+        </ol>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>routine_set_enabled { id: 'builder-wake', enabled: true }
+routine_set_enabled { id: 'reviewer-wake', enabled: true }
+routine_set_enabled { id: 'morning-summary', enabled: true }</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./auditing-the-factory.html">Auditing the factory →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Running overnight</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

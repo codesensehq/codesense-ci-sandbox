@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="pane" />
+    <meta name="codesense:icon" content="graduation-cap" />
+    <title>Tutor · CodeSense</title>
+
+    <script>window.__codesenseThemeAware = true;</script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        background: var(--cs-bg); color: var(--cs-fg);
+        font: 400 var(--cs-text-base)/1.5 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased; min-height: 100vh;
+      }
+
+      /* ---------------- Pane shell (shared via cs-docs.css eventually) ---------- */
+      .pane { display: flex; flex-direction: column; max-width: 360px; margin: 0 auto; min-height: 100vh; }
+      .pane__header {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        height: 36px; padding: 0 var(--cs-space-4);
+        background: color-mix(in srgb, var(--cs-bg) 92%, transparent);
+        backdrop-filter: saturate(1.3) blur(8px);
+        -webkit-backdrop-filter: saturate(1.3) blur(8px);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .pane__header .icon-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-accent); flex: 0 0 auto; }
+      .pane__header svg { color: var(--cs-muted-fg); }
+      .pane__title { margin: 0; font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.005em; }
+      .pane__header .spacer { flex: 1; }
+      .pane__collapse {
+        appearance: none; background: transparent; border: 1px solid transparent;
+        color: var(--cs-muted-fg); width: 22px; height: 22px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm); cursor: pointer; padding: 0;
+      }
+      .pane__collapse:hover { background: var(--cs-hover); color: var(--cs-fg); }
+      .pane__collapse:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+
+      .pane__why {
+        padding: var(--cs-space-3) var(--cs-space-4) 0;
+        font-size: var(--cs-text-xs); line-height: 1.5;
+        color: var(--cs-muted-fg); font-style: italic;
+      }
+      .pane__why strong { font-style: normal; color: var(--cs-fg); font-weight: 500; }
+      .pane__why code {
+        font: 500 var(--cs-text-xs)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset); padding: 1px 5px;
+        border-radius: var(--cs-radius-sm); color: var(--cs-fg); font-style: normal;
+      }
+
+      .pane__body { padding: var(--cs-space-4) var(--cs-space-4) var(--cs-space-3); flex: 1;
+        transition: opacity 160ms cubic-bezier(.4,0,.2,1);
+      }
+      @media (prefers-reduced-motion: reduce) { .pane__body { transition: none; } }
+      .pane__section + .pane__section { margin-top: var(--cs-space-5); }
+      .pane__label {
+        display: block; font: 500 var(--cs-text-xs)/1.5 var(--cs-font-sans);
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-muted-fg);
+        margin: 0 0 var(--cs-space-2);
+      }
+      .pane__h { margin: 0 0 var(--cs-space-2); font-size: var(--cs-text-base); font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+      .pane__p { margin: 0 0 var(--cs-space-2); color: var(--cs-fg); }
+      .pane__p:last-child { margin-bottom: 0; }
+      .pane__p--muted { color: var(--cs-muted-fg); }
+
+      .pane__ctas { display: flex; flex-wrap: wrap; gap: var(--cs-space-2); padding: 0 var(--cs-space-4) var(--cs-space-4); }
+      .cta {
+        appearance: none; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 10px; height: 28px;
+        font: 500 var(--cs-text-sm)/1 var(--cs-font-sans);
+        border-radius: var(--cs-radius-sm);
+        border: 1px solid var(--cs-border-control);
+        background: var(--cs-surface); color: var(--cs-fg); text-decoration: none;
+        transition: border-color 120ms, background 120ms, transform 120ms;
+      }
+      .cta:hover { border-color: var(--cs-border-control); background: var(--cs-hover); }
+      .cta:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; }
+      .cta:active { transform: translateY(0.5px); }
+      .cta--primary { background: var(--cs-accent); color: var(--cs-accent-fg); border-color: var(--cs-accent); }
+      .cta--primary:hover { background: color-mix(in srgb, var(--cs-accent) 88%, var(--cs-fg)); }
+      .cta svg { width: 14px; height: 14px; }
+
+      .pane__prov {
+        display: flex; align-items: center; gap: var(--cs-space-2);
+        padding: 10px var(--cs-space-4); border-top: 1px solid var(--cs-border);
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono); color: var(--cs-muted-fg);
+      }
+      .pane__prov .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cs-muted-fg); }
+      .pane__prov a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--cs-muted-fg); }
+      .pane__prov a:hover { color: var(--cs-fg); border-bottom-color: var(--cs-fg); }
+
+      /* ---------------- Pane-local chrome ---------------- */
+
+      /* The tutor paragraph: softer feel than the explain pane. 15px, roomy. */
+      .tutor-say {
+        font-size: var(--cs-text-base);
+        line-height: 1.6;
+        color: var(--cs-fg);
+      }
+      .tutor-say code {
+        font: 500 var(--cs-text-sm)/1.4 var(--cs-font-mono);
+        background: var(--cs-inset);
+        padding: 1px 6px; border-radius: var(--cs-radius-sm);
+      }
+
+      /* "You are here" rail: tiny progress line that shows where in the 14-arc model
+         the user currently is. One dot per arc; the current arc gets the accent fill. */
+      .here-rail {
+        display: grid; grid-template-columns: repeat(14, 1fr);
+        gap: 3px;
+        padding: var(--cs-space-2) 0 0;
+      }
+      .here-rail .seg {
+        height: 3px; border-radius: 2px; background: var(--cs-border);
+      }
+      .here-rail .seg[data-current="true"] { background: var(--cs-accent); }
+      .here-rail-captions {
+        display: flex; justify-content: space-between;
+        font: 500 var(--cs-text-xs)/1.3 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        margin-top: 6px;
+      }
+
+      /* Compact "next step" card: a single row of guidance that the tutor is
+         currently recommending. Not a nested card — flat panel inside the body. */
+      .next-up {
+        display: grid; grid-template-columns: 24px 1fr;
+        gap: var(--cs-space-2); align-items: start;
+        padding: var(--cs-space-3);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-radius-sm);
+        background: var(--cs-surface);
+      }
+      .next-up__icon {
+        width: 24px; height: 24px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--cs-radius-sm);
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+        color: var(--cs-fg);
+      }
+      .next-up__icon svg { width: 14px; height: 14px; }
+      .next-up__title {
+        font: 600 var(--cs-text-sm)/1.3 var(--cs-font-sans);
+        margin: 0 0 2px;
+      }
+      .next-up__sub {
+        font: 400 var(--cs-text-xs)/1.4 var(--cs-font-sans);
+        color: var(--cs-muted-fg);
+        margin: 0;
+      }
+
+      /* Minute meter: a quiet "60 seconds" indicator. Horizontal, hairline. */
+      .minute-meter {
+        display: flex; align-items: center; gap: 6px;
+        font: 500 var(--cs-text-xs)/1 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+      }
+      .minute-meter .bar {
+        flex: 1; height: 2px; background: var(--cs-border);
+        border-radius: 1px; overflow: hidden;
+      }
+      .minute-meter .bar::after {
+        content: ''; display: block;
+        width: 40%; height: 100%; background: var(--cs-accent);
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="pane" role="complementary" aria-labelledby="pane-title" data-pane-id="tutor">
+      <header class="pane__header">
+        <span class="icon-dot" aria-hidden="true"></span>
+        <!-- Lucide: graduation-cap -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <h2 class="pane__title" id="pane-title">Tutor</h2>
+        <span class="spacer"></span>
+        <button class="pane__collapse" type="button" aria-expanded="true"
+                aria-controls="pane-body" title="Collapse (C)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+          <span class="sr-only">Collapse</span>
+        </button>
+      </header>
+
+      <p class="pane__why" id="pane-why">
+        I follow you around. I know where you are and roughly where you're going.
+      </p>
+
+      <section class="pane__body" id="pane-body" aria-labelledby="pane-title">
+        <!-- Section 1: the tutor speaks -->
+        <div class="pane__section">
+          <span class="pane__label">Right now</span>
+          <p class="tutor-say" id="tutor-say">
+            You're on the <strong>factory playbook</strong>. We're on
+            <strong>Phase 8 — build</strong>. The pattern here is:
+            <code>inbox_idle</code> wakes a <code>builder</code> in its own
+            worktree, and parallel work runs without agents stepping on each
+            other.
+          </p>
+        </div>
+
+        <!-- Section 2: You-are-here rail across the 14 arcs -->
+        <div class="pane__section">
+          <span class="pane__label">You are here</span>
+          <div class="here-rail" role="img" aria-label="Current arc in the 14-arc map">
+            <span class="seg"></span><span class="seg"></span>
+            <span class="seg"></span><span class="seg"></span>
+            <span class="seg"></span><span class="seg"></span>
+            <span class="seg"></span><span class="seg"></span>
+            <span class="seg"></span><span class="seg"></span>
+            <span class="seg"></span><span class="seg" data-current="true"></span>
+            <span class="seg"></span><span class="seg"></span>
+          </div>
+          <div class="here-rail-captions">
+            <span>A</span>
+            <span style="color:var(--cs-fg);">L · factory</span>
+            <span>N</span>
+          </div>
+        </div>
+
+        <!-- Section 3: the one next move the tutor recommends -->
+        <div class="pane__section">
+          <span class="pane__label">Try next (60s)</span>
+          <div class="next-up" id="next-up">
+            <span class="next-up__icon" aria-hidden="true">
+              <!-- play -->
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M6 4l14 8-14 8V4z"/>
+              </svg>
+            </span>
+            <div>
+              <h3 class="next-up__title">Watch the Phase-8 braid animate</h3>
+              <p class="next-up__sub">
+                Scroll to the braid diagram and press <kbd>space</kbd> — three
+                builders will fan out in parallel.
+              </p>
+            </div>
+          </div>
+          <div class="minute-meter" style="margin-top: var(--cs-space-3);">
+            <span>~60s</span>
+            <div class="bar"></div>
+            <span>scroll + 1 click</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="pane__ctas">
+        <button type="button" class="cta cta--primary" data-cta="next">
+          <!-- arrow-right -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+          Walk me through it
+        </button>
+        <button type="button" class="cta" data-cta="map">
+          <!-- map -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/>
+            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+          </svg>
+          Map
+        </button>
+      </div>
+
+      <footer class="pane__prov">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Docs pane</span>
+        <span>·</span>
+        <a href="#" data-nav="docs-org">docs org</a>
+      </footer>
+    </aside>
+
+    <script src="pane-runtime.js"></script>
+    <script>
+      (() => {
+        const pane = document.querySelector('.pane');
+        const paneId = pane.dataset.paneId;
+        const body = pane.querySelector('.pane__body');
+        const why = pane.querySelector('.pane__why');
+        const tutorSay = pane.querySelector('#tutor-say');
+        const rail = pane.querySelector('.here-rail');
+        const captions = pane.querySelector('.here-rail-captions');
+        const nextUp = pane.querySelector('#next-up');
+        const collapseBtn = pane.querySelector('.pane__collapse');
+
+        // Fourteen-arc map: A..N → arc name.
+        const ARCS = [
+          ['A','First touch'], ['B','Model'], ['C','Worktrees'], ['D','Terminals'],
+          ['E','Agents'], ['F','Inboxes'], ['G','Routines'], ['H','Pipelines'],
+          ['I','Dashboards'], ['J','MCP ref'], ['K','Sync + git'], ['L','Factory'],
+          ['M','MCP=UI'], ['N','Catalog'],
+        ];
+
+        // The tutor's "what should I say right now?" lookup.
+        const SCRIPTS = [
+          {
+            match: { surface: 'viewer:html', filename: /factory-playbook/ },
+            arc: 'L',
+            why: `I follow you around. I know where you are and roughly where you're going.`,
+            say: `You're on the <strong>factory playbook</strong>. We're on <strong>Phase 8 — build</strong>. The pattern here is: <code>inbox_idle</code> wakes a <code>builder</code> in its own worktree, and parallel work runs without agents stepping on each other.`,
+            next: {
+              title: 'Watch the Phase-8 braid animate',
+              sub: `Scroll to the braid diagram and press <kbd>space</kbd> — three builders will fan out in parallel.`,
+              action: { kind: 'scroll', target: '#phase-8-braid' },
+            },
+          },
+          {
+            match: { surface: 'viewer:html', filename: /inbox-flows/ },
+            arc: 'F',
+            why: `You've landed on Arc F — this is where messages become work.`,
+            say: `An inbox is a <strong>message queue</strong>. Every message carries a <code>role</code>. Agents subscribe to roles. A routine with <code>inbox_idle</code> wakes an agent when its role has unanswered work.`,
+            next: {
+              title: 'Send a message to the triager role',
+              sub: `Use the composer at the bottom of the page — try "please route this to a builder".`,
+              action: { kind: 'focus-composer' },
+            },
+          },
+          {
+            match: { surface: 'agents:detail' },
+            arc: 'E',
+            why: ctx => `You're looking at <strong>${ctx.agentName || 'an agent'}</strong>. I'll explain its contract.`,
+            say: ctx => `Agents are three things: an <code>agent.yaml</code> file, a set of skills, and a CLAUDE.md that primes behavior. This one plays the <strong>${ctx.role || 'builder'}</strong> role.`,
+            next: {
+              title: 'Open its agent.yaml',
+              sub: `See what role it subscribes to and what skills it ships with.`,
+              action: { kind: 'open', path: 'agent.yaml' },
+            },
+          },
+          {
+            match: { surface: 'inbox:thread' },
+            arc: 'F',
+            why: `You're reading a live inbox thread.`,
+            say: `An inbox thread is a conversation between a human and the agents working on a role. Reply <code>as human</code> to answer; <code>postMessage</code> to add work.`,
+            next: {
+              title: 'Reply to the latest message',
+              sub: `Focus the composer and press enter when done.`,
+              action: { kind: 'focus-composer' },
+            },
+          },
+          {
+            match: { surface: 'pipeline:story' },
+            arc: 'H',
+            why: `You're looking at a story in the pipeline.`,
+            say: `A story is a work unit with <code>frontmatter</code> and a <code>depends_on</code> graph. Its <code>status</code> drives the pipeline; the graph decides who runs when.`,
+            next: {
+              title: 'Open the sequence',
+              sub: `See what this story depends on and what depends on it.`,
+              action: { kind: 'open', path: './arc-h-pipelines-and-sdlc/index.html' },
+            },
+          },
+        ];
+
+        function pickScript(ctx) {
+          for (const s of SCRIPTS) {
+            const m = s.match || {};
+            if (m.surface && m.surface !== ctx.surface) continue;
+            if (m.filename && !m.filename.test(ctx.filename || '')) continue;
+            return s;
+          }
+          return null;
+        }
+
+        function renderRail(arcLetter) {
+          const idx = ARCS.findIndex(([L]) => L === arcLetter);
+          rail.querySelectorAll('.seg').forEach((seg, i) => {
+            seg.dataset.current = String(i === idx);
+          });
+          const name = ARCS[idx]?.[1] || '—';
+          captions.innerHTML = `
+            <span>A</span>
+            <span style="color: var(--cs-fg);">${arcLetter} · ${name}</span>
+            <span>N</span>
+          `;
+        }
+
+        function applyContext(ctx) {
+          body.style.opacity = '0';
+          requestAnimationFrame(() => {
+            const s = pickScript(ctx);
+            if (!s) {
+              why.innerHTML = `I'm here but I don't know this surface yet.`;
+              tutorSay.innerHTML = `Open a doc, an agent, or an inbox and I'll explain where we are and what to try first.`;
+              renderRail(null);
+              nextUp.querySelector('.next-up__title').textContent = 'Open the home page';
+              nextUp.querySelector('.next-up__sub').textContent = 'It\'s the 14-arc map; pick wherever interests you.';
+            } else {
+              why.innerHTML = typeof s.why === 'function' ? s.why(ctx) : s.why;
+              tutorSay.innerHTML = typeof s.say === 'function' ? s.say(ctx) : s.say;
+              renderRail(s.arc);
+              nextUp.querySelector('.next-up__title').textContent = s.next.title;
+              nextUp.querySelector('.next-up__sub').innerHTML = s.next.sub;
+              nextUp.dataset.action = JSON.stringify(s.next.action || {});
+            }
+            requestAnimationFrame(() => { body.style.opacity = '1'; });
+          });
+        }
+
+        if (window.codesense?.onSlotContext) {
+          window.CodeSenseDocsPane.onContext(applyContext);
+        } else {
+          applyContext({ surface: 'viewer:html', filename: 'factory-playbook.html' });
+        }
+
+        // CTA: "Walk me through it" → run the recorded action.
+        pane.querySelector('[data-cta="next"]').addEventListener('click', () => {
+          const act = JSON.parse(nextUp.dataset.action || '{}');
+          if (act.kind === 'open' && window.codesense?.openFile) {
+            window.codesense.openFile({ path: act.path, newTab: true });
+          } else if (act.kind === 'scroll' && act.target) {
+            window.parent?.postMessage({ type: 'codesense:scroll-to', target: act.target }, '*');
+          } else if (act.kind === 'focus-composer') {
+            window.parent?.postMessage({ type: 'codesense:focus-composer' }, '*');
+          }
+        });
+        // CTA: "Map" → open the home page.
+        pane.querySelector('[data-cta="map"]').addEventListener('click', () => {
+          window.codesense?.openFile?.({ path: './README.html', newTab: true });
+        });
+
+        // Collapse
+        function setCollapsed(v, persist = true) {
+          pane.dataset.collapsed = v ? 'true' : 'false';
+          collapseBtn.setAttribute('aria-expanded', v ? 'false' : 'true');
+          body.hidden = v;
+          pane.querySelector('.pane__why').hidden = v;
+          pane.querySelector('.pane__ctas').hidden = v;
+          pane.querySelector('.pane__prov').hidden = v;
+          if (persist) window.codesense?.setPrefs?.({ collapsed: v }).catch(window.CodeSenseDocsPane.reportError);
+        }
+        window.codesense?.prefs?.().then(p => { if (p.collapsed) setCollapsed(true, false); }).catch(window.CodeSenseDocsPane.reportError);
+        collapseBtn.addEventListener('click', () => setCollapsed(pane.dataset.collapsed !== 'true'));
+        pane.addEventListener('keydown', (e) => {
+          if ((e.key === 'c' || e.key === 'C') && e.target.tagName !== 'INPUT') {
+            setCollapsed(pane.dataset.collapsed !== 'true');
+          }
+        });
+        window.CodeSenseDocsPane.ready();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/codesensehq/codesense/security/policy
+    about: Please report security problems privately, as described in SECURITY.md. Don't open a public issue.
+  - name: Ask a question
+    url: https://github.com/codesensehq/codesense/discussions
+    about: Questions and open-ended ideas go to GitHub Discussions.

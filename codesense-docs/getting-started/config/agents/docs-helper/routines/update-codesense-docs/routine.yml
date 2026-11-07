@@ -1,0 +1,11 @@
+id: update-codesense-docs
+name: Update CodeSense docs
+owner: codesense
+mode: fresh
+task: Run the update-codesense-docs skill. Call codesense_overview then update_codesense_docs to refresh the canonical profile docs from the offline app bundle regardless of cwd. Report versions, state, preservation branch and changed paths, then signal_done. Codex must pass its own sessionId.
+where:
+  kind: team_workspace
+policy:
+  max_runtime: 10m
+runs_on: each_mac
+revision: 2

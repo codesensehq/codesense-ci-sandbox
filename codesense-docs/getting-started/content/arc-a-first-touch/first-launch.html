@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — First launch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Shared arc-A content shell. The declaration is duplicated here (and in
+         sibling arc-A pages) rather than hoisted into _shared/cs-docs.css, so
+         the shared layer stays lean until a second arc needs the
+         same patterns. */
+      .cs-docs-arcA {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA ol,
+      .cs-docs-arcA ul {
+        padding-left: 1.1em;
+      }
+      .cs-docs-arcA li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+
+      /* Hero placeholder frame — an annotated screenshot replaces it later. */
+      .cs-docs-arcA__hero {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        padding: var(--cs-docs-space-5);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__hero figure {
+        margin: 0;
+      }
+      .cs-docs-arcA__placeholder {
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        text-align: center;
+        padding: 20px;
+      }
+      .cs-docs-arcA__hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      /* Step list with inline mini-visuals. */
+      .cs-docs-arcA__step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .cs-docs-arcA__step:first-of-type {
+        border-top: 0;
+      }
+      .cs-docs-arcA__step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .cs-docs-arcA__step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .cs-docs-arcA__step p {
+        margin: 0 0 10px;
+        color: var(--cs-fg);
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+
+      details.cs-docs-arcA__mcp {
+        margin-top: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/first-launch">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="First launch of CodeSense" id="hero">
+        <h1>First launch</h1>
+        <p class="lede">
+          You double-clicked the app. CodeSense opens, lays down a small home directory for
+          itself, and lands you right here — on these docs. There's nothing to configure yet;
+          the only decision in your first minute is whether you already have a context repo on
+          disk or want to make a new one.
+        </p>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="What happens on first launch of CodeSense" id="steps">
+        <h2>What happens on first open</h2>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">1</span>
+          <div>
+            <h3>CodeSense claims a home directory</h3>
+            <p>
+              The app creates <code>~/.codesense/</code> if it doesn't exist. That's where it
+              keeps everything of its own: managed binaries, the MCP socket, state files, caches.
+              It never writes into one of your git repos. (The full tree is on
+              <a href="./files-on-disk.html">files on disk</a>.)
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">2</span>
+          <div>
+            <h3>You land in the docs org</h3>
+            <p>
+              CodeSense pins one context repo for you: the shipped
+              <strong>docs org</strong> — the read-only training manual you're reading right
+              now. The book icon at the top-left is pinned here forever. One click re-opens
+              these pages from anywhere in the app.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">3</span>
+          <div>
+            <h3>Everything else is still empty</h3>
+            <p>
+              You have no editable context repo yet. The <strong>Try this now</strong> buttons
+              across these docs will prompt you to make one the first time you click. You can
+              take <a href="../tour.html">the 60-second tour</a>, read on, or jump to
+              <a href="./connect-a-context-repo.html">connecting a repo you already have</a> or
+              <a href="./create-a-context-repo.html">creating one from scratch</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now see where the docs live" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge where this page lives: the bundled CodeSense docs org and the
+          folder it was placed in. Read-only. (CodeSense also places a tiny sample source repo
+          next to it at launch, which the shipped examples point at.)
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Where do these docs live?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to simulate first launch via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            An agent sees the same setup the switcher shows, the docs org included:
+          </p>
+          <pre><code>list_orgs_teams {}
+describe_setup {}</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema and examples:
+            <a href="../mcp-explorer.html#tool/list_orgs_teams">list_orgs_teams</a> ·
+            <a href="../mcp-explorer.html#tool/describe_setup">describe_setup</a>.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/describe_setup">describe_setup</a>
+        ·
+        <a href="./files-on-disk.html">files on disk</a>
+        ·
+        <a href="./index.html">arc A overview</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · First launch</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

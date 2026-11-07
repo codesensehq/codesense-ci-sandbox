@@ -1,0 +1,226 @@
+[package]
+name = "codesense"
+version = "0.1.0"
+description = "Centralized BMAD workflow management for development teams"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "codesense_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+# Reads the channel configs' updater keys at build time.
+serde_json = "1"
+# Hashes those keys (the app compares hashes, never embeds a config).
+sha2 = "0.10"
+
+[features]
+default = []
+e2e-webdriver = ["dep:tauri-plugin-wdio", "dep:tauri-plugin-wdio-webdriver"]
+dhat-heap = ["dep:dhat", "codesense-pty-core/leak-gate"]
+# Compiles the in-crate perf fixture builders (`perf_support`) that the
+# criterion benches reach through `codesense_lib`. Off by default, so the
+# fixtures and their `tempfile`/bench scaffolding stay out of the shipped binary.
+bench-support = []
+# Compiles the `sanitizer_canary` module: intentional memory-safety faults that
+# let the AddressSanitizer gate prove it can turn red. Off by default, so the
+# deliberate use-after-free never exists in any normal or shipped build.
+sanitizer-canary = []
+# Dashboard publishing, app side (manifest, payload, local publish
+# record, and the local `publish_dashboard` / `unpublish_dashboard` verbs). Off
+# by default for ordinary development builds. Internal and beta release builds
+# turn it on with `--features dashboard-publish`.
+dashboard-publish = []
+
+[dependencies]
+unicode-normalization = "0.1"
+unicode-segmentation = "1"
+jsonschema = { version = "=0.58.4", default-features = false }
+tauri = { version = "~2.12.0", features = ["tray-icon", "image-png"] }
+tauri-plugin-wdio = { version = "=1.3.0", optional = true }
+tauri-plugin-wdio-webdriver = { version = "=1.3.0", optional = true }
+tauri-plugin-opener = "~2.5.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+# Order-preserving JSON map for the `.claude.json` writer. NOT a
+# crate-wide `serde_json/preserve_order` switch (which would change every JSON
+# output in the app). `indexmap` is already a transitive dep via several
+# crates, so adding it as a direct dep is free.
+indexmap = { version = "2", features = ["serde"] }
+serde_yaml = "0.9"
+toml = "0.8"       # TOML adapter for the merge engine (pyproject.toml, ~/.codex/config.toml)
+json5 = "0.4"      # JSONC/JSON5-tolerant parse (tsconfig.json, .vscode/settings.json)
+gray_matter = "0.3"
+regex = "1"
+regex-syntax = "0.8"  # The regex crate's Unicode word class, for the live terminal redactor
+serde_path_to_error = "0.1"
+tauri-plugin-dialog = "~2.7.0"
+# Local repositories and local-path clones only: git over the network runs the git CLI, so
+# git2 needs none of its `https`/`ssh` transports (no longer default features since 0.21), and
+# without them libgit2 uses no OpenSSL.
+git2 = "0.21"
+# Durable orchestration coordination store. `bundled` compiles SQLite
+# from source (no system dependency).
+rusqlite = { version = "0.32", features = ["bundled"] }
+notify = "6"
+portable-pty = "0.9.0"
+codesense-host-proto = { path = "crates/codesense-host-proto" }
+# The host agent's client side: SSH install, the connector and the Add-machine
+# checklist (Remote Machines).
+codesense-session-server = { path = "crates/codesense-session-server" }
+codesense-pty-core = { path = "crates/codesense-pty-core" }
+codesense-fs-core = { path = "crates/codesense-fs-core" }
+sysinfo = "0.32"
+dirs = "5"
+uuid = { version = "1", features = ["v4"] }
+# ~2.12: `requireSignedVersion` binds the signed bytes to the announced version.
+# Pinned to the minor because `configure_client` exposes reqwest.
+tauri-plugin-updater = "~2.14.1"
+tauri-plugin-process = "~2.3.0"
+# OS notifications for agents that need you (the webview has no Notification API of its own).
+tauri-plugin-notification = "~2.4.0"
+# The beta bundles' `codesense://` scheme (`tauri.beta.conf.json`, plugins.deep-link) which a
+# running beta app's `check_bundle` requires of any update. No link handler is registered;
+# the dependency stays until the bundler is shown to declare the scheme without it.
+tauri-plugin-deep-link = "2"
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"] }
+reqwest_mcp = { package = "reqwest", version = "0.13.2", default-features = false, features = ["json", "stream", "rustls"] }
+tauri-plugin-log = "~2.8.0"
+log = "0.4"
+# OS keychain for credentials at rest (replaces the 0600 auth.json).
+# macOS-native store (the app's platform); the crate still compiles elsewhere
+# (unmatched platform → runtime error, not a build break — CI runs ubuntu, so
+# tests use an in-memory fake, never the real backend). Access is
+# synchronous/blocking — callers offload via `commands::await_blocking`.
+keyring = { version = "3", features = ["apple-native"] }
+futures-util = "0.3"
+# `rustls-tls-webpki-roots` lets the dashboard live link open `wss://`.
+tokio-tungstenite = { version = "0.28", default-features = false, features = ["connect", "handshake", "rustls-tls-webpki-roots"] }
+# The live link's TLS config is built on the ring provider with the
+# webpki roots. Both crates are already in the tree (reqwest, tokio-tungstenite);
+# naming them here only makes the provider explicit, because the tree enables
+# both rustls providers and `ClientConfig::builder()` would refuse to pick one.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+webpki-roots = "1"
+sse-stream = "0.2.6"
+# Dyn-safe async trait objects (license channel, dashboard publish, weft spawn,
+# pty runner seams). Native `async fn` in traits (stable 1.75) is not
+# object-safe, so `dyn` seams need the boxed-future desugaring this macro provides.
+async-trait = "0.1"
+minisign-verify = "0.2"
+tokio = { version = "1", features = ["full"] }
+# The relay hands rmcp its own redirect-free client (`BoundedHttp`), so rmcp's reqwest client is off.
+rmcp = { version = "2.2", features = ["server", "macros", "schemars", "client", "transport-streamable-http-client", "transport-streamable-http-server"] }
+schemars = "1.0"  # direct dep required — rmcp re-exports it but derive macro needs it in scope
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+cron = "0.15"
+iana-time-zone = "0.1"
+glob = "0.3"
+url = "2"
+open = "5"
+sha2 = "0.10"
+# RFC 4122 v5 request ids for remote routine launches.
+sha1 = "0.10"
+blake3 = "1"
+libc = "0.2"
+base64 = "0.22"
+rand = "0.8"
+flate2 = "1"
+# Compresses the context batch payload for hosts that decode it.
+zstd = "0.13"
+tar = "0.4"
+# Read Info.plist out of a verified update tarball before staging it.
+plist = "1"
+# RAII temp dir for the isolated tier-4 install-script CWD (auto-removed).
+tempfile = "3"
+walkdir = "2"
+globset = "0.4"
+mime_guess = "2"
+# Avatar packs: read PNG/WebP faces and write their small PNG variant; parse SVG
+# faces to strip anything active before the webview shows them.
+png = "0.17"
+image-webp = "0.2"
+quick-xml = "0.42"
+# Hosted inbox faces: an SVG face is drawn once, on this Mac, to a small
+# PNG. Text, system fonts, svgz and raster-image decoders are not compiled in; resvg's
+# patterns, masks and filters are, but the face renderer refuses any SVG that uses them.
+resvg = { version = "0.48", default-features = false }
+tokio-util = { version = "0.7", features = ["io"] }
+axum = "0.8"
+utoipa = { version = "5", features = ["axum_extras"] }
+dashmap = "6"
+dhat = { version = "0.3.3", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1", features = ["fs"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSWindow"] }
+objc2-web-kit = { version = "0.3", default-features = false, features = ["WKWebView", "WKWebViewConfiguration", "WKPDFConfiguration", "WKNavigationDelegate", "WKNavigation", "block2", "objc2-app-kit"] }
+objc2-foundation = { version = "0.3", features = ["NSData", "NSError", "NSGeometry", "NSProcessInfo", "NSString", "NSURL", "NSURLRequest"] }
+block2 = "0.6"
+dispatch2 = "0.3"
+
+# Linux copy-on-write clone (btrfs/XFS/bcachefs FICLONE detection).
+# macOS uses libc::clonefile directly (already a dep); this never enters the
+# macOS dependency graph.
+[target.'cfg(target_os = "linux")'.dependencies]
+reflink-copy = "0.1"
+
+[dev-dependencies]
+# Count SQLite VM work in spend-cap scaling tests without a wall-clock budget.
+rusqlite = { version = "0.32", features = ["hooks"] }
+tokio = { version = "1", features = ["test-util"] }
+# The license client's mock updates host.
+wiremock = "0.6"
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+criterion = { version = "0.5", features = ["html_reports"] }
+# SR-18: the `test` feature exposes `tauri::test::{mock_builder, mock_context,
+# noop_assets}` so route/MCP seam tests can build a real `AppHandle` with
+# managed state (e.g. a warm `SharedFrontmatterCache`). Dev-only.
+tauri = { version = "~2.12.0", features = ["test"] }
+# The session-server sidecar as a library, so the sidecar client's tests run a
+# real sidecar in-process on a temp instance root.
+codesense-session-server = { path = "crates/codesense-session-server", features = ["test-support"] }
+
+# Attribution source guards still parse tokens inside the app test suite.
+proc-macro2 = "1"
+
+[[test]]
+name = "resource_leak_gate"
+path = "tests/resource_leak_gate.rs"
+harness = false
+required-features = ["dhat-heap"]
+
+# Perf regression gate. `harness = false` hands argument parsing to
+# criterion's own CLI (--save-baseline / --baseline / --sample-size). The
+# `bench-support` feature is what pulls the fixture builders into the graph;
+# a default `cargo build`/`--release` never sees criterion or the fixtures.
+[[bench]]
+name = "hot_paths"
+path = "benches/hot_paths.rs"
+harness = false
+required-features = ["bench-support"]
+
+# Single-op benches (install-state read win + deferred-detection
+# cost). Same `bench-support` gating as `hot_paths` — off a default build.
+[[bench]]
+name = "scale_profile"
+path = "benches/scale_profile.rs"
+harness = false
+required-features = ["bench-support"]
+
+# Concurrent-write measurement harness (throughput/percentile +
+# CPU/mem window shapes criterion doesn't fit). Behind `bench-support` so it never
+# enters a shipped build.
+[[example]]
+name = "scale_profile_harness"
+path = "examples/scale_profile_harness.rs"
+required-features = ["bench-support"]

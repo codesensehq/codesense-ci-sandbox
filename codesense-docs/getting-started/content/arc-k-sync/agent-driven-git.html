@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-branch" />
+    <title>CodeSense — Agent-driven git</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/agent-driven-git"] .cs-main {
+        max-width: 920px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] figure.hero svg {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        height: auto;
+        max-height: 240px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        text-align: center;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] table {
+        width: 100%;
+        max-width: 760px;
+        margin: 14px 0;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] th,
+      body[data-page="arc-k-sync/agent-driven-git"] td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] th {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--cs-border-strong);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 760px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] details {
+        max-width: 760px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/agent-driven-git"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/agent-driven-git">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Agent-driven git the model" id="hero">
+        <h1>Agent-driven git</h1>
+        <p class="lede">
+          CodeSense never commits, pushes, pulls or merges your context repo. It reads files,
+          writes files, and shows you what changed (it reads git status and history to do that).
+          The git is done by an <strong>agent</strong> you ask, with the same <code>git</code> and
+          <code>gh</code> you use yourself. That split is deliberate: the app stays a plain,
+          auditable content editor, and the version-control decisions sit with an agent you can
+          instruct, or with you.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 720 220"
+            role="img"
+            aria-label="Three columns: CodeSense edits files; an agent runs the git ops; the remote receives the push. A dashed line separates app from version control."
+          >
+            <title>Three roles: CodeSense (edits), agent (git ops), remote</title>
+            <desc>
+              Left column labelled "CodeSense" with a file glyph. Dashed vertical line. Middle
+              column labelled "agent" with four git-step chips. Right column labelled "remote"
+              with a cloud. Arrows from CodeSense into the file; from the file through the agent to
+              the remote.
+            </desc>
+            <style>
+              .adg-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .adg-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .adg-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .adg-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .adg-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .adg-sep {
+                stroke: var(--cs-border-strong, #353c4a);
+                stroke-dasharray: 3 4;
+                stroke-width: 1;
+              }
+            </style>
+            <defs>
+              <marker
+                id="adg-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- separators -->
+            <line class="adg-sep" x1="240" y1="20" x2="240" y2="200" />
+            <line class="adg-sep" x1="480" y1="20" x2="480" y2="200" />
+
+            <!-- column headers -->
+            <text class="adg-mut" x="120" y="24" text-anchor="middle">CodeSense</text>
+            <text class="adg-mut" x="360" y="24" text-anchor="middle">agent</text>
+            <text class="adg-mut" x="600" y="24" text-anchor="middle">remote</text>
+
+            <!-- CodeSense: a file + brush -->
+            <g transform="translate(60 56)">
+              <rect class="adg-surf" width="120" height="110" rx="10" />
+              <text class="adg-txt" x="60" y="24" text-anchor="middle">reads · writes</text>
+              <rect
+                fill="var(--cs-accent, #7aa2ff)"
+                opacity="0.14"
+                x="18"
+                y="38"
+                width="84"
+                height="54"
+                rx="4"
+              />
+              <path d="M28 54 h64 M28 66 h50 M28 78 h40" stroke="var(--cs-muted-fg, #a3abbb)" />
+            </g>
+
+            <!-- agent column: four git steps stacked -->
+            <g transform="translate(290 44)">
+              <g>
+                <rect class="adg-surf" width="140" height="28" rx="14" />
+                <text class="adg-txt" x="70" y="18" text-anchor="middle">git status</text>
+              </g>
+              <g transform="translate(0 36)">
+                <rect class="adg-surf" width="140" height="28" rx="14" />
+                <text class="adg-txt" x="70" y="18" text-anchor="middle">git pull</text>
+              </g>
+              <g transform="translate(0 72)">
+                <rect class="adg-surf" width="140" height="28" rx="14" />
+                <text class="adg-txt" x="70" y="18" text-anchor="middle">resolve</text>
+              </g>
+              <g transform="translate(0 108)">
+                <rect class="adg-surf" width="140" height="28" rx="14" />
+                <text class="adg-txt" x="70" y="18" text-anchor="middle">commit · push</text>
+              </g>
+            </g>
+
+            <!-- remote cloud -->
+            <g transform="translate(540 86)">
+              <ellipse class="adg-ins" cx="60" cy="40" rx="60" ry="30" />
+              <text class="adg-mut" x="60" y="44" text-anchor="middle">origin/main</text>
+            </g>
+
+            <!-- flow arrows -->
+            <path class="adg-acc" d="M180 110 L290 110" marker-end="url(#adg-arrow)" />
+            <path class="adg-acc" d="M430 110 L540 110" marker-end="url(#adg-arrow)" />
+            <text class="adg-mut" x="235" y="104" text-anchor="middle">file edit</text>
+            <text class="adg-mut" x="485" y="104" text-anchor="middle">git op</text>
+          </svg>
+          <figcaption id="hero-cap">
+            CodeSense edits · an agent runs the git · the remote receives it
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="Why the app does not run git" id="why">
+        <h2>Why the app doesn't push, pull or merge</h2>
+        <p>
+          Developer tools that call <code>git</code> on your behalf carry a long tail of failure
+          modes: SSH identity drift, stale credential helpers, half-staged merges, hooks that reach
+          into production, surprise force-pushes. More importantly: the agent that wrote a change
+          is in a better position than CodeSense to decide what the commit message should be,
+          whether to open a pull request, which branch to target. So the app has one job: keep the
+          content on disk consistent, and show you what changed.
+        </p>
+        <p>
+          There are no bundled git skills to install or keep in step. Ask any agent ("commit and
+          push the team context", "pull the context repo") or write your own skill for it under
+          <code>.claude/skills/</code> if you want the same steps every time.
+        </p>
+      </section>
+
+      <section data-search="The status button, conflicts and History" id="status">
+        <h2>What CodeSense shows you</h2>
+        <p>
+          The left nav's scope row has the context repo's status button:
+          <code>⎇ branch | ↑N ↓M</code>. <strong>↑</strong> counts changes GitHub doesn't have yet
+          (edits and unpushed commits), <strong>↓</strong> what's new on GitHub, and a third count
+          appears for conflicts. With nothing to report it reads <strong>synced</strong>. Its
+          tooltip says the same thing in a sentence, including when the clone last heard from
+          GitHub.
+        </p>
+        <ul>
+          <li>
+            <strong>A click</strong> opens the <strong>Changes</strong> view: the files the team's
+            context has that GitHub doesn't, each opening as a redline against the last pushed
+            version.
+          </li>
+          <li>
+            <strong>A conflict</strong> opens a card for each file instead, with
+            <strong>Use mine</strong>, <strong>Use theirs</strong>, <strong>Keep both</strong>,
+            <strong>Hand to ‹agent›</strong> and <strong>Compare</strong>. Settling a file writes
+            the side you chose and stages it; the agent doing the sync finishes the merge or rebase.
+          </li>
+          <li>
+            <strong>A failure</strong> (<strong>Sync failed</strong>, <strong>GitHub sign-in
+            expired</strong>, or changes with no remote to send them) offers
+            <strong>Retry</strong>, <strong>Sign in again</strong> or <strong>Set up</strong>.
+            Each one asks one of the team's agents to do it, through its inbox.
+          </li>
+          <li>
+            <strong>History</strong>, from the left nav's view menu, is the context repo's commit
+            graph and the files each commit changed.
+          </li>
+        </ul>
+        <p>
+          The state comes from what git shows on disk (a merge or rebase in progress counts as
+          syncing, and as failed once it has sat untouched for 10 minutes) and from what the
+          syncing agent last reported with <code>report_context_sync</code>.
+        </p>
+      </section>
+
+      <section data-search="Worktree edits and the team context" id="worktrees">
+        <h2>Worktrees sit one layer below</h2>
+        <p>
+          Moving files between a worktree and the team's content is not git. Agents do it with MCP
+          calls, and nothing is committed: <code>hydrate_worktree</code> brings team content in,
+          <code>reverse_sync_worktree</code> (after <code>preview_reverse_sync_worktree</code>)
+          sends an edit back. Edits waiting in workspaces show as the scope row's
+          <strong>N unsaved</strong> counter, with <strong>Publish</strong> and
+          <strong>Discard</strong> for each. See <a href="./hydration.html">hydration</a> and
+          <a href="./reverse-sync.html">reverse sync</a>.
+        </p>
+      </section>
+
+      <section data-search="A worked moment" id="worked">
+        <h2>A worked moment</h2>
+        <p>
+          You asked a Builder to add a routine. The agent wrote the file into its worktree, then,
+          because the routine is team configuration rather than source code, it sent the file to
+          team content with <code>reverse_sync_worktree</code>.
+        </p>
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>The agent writes.</strong> The Builder edits
+            <code>config/agents/builder/routines/review-nightly/routine.yml</code> in its
+            worktree.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>The agent sends it to the team.</strong> It calls
+            <code>preview_reverse_sync_worktree</code>, shows you the result, then calls
+            <code>reverse_sync_worktree</code>. The file is in team content, uncommitted, and the
+            status button's <strong>↑</strong> count goes up.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>An agent pushes.</strong> You ask an agent to commit and push the context repo
+            (or do it yourself). It runs <code>git</code>, then calls
+            <code>report_context_sync</code> so the status button shows how it went.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">4</span>
+          <div>
+            <strong>A teammate pulls.</strong> Their next <code>git pull</code> of the context repo
+            (theirs, or their agent's) brings it in. Their worktrees get it at the next agent launch
+            or hydrate call.
+          </div>
+        </div>
+        <p>
+          At no point did CodeSense itself run a git command, and nothing moved without a call.
+        </p>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="margin-top: 8px">
+            An agent reads the same state the status button shows, does the git itself, and reports
+            back:
+          </p>
+          <pre><code>// Branch, ahead/behind, conflicts, sync state. Read-only.
+codesense.invoke('context_repo_status', {})
+// Uncommitted files, grouped. Read-only.
+codesense.invoke('get_publish_set', {})
+// Commit history.
+codesense.invoke('context_repo_history', { limit: 20 })
+// After running git: tell the status button how it went.
+codesense.invoke('report_context_sync', { state: 'ok' })</code></pre>
+        </details>
+      </section>
+
+      <section data-search="Try this now context repo status" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg)">
+          Read your context repo as git sees it: branch, what's ahead and behind, conflicts and the
+          last reported sync. Read-only.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name":"context_repo_status","args":{}}'
+          label="Read context repo status"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/context_repo_status">context_repo_status</a>
+        ·
+        <a href="../mcp-explorer.html#tool/report_context_sync">report_context_sync</a>
+        ·
+        <a href="../mcp-explorer.html#tool/get_publish_set">get_publish_set</a>
+        ·
+        <a href="./hydration.html">next: hydration →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Agent-driven git</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,481 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * Shared workspace group chat in the agent inbox.
+ *
+ * Scoped under `.wc` so chat rules stay inside the conversation. Colour
+ * tokens map onto the existing CodeSense shadcn variables (--background,
+ * --foreground, --muted-foreground, --accent, --border, --card…) the same way
+ * the inbox did in `inbox-tokens.css`. Role chroma is derived at render time
+ * from the message's `--wc-role` CSS variable (set inline from the handle hash
+ * — see `role-colour.ts`), so a new role never needs a stylesheet change.
+ *
+ * The inbox uses the roomy `[data-density="b"]` message layout.
+ */
+
+.wc {
+  --wc-bg: hsl(var(--background));
+  --wc-surface: hsl(var(--card));
+  --wc-surface-raised: color-mix(in oklab, hsl(var(--card)) 90%, hsl(var(--background)));
+  --wc-inset: color-mix(in oklab, hsl(var(--background)) 85%, hsl(var(--card)));
+  --wc-fg: hsl(var(--foreground));
+  --wc-muted-fg: hsl(var(--muted-foreground));
+  --wc-faint-fg: color-mix(in oklab, hsl(var(--muted-foreground)) 85%, hsl(var(--border)));
+  --wc-border: hsl(var(--border));
+  --wc-hover: color-mix(in oklab, hsl(var(--foreground)) 5%, transparent);
+  --wc-accent: hsl(var(--accent));
+  --wc-accent-fg: hsl(var(--accent-foreground));
+  --wc-accent-soft: color-mix(in oklab, hsl(var(--accent)) 16%, transparent);
+  --wc-warning: #d29922;
+
+  --wc-radius-xs: 4px;
+  --wc-radius-sm: 6px;
+
+  --wc-mono: var(--ibx-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+  --wc-sans: var(--ibx-sans, "Geist Variable", "Geist", ui-sans-serif, system-ui);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--wc-surface);
+  color: var(--wc-fg);
+  font-family: var(--wc-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reset the kinds of resets the inbox uses, scoped to this pane only. */
+.wc *,
+.wc *::before,
+.wc *::after {
+  box-sizing: border-box;
+}
+.wc button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.wc textarea {
+  color: inherit;
+  font: inherit;
+}
+
+/* ───────── Body ───────── */
+.wc-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: color-mix(in oklab, var(--wc-border) 70%, transparent) transparent;
+  scrollbar-width: thin;
+  padding: 10px 0 14px;
+  position: relative;
+}
+.wc-body:focus-visible {
+  outline: 2px solid var(--wc-accent);
+  outline-offset: -2px;
+}
+
+/* Day divider */
+.wc-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 14px 4px;
+  color: var(--wc-faint-fg);
+  font-family: var(--wc-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.wc-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--wc-border), transparent);
+}
+
+/* ───────── Message row — shared ───────── */
+.wc-msg {
+  display: grid;
+  padding: 6px 14px;
+  min-width: 0;
+}
+.wc-msg:hover {
+  background: var(--wc-hover);
+}
+.wc-msg__body {
+  min-width: 0;
+}
+.wc-msg__hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+  flex-wrap: wrap;
+}
+.wc-msg__handle {
+  font-weight: 600;
+  color: var(--wc-handle, var(--wc-fg));
+  letter-spacing: -0.005em;
+}
+.wc-msg__role {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: color-mix(in oklab, var(--wc-role, var(--wc-muted-fg)) 85%, var(--wc-fg));
+  font-family: var(--wc-mono);
+  padding: 1px 5px;
+  border-radius: var(--wc-radius-xs);
+  background: color-mix(in oklab, var(--wc-role, var(--wc-muted-fg)) 11%, transparent);
+  border: 1px solid color-mix(in oklab, var(--wc-role, var(--wc-border)) 25%, transparent);
+}
+.wc-msg__time {
+  font-size: 10.5px;
+  color: var(--wc-faint-fg);
+  font-family: var(--wc-mono);
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.wc-msg__content {
+  /* InboxMessageContent carries its own layout; keep this cell honest. */
+  min-width: 0;
+}
+
+/* "You" (human) row — accent sweep over the role chroma. */
+.wc-msg[data-you] .wc-msg__handle {
+  color: var(--wc-accent);
+}
+
+/* ───────── Roomy messages ───────── */
+.wc[data-density="b"] .wc-msg {
+  grid-template-columns: 40px 1fr;
+  column-gap: 12px;
+  padding: 8px 16px;
+}
+.wc[data-density="b"] .wc-msg__ava {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 30% 25%,
+    color-mix(in oklab, var(--wc-role) 70%, white) 0%,
+    var(--wc-role) 60%,
+    color-mix(in oklab, var(--wc-role) 60%, black) 100%
+  );
+  color: #0d1117;
+  font-family: var(--wc-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 0 0 2px color-mix(in oklab, var(--wc-role) 25%, var(--wc-surface));
+}
+.wc[data-density="b"] .wc-msg__ava::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--wc-mood, var(--wc-faint-fg));
+  border: 2px solid var(--wc-surface);
+}
+.wc[data-density="b"] .wc-msg[data-you] .wc-msg__ava {
+  background: radial-gradient(
+    circle at 30% 25%,
+    color-mix(in oklab, var(--wc-accent) 70%, white) 0%,
+    var(--wc-accent) 60%,
+    color-mix(in oklab, var(--wc-accent) 60%, black) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 0 0 2px color-mix(in oklab, var(--wc-accent) 30%, var(--wc-surface));
+}
+
+/* System pill — centred, muted. */
+.wc[data-density="b"] .wc-sys {
+  display: flex;
+  justify-content: center;
+  margin: 8px 16px;
+}
+.wc[data-density="b"] .wc-sys__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--wc-bg) 55%, var(--wc-surface));
+  border: 1px solid var(--wc-border);
+  color: var(--wc-muted-fg);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-family: var(--wc-sans);
+}
+.wc[data-density="b"] .wc-sys__pill b {
+  color: var(--wc-fg);
+  font-weight: 600;
+}
+.wc[data-density="b"] .wc-sys__pill time {
+  color: var(--wc-faint-fg);
+  font-family: var(--wc-mono);
+  font-size: 10.5px;
+}
+
+/* Follow-up (same sender) — hide avatar + header, keep gutter. */
+.wc[data-density="b"] .wc-msg--follow {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.wc[data-density="b"] .wc-msg--follow .wc-msg__ava {
+  visibility: hidden;
+  height: 0;
+}
+.wc[data-density="b"] .wc-msg--follow .wc-msg__hdr {
+  display: none;
+}
+
+/* ───────── Compose ───────── */
+.wc-compose {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--wc-border);
+  background: var(--wc-inset);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wc-compose__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--wc-surface-raised);
+  border: 1px solid var(--wc-border);
+  border-radius: var(--wc-radius-sm);
+  padding: 8px 10px;
+  transition:
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+.wc-compose__field:focus-within {
+  border-color: color-mix(in oklab, var(--wc-accent) 55%, var(--wc-border));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--wc-accent) 14%, transparent);
+}
+.wc-compose__who {
+  font-size: 10.5px;
+  font-family: var(--wc-mono);
+  letter-spacing: 0.08em;
+  color: var(--wc-faint-fg);
+}
+.wc-compose__who b {
+  color: var(--wc-accent);
+  font-weight: 600;
+  font-family: var(--wc-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 11.5px;
+}
+.wc-compose__textarea {
+  width: 100%;
+  min-height: 36px;
+  max-height: 160px;
+  resize: none;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--wc-fg);
+}
+.wc-compose__textarea::placeholder {
+  color: var(--wc-faint-fg);
+}
+.wc-compose__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wc-compose__hint {
+  font-size: 10.5px;
+  font-family: var(--wc-mono);
+  color: var(--wc-faint-fg);
+  display: inline-flex;
+  gap: 10px;
+}
+.wc-compose__hint kbd {
+  font-family: var(--wc-mono);
+  font-size: 10px;
+  padding: 1px 4px;
+  border: 1px solid var(--wc-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--wc-surface);
+  color: var(--wc-muted-fg);
+}
+.wc-compose__error {
+  color: var(--wc-warning);
+  font-size: 11.5px;
+  font-family: var(--wc-mono);
+}
+.wc-compose__send {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--wc-radius-sm);
+  background: var(--wc-accent);
+  color: var(--wc-accent-fg);
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid color-mix(in oklab, var(--wc-accent) 70%, black);
+  transition:
+    transform 120ms,
+    box-shadow 120ms;
+}
+.wc-compose__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.wc-compose__send:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -14px color-mix(in oklab, var(--wc-accent) 90%, black);
+}
+
+/* ───────── Archive banner ───────── */
+.wc-archived {
+  flex: 0 0 auto;
+  border-top: 1px solid color-mix(in oklab, var(--wc-warning) 30%, var(--wc-border));
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--wc-warning) 7%, var(--wc-inset)) 0%,
+    var(--wc-inset) 100%
+  );
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.wc-archived__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--wc-radius-sm);
+  background: color-mix(in oklab, var(--wc-warning) 18%, transparent);
+  color: var(--wc-warning);
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--wc-warning) 40%, transparent);
+}
+.wc-archived__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.wc-archived__title h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wc-fg);
+  letter-spacing: -0.005em;
+}
+.wc-archived__badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--wc-warning);
+  font-family: var(--wc-mono);
+  padding: 1px 6px;
+  border: 1px solid color-mix(in oklab, var(--wc-warning) 40%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--wc-warning) 10%, transparent);
+}
+.wc-archived__body {
+  font-size: 12px;
+  color: var(--wc-muted-fg);
+  line-height: 1.5;
+}
+.wc-archived__actions {
+  margin-top: 8px;
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wc-archived__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--wc-radius-sm);
+  border: 1px solid var(--wc-border);
+  background: var(--wc-surface);
+  color: var(--wc-fg);
+  font-size: 13px;
+}
+.wc-archived__btn:hover {
+  border-color: color-mix(in oklab, var(--wc-accent) 40%, var(--wc-border));
+  background: color-mix(in oklab, var(--wc-accent) 7%, var(--wc-surface));
+}
+.wc-archived__btn svg {
+  width: 12px;
+  height: 12px;
+  color: var(--wc-muted-fg);
+}
+.wc-archived__btn--primary {
+  background: var(--wc-accent-soft);
+  border-color: color-mix(in oklab, var(--wc-accent) 40%, var(--wc-border));
+  color: var(--wc-accent);
+}
+.wc-archived__btn--primary:hover {
+  background: color-mix(in oklab, var(--wc-accent) 20%, var(--wc-surface));
+}
+.wc-archived__btn--primary svg {
+  color: var(--wc-accent);
+}
+
+/* ───────── Loading / error / empty-conversation states ───────── */
+.wc-status {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--wc-muted-fg);
+  font-size: 13px;
+  text-align: center;
+}
+.wc-status strong {
+  color: var(--wc-fg);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.wc-newchat {
+  margin: 18px auto 8px;
+  padding: 12px;
+  max-width: 40ch;
+  text-align: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+.wc-newchat strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.wc-newchat span {
+  color: var(--wc-muted-fg);
+  font-size: 12px;
+  text-wrap: balance;
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 6 · Sprint plan</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="6"
+    data-page="arc-h-pipelines-and-sdlc/06-sprint-plan"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 6 — Sprint plan" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>06</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>PLAN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>06</span> ·
+                  <span data-cs-phase-name>Sprint plan</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Stories get bundled into a sprint with a committed point total
+                  and visible carry-over. The sprint registry and each story's
+                  <code>sprint:</code> field tell people and agents what's in
+                  this window.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What sprint plan is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              A sprint plan says what the team is doing this cycle. CodeSense
+              keeps it in two places: the team's sprint registry,
+              <code>config/sprints.yaml</code> (each sprint's
+              <code>state</code>, <code>goal</code>, <code>start</code>,
+              <code>end</code> and, once closed, <code>delivered_points</code>
+              and <code>carried_points</code>), and a <code>sprint:</code> field
+              in each committed story's frontmatter. A planning agent, John here,
+              running <code>bmad-sprint-planning</code>, reads the story graph
+              and past velocity, proposes a commit list, and writes those two
+              places once you accept it. You can edit them by hand too, or
+              right-click a story in the left nav to <strong>Add to</strong> or
+              <strong>Move to</strong> a sprint.
+            </p>
+            <p>
+              The <code>sprint-analysis.html</code> example dashboard reads the
+              registry and the stories live: velocity from closed sprints, and
+              done versus committed points for the active one. A story's
+              progress (todo → in-progress → review → done) comes straight from
+              its <code>status</code> field. CodeSense doesn't run a sprint for
+              you: agents pick up stories when you or a routine starts them.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — FAKE-S1" id="worked">
+            <h2>Worked example — FAKE-S1</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — sprint plan" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in sprint plan" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml sprint planner" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml sprint plan" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — sprint plan" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Sprint planning is interactive and writes
+                  <code>config/sprints.yaml</code> and the stories'
+                  <code>sprint:</code> fields. Dashboards that read them update
+                  live.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Same shape. An agent on a machine sees the stories hydrated
+                  into its workspace; to see your latest, it calls
+                  <code>hydrate_worktree</code>. Edits it makes there come back
+                  to your context only through
+                  <code>reverse_sync_worktree</code> (preview first with
+                  <code>preview_reverse_sync_worktree</code>).
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — sprint plan" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Plan your next sprint against the current story graph. The skill
+              reads velocity and carry-over, then proposes a commit list for
+              you to accept, edit, or shrink.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-sprint-planning"}'
+              label="Plan the next sprint"
+              confirm="Run bmad-sprint-planning in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to sprint-plan via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-sprint-planning' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-6">factory playbook · phase 6</a>
+            &nbsp;·&nbsp; Previous: <a href="./05-stories.html">← 05 Story graph</a> ·
+            Next: <a href="./07-atdd.html">07 ATDD →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 6 · Sprint plan</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

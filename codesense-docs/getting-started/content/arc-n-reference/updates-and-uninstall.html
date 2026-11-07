@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="refresh-cw" />
+    <title>CodeSense — Updates, network calls and removing CodeSense</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/updates-and-uninstall">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Updates network calls privacy uninstall remove CodeSense" id="hero">
+        <p><span class="cs-docs-chip" data-arc="N">Arc N · Reference</span></p>
+        <h1>Updates, network calls and removing CodeSense</h1>
+        <p>How the app from codesense.ai/download updates itself, what it sends on its own, and how to remove it and the files it keeps.</p>
+      </section>
+
+      <section data-search="Updates Settings General Check now Update ready Restart to update installs when you quit release notes" id="updates">
+        <h2>Updates</h2>
+        <p>
+          You don't need to do anything to stay up to date. The app checks at launch, then about once a
+          day, and once after your Mac wakes. While a check is failing, or while a newer build is waiting
+          to be installed, it checks about once an hour instead. A newer build downloads in the
+          background and is checked against the release signing key before it's kept.
+        </p>
+        <p>Open <strong>Settings → General</strong>. The <strong>Updates</strong> section, below About, shows where things stand:</p>
+        <ul>
+          <li>
+            With nothing waiting, it says <q>CodeSense checks for a new version daily and installs it when you quit.</q>
+            <strong>Check now</strong> runs a check straight away; a newer build then downloads in the background.
+          </li>
+          <li>
+            When a build has downloaded, it says <q>Update ready (&lt;version&gt;) — it installs when you quit CodeSense</q>,
+            with <strong>Release notes</strong> and <strong>Restart to update</strong>.
+          </li>
+          <li>
+            Quit CodeSense (⌘Q) whenever suits you and the update installs as the app closes, or choose
+            <strong>Restart to update</strong> to install it now. If agent runs without a terminal are going,
+            CodeSense says how many will stop and asks before it restarts (<strong>Restart anyway</strong>).
+            Your terminal sessions run in a separate process, so they keep running through the restart.
+          </li>
+          <li>
+            If CodeSense is force-quit or crashes before you quit it, nothing is installed. The next launch
+            finds the update again.
+          </li>
+        </ul>
+        <p>
+          CodeSense installs an update only where it can replace itself without an administrator password.
+          If it can't, or downloads keep failing, the Updates section says so, with
+          <strong>Download the latest CodeSense from codesense.ai</strong>. To install by hand, quit
+          CodeSense, open the new <code>.dmg</code> and drag CodeSense into Applications, replacing the old copy.
+        </p>
+        <p>
+          Update checks are automatic; there is no setting to turn them off yet. A build you make from
+          source has no update source by default: Settings → General shows <strong>Check for Updates</strong>
+          in About instead of the Updates section.
+        </p>
+      </section>
+
+      <section data-search="What leaves your Mac network calls privacy PRIVACY.md no telemetry update manifest" id="what-leaves">
+        <h2>What leaves your Mac</h2>
+        <p>
+          CodeSense has no analytics, telemetry or crash reporting and makes no AI calls of its own.
+          <code>PRIVACY.md</code>, at the root of the CodeSense source, lists every network call the app
+          makes, with what it sends, how to turn it off and where it is in the code. In short:
+        </p>
+        <ul>
+          <li>
+            <strong>On its own</strong> (PRIVACY.md §1–§5): the update check, a <code>GET</code> of one
+            static file on <code>dl.codesense.ai</code> that sends no account, key, install id or clock;
+            the update download when there is a newer build; inbox pictures on <code>*.giphy.com</code>
+            or <code>static.klipy.com</code> that an agent in one of this app's tabs posts (other pictures
+            wait for your click, and <code>media: {remote: off}</code> or <code>remote: ask</code> in a
+            team's <code>config/inbox.yml</code> stops or holds them); and
+            <code>git fetch</code> from a repository's <code>origin</code> for change history, with your
+            own git credentials.
+          </li>
+          <li>
+            <strong>Because you set something up</strong> (§6–§11): your remote machines over SSH, which
+            receive your terminal sessions, the files you open there and a git bundle of the branch you
+            prepare a workspace from; <code>git fetch</code> when a workspace is checked; git-ai notes;
+            MCP servers you configure; agent accounts you add; and dashboards you publish to
+            <code>share.codesense.ai</code>, which sends the files those dashboards list.
+          </li>
+          <li>
+            <strong>Content you open</strong> (§12): dashboards, documents and stories load what they
+            reference when you open them in the viewer.
+          </li>
+        </ul>
+        <p>
+          The agent CLIs you run talk to their own providers under your accounts with them.
+        </p>
+        <p>
+          A shared dashboard draws no CodeSense bar over itself unless its <code>dashboard.yml</code> sets
+          <code>chrome: full</code>, so a page can look like any screen, including CodeSense's own. Never type
+          a password, a sign-in code or a payment detail into a dashboard. What a live dashboard shares with
+          its viewers is set out field by field in <code>get_live_data_contract</code>.
+        </p>
+      </section>
+
+      <section data-search="Uninstall remove CodeSense delete app session server folders Keychain" id="uninstall">
+        <h2>Removing CodeSense</h2>
+        <p>Your own repos stay where they are. To remove CodeSense and what it keeps on your Mac:</p>
+        <ol>
+          <li>Quit CodeSense (⌘Q).</li>
+          <li>
+            Stop the terminal server. Your terminal sessions run in a separate process,
+            <code>codesense-session-server</code>, which keeps running after you quit. This ends every
+            terminal session and agent still running in it:
+            <pre><code>pkill -f '/codesense-session-server[^ ]* --(resources|emulator|root) '</code></pre>
+            To check nothing is left, run <code>pgrep -fl codesense</code>. If you connected remote machines,
+            run the same command on each of them. On a Linux machine set up with a private account, stop
+            it under that account with <code>pkill -f '/codesense-session-server[^ ]* private-serve '</code>.
+          </li>
+          <li>Drag CodeSense from <code>/Applications</code> to the Bin.</li>
+          <li>
+            Push or copy your work, then delete the folders CodeSense keeps (its bundle id is
+            <code>ai.codesense</code>). Repos CodeSense cloned for you live in
+            <code>~/.codesense/users/&lt;id&gt;/sources/</code>, with their worktrees beside each clone in a
+            folder named <code>&lt;repo&gt;-wt</code>, unless you chose your own folder for them. Deleting
+            <code>~/.codesense</code> deletes any branch, commit or change in them you haven't pushed.
+            <pre><code>rm -rf ~/.codesense \
+  ~/Library/Application\ Support/ai.codesense \
+  ~/Library/Caches/ai.codesense \
+  ~/Library/WebKit/ai.codesense \
+  ~/Library/Logs/ai.codesense \
+  ~/Library/Preferences/ai.codesense.plist</code></pre>
+            Repos you cloned yourself are not touched. CodeSense makes their worktrees next to each repo by
+            default, in a folder named <code>&lt;repo&gt;-wt</code>; push what you want to keep, then remove
+            them with <code>git worktree remove</code>. On remote machines, CodeSense keeps its files in
+            <code>~/.codesense/</code> in your account there.
+          </li>
+          <li>
+            Remove the Keychain items. Open Keychain Access and delete the items under these services, or
+            run <code>security delete-generic-password -s &lt;service&gt;</code> for each until it reports
+            that no item was found. You may not have all of them:
+            <ul>
+              <li><code>codesense-ssh</code>: passphrases you saved for remote machines.</li>
+              <li><code>ai.codesense.dashboards</code>: your dashboard publisher key.</li>
+              <li><code>codesense-auth</code>: a sign-in record from older versions of CodeSense.</li>
+            </ul>
+          </li>
+        </ol>
+        <p>
+          CodeSense also marks the worktrees it opens as trusted in Claude Code's own settings
+          (<code>~/.claude.json</code>). Those entries do nothing without the folders; Claude Code manages them.
+        </p>
+      </section>
+
+      <p><a href="troubleshooting.html">Back to the troubleshooting index</a></p>
+    </main>
+  </body>
+</html>

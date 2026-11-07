@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 2 · Spec</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="2"
+    data-page="arc-h-pipelines-and-sdlc/02-spec"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 2 — Spec" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>02</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>PLAN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>02</span> · <span data-cs-phase-name>Spec</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  The itch becomes a machine contract. A spec names the
+                  invariants — the things that have to be true after the work
+                  lands — so every downstream phase projects out of one source.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"
+                    ><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Skill</strong><code data-cs-phase-skill>…</code></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span
+                  >
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What the spec phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              A spec is a kernel: the smallest statement of what has to be true
+              after the work ships. In CodeSense, every artifact after this one
+              — the architecture, the stories, the tests, the review checklist
+              — is a projection of the spec. If the spec is sharp, the rest
+              writes itself.
+            </p>
+            <p>
+              Mary runs the <code>bmad-spec</code> skill against the idea from
+              phase 1. The skill is interactive; it pushes back when a draft
+              captures a solution instead of an invariant.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO spec" id="worked">
+            <h2>Worked example — DEMO's spec kernel</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — Spec phase" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in spec phase" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml for Spec phase" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml for Spec phase" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — spec phase" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Mary works against your repo in-place; the spec lands in
+                  <code>_bmad-output/&lt;epic&gt;/SPEC.md</code> alongside the
+                  idea doc. You see the diff immediately in the tab.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Same shape, remote workspace. The remote Mary previews her
+                  edits with <code>preview_reverse_sync_worktree</code>, then
+                  publishes them with <code>reverse_sync_worktree</code>. No
+                  parity gap.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — spec" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Run <code>bmad-spec</code> against your most recent idea doc. The
+              skill will walk you through distilling it into a spec kernel.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-spec"}'
+              label="Distill your idea into a spec"
+              confirm="Run bmad-spec in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to spec via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-spec' })</code></pre>
+              <p>
+                See the <a href="../mcp-explorer.html">MCP explorer</a> for the
+                full set of tools this skill chains together.
+              </p>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-2">factory playbook · phase 2</a>
+            &nbsp;·&nbsp; Edge cases &amp; reference →
+            <a href="../schema-browser.html#schema/agent-yaml">agent.yaml schema</a>
+            &nbsp;·&nbsp; Previous: <a href="./01-idea.html">← 01 Idea</a> ·
+            Next: <a href="./03-architecture.html">03 Architecture →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 2 · Spec</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

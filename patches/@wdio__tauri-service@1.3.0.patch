@@ -1,0 +1,110 @@
+diff --git a/dist/cjs/index.js b/dist/cjs/index.js
+index 6b7af77b7d4e8b59ff12771e6cf35bbc92fcea31..87d27b0f35502dcd9fcd62b6cc580f802314bc5c 100644
+--- a/dist/cjs/index.js
++++ b/dist/cjs/index.js
+@@ -636,6 +636,41 @@ function transformPrefixedMessage(prefixedMessage, source, instanceId) {
+  * @param prefixedMessage - Optional pre-formatted message (takes precedence)
+  * @param instanceId - Optional instance ID for multiremote (e.g., 'browserA')
+  */
++// SW-CL-2i: guard the file-log write against a teardown write-after-end race.
++// During shutdown the LogWriter's stream is `.end()`ed (closeLogWriter), but its
++// singleton still reports "initialized" until the async end callback nulls the
++// stream. A late shutdown log line from the app then reaches writer.write() ->
++// stream.write() after end -> the WriteStream emits an unhandled 'error'
++// (ERR_STREAM_WRITE_AFTER_END) that crashes the driver process (exit 2) AFTER the
++// spec has fully passed. This ONLY neutralizes that specific benign teardown
++// case: it skips the write when the underlying stream is already ending/ended/
++// destroyed, and only swallows the ERR_STREAM_WRITE_AFTER_END code. Any other
++// write failure, and all normal in-test logging, are untouched.
++function safeWriterWrite(writer, formattedMessage) {
++    const stream = writer && writer.logStream;
++    if (stream && (stream.writableEnded || stream.writableFinished || stream.destroyed || stream.writable === false)) {
++        // Stream is closing/closed during teardown; drop this late line.
++        return;
++    }
++    if (stream && stream.listenerCount && stream.listenerCount('error') === 0) {
++        // The WriteStream reports write-after-end via an async 'error' event, not a
++        // thrown error. Attach a once-handler that swallows ONLY that code so a
++        // benign teardown race can't become an unhandled 'error' -> process crash.
++        stream.once('error', (err) => {
++            if (!err || err.code !== 'ERR_STREAM_WRITE_AFTER_END') {
++                throw err;
++            }
++        });
++    }
++    try {
++        writer.write(formattedMessage);
++    }
++    catch (err) {
++        if (!err || err.code !== 'ERR_STREAM_WRITE_AFTER_END') {
++            throw err;
++        }
++    }
++}
+ function forwardLog(source, level, message, minLevel, prefixedMessage, instanceId) {
+     if (!nativeCore.shouldLog(level, minLevel)) {
+         return;
+@@ -649,7 +684,7 @@ function forwardLog(source, level, message, minLevel, prefixedMessage, instanceI
+     const isInitialized = isLogWriterInitialized();
+     if (isInitialized) {
+         const writer = getLogWriter();
+-        writer.write(formattedMessage);
++        safeWriterWrite(writer, formattedMessage);
+     }
+     else {
+         // Use cached WDIO logger (normal test runner mode)
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 160a6f513fd6897758a08e00f7b1d4c79d821234..f0e80c8ba298d8cfb4e20e375d7c390502e04ad3 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -632,6 +632,41 @@ function transformPrefixedMessage(prefixedMessage, source, instanceId) {
+  * @param prefixedMessage - Optional pre-formatted message (takes precedence)
+  * @param instanceId - Optional instance ID for multiremote (e.g., 'browserA')
+  */
++// SW-CL-2i: guard the file-log write against a teardown write-after-end race.
++// During shutdown the LogWriter's stream is `.end()`ed (closeLogWriter), but its
++// singleton still reports "initialized" until the async end callback nulls the
++// stream. A late shutdown log line from the app then reaches writer.write() ->
++// stream.write() after end -> the WriteStream emits an unhandled 'error'
++// (ERR_STREAM_WRITE_AFTER_END) that crashes the driver process (exit 2) AFTER the
++// spec has fully passed. This ONLY neutralizes that specific benign teardown
++// case: it skips the write when the underlying stream is already ending/ended/
++// destroyed, and only swallows the ERR_STREAM_WRITE_AFTER_END code. Any other
++// write failure, and all normal in-test logging, are untouched.
++function safeWriterWrite(writer, formattedMessage) {
++    const stream = writer && writer.logStream;
++    if (stream && (stream.writableEnded || stream.writableFinished || stream.destroyed || stream.writable === false)) {
++        // Stream is closing/closed during teardown; drop this late line.
++        return;
++    }
++    if (stream && stream.listenerCount && stream.listenerCount('error') === 0) {
++        // The WriteStream reports write-after-end via an async 'error' event, not a
++        // thrown error. Attach a once-handler that swallows ONLY that code so a
++        // benign teardown race can't become an unhandled 'error' -> process crash.
++        stream.once('error', (err) => {
++            if (!err || err.code !== 'ERR_STREAM_WRITE_AFTER_END') {
++                throw err;
++            }
++        });
++    }
++    try {
++        writer.write(formattedMessage);
++    }
++    catch (err) {
++        if (!err || err.code !== 'ERR_STREAM_WRITE_AFTER_END') {
++            throw err;
++        }
++    }
++}
+ function forwardLog(source, level, message, minLevel, prefixedMessage, instanceId) {
+     if (!shouldLog(level, minLevel)) {
+         return;
+@@ -645,7 +680,7 @@ function forwardLog(source, level, message, minLevel, prefixedMessage, instanceI
+     const isInitialized = isLogWriterInitialized();
+     if (isInitialized) {
+         const writer = getLogWriter();
+-        writer.write(formattedMessage);
++        safeWriterWrite(writer, formattedMessage);
+     }
+     else {
+         // Use cached WDIO logger (normal test runner mode)

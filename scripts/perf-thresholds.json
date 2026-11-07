@@ -1,0 +1,23 @@
+{
+  "_comment": "Per-benchmark-group regression thresholds for the QH-3 perf gate, as a fractional slowdown (0.10 = +10% allowed before REGRESSION). Matched by the group prefix of a criterion id (the part before '/'). Start generous — a shared hosted macOS runner swings widely — and tighten a value only with three clean same-runner runs of evidence. Never drop below ~0.03: layout/frequency noise guarantees false positives under it.",
+  "default": {
+    "threshold": 0.1,
+    "rationale": "Starting bar for any unlisted bench. 10% is above hosted-runner wall-clock noise; the INCONCLUSIVE band catches the rest."
+  },
+  "sync_wave_reconcile": {
+    "threshold": 0.1,
+    "rationale": "Reconcile fan-out is O(repos); a real complexity regression clears 10% at the high-scale size."
+  },
+  "pipeline_scan": {
+    "threshold": 0.1,
+    "rationale": "Per-save nav scan; 10% keeps sub-debounce constant-factor jitter out while catching at-scale walk/parse regressions."
+  },
+  "pty_spawn_setup": {
+    "threshold": 0.15,
+    "rationale": "Setup-cost only (fork/exec excluded). The timed region includes the ZDOTDIR RC-wrapper fs writes, whose syscall jitter dominates a small assembly — hence a wider band than the pure-CPU paths."
+  },
+  "sessions_read": {
+    "threshold": 0.1,
+    "rationale": "Cached 50-session projection read at 5,000 inbox messages; fail confident regressions above 10% using the same-runner baseline."
+  }
+}

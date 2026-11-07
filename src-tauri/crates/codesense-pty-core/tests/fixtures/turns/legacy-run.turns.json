@@ -1,0 +1,1 @@
+{"session_id":"s-legacy","turns":[{"role":"assistant","text":"Looking.","tool_calls":[{"name":"Bash","input":"ls","result":"nope","is_error":true},{"name":"Read","input":"{\"path\":\"a\"}","result":"ok"}],"usage":{"input_tokens":12,"output_tokens":34}},{"role":"assistant","text":"Done."}]}

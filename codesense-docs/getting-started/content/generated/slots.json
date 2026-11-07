@@ -1,0 +1,176 @@
+{
+  "count": 3,
+  "slots": [
+    {
+      "id": "right-pane",
+      "region": "right-pane",
+      "multiplicity": "many",
+      "presentations": [
+        "docked",
+        "overlay"
+      ],
+      "grantCeiling": [
+        "sessions:read",
+        "sessions:send",
+        "sessions:stop",
+        "launch",
+        "inbox:read:own",
+        "inbox:read:team",
+        "inbox:read:all-teams",
+        "inbox:write",
+        "records:read:own",
+        "records:write:own",
+        "records:read:team",
+        "records:write:team",
+        "context:read",
+        "context:write",
+        "files:read",
+        "files:write",
+        "routines:read",
+        "routines:run",
+        "routines:manage",
+        "repo:read",
+        "repo:write",
+        "machines:read",
+        "machines:manage",
+        "accounts:manage",
+        "dashboards:install:private",
+        "dashboards:publish:team",
+        "terminal:view",
+        "terminal:control",
+        "commands:run",
+        "admin"
+      ],
+      "nativeDefault": {
+        "notes": {
+          "panelId": "scratch",
+          "label": "Notes",
+          "entry": "panel"
+        }
+      },
+      "hostOwned": [
+        "section chrome",
+        "tab strip",
+        "drag",
+        "resize",
+        "maximize button",
+        "badge position"
+      ],
+      "teamBinding": "fixed",
+      "narrowBelowPx": 300
+    },
+    {
+      "id": "file-nav",
+      "region": "file-nav",
+      "multiplicity": "one",
+      "presentations": [
+        "docked"
+      ],
+      "grantCeiling": [
+        "sessions:read",
+        "sessions:send",
+        "sessions:stop",
+        "launch",
+        "inbox:read:own",
+        "inbox:read:team",
+        "inbox:read:all-teams",
+        "inbox:write",
+        "records:read:own",
+        "records:write:own",
+        "records:read:team",
+        "records:write:team",
+        "context:read",
+        "context:write",
+        "files:read",
+        "files:write",
+        "routines:read",
+        "routines:run",
+        "routines:manage",
+        "repo:read",
+        "repo:write",
+        "machines:read",
+        "machines:manage",
+        "accounts:manage",
+        "dashboards:install:private",
+        "dashboards:publish:team",
+        "terminal:view",
+        "terminal:control",
+        "commands:run",
+        "admin"
+      ],
+      "nativeDefault": {
+        "files": {
+          "label": "Files",
+          "entry": "component"
+        }
+      },
+      "hostOwned": [
+        "width",
+        "collapse",
+        "resize"
+      ],
+      "teamBinding": "follows-context",
+      "narrowBelowPx": 260
+    },
+    {
+      "id": "dock",
+      "region": "dock",
+      "multiplicity": "one",
+      "presentations": [
+        "docked",
+        "overlay"
+      ],
+      "grantCeiling": [
+        "sessions:read",
+        "sessions:send",
+        "sessions:stop",
+        "launch",
+        "inbox:read:own",
+        "inbox:read:team",
+        "inbox:write",
+        "records:read:team",
+        "records:write:team",
+        "context:read",
+        "context:write",
+        "files:read",
+        "files:write",
+        "routines:read",
+        "routines:run",
+        "routines:manage",
+        "repo:read",
+        "repo:write",
+        "machines:read",
+        "dashboards:publish:team",
+        "terminal:view",
+        "commands:run"
+      ],
+      "nativeDefault": {
+        "agent-list": {
+          "label": "Agents list",
+          "entry": "component"
+        }
+      },
+      "hostOwned": [
+        "mount",
+        "width",
+        "fold",
+        "resize",
+        "menus",
+        "popovers",
+        "quick view",
+        "stop dialog"
+      ],
+      "teamBinding": "follows-context",
+      "narrowBelowPx": 260
+    }
+  ],
+  "sources": {
+    "src/features/shell/right-pane/right-pane-layout.ts": "9abfb5c7ff615ef7a28ff2e775180ba164532e169f9bce6107370edd694c37ed",
+    "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
+    "src-tauri/src/verbs/registry.generated.json": "5dbd84256de4d213a93eb8afd3e955063a24d4b13d33316b27b9b60491f6f3a9",
+    "src-tauri/src/verbs/registry.rs": "3e6945361b475ab01ebda7df4e029dacc86a4a51c0c56a2141249a5b4ab81317",
+    "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
+    "src-tauri/src/records/schema.rs": "24edc3966808bf25b3744c733aeb3ba731aba84bb5bf802fb8b9e491ab0d06c7",
+    "src/features/shell/slots/slot-registry.ts": "04d43882738717691cbdf28c9365b84f0abb07cb72383c36f2babac21807378d"
+  }
+}

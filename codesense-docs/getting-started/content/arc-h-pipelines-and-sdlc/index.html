@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Arc H · Pipelines + the full SDLC</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-page="arc-h-pipelines-and-sdlc/index"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc H overview — the full CodeSense SDLC" id="hero">
+        <div style="margin-bottom: 10px">
+          <span class="cs-docs-chip" data-arc="H">Arc H</span>
+          <span class="cs-docs-chip">14 phases</span>
+          <span class="cs-docs-chip">pipelines + SDLC</span>
+        </div>
+        <h1 style="margin: 0 0 10px; font-size: 32px; letter-spacing: -0.025em">
+          From the itch to the ship
+        </h1>
+        <p style="margin: 0 0 18px; max-width: 68ch; color: var(--cs-muted-fg)">
+          This arc shows one way to run the whole software development life
+          cycle with agents in CodeSense: an idea becomes a spec, becomes an
+          architecture, becomes stories, becomes pull requests, becomes a release.
+          Each phase is one agent, one skill, one inbox role, one trigger, one
+          dashboard. The agents do the work; CodeSense gives them the files,
+          worktrees, inbox and tools. This arc walks every phase with the same
+          seeded example so you can lift the shape into your own repo.
+        </p>
+
+        <!-- Hero stepper: all 14 phases in order, grouped by colour. The sibling
+             factory-playbook.html dashboard shows live state; this arc explains
+             the model. -->
+        <nav aria-label="SDLC phases" class="cs-h-stepper" data-cs-arc-h-stepper>
+          <!-- rendered by _phase-page.js from ../generated/phases.yml -->
+        </nav>
+      </section>
+
+      <section class="cs-h-section" data-search="What this arc covers" id="what">
+        <h2>What this arc covers</h2>
+        <p>
+          There are <strong>14 phases</strong> in the CodeSense SDLC. The first
+          seven are planning and design; phases 8–12 are build + verify; 13 and
+          14 are ship and loop. The agents are named: Mary analyses, Winston
+          designs, Sally draws, John plans, Murat tests, Amelia builds, Resolver
+          decides. Every page in this arc tells one phase's story with a worked
+          example from the seeded <code>DEMO</code> epic.
+        </p>
+        <p>
+          The skills named here (<code>bmad-create-epics-and-stories</code> and
+          the rest) come from BMAD, which you install in your own repo;
+          CodeSense doesn't ship them. The phases are a pattern, not a gate:
+          a story's <code>status:</code> is a plain field, nothing in CodeSense
+          blocks a move between statuses, and each team sets its own statuses
+          in <strong>Settings › Phases</strong>.
+        </p>
+        <p>
+          You should read this arc end to end once, then come back when you need
+          the detail for a specific phase. The live
+          <a href="../factory-playbook.html">factory playbook dashboard</a>
+          shows the state of your own repo through the same lens.
+        </p>
+      </section>
+
+      <section class="cs-h-section" data-search="How to use this arc" id="how">
+        <h2>How to use this arc</h2>
+        <div class="cs-h-grid">
+          <div class="cs-docs-card">
+            <h3 class="cs-docs-card__title">Read it top to bottom</h3>
+            <p>
+              Start with <a href="./01-idea.html">phase 1 — idea</a> and click
+              through. Each page is a 5-minute read; the whole arc is a lunchtime.
+            </p>
+          </div>
+          <div class="cs-docs-card">
+            <h3 class="cs-docs-card__title">Jump to a phase you own</h3>
+            <p>
+              A PM looking for sprint-planning mechanics should start at
+              <a href="./06-sprint-plan.html">phase 6</a>; a builder should start
+              at <a href="./08-build.html">phase 8</a> and loop back for context.
+            </p>
+          </div>
+          <div class="cs-docs-card">
+            <h3 class="cs-docs-card__title">Copy the agent + routine snippets</h3>
+            <p>
+              Every phase shows a starting <code>agent.yaml</code> and, where
+              the phase runs on a trigger, a <code>routine.yml</code>. Check
+              them against the schemas below before you save them; an invalid
+              <code>agent.yaml</code> refuses to load.
+            </p>
+          </div>
+          <div class="cs-docs-card">
+            <h3 class="cs-docs-card__title">Watch the dashboard breathe</h3>
+            <p>
+              Keep <a href="../factory-playbook.html">factory playbook</a> open in
+              a split pane while you read; the content explains the model, the
+              dashboard shows the state.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="cs-h-section" data-search="The seeded worked example" id="worked-example">
+        <h2>One worked example, all the way through</h2>
+        <p>
+          Every phase page uses the same seeded <strong>DEMO</strong> epic as
+          its example: "one-click kill from the DAG please." It's a 5-story epic
+          Mary wrote in response to a human's inbox note, Winston designed, John
+          sliced, Amelia built in parallel worktrees, Winston reviewed, Murat
+          QA'd, Amelia shipped. The epic lives at
+          <code>examples/sample-epic/</code> in this very repo — read the stories
+          now if you want to see what each phase's output looked like end-to-end.
+        </p>
+        <p>
+          <a class="cs-docs-btn cs-docs-btn--ghost" href="../examples/sample-epic/README.md"
+            >Open the seeded epic ↗</a
+          >
+          &nbsp;
+          <a class="cs-docs-btn cs-docs-btn--ghost" href="../factory-playbook.html"
+            >Open factory playbook ↗</a
+          >
+        </p>
+      </section>
+
+      <section class="cs-h-section" data-search="Where everything lives" id="where">
+        <h2>Where everything lives in this arc</h2>
+        <ol>
+          <li>
+            <strong>Plan</strong> — <a href="./01-idea.html">01 idea</a> ·
+            <a href="./02-spec.html">02 spec</a> ·
+            <a href="./05-stories.html">05 stories</a> ·
+            <a href="./06-sprint-plan.html">06 sprint plan</a>
+          </li>
+          <li>
+            <strong>Design</strong> — <a href="./03-architecture.html">03 architecture</a> ·
+            <a href="./04-ux-design.html">04 ux design</a> ·
+            <a href="./07-atdd.html">07 ATDD (optional)</a>
+          </li>
+          <li>
+            <strong>Build</strong> — <a href="./08-build.html">08 build (parallel)</a> ·
+            <a href="./09-decisions.html">09 decisions</a>
+          </li>
+          <li>
+            <strong>Verify</strong> — <a href="./10-review.html">10 review</a> ·
+            <a href="./11-qa.html">11 QA</a> · <a href="./12-retro.html">12 retro</a>
+          </li>
+          <li>
+            <strong>Ship</strong> — <a href="./13-ship.html">13 ship</a>
+          </li>
+          <li>
+            <strong>Loop</strong> — <a href="./14-loop.html">14 loop</a>
+          </li>
+          <li>
+            <strong>Tool reference</strong> —
+            <a href="./weft-coordination.html">Weft coordination tools</a> ·
+            <a href="./runs-and-stories.html">Runs and stories</a>
+          </li>
+        </ol>
+      </section>
+
+      <p style="margin-top: 32px; color: var(--cs-muted-fg)">
+        Edge cases &amp; reference →
+        <a href="../factory-playbook.html">factory playbook dashboard</a> ·
+        <a href="../schema-browser.html#schema/agent-yaml"><code>agent.yaml</code> schema</a> ·
+        <a href="../schema-browser.html#schema/routine-yml"><code>routine.yml</code> schema</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Pipelines + the full SDLC</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

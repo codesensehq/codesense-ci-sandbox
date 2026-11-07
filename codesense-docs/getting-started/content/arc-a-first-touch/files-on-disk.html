@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Files on disk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .cs-docs-arcA {
+        max-width: 960px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 68ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA p {
+        line-height: 1.55;
+      }
+
+      .cs-docs-arcA__hero {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        padding: var(--cs-docs-space-5);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      /* The tree diagram is a plain <pre> styled to match the dashboard tokens.
+         Reduced-motion safe (static). Comment markers link lines to prose
+         sections below via color accents. */
+      .cs-docs-arcA__tree {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre;
+        overflow-x: auto;
+        background: var(--cs-inset);
+        color: var(--cs-fg);
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        margin: 0;
+      }
+      .cs-docs-arcA__tree .tok-c {
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-arcA__tree .tok-r {
+        color: var(--cs-accent);
+      }
+      .cs-docs-arcA__tree .tok-u {
+        color: var(--cs-success);
+      }
+      .cs-docs-arcA__tree .tok-w {
+        color: var(--cs-warning);
+      }
+
+      /* Row table for path → owner → purpose. */
+      .cs-docs-arcA__paths {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0 0;
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__paths th,
+      .cs-docs-arcA__paths td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 60%, transparent);
+        vertical-align: top;
+      }
+      .cs-docs-arcA__paths th {
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .cs-docs-arcA__paths code {
+        font-size: 12.5px;
+      }
+
+      details.cs-docs-arcA__mcp {
+        margin-top: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+      .cs-docs-arcA__legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 10px;
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-arcA__legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cs-docs-arcA__legend .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/files-on-disk">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Files on disk CodeSense tree" id="hero">
+        <h1>Files on disk</h1>
+        <p class="lede">
+          CodeSense owns two spots on your Mac: <code>~/.codesense/</code> for its own runtime
+          state and <code>~/CodeSense/</code> for the editable context repos you create. Your
+          source repos stay wherever you clone them. Here's the full tree, with every path
+          labelled by who writes it and what for.
+        </p>
+
+        <div class="cs-docs-arcA__hero">
+          <figure>
+            <pre class="cs-docs-arcA__tree" aria-label="CodeSense on-disk layout"><code><span class="tok-c"># ─── CodeSense's own home (runtime state, never a user repo) ────────</span>
+<span class="tok-r">~/.codesense/</span>
+├── <span class="tok-r">bin/</span>                       <span class="tok-c"># managed binaries (git, bridge, …)</span>
+├── <span class="tok-r">cache/</span>                     <span class="tok-c"># warm-start caches (frontmatter-cache.json)</span>
+├── <span class="tok-r">runtime/</span>                   <span class="tok-c"># heartbeat.json + liveness signal</span>
+├── <span class="tok-r">mcp.sock</span>                   <span class="tok-c"># MCP socket (0700)</span>
+├── <span class="tok-r">http.port</span>                  <span class="tok-c"># http sidecar port lockfile</span>
+├── <span class="tok-r">servers.json</span>               <span class="tok-c"># local MCP server registry</span>
+└── <span class="tok-r">users/</span>                     <span class="tok-c"># one folder per local profile</span>
+    └── <span class="tok-r">&lt;profile_id&gt;/</span>
+        ├── <span class="tok-r">codesense-docs/</span>    <span class="tok-c"># the shipped read-only docs org</span>
+        │   └── <span class="tok-r">getting-started/content/…</span>
+        ├── <span class="tok-r">org_bindings.yml</span>   <span class="tok-c"># this Mac's bound orgs → folder paths</span>
+        ├── <span class="tok-r">orgs/</span>              <span class="tok-c"># context repos CodeSense manages here</span>
+        │   └── <span class="tok-r">&lt;org&gt;/</span>
+        │       └── <span class="tok-r">&lt;team&gt;/content/…</span>
+        └── <span class="tok-r">sample-source-repo/</span><span class="tok-c"># bundled example</span>
+
+<span class="tok-c"># ─── Where your editable context repos live (you pick the location) ─</span>
+<span class="tok-u">~/CodeSense/</span>                   <span class="tok-c"># default parent for Create… (editable)</span>
+└── <span class="tok-u">my-codesense/</span>
+    ├── <span class="tok-u">org.yml</span>                <span class="tok-c"># the org: its id and name</span>
+    ├── <span class="tok-u">people.yml</span>             <span class="tok-c"># who is in it</span>
+    ├── <span class="tok-u">teams.yml</span>              <span class="tok-c"># its teams and their source repos</span>
+    ├── <span class="tok-u">&lt;team&gt;/content/…</span>      <span class="tok-c"># each team's files, once you add a team</span>
+    └── <span class="tok-u">.git/</span>                  <span class="tok-c"># you own this — push wherever you like</span>
+
+<span class="tok-c"># ─── Your source repos stay where you cloned them ───────────────────</span>
+<span class="tok-w">&lt;anywhere you cloned&gt;/your-repo/</span>     <span class="tok-c"># CodeSense never commits in these</span>
+<span class="tok-w">&lt;anywhere you cloned&gt;/your-repo-wt/&lt;slug&gt;/</span> <span class="tok-c"># story worktrees, beside the clone</span></code></pre>
+            <figcaption>Two CodeSense-owned roots · one default home for your repos</figcaption>
+            <div class="cs-docs-arcA__legend" aria-hidden="true">
+              <span><span class="dot" style="background: var(--cs-accent)"></span>CodeSense writes</span>
+              <span><span class="dot" style="background: var(--cs-success)"></span>You write (editable repo)</span>
+              <span><span class="dot" style="background: var(--cs-warning)"></span>Your source trees (untouched)</span>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <!-- =============== What & why =============== -->
+      <section data-search="Why CodeSense splits home and your repos" id="why">
+        <p>
+          The split is deliberate: <code>~/.codesense/</code> is CodeSense's — delete it and
+          the app rebuilds it from scratch on next launch. <code>~/CodeSense/</code> and
+          anywhere else you choose to Connect from is yours — delete it and you lose your
+          work. CodeSense never writes into one of your source repos, and it never puts a
+          user-facing file under <code>~/.codesense/</code> except these docs.
+        </p>
+      </section>
+
+      <!-- =============== Reference tables =============== -->
+      <section data-search="Reference table of CodeSense paths" id="paths">
+        <h2>Path reference</h2>
+
+        <h3>Under <code>~/.codesense/</code> (CodeSense owns these)</h3>
+        <table class="cs-docs-arcA__paths">
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>What it is</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>~/.codesense/bin/</code></td>
+              <td>Managed binaries CodeSense drops in a known spot — git, the
+                codesense-bridge, occasional helpers. Nothing of yours ever lands here.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/cache/frontmatter-cache.json</code></td>
+              <td>Warm-start cache for the viewer's frontmatter index. Safe to delete; CodeSense
+                regenerates it on the next watch pass.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/runtime/heartbeat.json</code></td>
+              <td>Liveness file refreshed on an interval. Other processes read it to tell if
+                CodeSense is up.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/mcp.sock</code></td>
+              <td>The Unix socket agents connect to for MCP. 0700 so only your user can speak.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/http.port</code></td>
+              <td>Chosen port for the local HTTP sidecar. Not a secret, just a lockfile.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/servers.json</code></td>
+              <td>Registry of local MCP servers CodeSense exposes.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/users/&lt;id&gt;/codesense-docs/</code></td>
+              <td>The read-only docs org you're reading right now, placed by the installer.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/users/&lt;id&gt;/org_bindings.yml</code></td>
+              <td>This Mac's bindings: which org names map to which folder paths.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/users/&lt;id&gt;/context-attachments.yml</code></td>
+              <td>Where each context repo you connected lives. The repos themselves stay in the
+                folders you cloned or created them in; CodeSense doesn't clone or move them.</td>
+            </tr>
+            <tr>
+              <td><code>~/.codesense/users/&lt;id&gt;/sample-source-repo/</code></td>
+              <td>The committed sample source tree the doc examples point at.
+                CodeSense places it at launch, next to these docs.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Under your home (your editable context repos)</h3>
+        <table class="cs-docs-arcA__paths">
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>What it is</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>~/CodeSense/&lt;org&gt;/</code></td>
+              <td>The default parent folder the Create sheet suggests. You can point it
+                anywhere — this is just the macOS folder picker's starting dir.</td>
+            </tr>
+            <tr>
+              <td><code>~/CodeSense/&lt;org&gt;/org.yml</code></td>
+              <td>Marks the folder as a CodeSense context repo and holds its id and name. Next to
+                it, <code>people.yml</code> and <code>teams.yml</code>. See the
+                <a href="../schema-browser.html#schema/org-yml">org.yml schema</a>.</td>
+            </tr>
+            <tr>
+              <td><code>~/CodeSense/&lt;org&gt;/&lt;team&gt;/content/</code></td>
+              <td>A team's files: stories, notes, dashboards, and its agents and routines under
+                <code>config/</code>.</td>
+            </tr>
+            <tr>
+              <td><code>~/CodeSense/&lt;org&gt;/.git/</code></td>
+              <td>You own this. Push to any remote you like; CodeSense never commits or
+                pushes — you or an agent does.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Macos picker vs auto-created defaults</h3>
+        <p>
+          When you <strong>Create</strong>, the sheet prefills
+          <code>~/CodeSense/&lt;name&gt;</code> but you can navigate to any folder in the
+          picker. When you <strong>Connect</strong>, you pick an existing folder — the parent
+          doesn't matter, only that it holds an <code>org.yml</code>. Either way, CodeSense
+          records the folder in <code>context-attachments.yml</code> so the next launch finds it.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now reveal codesense home" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge which folder this page was loaded from — the docs copy under
+          <code>~/.codesense/users/&lt;id&gt;/codesense-docs/</code>. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Show this page's folder"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to inspect paths via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Agents don't hand-roll these paths; <code>describe_setup</code> reports each
+            org's folder and each source repo's clone:
+          </p>
+          <pre><code>describe_setup {}
+// → orgs[].orgRoot, orgs[].teams[].sourceRepos[].localPath</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Rust-side constants live in <code>src-tauri/src/context_repo/path.rs</code>
+            (<code>USERS_DIR</code>, <code>ORGS_DIR</code>, …).
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml</a>
+        ·
+        <a href="../schema-browser.html#schema/worktree-yaml">worktree.yaml</a>
+        ·
+        <a href="../primitives-explorer.html#invoke/context">context()</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · Files on disk</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1834 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * The inbox lenses (Threads, Mailspool, Wire), and the per-agent rail.
+ * Colours come only from the `--ibx-*` tokens in inbox-tokens.css, so light and
+ * dark themes both work. Mono type is reserved for handles, times and terminal
+ * text; everything else is the app's sans.
+ */
+
+.ibx {
+  font: 13px/1.45 var(--ibx-sans);
+  color: var(--ibx-fg);
+  -webkit-font-smoothing: antialiased;
+}
+.ibx *,
+.ibx *::before,
+.ibx *::after {
+  box-sizing: border-box;
+}
+:where(.ibx button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+:where(.ibx) :focus-visible {
+  outline: 2px solid var(--ibx-accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.ibx-ico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.ibx-ico.sm {
+  width: 13px;
+  height: 13px;
+}
+.ibx-mono {
+  font-family: var(--ibx-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ibx kbd {
+  font: 500 10.5px var(--ibx-mono);
+  color: var(--ibx-fg2);
+  background: var(--ibx-raise);
+  border: 1px solid var(--ibx-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 15px;
+  display: inline-block;
+}
+.ibx code {
+  font: 11.5px var(--ibx-mono);
+  background: var(--ibx-raise);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ibx *,
+  .ibx *::before,
+  .ibx *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- status dot ---------- */
+.ibx-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--ibx-mfg);
+}
+.ibx-dot.running {
+  background: var(--ibx-green);
+}
+.ibx-dot.idle {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ibx-green);
+}
+.ibx-dot.needs {
+  background: var(--ibx-amber);
+  animation: ibx-pulse 1.8s var(--ibx-ease) infinite;
+}
+.ibx-dot.exited {
+  background: var(--ibx-disabled);
+}
+@keyframes ibx-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ibx-amber) 50%, transparent);
+  }
+  60% {
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+/* ---------- caption toggle ---------- */
+.ibx-ibtn {
+  position: relative;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 6px;
+  color: inherit;
+  opacity: 0.85;
+  font: 12px var(--ibx-sans);
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+}
+.ibx-ibtn:hover {
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+  opacity: 1;
+}
+.ibx-ibtn[aria-pressed="true"] {
+  background: var(--ibx-accent-wash);
+  color: var(--ibx-accent);
+  border-color: var(--ibx-accent-line);
+  opacity: 1;
+}
+.ibx-ibtn:focus-visible {
+  outline: 2px solid var(--ibx-accent);
+  outline-offset: 1px;
+}
+.ibx-badge {
+  font: 600 10px var(--ibx-mono);
+  background: var(--ibx-accent);
+  color: var(--ibx-accent-ink);
+  border-radius: 8px;
+  padding: 0 5px;
+  line-height: 15px;
+}
+
+/* ---------- docked split ---------- */
+.ibx-split {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.ibx-split-term {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.ibx-splitter {
+  width: 6px;
+  flex: none;
+  cursor: col-resize;
+  position: relative;
+  background: var(--ibx-bg);
+  touch-action: none;
+  user-select: none;
+}
+.ibx-splitter::after {
+  content: "";
+  position: absolute;
+  inset: 0 2px;
+  background: var(--ibx-border);
+  transition: background 0.15s;
+}
+.ibx-splitter:hover::after,
+.ibx-splitter[data-dragging="true"]::after {
+  background: var(--ibx-accent);
+}
+.ibx-splitter:focus-visible {
+  outline: 2px solid var(--ibx-accent);
+  outline-offset: -2px;
+}
+.ibx-rail {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--ibx-bg);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---------- rail header ---------- */
+.ibx-rh {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--ibx-border);
+  display: grid;
+  gap: 8px;
+}
+.ibx-rh-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ibx-rh-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ibx-mfg);
+}
+.ibx-rh-update {
+  justify-self: start;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--primary);
+}
+.ibx-rh-update:hover {
+  text-decoration: underline;
+}
+.ibx-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.ibx-scope .t {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 40px;
+}
+.ibx-scope .h {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.ibx-scope .h {
+  font: 11.5px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-lens {
+  display: flex;
+  flex: none;
+  background: var(--ibx-card);
+  border: 1px solid var(--ibx-border);
+  border-radius: 7px;
+  padding: 2px;
+}
+.ibx-lens button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: var(--ibx-mfg);
+  font-size: 12px;
+}
+.ibx-lens button:hover {
+  color: var(--ibx-fg);
+}
+.ibx-lens button[aria-pressed="true"] {
+  background: var(--ibx-raise);
+  color: var(--ibx-fg);
+  box-shadow: 0 1px 2px var(--ibx-shadow);
+}
+.ibx-iconbtn {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--ibx-mfg);
+}
+.ibx-iconbtn:hover {
+  background: var(--ibx-muted);
+  color: var(--ibx-fg);
+}
+.ibx-tray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ibx-mfg);
+}
+.ibx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  border: 1px solid var(--ibx-border);
+  background: var(--ibx-card);
+  color: var(--ibx-fg2);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.ibx .ibx-chip {
+  border: 1px solid var(--ibx-border);
+  background: var(--ibx-card);
+}
+.ibx .ibx-chip.role {
+  border-color: var(--ibx-role-line);
+  background: var(--ibx-role-wash);
+  color: var(--ibx-role-ink);
+}
+.ibx-chip.role .n {
+  font: 600 10px var(--ibx-mono);
+  background: var(--ibx-role);
+  color: var(--ibx-role-on);
+  border-radius: 7px;
+  padding: 0 4px;
+  line-height: 14px;
+}
+.ibx .ibx-chip.ghost {
+  border-style: dashed;
+  background: transparent;
+  color: var(--ibx-mfg);
+}
+.ibx-chip:hover {
+  color: var(--ibx-fg);
+}
+.ibx-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.ibx-source {
+  font: 10.5px var(--ibx-mono);
+  color: var(--ibx-amber);
+  border: 1px dashed color-mix(in srgb, var(--ibx-amber) 50%, transparent);
+  border-radius: 4px;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+/* ---------- avatars ---------- */
+.ibx-av {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font: 600 10.5px var(--ibx-sans);
+  flex: none;
+  position: relative;
+  color: #0d1117;
+}
+.ibx-av.sm {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 9px;
+}
+.ibx-av .st {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  border: 2px solid var(--ibx-bg);
+  width: 10px;
+  height: 10px;
+}
+.ibx-av .st.needs {
+  animation: none;
+}
+.ibx-av.role {
+  background: var(--ibx-role-wash);
+  color: var(--ibx-role);
+  box-shadow: inset 0 0 0 1px var(--ibx-role-line);
+}
+.ibx-av.human {
+  background: var(--ibx-fg);
+  color: var(--ibx-bg);
+}
+
+/* ---------- THREADS lens ---------- */
+.ibx-th-list:focus {
+  /* Focused only to keep the keyboard's place after Back; the rows show focus. */
+  outline: none;
+}
+.ibx-th-list {
+  width: 210px;
+  flex: none;
+  border-right: 1px solid var(--ibx-border);
+  overflow: auto;
+  padding: 6px 0;
+}
+.ibx-lane {
+  padding: 10px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ibx-mfg);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ibx-lane.role {
+  color: var(--ibx-role-ink);
+}
+.ibx-lane .c {
+  font: 500 10.5px var(--ibx-mono);
+  color: var(--ibx-mfg);
+}
+.ibx-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 9px;
+  padding: 8px 10px 8px 12px;
+  margin: 0 6px;
+  border-radius: 8px;
+  text-align: left;
+  width: calc(100% - 12px);
+  cursor: pointer;
+}
+.ibx-row:hover {
+  background: var(--ibx-card);
+}
+.ibx-row[aria-current="true"] {
+  background: var(--ibx-muted);
+  box-shadow: inset 0 0 0 1px var(--ibx-border);
+}
+.ibx-row .l1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ibx-row .nm {
+  font-weight: 600;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-row:not(.unread) .nm {
+  font-weight: 500;
+}
+.ibx-row .nm.role {
+  color: var(--ibx-role-ink);
+}
+.ibx-row .nm .x {
+  color: var(--ibx-mfg);
+  font-weight: 400;
+}
+.ibx-row .tm {
+  margin-left: auto;
+  font: 11px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  flex: none;
+}
+.ibx-row .pv {
+  color: var(--ibx-mfg);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.ibx-row.unread .pv {
+  color: var(--ibx-fg2);
+}
+.ibx-row.unread::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: var(--ibx-accent);
+}
+.ibx-hov {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  display: flex;
+  gap: 2px;
+  background: var(--ibx-raise);
+  border: 1px solid var(--ibx-border);
+  border-radius: 7px;
+  padding: 2px;
+  opacity: 0;
+  transform: translateY(calc(-50% - 2px));
+  transition:
+    opacity 0.15s,
+    transform 0.2s var(--ibx-ease);
+  pointer-events: none;
+  box-shadow: 0 4px 12px var(--ibx-shadow);
+}
+.ibx-row:hover .ibx-hov,
+.ibx-row:focus-within .ibx-hov,
+.ibx-lrow:hover .ibx-hov,
+.ibx-lrow:focus-within .ibx-hov,
+.ibx-lrow.sel .ibx-hov {
+  opacity: 1;
+  transform: translateY(-50%);
+  pointer-events: auto;
+}
+.ibx-hov button {
+  width: 24px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  color: var(--ibx-fg2);
+}
+.ibx-hov button:hover {
+  background: var(--ibx-muted);
+  color: var(--ibx-fg);
+}
+.ibx-hov button[aria-disabled="true"] {
+  color: var(--ibx-disabled);
+  cursor: not-allowed;
+}
+.ibx-hov button.go:not([aria-disabled="true"]) {
+  color: var(--ibx-accent);
+}
+
+.ibx-th-pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ibx-th-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ibx-hair);
+}
+.ibx-th-head > div {
+  min-width: 0;
+}
+.ibx-th-head .nm {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-th-head .sub {
+  font-size: 11.5px;
+  color: var(--ibx-mfg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-sp {
+  flex: 1;
+}
+.ibx-gobtn {
+  flex: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 6px;
+  color: var(--ibx-fg2);
+  font-size: 12px;
+}
+.ibx .ibx-gobtn {
+  border: 1px solid var(--ibx-border);
+  background: var(--ibx-card);
+}
+.ibx .ibx-gobtn:hover:not([aria-disabled="true"]) {
+  border-color: var(--ibx-accent);
+  color: var(--ibx-accent);
+}
+.ibx-gobtn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ibx-msgs {
+  flex: 1;
+  overflow: auto;
+  /* Kept in place by useStickToBottom, the same in every engine (WebKit has no anchoring). */
+  overflow-anchor: none;
+  padding: 14px 14px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ibx-day {
+  align-self: center;
+  font: 11px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  padding: 2px 0;
+}
+.ibx-m {
+  max-width: 88%;
+  display: grid;
+  gap: 4px;
+}
+.ibx-m .meta {
+  font-size: 11px;
+  color: var(--ibx-mfg);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ibx-m .bub {
+  padding: 8px 11px;
+  border-radius: 12px;
+  background: var(--ibx-card);
+  border: 1px solid var(--ibx-hair);
+  overflow-wrap: anywhere;
+  font-size: 12.8px;
+  line-height: 1.5;
+  min-width: 0;
+}
+.ibx-m .bub p,
+.ibx-lx .tx p,
+.ibx-wdetail .tx p {
+  margin: 0;
+}
+.ibx-m .bub p + p,
+.ibx-lx .tx p + p,
+.ibx-wdetail .tx p + p {
+  margin-top: 0.7em;
+}
+.ibx-m .bub strong,
+.ibx-lx .tx strong,
+.ibx-wdetail .tx strong {
+  color: var(--ibx-fg);
+  font-weight: 600;
+}
+.ibx-m.in {
+  align-self: flex-start;
+}
+.ibx-m.in .bub {
+  border-top-left-radius: 4px;
+}
+.ibx-m.out {
+  align-self: flex-end;
+}
+.ibx-m.out .meta {
+  justify-content: flex-end;
+}
+.ibx-m.out .bub {
+  background: var(--ibx-out-bg);
+  border-color: var(--ibx-out-line);
+  border-top-right-radius: 4px;
+}
+.ibx-m.term .bub {
+  background: var(--ibx-term);
+  border: 1px dashed var(--ibx-term-line);
+  font: 12px/1.55 var(--ibx-mono);
+  color: var(--ibx-term-fg);
+  white-space: pre-wrap;
+}
+.ibx-m.term .bub::before {
+  content: "› ";
+  color: var(--ibx-prompt);
+}
+.ibx-via {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 10.5px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  border: 1px dashed var(--ibx-term-line);
+  border-radius: 4px;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+.ibx-via.queued {
+  border-color: var(--ibx-role-line);
+  color: var(--ibx-role-ink);
+}
+.ibx-via.claimed {
+  border-color: color-mix(in srgb, var(--ibx-green) 50%, transparent);
+  color: var(--ibx-green);
+}
+.ibx-mtag {
+  flex: none;
+  font: 500 9.5px var(--ibx-mono);
+  color: var(--ibx-mtag);
+  border: 1px solid color-mix(in srgb, var(--ibx-mtag) 35%, transparent);
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+.ibx-rto {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--ibx-mfg);
+  flex-wrap: wrap;
+}
+.ibx-mgrp {
+  padding: 8px 14px 2px;
+  font: 500 10.5px var(--ibx-mono);
+  color: var(--ibx-mtag);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ibx-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--ibx-mfg);
+  max-width: 260px;
+  font-size: 12.5px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+.ibx-empty strong {
+  color: var(--ibx-fg);
+  font-size: 13px;
+}
+.ibx-empty .ibx-err {
+  font: 11.5px/1.5 var(--ibx-mono);
+  color: var(--ibx-fg2);
+  overflow-wrap: anywhere;
+}
+.ibx-empty .ibx-gobtn {
+  margin-top: 4px;
+}
+.ibx-loading {
+  animation: ibx-fade-in 0.4s var(--ibx-ease) 0.25s both;
+}
+@keyframes ibx-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.ibx-stale {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--ibx-fg2);
+  background: color-mix(in srgb, var(--ibx-amber) 9%, var(--ibx-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--ibx-amber) 30%, transparent);
+}
+.ibx-stale > .ibx-ico {
+  color: var(--ibx-amber);
+}
+.ibx-stale .tx {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-stale .ibx-gobtn {
+  height: 22px;
+  padding: 0 8px;
+}
+
+/* ---------- composer ---------- */
+.ibx-comp {
+  border-top: 1px solid var(--ibx-border);
+  padding: 10px 12px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  background: var(--ibx-bg);
+}
+.ibx-to {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  font-size: 12px;
+  color: var(--ibx-mfg);
+}
+.ibx .ibx-tobtn {
+  flex: none;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 6px 0 4px;
+  border-radius: 6px;
+  border: 1px solid var(--ibx-border);
+  background: var(--ibx-card);
+  color: var(--ibx-fg);
+  font-size: 12px;
+}
+.ibx .ibx-tobtn:hover {
+  border-color: var(--ibx-disabled);
+}
+.ibx-tobtn .k {
+  min-width: 0;
+  white-space: nowrap;
+  font: 500 11.5px var(--ibx-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-tohint {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--ibx-mfg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-tohint.role {
+  color: var(--ibx-role-ink);
+}
+.ibx-box {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  background: var(--ibx-card);
+  border: 1px solid var(--ibx-border);
+  border-radius: 9px;
+  padding: 7px 7px 7px 10px;
+  transition: border-color 0.15s;
+}
+.ibx-box:focus-within {
+  border-color: var(--ibx-accent);
+  box-shadow: 0 0 0 3px var(--ibx-accent-wash);
+}
+.ibx-box textarea {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  resize: none;
+  color: var(--ibx-fg);
+  font: 13px/1.45 var(--ibx-sans);
+  min-height: 20px;
+  max-height: 120px;
+  outline: none;
+  padding: 2px 0;
+}
+.ibx-box textarea::placeholder {
+  color: var(--ibx-faint);
+}
+.ibx .ibx-send {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: var(--ibx-accent);
+  color: var(--ibx-accent-ink);
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.ibx .ibx-send:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ibx-accent) 82%, white);
+}
+.ibx .ibx-send:disabled {
+  background: var(--ibx-raise);
+  color: var(--ibx-faint);
+  cursor: not-allowed;
+}
+.ibx-send kbd {
+  background: transparent;
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+  color: inherit;
+}
+.ibx-pick {
+  position: absolute;
+  left: 0;
+  bottom: 30px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  max-height: 330px;
+  overflow: auto;
+  background: var(--ibx-card);
+  border: 1px solid var(--ibx-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px var(--ibx-shadow);
+  padding: 6px;
+  z-index: 20;
+  animation: ibx-pop 0.18s var(--ibx-ease);
+}
+@keyframes ibx-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.ibx-pick input {
+  width: 100%;
+  background: var(--ibx-bg);
+  border: 1px solid var(--ibx-border);
+  border-radius: 6px;
+  color: var(--ibx-fg);
+  font: 12.5px var(--ibx-sans);
+  padding: 6px 8px;
+  outline: none;
+  margin-bottom: 4px;
+}
+.ibx-pick input:focus {
+  border-color: var(--ibx-accent);
+}
+.ibx-pick .g {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ibx-mfg);
+  padding: 8px 8px 3px;
+}
+.ibx-pick .opt {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  text-align: left;
+}
+.ibx-pick .opt:hover,
+.ibx-pick .opt.hi {
+  background: var(--ibx-muted);
+}
+.ibx-pick .opt .k {
+  font: 12px var(--ibx-mono);
+  color: var(--ibx-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ibx-pick .opt .k {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.ibx-pick .opt .d {
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 50%;
+  font-size: 11px;
+  color: var(--ibx-mfg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- MAILSPOOL lens ---------- */
+.ibx-spool {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  font-family: var(--ibx-mono);
+}
+.ibx-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ibx-hair);
+  font-size: 12px;
+}
+.ibx-filter .pr {
+  color: var(--ibx-prompt);
+}
+.ibx-filter input {
+  flex: 1;
+  min-width: 60px;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--ibx-fg);
+  font: 12px var(--ibx-mono);
+}
+.ibx-filter input::placeholder {
+  color: var(--ibx-faint);
+}
+.ibx .ibx-filter .f {
+  color: var(--ibx-mfg);
+  border: 1px solid var(--ibx-border);
+  border-radius: 4px;
+  padding: 0 6px;
+  font: 11px var(--ibx-mono);
+  line-height: 18px;
+  white-space: nowrap;
+}
+.ibx .ibx-filter .f[aria-pressed="true"] {
+  color: var(--ibx-accent);
+  border-color: var(--ibx-accent-line);
+  background: var(--ibx-accent-wash);
+}
+.ibx-log {
+  flex: 1;
+  overflow: auto;
+  /* Its 4px / 10px breathing room is the windowing's paddingStart / paddingEnd. */
+  padding: 0;
+  font-size: 12px;
+  outline: none;
+}
+/* The list holds keyboard focus for j/k; its selected row carries the visible ring. */
+.ibx-log:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--ibx-accent-line);
+}
+.ibx-log:focus-visible .ibx-lrow.sel {
+  box-shadow: inset 0 0 0 1px var(--ibx-accent-line);
+}
+/* A day divider: its label (Today, Yesterday, the date) then a hairline to the edge. */
+.ibx-lday {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 4px;
+  color: var(--ibx-mfg);
+  font-size: 11px;
+}
+.ibx-lday::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--ibx-hair);
+}
+/* The log draws only the lines in view; each sits in a slot placed by the windowing. */
+.ibx-lslot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.ibx-lrow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 16px minmax(0, 150px) 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 12px;
+  cursor: pointer;
+  line-height: 20px;
+  border-left: 2px solid transparent;
+}
+.ibx-lrow:hover {
+  background: var(--ibx-card);
+}
+.ibx-lrow.sel {
+  background: var(--ibx-muted);
+  border-left-color: var(--ibx-accent);
+}
+.ibx-lrow .tm {
+  color: var(--ibx-mfg);
+}
+.ibx-lrow .dir {
+  text-align: center;
+}
+.ibx-lrow .dir.in {
+  color: var(--ibx-accent);
+}
+.ibx-lrow .dir.out {
+  color: var(--ibx-green);
+}
+.ibx-lrow .dir.term {
+  color: var(--ibx-prompt);
+}
+.ibx-lrow .dir.q {
+  color: var(--ibx-role);
+}
+.ibx-lrow .who {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ibx-fg2);
+}
+.ibx-lrow .who.r {
+  color: var(--ibx-role-ink);
+}
+.ibx-lrow .pv {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ibx-mfg);
+  font-family: var(--ibx-sans);
+  font-size: 12.5px;
+}
+.ibx-lrow.unread .pv {
+  color: var(--ibx-fg);
+}
+.ibx-lrow.unread .tm {
+  color: var(--ibx-accent);
+}
+.ibx-lrow .ibx-hov {
+  padding: 1px;
+}
+.ibx-lrow .ibx-hov button {
+  height: 20px;
+}
+.ibx-lx {
+  margin: 2px 12px 8px 66px;
+  border-left: 1px solid var(--ibx-border);
+  padding: 6px 0 6px 12px;
+  display: grid;
+  gap: 8px;
+  font-family: var(--ibx-sans);
+  animation: ibx-pop 0.2s var(--ibx-ease);
+}
+.ibx-lx .li {
+  display: grid;
+  gap: 2px;
+}
+.ibx-lx .li .mh {
+  font: 11px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  white-space: pre;
+}
+.ibx-lx .li .tx {
+  font-size: 12.8px;
+  color: var(--ibx-fg2);
+  overflow-wrap: anywhere;
+}
+.ibx-lx .li.term .tx {
+  font: 12px var(--ibx-mono);
+  color: var(--ibx-term-fg);
+  white-space: pre-wrap;
+}
+.ibx-lx .rp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 12px var(--ibx-mono);
+  background: var(--ibx-card);
+  border: 1px solid var(--ibx-border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+.ibx-lx .rp span {
+  color: var(--ibx-prompt);
+  white-space: nowrap;
+}
+.ibx-lx .rp input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--ibx-fg);
+  font: 12px var(--ibx-mono);
+}
+/* A scroller with a "Jump to latest" pill over its foot (the Mailspool log, a conversation). */
+.ibx-scrollwrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ibx-msgs:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--ibx-accent-line);
+}
+@keyframes ibx-rise {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+.ibx .ibx-latest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  width: max-content;
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 6px 0 11px;
+  border-radius: 13px;
+  border: 1px solid var(--ibx-border);
+  background: var(--ibx-raise);
+  color: var(--ibx-fg);
+  font: 500 12px var(--ibx-sans);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px var(--ibx-shadow);
+  animation: ibx-rise 0.18s var(--ibx-ease);
+}
+.ibx .ibx-latest:hover {
+  border-color: var(--ibx-accent-line);
+}
+.ibx-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 7px 12px;
+  border-top: 1px solid var(--ibx-hair);
+  font-size: 11px;
+  color: var(--ibx-mfg);
+  font-family: var(--ibx-sans);
+}
+.ibx-legend .in {
+  color: var(--ibx-accent);
+}
+.ibx-legend .out {
+  color: var(--ibx-green);
+}
+.ibx-legend .term {
+  color: var(--ibx-prompt);
+}
+.ibx-legend .q {
+  color: var(--ibx-role);
+}
+.ibx-legend .human {
+  color: var(--ibx-amber);
+}
+
+/* ---------- WIRE lens ---------- */
+.ibx-wire {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.ibx-wcanvas {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+/* Sticky inside the scroller: the heads stay on top vertically and slide sideways with
+   their lifelines when a crowded diagram scrolls horizontally. */
+.ibx-wheads {
+  display: grid;
+  flex: none;
+  border-bottom: 1px solid var(--ibx-hair);
+  background: var(--ibx-bg);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.ibx-whead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  text-align: center;
+  min-width: 0;
+}
+.ibx-whead .nm {
+  font-size: 11.5px;
+  font-weight: 600;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-whead .nm .x {
+  color: var(--ibx-mfg);
+  font-weight: 400;
+}
+.ibx-whead .sub {
+  font: 10.5px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.ibx-whead.queue .nm {
+  color: var(--ibx-role-ink);
+}
+.ibx-wscroll {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+.ibx-wgrid {
+  position: relative;
+  flex: 1;
+}
+.ibx-wday {
+  position: relative;
+  z-index: 1;
+  height: 26px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.ibx-wday span {
+  position: sticky;
+  left: 50%;
+  font: 11px var(--ibx-mono);
+  color: var(--ibx-mfg);
+  background: var(--ibx-bg);
+  padding: 1px 8px;
+  border-radius: 9px;
+  box-shadow: inset 0 0 0 1px var(--ibx-hair);
+}
+.ibx-life {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid var(--ibx-lifeline);
+}
+.ibx-life.queue {
+  border-left: 1px dashed var(--ibx-role-line);
+}
+.ibx-wrow {
+  position: relative;
+  height: 58px;
+}
+/* The time stays pinned to the left edge while a wide diagram scrolls sideways. */
+.ibx-wtime {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: inline-block;
+  margin: 6px 0 0 4px;
+  padding: 0 2px;
+  font: 10.5px var(--ibx-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ibx-faint);
+  background: var(--ibx-bg);
+}
+.ibx-arrow {
+  --ibx-arrow: var(--ibx-accent);
+  position: absolute;
+  top: 26px;
+  height: 24px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.ibx-arrow.term {
+  --ibx-arrow: var(--ibx-prompt);
+}
+.ibx-arrow.q {
+  --ibx-arrow: var(--ibx-role);
+}
+.ibx-arrow.human {
+  --ibx-arrow: var(--ibx-amber);
+}
+.ibx-arrow .ln {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12px;
+  border-top: 1.5px solid var(--ibx-arrow);
+}
+.ibx-arrow.term .ln {
+  border-top-style: dashed;
+}
+.ibx-arrow .hd {
+  position: absolute;
+  top: 7px;
+  width: 0;
+  height: 0;
+  border-top: 5.5px solid transparent;
+  border-bottom: 5.5px solid transparent;
+}
+.ibx-arrow.r .hd {
+  right: -1px;
+  border-left: 8px solid var(--ibx-arrow);
+}
+.ibx-arrow.l .hd {
+  left: -1px;
+  border-right: 8px solid var(--ibx-arrow);
+}
+/* A note to oneself: a loop that leaves the lifeline and comes back to it. */
+.ibx-arrow.self .ln {
+  top: 5px;
+  height: 14px;
+  border: 1.5px solid var(--ibx-arrow);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+.ibx-arrow.self.term .ln {
+  border-style: dashed;
+}
+.ibx-arrow.self .hd {
+  left: -1px;
+  top: 13.5px;
+  border-right: 8px solid var(--ibx-arrow);
+}
+.ibx-arrow.self .lb {
+  left: calc(100% + 6px);
+  right: auto;
+  bottom: 5px;
+  max-width: 180px;
+  text-align: left;
+}
+.ibx-arrow .lb {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 17px;
+  font-size: 11.5px;
+  color: var(--ibx-fg2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  transition: color 0.15s;
+}
+.ibx-arrow:hover .lb,
+.ibx-arrow.sel .lb {
+  color: var(--ibx-fg);
+}
+.ibx-arrow:hover .ln {
+  filter: brightness(1.4);
+}
+.ibx-arrow.sel {
+  background: var(--ibx-accent-wash);
+}
+.ibx-arrow.unread .lb {
+  font-weight: 600;
+  color: var(--ibx-fg);
+}
+.ibx-tick {
+  position: absolute;
+  top: 33px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--ibx-bg);
+  border: 1.5px solid var(--ibx-disabled);
+}
+.ibx-wdetail {
+  border-top: 1px solid var(--ibx-border);
+  background: var(--ibx-card);
+  padding: 10px 12px;
+  display: grid;
+  gap: 8px;
+  animation: ibx-pop 0.2s var(--ibx-ease);
+}
+.ibx-wdetail .mh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ibx-mfg);
+  min-width: 0;
+}
+.ibx-wdetail .mh b {
+  min-width: 0;
+  flex: 0 1 auto;
+  color: var(--ibx-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ibx-wdetail .tx {
+  font-size: 12.8px;
+  color: var(--ibx-fg2);
+  max-height: 110px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.ibx-wdetail .tx.term {
+  font: 12px var(--ibx-mono);
+  color: var(--ibx-term-fg);
+  white-space: pre-wrap;
+}
+.ibx-wdetail .acts {
+  display: flex;
+  gap: 6px;
+}
+.ibx-wbar {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--ibx-hair);
+  font-size: 12px;
+  color: var(--ibx-mfg);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ibx-wbar b {
+  color: var(--ibx-fg);
+}
+
+.ibx-qrow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  margin: 0 6px;
+  border-radius: 7px;
+  width: calc(100% - 12px);
+  text-align: left;
+}
+.ibx-qrow:hover {
+  background: var(--ibx-card);
+}
+.ibx-qrow[aria-current="true"] {
+  background: var(--ibx-muted);
+}
+.ibx-qrow .k {
+  font: 12px var(--ibx-mono);
+  color: var(--ibx-role-ink);
+}
+.ibx-qrow .d {
+  font-size: 11px;
+  color: var(--ibx-mfg);
+  grid-column: 2 / 4;
+}
+.ibx-qrow .n {
+  font: 600 10px var(--ibx-mono);
+  background: var(--ibx-role);
+  color: var(--ibx-role-on);
+  border-radius: 7px;
+  padding: 0 5px;
+  line-height: 15px;
+}
+.ibx-qrow .n.z {
+  background: var(--ibx-raise);
+  color: var(--ibx-mfg);
+}
+.ibx-note {
+  padding: 10px 14px;
+  font-size: 11.5px;
+  color: var(--ibx-mfg);
+}
+
+/* Narrow rail: the lens labels give way to their icons and the list column slims. */
+.ibx-rail[data-narrow="true"] .ibx-lens span {
+  display: none;
+}
+.ibx-rail[data-narrow="true"] .ibx-th-list {
+  width: 132px;
+}
+.ibx-rail[data-narrow="true"] .ibx-scope .h {
+  display: none;
+}
+.ibx-rail[data-narrow="true"] .ibx-scope .t {
+  flex: 0 1 auto;
+  max-width: none;
+}
+.ibx-rail[data-narrow="true"] .ibx-rh-top {
+  flex-wrap: wrap;
+}
+
+/* A stacked lens uses the full rail width. */
+.ibx-th-list.full {
+  width: 100%;
+  flex: 1;
+  border-right: 0;
+}
+.ibx-rail[data-narrow="true"] .ibx-lrow {
+  grid-template-columns: 40px 14px minmax(0, 104px) 1fr;
+  gap: 6px;
+}
+.ibx-rail[data-narrow="true"] .ibx-lx {
+  margin-left: 30px;
+}
+
+/* ---------- a saved agent's inbox (Agents tab) ---------- */
+.ibx-agent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ibx-bg);
+  border: 1px solid var(--ibx-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+/* The page scrolls rather than squeezing the lenses to nothing when the pane is short. */
+.ibx-agent {
+  min-height: 460px;
+}
+.ibx-agent > .ibx-rh {
+  flex: none;
+}
+.ibx-agent .ibx-th-list {
+  width: 260px;
+}
+.ibx-agent > .ibx-empty {
+  flex: 1;
+}
+.ibx-inst {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ibx-inst-none {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ibx-mfg);
+}
+.ibx-qlane {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 12px;
+  color: var(--ibx-mfg);
+}
+.ibx-qlane .d {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.ibx-qlane .d b {
+  color: var(--ibx-fg2);
+  font-weight: 600;
+}
+.ibx-qlane .hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ibx-role-ink);
+}
+
+/* ---------- a recipient that ended, or is offline ---------- */
+/* The reason takes its own line under the To button, so it is read whole. */
+.ibx-to:has(.ibx-tohint.ended) {
+  flex-wrap: wrap;
+}
+.ibx-tohint.ended {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  white-space: normal;
+  color: var(--ibx-amber);
+}
+.ibx-tohint.ended .ibx-chip {
+  flex: none;
+  cursor: pointer;
+}
+/* The inbox chat's next step for an ended agent: a plain link in the note's own size. */
+.ibx-tohint.ended .ibx-link {
+  flex: none;
+  padding: 0;
+  font: inherit;
+  color: var(--ibx-fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.ibx-pick .opt.ended .k,
+.ibx-pick .opt.ended .ibx-av {
+  opacity: 0.5;
+}
+.ibx-lx .rp-note {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--ibx-mfg);
+}
+.ibx-lx .rp-note.ended {
+  color: var(--ibx-amber);
+}
+
+/* ---------- the quick composer (the Agents pane's inbox chat) ---------- */
+/* Where the unread began when the conversation opened. */
+.ibx-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 10.5px/1 var(--ibx-sans);
+  letter-spacing: 0.02em;
+  color: var(--ibx-fg);
+}
+.ibx-new::before,
+.ibx-new::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ibx-border);
+}
+.ibx-new + .ibx-m.in .bub {
+  border-color: var(--ibx-accent-line);
+}
+.ibx-comp.quick {
+  padding: 8px 10px 9px;
+  gap: 6px;
+  border-top-color: var(--ibx-hair);
+}
+.ibx-comp.quick .ibx-box {
+  padding: 5px 5px 5px 10px;
+  border-radius: 8px;
+}
+.ibx-comp.quick .ibx-box textarea {
+  font-size: 12.5px;
+  padding: 3px 0;
+}
+.ibx-comp.quick .ibx-box textarea[readonly] {
+  color: var(--ibx-mfg);
+}
+.ibx .ibx-send.quick {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 6px;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.ibx .ibx-send.quick:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ibx-accent) 86%, var(--ibx-bg));
+}
+.ibx-send.quick[aria-busy="true"] .ibx-ico {
+  animation: ibx-spin 0.9s linear infinite;
+}
+@keyframes ibx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ibx-comp-foot {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--ibx-faint);
+}
+/* A long hint truncates (its title holds it whole) and a failure wraps: neither pushes the keys
+   out of the footer. */
+.ibx-comp-foot .ibx-tohint {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--ibx-faint);
+}
+.ibx-comp-keys {
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.ibx-comp-keys kbd {
+  font-size: 10px;
+  line-height: 13px;
+  padding: 0 3px;
+  margin: 0 2px 0 6px;
+  border-bottom-width: 1px;
+}
+.ibx-comp-keys kbd:first-child {
+  margin-left: 0;
+}
+.ibx-comp-err {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--destructive);
+  font-weight: 500;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ibx-send.quick[aria-busy="true"] .ibx-ico {
+    animation: none;
+  }
+}
+
+.ibx-chip.group {
+  border-color: var(--ibx-accent-line);
+  color: var(--ibx-fg);
+}
+.ibx-chip.group .ibx-ico {
+  color: var(--ibx-accent);
+}
+.ibx-chip.group .n,
+.ibx-row .cnt {
+  background: var(--ibx-accent);
+  color: var(--ibx-accent-ink);
+}
+.ibx-chip.group[aria-pressed="true"] {
+  background: var(--ibx-accent-wash);
+}
+.ibx-av.group {
+  background: var(--ibx-accent-wash);
+  color: var(--ibx-accent);
+  box-shadow: inset 0 0 0 1px var(--ibx-accent-line);
+}
+.ibx-row .cnt {
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.ibx-group-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ibx .wc {
+  --wc-bg: var(--ibx-bg);
+  --wc-surface: var(--ibx-bg);
+  --wc-fg: var(--ibx-fg);
+  --wc-muted-fg: var(--ibx-mfg);
+  --wc-border: var(--ibx-hair);
+  --wc-accent: var(--ibx-accent);
+  --wc-accent-fg: var(--ibx-accent-ink);
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.ibx .wc-compose {
+  padding: 10px 12px;
+}
+.ibx .wc-msg__tag {
+  font-size: 10px;
+  color: var(--ibx-mfg);
+}
+.ibx .wc-foot-note {
+  padding: 5px 12px;
+  font-size: 10.5px;
+  color: var(--ibx-mfg);
+  border-top: 1px solid var(--ibx-hair);
+}

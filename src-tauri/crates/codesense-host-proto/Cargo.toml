@@ -1,0 +1,19 @@
+[package]
+name = "codesense-host-proto"
+version = "0.1.0"
+description = "Tauri-free CodeSense host protocol: the length-prefixed multiplexed frame codec, the Hello handshake with version skew, and the frozen census frame"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "codesense_host_proto"
+
+[features]
+test-support = []
+
+[dependencies]
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

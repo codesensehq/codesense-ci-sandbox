@@ -1,0 +1,5209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="codesense:slots" content="dock" />
+    <meta name="codesense:icon" content="users" />
+    <!-- Policy (open, Trevor): context:read lets header Launch target the active team. -->
+    <meta
+      name="codesense:capabilities"
+      content="context:read sessions:read inbox:read:team inbox:read:all-teams routines:read commands:run"
+    />
+    <meta
+      name="codesense:commands"
+      content='[
+        {"id":"focus-list","label":"Show agent list","scope":"global","defaultChord":"CmdOrCtrl+Alt+A"},
+        {"id":"reveal-current","label":"Reveal current agent","scope":"slot-visible"},
+        {"id":"collapse-all","label":"Collapse all","scope":"slot-visible"},
+        {"id":"expand-all","label":"Expand all","scope":"slot-visible"},
+        {"id":"next-needs-you","label":"Next agent that needs you","scope":"slot-focused"},
+        {"id":"previous-needs-you","label":"Previous agent that needs you","scope":"slot-focused"},
+        {"id":"open-row-menu","label":"Open row menu","scope":"slot-focused"},
+        {"id":"focus-search","label":"Search agents","icon":"search","scope":"global"},
+        {"id":"switch-arrangement","label":"Switch arrangement","icon":"layers","scope":"slot-visible"}
+      ]'
+    />
+    <title>Agents</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+      }
+      .al {
+        --al-bg: var(--cs-sidebar-bg, var(--cs-bg));
+        --al-fg: var(--cs-sidebar-fg, var(--cs-fg));
+        --al-muted: var(--cs-muted-fg);
+        --al-faint: color-mix(in oklab, var(--cs-muted-fg) 70%, var(--al-fg));
+        --al-line: color-mix(in oklab, var(--al-fg) 13%, var(--al-bg));
+        --al-hover: color-mix(in oklab, var(--al-fg) 6%, var(--al-bg));
+        --al-current: color-mix(in oklab, var(--al-fg) 11%, var(--al-bg));
+        --al-ring: var(--cs-accent);
+        --al-busy: var(--cs-state-running);
+        --al-needs: var(--cs-state-needs-you);
+        --al-needs-text: color-mix(in oklab, var(--cs-state-needs-you) 70%, var(--al-fg));
+        --al-idle: var(--cs-state-idle);
+        --al-failed: var(--cs-danger);
+        --al-face-ring: color-mix(in oklab, var(--al-fg) 14%, transparent);
+        /* Crew connectors: the lowest neutral mix that keeps >=1.5:1 on plain, hover, current and
+           waiting rows in every bundled theme (36% light, 28% dark). Never a state hue. */
+        --al-tree: light-dark(
+          color-mix(in srgb, var(--al-fg) 36%, var(--al-bg)),
+          color-mix(in srgb, var(--al-fg) 28%, var(--al-bg))
+        );
+        --al-l1: 20px;
+        --al-l2: 16px;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        container-type: inline-size;
+        background: var(--al-bg);
+        color: var(--al-fg);
+        font: 12.5px/1.4 var(--cs-font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      .al *,
+      .al *::before,
+      .al *::after {
+        box-sizing: border-box;
+      }
+      :where(.al) :where(button, input, select) {
+        font: inherit;
+        color: inherit;
+      }
+      :where(.al) :where(button) {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+      }
+      .al ::selection {
+        background: color-mix(in oklab, var(--cs-accent) 32%, transparent);
+      }
+      .al svg.i {
+        width: 14px;
+        height: 14px;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .al-head {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        min-height: 38px;
+        padding: 0 6px;
+        flex: none;
+      }
+      .al-title {
+        padding: 0 6px 0 9px;
+        font-weight: 600;
+      }
+      .al-count {
+        font-size: 11px;
+        color: var(--al-muted);
+        font-variant-numeric: tabular-nums;
+      }
+      :where(.al) :focus-visible {
+        outline: 2px solid var(--al-ring);
+        outline-offset: -1px;
+      }
+      .al-scroll {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 0 16px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--al-line) transparent;
+      }
+      .al-launch,
+      .al-quick,
+      .al-pin,
+      .al-messages {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        color: var(--al-muted);
+        opacity: 0;
+      }
+      .al-launch {
+        position: absolute;
+        right: 4px;
+        top: 2px;
+        z-index: 4;
+      }
+      /* The team heading sits 8px below its item top; centre its buttons on it, at the header's inset. */
+      .al-team > .al-launch {
+        top: 10px;
+        right: 6px;
+      }
+      .al-team:has(.al-launch) .al-team-head {
+        padding-right: 42px;
+      }
+      .al-team:has(.al-launch) .al-team-funnel {
+        right: 32px;
+      }
+      .al-ws-card:has(.al-launch) .al-ws-head {
+        padding-right: 28px;
+      }
+      .al-acts > button {
+        opacity: 1;
+        background: inherit;
+      }
+      .al-team:hover > .al-launch,
+      .al-team:focus-within > .al-launch,
+      .al-ws-card:hover > .al-launch,
+      .al-ws-card:focus-within > .al-launch {
+        opacity: 1;
+      }
+      /* Hover actions (Quick view, Messages, Pin) take the state word's place: pure CSS, no reflow. */
+      .al-acts {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        z-index: 2;
+        display: flex;
+        gap: 2px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .al-row:hover > .al-acts,
+      .al-row:focus-within > .al-acts {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .al-row:hover .al-state,
+      .al-row:focus-within .al-state {
+        visibility: hidden;
+      }
+      .al-launch:hover,
+      .al-quick:hover,
+      .al-pin:hover,
+      .al-unpin:hover,
+      .al-messages:hover {
+        color: var(--al-fg);
+        background: var(--al-hover);
+      }
+      /* Loading: at most two skeleton workspaces, at the real band and row metrics. */
+      .al-loading {
+        padding: 4px 0 0;
+        animation: al-skel 1.4s ease-in-out infinite;
+      }
+      @keyframes al-skel {
+        50% {
+          opacity: 0.55;
+        }
+      }
+      .al-skel-team {
+        display: block;
+        width: 46%;
+        height: 8px;
+        margin: 10px 15px 12px;
+        border-radius: 4px;
+        background: color-mix(in oklab, var(--al-fg) 8%, var(--al-bg));
+      }
+      .al-skeleton-card {
+        margin: 2px 6px 8px;
+      }
+      .al-skel-head {
+        display: block;
+        height: 28px;
+        border-radius: 6px;
+        background: color-mix(in oklab, var(--al-fg) 5%, var(--al-bg));
+      }
+      .al-skel-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 28px;
+        padding-left: 12px;
+      }
+      .al-skel-row::before,
+      .al-skel-row::after {
+        content: "";
+        display: block;
+        background: color-mix(in oklab, var(--al-fg) 8%, var(--al-bg));
+      }
+      .al-skel-row::before {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+      }
+      .al-skel-row::after {
+        width: 52%;
+        height: 8px;
+        border-radius: 4px;
+      }
+      .al-skel-row:nth-child(3)::after {
+        width: 40%;
+      }
+      .al-skel-row:nth-child(4)::after {
+        width: 60%;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .al-loading {
+          animation: none;
+        }
+      }
+      .al-team-head {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        min-height: 28px;
+        margin-top: 8px;
+        padding: 5px 16px 5px 9px;
+        font-size: 11.5px;
+        font-weight: 600;
+        background: var(--al-bg);
+        box-shadow: 0 -1px 0 color-mix(in oklab, var(--al-fg) 14%, var(--al-bg));
+      }
+      .al-team-count {
+        margin-left: auto;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--al-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .al-team:hover .al-team-count,
+      .al-team:focus-within .al-team-count {
+        visibility: hidden;
+      }
+      .al-team-head:hover {
+        background: var(--al-hover);
+      }
+      .al-team-org {
+        font-weight: 500;
+        color: var(--al-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .al-team-sep {
+        color: var(--al-faint);
+        font-weight: 400;
+      }
+      .al-team-name {
+        font-weight: 650;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .al-team-need {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        margin-left: 6px;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--al-needs-text);
+      }
+      .al-section {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 15px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--al-muted);
+      }
+      .al-row {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        margin: 0 6px;
+        border-radius: 6px;
+      }
+      .al-row:hover,
+      .al-row:focus-within:has(:focus-visible) {
+        background: var(--al-hover);
+      }
+      .al-acts {
+        background: inherit;
+        border-radius: 5px;
+      }
+      /* The unread badge keeps its own hit area; hover actions sit beside it. */
+      .al-msgs {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        font-size: 9.5px;
+        font-weight: 700;
+        line-height: 14px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        color: var(--al-fg);
+      }
+      .al-msgs > span {
+        min-width: 14px;
+        padding: 0 4px;
+        border-radius: 7px;
+        background: color-mix(in oklab, var(--al-needs) 26%, var(--al-row-bg));
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--al-needs) 60%, transparent);
+      }
+      .al-row[data-msgs] .al-state {
+        min-width: 84px;
+        padding-right: 28px;
+      }
+      .al-row[data-msgs] > .al-acts {
+        right: 30px;
+      }
+      @container (min-width:260px) {
+        .al-row[data-msgs] .al-state {
+          min-width: 108px;
+        }
+      }
+      .al-row:has(> .al-main:focus-visible) {
+        box-shadow: inset 0 0 0 2px var(--al-ring);
+      }
+      .al-row > .al-main:focus-visible {
+        outline: none;
+      }
+      /* The current agent: a stronger tint and weight; no bar, so nothing reads as a tree line. */
+      .al-row[data-current] {
+        background: var(--al-current);
+      }
+      .al-row[data-current] .al-name {
+        font-weight: 650;
+      }
+      /* Waiting on you, in place: a wash and a 3px bar on the row's outer edge. */
+      .al-row[data-waiting] {
+        background: color-mix(in oklab, var(--al-needs) 8%, var(--al-bg));
+      }
+      .al-row[data-waiting]:hover,
+      .al-row[data-waiting][data-current] {
+        background: color-mix(in oklab, var(--al-needs) 13%, var(--al-bg));
+      }
+      .al-row[data-waiting]::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 3px;
+        bottom: 3px;
+        width: 3px;
+        border-radius: 2px;
+        background: var(--al-needs);
+        pointer-events: none;
+      }
+      .al-main {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+        flex: 1 1 calc(100% - 8px);
+        min-width: 0;
+        padding: 4px 8px 4px 0;
+        border-radius: 6px;
+      }
+      .al-lines {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+      }
+      .al-l1 {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        height: var(--al-l1);
+        white-space: nowrap;
+        letter-spacing: -0.006em;
+      }
+      .al-name {
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 0 1 auto;
+        min-width: 5ch;
+      }
+      .al-task {
+        color: var(--al-muted);
+        flex: none;
+        white-space: pre;
+      }
+      .al-row[data-current] .al-subs {
+        color: color-mix(in oklab, var(--al-busy) 82%, var(--al-fg));
+      }
+      .al-subs {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        flex: none;
+        margin-left: 4px;
+        font-size: 10.5px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: var(--al-busy);
+      }
+      .al-l2 {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 5px;
+        min-width: 0;
+        height: var(--al-l2);
+        font-size: 11px;
+        line-height: var(--al-l2);
+        color: var(--al-faint);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .al-l2-head {
+        flex: 0 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+      }
+      .al-via {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        flex: 0 1 auto;
+        min-width: 0;
+        color: var(--al-muted);
+        text-underline-offset: 2px;
+      }
+      /* The via pill is a quiet glyph after the name (and on Manager line two); click reveals the launcher. */
+      .al-line-title > .al-via,
+      .al-l2 > .al-via {
+        display: inline-flex;
+        flex: none;
+        margin-left: 4px;
+        vertical-align: -1px;
+        color: var(--al-muted);
+      }
+      .al-via svg.i {
+        width: 11px;
+        height: 11px;
+      }
+      .al-via > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .al-via:hover {
+        color: var(--cs-accent);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .al-via[data-offline] {
+        text-decoration: line-through;
+      }
+      .al-wchip {
+        flex: none;
+        max-width: 110px;
+        padding: 0 4px;
+        border-radius: 4px;
+        font: 500 11px/16px var(--cs-font-mono);
+        color: var(--al-faint);
+        background: color-mix(in oklab, var(--al-fg) 7%, var(--al-bg));
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .al-wchip[data-current] {
+        font-weight: 650;
+        color: var(--al-fg);
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--al-fg) 45%, transparent);
+      }
+      .al-wchip[data-none] {
+        padding: 0;
+        font-family: var(--cs-font-sans);
+        background: none;
+      }
+      .al-row[data-manager-view] .al-l2 {
+        flex-wrap: nowrap;
+      }
+      .al-l2 > .al-l2-head {
+        flex: 0 1 auto;
+      }
+      .al-l3 {
+        display: block;
+        height: 16px;
+        font-size: 11px;
+        line-height: 16px;
+        color: var(--al-faint);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .al-l2-busy {
+        color: color-mix(in oklab, var(--al-busy) 85%, var(--al-fg));
+      }
+      .al-l2 > .al-via {
+        flex: 0 1 auto;
+        min-width: 14px;
+      }
+      .al-chosen {
+        font-size: 11px;
+        line-height: 15px;
+        color: var(--al-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .al-ask {
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 15px;
+        font-weight: 400;
+        color: var(--al-needs-text);
+      }
+      .al-ask b {
+        font-weight: 650;
+      }
+      .al-row[data-offline] .al-name {
+        color: var(--al-muted);
+      }
+      .al-row[data-offline] .al-av .al-face {
+        opacity: 0.55;
+      }
+      .al-row[data-dead] .al-av .al-face {
+        opacity: 0.72;
+        filter: grayscale(0.6);
+      }
+      .al-av {
+        position: relative;
+        flex: none;
+        width: 20px;
+        height: 20px;
+      }
+      .al-face {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        object-fit: cover;
+        background: color-mix(in oklab, var(--al-fg) 12%, var(--al-bg));
+        box-shadow: inset 0 0 0 1px var(--al-face-ring);
+      }
+      /* Cut-out rings (dot, face tag, role piece) take the row's own fill. */
+      .al-row {
+        --al-row-bg: var(--al-bg);
+      }
+      .al-row:hover,
+      .al-row:focus-within:has(:focus-visible) {
+        --al-row-bg: var(--al-hover);
+      }
+      .al-row[data-current] {
+        --al-row-bg: var(--al-current);
+      }
+      .al-row[data-waiting] {
+        --al-row-bg: color-mix(in oklab, var(--al-needs) 8%, var(--al-bg));
+      }
+      .al-row[data-waiting]:hover,
+      .al-row[data-waiting][data-current] {
+        --al-row-bg: color-mix(in oklab, var(--al-needs) 13%, var(--al-bg));
+      }
+      .al-dot {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        display: grid;
+        place-items: center;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--al-row-bg);
+        box-shadow: 0 0 0 1.5px var(--al-row-bg);
+      }
+      .mark {
+        display: block;
+        overflow: visible;
+      }
+      .mark[data-tone="busy"] {
+        color: var(--al-busy);
+      }
+      .mark[data-tone="needs"] {
+        color: var(--al-needs);
+      }
+      .mark[data-tone="idle"] {
+        color: var(--al-idle);
+      }
+      .mark[data-tone="failed"] {
+        color: var(--al-failed);
+      }
+      @keyframes al-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .al-fold:hover {
+        color: var(--al-fg);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .al-fchev {
+          transition: none;
+        }
+      }
+      .al-folded {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        flex: none;
+        margin-left: auto;
+        padding-left: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--al-muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .al-folded[data-needs] {
+        color: var(--al-needs-text);
+        font-weight: 600;
+      }
+      .al-row[data-current] .al-folded:not([data-needs]) {
+        color: color-mix(in oklab, var(--al-fg) 78%, var(--al-bg));
+      }
+
+      .al-title {
+        font-size: 12.5px;
+      }
+      .al-scroll {
+        padding-top: 4px;
+        overflow-anchor: none;
+      }
+      .al-item {
+        padding-bottom: 4px;
+      }
+      .al-line-title {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .al-line-title .al-name {
+        min-width: 0;
+      }
+      #al-move-notice {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: absolute;
+        bottom: 6px;
+        left: 6px;
+        right: 6px;
+        z-index: 10;
+        padding: 6px 8px;
+        color: var(--al-fg);
+        background: var(--al-bg);
+        border: 1px solid var(--al-ring);
+        font-size: 11px;
+      }
+      #al-move-notice:empty {
+        padding: 0;
+        border: 0;
+        pointer-events: none;
+      }
+      .al-ws-grip {
+        color: var(--al-muted);
+        cursor: grab;
+      }
+      .al-ws-head {
+        touch-action: pan-y;
+      }
+      .al-ws-card[data-dragging] {
+        background: none;
+        outline: 1.5px dashed color-mix(in oklab, var(--al-fg) 35%, var(--al-bg));
+        outline-offset: -1.5px;
+      }
+      .al-ws-card[data-dragging] > * {
+        visibility: hidden;
+      }
+      html[data-al-card-drag] *,
+      html[data-al-card-drag] {
+        cursor: grabbing !important;
+        user-select: none;
+      }
+      html[data-al-card-drag="refused"] *,
+      html[data-al-card-drag="refused"] {
+        cursor: not-allowed !important;
+      }
+      .al-ws-drag-preview {
+        position: fixed;
+        z-index: 20;
+        pointer-events: none;
+        border-radius: 6px;
+        color: var(--al-fg);
+        background: color-mix(in oklab, var(--al-fg) 7%, var(--al-bg));
+        box-shadow: var(--cs-shadow), var(--cs-shadow);
+      }
+      .al-ws-drag-preview .al-ws-grip {
+        opacity: 1;
+      }
+      .al-ws-drag-preview[data-refused] {
+        outline: 1.5px dashed color-mix(in oklab, var(--al-fg) 45%, var(--al-bg));
+        outline-offset: -1.5px;
+        opacity: 0.7;
+      }
+      .al-drop-line {
+        position: fixed;
+        z-index: 21;
+        pointer-events: none;
+        height: 2px;
+        background: var(--al-ring);
+      }
+      .al-drop-line::before,
+      .al-drop-line::after {
+        content: "";
+        position: absolute;
+        top: -3px;
+        width: 2px;
+        height: 8px;
+        border-radius: 1px;
+        background: var(--al-ring);
+      }
+      .al-drop-line::before {
+        left: 0;
+      }
+      .al-drop-line::after {
+        right: 0;
+      }
+      .al-ws-card {
+        position: relative;
+        margin: 2px 6px 0;
+        border-radius: 6px;
+        background: color-mix(in oklab, var(--al-fg) 5%, var(--al-bg));
+      }
+      .al-ws-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        height: 28px;
+        padding: 0 8px 0 6px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+      .al-ws-head:hover {
+        background: color-mix(in oklab, var(--al-fg) 8%, var(--al-bg));
+      }
+      .al-ws-name {
+        flex: 0 1 auto;
+        font-weight: 650;
+        font-family: var(--cs-font-mono);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .al-ws-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 0 1 auto;
+        font-size: 10px;
+        color: var(--al-muted);
+      }
+      /* Workspace tail: waiting and crashed counts, a state bar, the total. */
+      .al-ws-tail {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: none;
+        margin-left: auto;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        color: var(--al-faint);
+      }
+      .al-ws-tail .al-hot {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-weight: 600;
+        color: var(--al-fg);
+      }
+      .al-ws-tail .al-hot[data-needs] {
+        color: var(--al-needs-text);
+      }
+      .al-bar {
+        display: flex;
+        gap: 1px;
+        width: 34px;
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+        background: var(--al-hover);
+      }
+      .al-bar > i {
+        display: block;
+      }
+      .al-bar > [data-k="waiting"] {
+        background: var(--al-needs);
+      }
+      .al-bar > [data-k="failed"] {
+        background: var(--cs-state-failed);
+      }
+      .al-bar > [data-k="working"] {
+        background: var(--al-busy);
+      }
+      .al-bar > [data-k="other"] {
+        background: color-mix(in oklab, var(--al-idle) 45%, transparent);
+      }
+      /* Fold chevrons: the kit chevron, turned 90 degrees when open. */
+      .al-fchev {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 14px;
+        color: var(--al-muted);
+        transition: rotate 150ms ease-out;
+      }
+      .al-fchev svg.i {
+        width: 12px;
+        height: 12px;
+      }
+      [aria-expanded="true"] > .al-fchev {
+        rotate: 90deg;
+      }
+      .al-ws-grip {
+        position: absolute;
+        left: 6px;
+        top: 7px;
+        display: grid;
+        place-items: center;
+        width: 14px;
+        height: 14px;
+        background: inherit;
+        opacity: 0;
+      }
+      .al-ws-grip svg {
+        width: 8px;
+        height: 12px;
+        fill: currentColor;
+      }
+      .al-ws-head:hover > .al-ws-grip,
+      .al-ws-head:focus-visible > .al-ws-grip {
+        opacity: 1;
+      }
+      @container (max-width: 259px) {
+        .al-ws-meta {
+          display: none;
+        }
+      }
+      /* Another machine: always shown, with offline in the offline ink. */
+      .al-ws-machine {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--al-faint);
+      }
+      .al-ws-head:has(.al-ws-machine) .al-ws-name {
+        flex-shrink: 0;
+        max-width: 55%;
+      }
+      @container (max-width: 259px) {
+        .al-ws-head:has(.al-ws-machine) .al-bar {
+          display: none;
+        }
+      }
+      .al-ws-machine > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .al-ws-machine svg.i {
+        width: 12px;
+        height: 12px;
+      }
+      @container (max-width: 259px) {
+        .al-ws-machine > span {
+          display: none;
+        }
+      }
+      /* Colour means state: offline stays neutral and reads by its wifi-off glyph and words. */
+      .al-ws-machine[data-offline] {
+        font-weight: 600;
+      }
+      /* Crew connectors (Soft guides): 1px rounded elbows from the parent's avatar centre.
+         A trunk runs on while siblings follow and stops at the last child. */
+      .al-tree {
+        position: absolute;
+        z-index: 1;
+        pointer-events: none;
+        border: 0 solid var(--al-tree);
+      }
+      .al-tree[data-k="pass"] {
+        top: 0;
+        bottom: 0;
+        border-left-width: 1px;
+      }
+      .al-tree[data-k="elbow"] {
+        top: 0;
+        height: 14.5px;
+        border-left-width: 1px;
+        border-bottom-width: 1px;
+        border-bottom-left-radius: var(--cs-radius-sm, 4px);
+      }
+      .al-tree[data-k="stem"] {
+        top: 26px;
+        bottom: 0;
+        border-left-width: 1px;
+      }
+      .al-fold {
+        position: absolute;
+        top: 6px;
+        width: 16px;
+        height: 16px;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        color: var(--al-muted);
+        background: none;
+        border-radius: 3px;
+      }
+      .al-fold .al-fchev {
+        width: 16px;
+      }
+      /* Deeper managers show their fold on hover or focus, or while folded, so it never sits on the lines. */
+      .al-row[data-depth]:not([data-depth="0"]) > .al-fold:not([data-folded]) {
+        opacity: 0;
+        background: var(--al-hover);
+      }
+      .al-row[data-depth]:not([data-depth="0"]):hover > .al-fold,
+      .al-row[data-depth]:not([data-depth="0"]):focus-within > .al-fold {
+        opacity: 1;
+      }
+      .al-av .al-face {
+        display: grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--al-hover);
+        font-weight: 600;
+        font-size: 8.5px;
+      }
+      /* The state word sits at the row's right edge; the name gives way first. */
+      .al-state {
+        flex: none;
+        margin-left: auto;
+        padding-left: 8px;
+        min-width: 56px;
+        justify-content: flex-end;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: var(--al-faint);
+      }
+      .al-state[data-tone="working"] {
+        color: color-mix(in oklab, var(--al-busy) 85%, var(--al-fg));
+      }
+      .al-state[data-tone="needs"] {
+        color: var(--al-needs-text);
+        font-weight: 600;
+      }
+      .al-state[data-tone="failed"] {
+        color: var(--cs-state-failed);
+        font-weight: 600;
+      }
+      .al-state[data-tone="offline"] {
+        color: var(--al-faint);
+      }
+      .al-row[data-manager-view] .al-state .al-subs {
+        display: none;
+      }
+      .al-state .al-subs {
+        margin-left: 3px;
+        color: inherit;
+        font-weight: 600;
+      }
+      /* Workspace view keeps one line; role, model and time are in the row's tooltip. */
+      .al-row[data-agent-id]:not([data-manager-view]) .al-l2 {
+        display: none;
+      }
+      .al-ask,
+      .al-chosen {
+        display: block;
+        min-width: 0;
+        height: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .al-lines {
+        overflow: hidden;
+      }
+      .al-folded {
+        white-space: nowrap;
+      }
+      .al-item > .al-section {
+        height: 26px;
+        margin: 0;
+      }
+      .al-stage-rail {
+        --cs-rail-fill: var(--al-fg);
+        --cs-rail-empty: var(--al-muted);
+        --cs-rail-done: var(--al-fg);
+        --cs-rail-wall: var(--al-fg);
+        display: inline-flex;
+        flex: none;
+      }
+      .al-ws-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mark[data-mark="error"],
+      .mark[data-mark="crashed"] {
+        color: var(--cs-state-failed);
+      }
+      .cs-mark-spin {
+        animation: al-spin 1.1s linear infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cs-mark-spin {
+          animation: none;
+        }
+      }
+
+      .al-scope {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 8px 6px;
+        font-size: 11px;
+        color: var(--al-muted);
+        flex: none;
+      }
+      .al-scope select {
+        appearance: none;
+        flex: 1;
+        min-width: 0;
+        padding: 3px 22px 3px 3px;
+        border-radius: 3px;
+        border: 0;
+        color: var(--al-fg);
+        background: var(--al-bg);
+        font-size: 11px;
+      }
+      #al-scope-chevron {
+        position: absolute;
+        right: 4px;
+        pointer-events: none;
+        color: var(--al-fg);
+      }
+      .al-scope select:focus-visible {
+        outline: 1px solid var(--al-fg);
+        outline-offset: 2px;
+      }
+      /* The find field's wrapper (native "shrink-0 px-1.5 pb-2") and the field (.ag-find). */
+      .al-findwrap {
+        flex: none;
+        padding: 0 6px 8px;
+      }
+      .al-find {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 3px 4px 3px 9px;
+        border-radius: 7px;
+        color: var(--al-faint);
+        background: color-mix(in oklab, var(--al-fg) 4%, var(--al-bg));
+        box-shadow: inset 0 0 0 1px var(--al-line);
+        transition: box-shadow 120ms ease;
+      }
+      .al-find:has(> input:focus) {
+        box-shadow:
+          inset 0 0 0 1px color-mix(in oklab, var(--al-ring) 70%, transparent),
+          0 0 0 3px color-mix(in oklab, var(--al-ring) 18%, transparent);
+      }
+      .al-find > input {
+        flex: 1 1 60px;
+        min-width: 60px;
+        height: 22px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        font-size: 12px;
+        color: var(--al-fg);
+        caret-color: var(--al-fg);
+      }
+      .al-find > input::placeholder {
+        color: var(--al-faint);
+      }
+      .al-find > input::-webkit-search-cancel-button {
+        display: none;
+      }
+      /* .ag-chips / .ag-chip: one line of chips, at most 62% of the field; each chip truncates. */
+      .al-chips {
+        display: flex;
+        flex: 0 1 auto;
+        flex-wrap: nowrap;
+        gap: 4px;
+        min-width: 0;
+        max-width: 62%;
+        overflow: hidden;
+      }
+      .al-chip {
+        display: inline-flex;
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        align-items: center;
+        gap: 4px;
+        height: 20px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--al-muted);
+        background: color-mix(in oklab, var(--al-fg) 9%, transparent);
+        white-space: nowrap;
+      }
+      .al-chip > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .al-chip > button {
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        opacity: 0.7;
+      }
+      .al-chip > button:hover {
+        opacity: 1;
+      }
+      .al-clear,
+      .al-filter {
+        display: grid;
+        place-items: center;
+        flex: none;
+        border-radius: 5px;
+        color: var(--al-faint);
+      }
+      .al-clear {
+        width: 18px;
+        height: 18px;
+      }
+      .al-filter {
+        width: 22px;
+        height: 22px;
+      }
+      .al-clear:hover,
+      .al-filter:hover,
+      .al-filter[aria-expanded="true"] {
+        color: var(--al-fg);
+        background: var(--al-hover);
+      }
+      /* Filter and arrange (.ag-fpop and .ag-fm-*). */
+      .al-fpop {
+        position: fixed;
+        z-index: 30;
+        width: 232px;
+        max-height: min(420px, calc(100dvh - 12px));
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        padding: 4px 6px 6px;
+        border-radius: 9px;
+        color: var(--al-fg);
+        background: var(--al-bg);
+        box-shadow: var(--cs-shadow);
+      }
+      .al-fsec {
+        padding: 10px 6px 4px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--al-faint);
+      }
+      .al-fsec:first-child {
+        padding-top: 6px;
+      }
+      .al-fsec:not(:first-child) {
+        margin: 6px 2px 0;
+        padding: 10px 4px 4px;
+        border-top: 1px solid var(--al-line);
+      }
+      .al-forg {
+        padding: 2px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--al-muted);
+      }
+      .al-fitem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 4px 6px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: left;
+        cursor: pointer;
+      }
+      .al-fitem:hover {
+        background: var(--al-hover);
+      }
+      .al-fitem > :first-child {
+        flex: none;
+        width: 14px;
+        min-width: 14px;
+        display: grid;
+        place-items: center;
+      }
+      .al-fitem > span:nth-child(2) {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .al-fitem input {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        accent-color: var(--cs-accent);
+      }
+      .al-fitem:has(input:disabled) {
+        cursor: default;
+      }
+      .al-fitem input:disabled {
+        opacity: 0.55;
+      }
+      .al-fitem[aria-checked="true"] {
+        font-weight: 600;
+        background: color-mix(in oklab, var(--al-fg) 9%, transparent);
+      }
+      .al-fitem .mark .spin,
+      .al-fitem .mark .think,
+      .al-fitem .mark .halo {
+        animation: none;
+      } /* a menu's marks hold still */
+      .al-fn {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--al-muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .al-seg {
+        display: flex;
+        gap: 2px;
+        padding: 2px;
+        border-radius: 7px;
+        background: color-mix(in oklab, var(--al-fg) 6%, transparent);
+      }
+      .al-seg button {
+        flex: 1 1 0;
+        height: 24px;
+        border-radius: 5px;
+        font-size: 11.5px;
+        color: var(--al-muted);
+        text-align: center;
+      }
+      .al-seg button:hover:not([aria-checked="true"]) {
+        color: var(--al-fg);
+      }
+      .al-seg button[aria-checked="true"] {
+        font-weight: 600;
+        color: var(--al-fg);
+        background: color-mix(in oklab, var(--al-fg) 13%, var(--al-bg));
+        box-shadow: var(--cs-shadow);
+      }
+      /* The team funnel (.ag-team-funnel): on hover or focus while more than one team shows; pressed, it stays and takes the accent. */
+      .al-team-funnel {
+        z-index: 4;
+        transition:
+          opacity 120ms ease,
+          color 120ms ease,
+          background-color 120ms ease;
+      }
+      .al-team-funnel[aria-pressed="true"] {
+        opacity: 1;
+        color: var(--cs-accent);
+      }
+      /* The Pinned group (.ag-group + .ag-group-label): a quiet label over its rows. */
+      /* Row markers (RowMarkerView): "due" is the .ag-count pill; hidden tab, headless and pin are 12px faint glyphs. */
+      .al-marker {
+        margin-left: 4px;
+        color: var(--al-faint);
+      }
+      .al-marker svg.i {
+        width: 12px;
+        height: 12px;
+      }
+      .al-marker[data-kind="due"] {
+        gap: 2px;
+        height: 15px;
+        padding: 0 5px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--al-muted);
+        background: color-mix(in oklab, var(--al-fg) 9%, transparent);
+      }
+      .al-marker[data-kind="due"] svg.i {
+        width: 10px;
+        height: 10px;
+      }
+      /* Role chips: up to two, then "+N", below Manager rows. Compact rows expose roles in
+         the tooltip and accessible label. */
+      .al-holds {
+        flex: none;
+        align-self: flex-start;
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        max-width: 65%;
+        margin: 24px 8px 0 0;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 11px;
+        color: var(--al-muted);
+      }
+      .al-row[data-manager-view] .al-holds {
+        margin: 0 8px 6px calc(var(--indent, 18px) + 35px);
+      }
+      .al-role {
+        gap: 4px;
+        height: auto;
+        padding: 1px 5px 1px 2px;
+        border-radius: 9px;
+        font-size: 11px;
+        color: var(--al-fg);
+        background: color-mix(in oklab, var(--al-role-hue) 12%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--al-role-hue) 30%, transparent);
+      }
+      .al {
+        --al-role-hue: var(--al-fg);
+      }
+      /* Empty and wait states, at native metrics ("px-[15px] py-3", 12px/500 title, 11px/15px faint sentence). */
+      .al-empty {
+        display: grid;
+        justify-items: center;
+        padding: 32px 18px;
+        text-align: center;
+      }
+      .al-empty-icon {
+        display: grid;
+        margin-bottom: 8px;
+        color: var(--al-muted);
+      }
+      .al-empty-icon svg.i {
+        width: 20px;
+        height: 20px;
+      }
+      .al-empty b {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--al-fg);
+      }
+      .al-empty p {
+        max-width: 26ch;
+        margin: 4px 0 0;
+        font-size: 11.5px;
+        line-height: 16px;
+        color: var(--al-faint);
+      }
+      .al-empty .al-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        column-gap: 12px;
+        margin-top: 8px;
+      }
+      /* .ag-link: text ink, underline in the line colour until hover. */
+      .al-link {
+        align-self: auto;
+        margin: 0;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--al-fg);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: var(--al-line);
+      }
+      .al-link:hover {
+        text-decoration-color: currentColor;
+      }
+      .al-item > .al-link {
+        display: block;
+        padding: 4px 15px;
+      }
+      /* A row that arrives after the 800ms settle eases in (.ag-enter). */
+      .al-enter {
+        animation: al-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      @keyframes al-enter {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+          filter: blur(2px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .al-enter {
+          animation: none;
+        }
+      }
+
+      .al-head {
+        height: auto;
+      }
+      .al-head .grow {
+        flex: 1;
+      }
+      /* The arrangement as one compact select beside the title (writes ui:dock arrange). */
+      .al-view {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        flex: 0 1 auto;
+        min-width: 0;
+        margin-left: 4px;
+      }
+      .al-view select {
+        appearance: none;
+        min-width: 0;
+        height: 22px;
+        padding: 0 18px 0 7px;
+        border: 0;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--al-fg);
+        background: var(--al-hover);
+        cursor: pointer;
+        text-overflow: ellipsis;
+      }
+      .al-view select:hover {
+        background: var(--al-current);
+      }
+      #al-arrange-chevron {
+        position: absolute;
+        right: 4px;
+        display: grid;
+        pointer-events: none;
+        color: var(--al-faint);
+      }
+      #al-arrange-chevron svg.i {
+        width: 12px;
+        height: 12px;
+      }
+      /* Tally under the find field: each count is a Show filter (search.status in ui:dock). */
+      .al-tally {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        margin-top: 6px;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+      .al-tally:empty {
+        display: none;
+      }
+      .al-tally > * {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 20px;
+        padding: 0 6px 0 4px;
+        border-radius: 5px;
+        color: var(--al-faint);
+        white-space: nowrap;
+      }
+      .al-tally button:hover {
+        color: var(--al-fg);
+        background: var(--al-hover);
+      }
+      .al-tally button[aria-pressed="true"] {
+        color: var(--al-fg);
+        font-weight: 600;
+        background: var(--al-current);
+      }
+      .al-tally .al-waiting {
+        color: var(--al-fg);
+        font-weight: 600;
+        background: color-mix(in oklab, var(--al-needs) 14%, var(--al-bg));
+      }
+      .al-tally .al-waiting[aria-pressed="true"] {
+        background: color-mix(in oklab, var(--al-needs) 24%, var(--al-bg));
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--al-needs) 50%, transparent);
+      }
+      .al-icon {
+        display: inline-grid;
+        place-items: center;
+        height: 24px;
+        min-width: 24px;
+        border-radius: 6px;
+        color: var(--al-faint);
+      }
+      .al-icon:hover,
+      .al-icon[aria-pressed="true"] {
+        color: var(--al-fg);
+        background: var(--al-hover);
+      }
+      .al-team {
+        position: relative;
+      }
+      .al-team-funnel {
+        position: absolute;
+        top: 13px;
+        right: 13px;
+        width: 18px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        border-radius: 4px;
+      }
+      .al-team:hover .al-team-funnel,
+      .al-team:focus-within .al-team-funnel {
+        opacity: 1;
+      }
+      .al-pin-slot {
+        display: inline-block;
+        width: 24px;
+        height: 20px;
+        flex: none;
+      }
+      .al-unpin {
+        position: absolute;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        color: var(--al-faint);
+      }
+      .al-pin[aria-pressed="true"] {
+        color: var(--al-fg);
+      }
+      @container (min-width:260px) {
+        .al-state {
+          min-width: 80px;
+        }
+      }
+      @container (max-width:259px) {
+        .al-pin {
+          display: none;
+        }
+      }
+      .al-row[data-pinned] .al-face {
+        opacity: 0.55;
+      }
+      .al-row[data-pinned]:hover .al-face,
+      .al-row[data-pinned]:focus-within .al-face {
+        opacity: 0.85;
+      }
+      .al-marker,
+      .al-role {
+        display: inline-flex;
+        align-items: center;
+        flex: none;
+      }
+      .al-role img {
+        width: 13px;
+        height: 13px;
+      }
+      .al-row[data-manager-view] .al-holds {
+        position: static;
+        margin: 0 8px 6px 35px;
+      }
+      .al-row:not([data-manager-view]) .al-holds {
+        display: none;
+      }
+      .al-tag,
+      .al-piece {
+        position: absolute;
+        left: -3px;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 0 0 1.5px var(--al-row-bg);
+        background: var(--al-row-bg);
+      }
+      .al-tag {
+        top: -4px;
+        left: -4px;
+        min-width: 9px;
+        height: 9px;
+        padding: 0 1px;
+        border-radius: 5px;
+        font-size: 7px;
+        line-height: 9px;
+        font-weight: 700;
+      }
+      .al-piece {
+        left: -4px;
+        bottom: -3px;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        color: var(--al-muted);
+      }
+      .al-piece img {
+        width: 10px;
+        height: 10px;
+      }
+      /* The role piece reads as structure, so only the Manager tree shows it; the tooltip names the role. */
+      .al-row:not([data-manager-view]) .al-piece {
+        display: none;
+      }
+      .al-run {
+        width: 100%;
+        padding: 8px 15px;
+      }
+      .al-run small {
+        display: block;
+        color: var(--al-faint);
+        font-size: 11px;
+      }
+      .al-output {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font: 11px/1.5 var(--cs-font-mono);
+        padding: 12px 15px;
+      }
+      .al [hidden] {
+        display: none !important;
+      }
+      .al button:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      @container (max-width:319px) {
+        .al-head {
+          flex-wrap: wrap;
+          padding-block: 4px;
+        }
+      }
+      @container (max-width:259px) {
+        .al-marker ~ .al-marker {
+          display: none;
+        }
+      }
+      .al-fsec h2 {
+        margin: 0 0 4px;
+        padding: 0 6px;
+        font: 600 10.5px var(--cs-font-sans);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .al-fitem,
+      .al-forg,
+      .al-seg {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 400;
+      }
+      .al-fpop .cs-mark-spin {
+        animation: none;
+      }
+      .al-piece img {
+        filter: grayscale(1);
+        opacity: 0.8;
+      }
+      .al-run.al-main {
+        padding: 6px 8px 6px 12px;
+      }
+      .al-run-mark {
+        margin-top: 5px;
+      }
+      .al-output-turn {
+        margin: 12px 0;
+      }
+      .al-output p,
+      .al-output pre {
+        margin: 6px 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="al" aria-label="Agents">
+      <header class="al-head">
+        <span class="al-title" id="al-title">Agents</span><span class="al-count" id="count">0</span>
+        <span class="al-team-need" id="al-run-needs" hidden></span><span class="grow"></span>
+        <label class="al-view" id="al-arrange-wrap" title="Arrange: by workspace, manager or status"
+          ><select id="al-arrange" aria-label="Arrangement">
+            <option value="teams">Workspace</option>
+            <option value="manager">Manager</option>
+            <option value="status">By status</option></select
+          ><span id="al-arrange-chevron" aria-hidden="true"></span
+        ></label>
+        <button
+          type="button"
+          class="al-icon"
+          id="al-history"
+          aria-label="Run history"
+          aria-pressed="false"
+          title="Run history: finished runs and their output"
+        ></button>
+        <button
+          type="button"
+          class="al-icon"
+          id="al-launch"
+          aria-label="Launch agent"
+          title="Launch agent"
+        ></button>
+      </header>
+      <label class="al-scope" id="al-scope-wrap"
+        ><span>Group</span
+        ><select id="al-scope" aria-label="Workspace group scope">
+          <option value="">All workspace groups</option></select
+        ><span id="al-scope-chevron" aria-hidden="true"></span
+      ></label>
+      <div class="al-findwrap" id="al-find-wrap">
+        <div class="al-find" id="al-find">
+          <span id="al-search-icon"></span><span class="al-chips" id="al-chips"></span>
+          <input
+            id="al-search"
+            type="search"
+            aria-label="Find agents"
+            placeholder="Find agents…"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="al-icon"
+            id="al-clear"
+            aria-label="Clear search"
+            hidden
+          ></button>
+          <button
+            type="button"
+            class="al-icon"
+            id="al-filter"
+            aria-label="Filter and arrange"
+            aria-expanded="false"
+          ></button>
+        </div>
+        <div class="al-tally" id="al-tally" role="group" aria-label="Agents by state"></div>
+      </div>
+      <div class="al-scroll" id="al-runs" aria-label="Run history" hidden></div>
+      <div class="al-scroll" id="list" role="list" aria-label="Agent list" tabindex="-1">
+        <div class="al-loading" role="status" aria-label="Loading agents">
+          <span class="al-skel-team" aria-hidden="true"></span>
+          <div class="al-skeleton-card" aria-hidden="true">
+            <span class="al-skel-head"></span><span class="al-skel-row"></span
+            ><span class="al-skel-row"></span><span class="al-skel-row"></span>
+          </div>
+          <div class="al-skeleton-card" aria-hidden="true">
+            <span class="al-skel-head"></span><span class="al-skel-row"></span
+            ><span class="al-skel-row"></span>
+          </div>
+        </div>
+      </div>
+      <div id="al-move-notice" role="status" aria-live="polite"></div>
+    </main>
+    <script id="al-card-math">
+      window.agentListCardMath = (() => {
+        const CARD_MOVE_REFUSED = {
+          filtered: "Cards can't move while a search or filter is on. Clear them to move it.",
+          byStatus: "Cards move in the By team arrangement. Switch to it to move this one.",
+          noPill: "This card has no pill in the tray, so it has no place in the order to move.",
+          nowhere: "This card has no other card in its team to move past.",
+        };
+        function boxes(rows) {
+          let end = 0;
+          return rows.map((row) => ({ start: end, end: (end += row.height) }));
+        }
+        function teamIndexes(rows, team) {
+          const at = rows.findIndex((r) => r.kind === "team" && r.team === team),
+            indexes = [];
+          if (at < 0) return indexes;
+          for (let i = at + 1; i < rows.length && rows[i].kind !== "team"; i++)
+            if (rows[i].kind === "workspace" && rows[i].workspace) indexes.push(i);
+          return indexes;
+        }
+        function teamSlotCards(rows, team, order) {
+          return teamIndexes(rows, team).map((i) => ({
+            id: rows[i].workspace,
+            pill: order.includes(rows[i].workspace),
+          }));
+        }
+        function placeForSlot(cards, id, slot) {
+          const from = cards.findIndex((c) => c.id === id);
+          if (!cards[from]?.pill) return null;
+          const lo = slot <= from ? slot : from + 1,
+            hi = slot <= from ? from : slot;
+          if (!cards.slice(lo, hi).some((c) => c.pill)) return null;
+          for (let i = slot - 1; i >= 0; i--)
+            if (cards[i].id !== id && cards[i].pill) return { after: cards[i].id };
+          for (let i = slot; i < cards.length; i++)
+            if (cards[i].id !== id && cards[i].pill) return { before: cards[i].id };
+          return null;
+        }
+        function stepSlot(cards, id, direction) {
+          const from = cards.findIndex((c) => c.id === id),
+            step = direction === "up" ? -1 : 1;
+          if (!cards[from]?.pill) return null;
+          for (let i = from + step; i >= 0 && i < cards.length; i += step) {
+            if (cards[i].pill)
+              return direction === "up"
+                ? { slot: i, place: { before: cards[i].id } }
+                : { slot: i + 1, place: { after: cards[i].id } };
+          }
+          return null;
+        }
+        function cardDropTarget(rows, boxes, team, id, y, order, pane) {
+          const none = { slot: null, place: null, lineY: null };
+          const at = rows.findIndex((r) => r.kind === "team" && r.team === team);
+          if (at < 0) return none;
+          let last = at;
+          while (last + 1 < rows.length && rows[last + 1].kind !== "team") last++;
+          const top = Math.max(boxes[at].start - 8, boxes[at - 1]?.end ?? -Infinity),
+            bottom = Math.min(boxes[last].end + 24, boxes[last + 1]?.start ?? Infinity);
+          if (
+            y < top ||
+            y > bottom ||
+            (pane && (pane.x < pane.left - 48 || pane.x > pane.right + 48))
+          )
+            return none;
+          const blocks = teamIndexes(rows, team).map((i) => {
+            let last = i;
+            while (last + 1 < rows.length && !["workspace", "team"].includes(rows[last + 1].kind))
+              last++;
+            return {
+              id: rows[i].workspace,
+              start: boxes[i].start,
+              end: boxes[last].end,
+              next: boxes[last + 1]?.start,
+            };
+          });
+          if (!blocks.length) return none;
+          const slot = blocks.filter((b) => (b.start + b.end) / 2 < y).length,
+            place = placeForSlot(teamSlotCards(rows, team, order), id, slot),
+            tail = blocks[blocks.length - 1];
+          return {
+            slot,
+            place,
+            lineY: !place
+              ? null
+              : slot < blocks.length
+                ? blocks[slot].start + 4
+                : Math.min(tail.end + 4, tail.next ?? Infinity),
+          };
+        }
+        return { CARD_MOVE_REFUSED, boxes, teamSlotCards, stepSlot, cardDropTarget };
+      })();
+    </script>
+    <script>
+      "use strict";
+      const cs = window.codesense,
+        kit = cs.kit,
+        box = document.getElementById("list");
+      // Geometry from src/features/viewer/components/agents-tree-view.tsx.
+      const TREE_INDENT_PX = 18,
+        MAX_INDENT_LEVELS = 4;
+      const WORDS = {
+        running: "Working",
+        thinking: "Thinking",
+        "tool-running": "Running a tool",
+        paused: "Needs you",
+        blocked: "Blocked",
+        "awaiting-answer": "Needs you",
+        idle: "Ready",
+        stalled: "Stalled",
+        unknown: "",
+        completed: "Ended",
+        dropped: "Needs you",
+        failed: "Error",
+        crashed: "Crashed",
+        done: "Ended",
+        errored: "Error",
+      };
+      const WAITING = "Waiting on you";
+      // Needs you: the engine's set (signal_progress "blocked" means stopped to wait on the human).
+      // Crashed is its own state and count, never needs-you.
+      const NEEDS = new Set([
+          "awaiting-answer",
+          "paused",
+          "blocked",
+          "dropped",
+          "failed",
+          "errored",
+        ]),
+        WORKING = new Set(["running", "thinking", "tool-running"]),
+        STOPPED = new Set(["done", "completed", "crashed"]),
+        CRASHED = new Set(["crashed"]);
+      let references = [],
+        metadata = {},
+        sessions = new Map(),
+        inbox = new Map(),
+        ui = {},
+        flat = [];
+      let temporary = new Set(),
+        pendingReveal = null,
+        scheduled = 0,
+        visible = true,
+        currentWorkspace = null;
+      function h(tag, attrs, ...children) {
+        const el = document.createElement(tag);
+        for (const [key, value] of Object.entries(attrs || {})) {
+          if (value === undefined || value === null || value === false) continue;
+          if (key === "class") el.className = value;
+          else if (key === "text") el.textContent = value;
+          else if (key.startsWith("on")) el.addEventListener(key.slice(2).toLowerCase(), value);
+          else el.setAttribute(key, value === true ? "" : String(value));
+        }
+        for (const child of children.flat())
+          if (child !== null && child !== undefined && child !== false) el.append(child);
+        return el;
+      }
+      function icon(name) {
+        const el = kit.icon(name, { size: 12 });
+        el.classList.add("i");
+        el.setAttribute("aria-hidden", "true");
+        return el;
+      }
+      // Pixel geometry from src/shared/lib/status-mark-svg.ts.
+      function statusMarkDrawing(mark, s, maskId) {
+        const c = s / 2;
+        const w = s <= 8 ? 1.5 : Math.round(s * 0.17 * 4) / 4;
+        const r = c - w / 2;
+        const ring = `fill="none" stroke="currentColor" stroke-width="${w}"`;
+        const circle = `<circle cx="${c}" cy="${c}" r="${r}" ${ring}/>`;
+        const halo = (still = false) =>
+          `<circle class="cs-mark-halo${still ? "-still" : ""}" cx="${c}" cy="${c}" r="${c + 1.25}" fill="none" stroke="currentColor" stroke-width="1.5"${still ? ' opacity="0.35"' : ""}/>`;
+        const cut = (shape, body = `<circle cx="${c}" cy="${c}" r="${c}" fill="currentColor"`) =>
+          `<mask id="${maskId}"><rect width="${s}" height="${s}" fill="white"/>${shape}</mask>${body} mask="url(#${maskId})"/>`;
+        switch (mark) {
+          case "ready":
+            return { html: circle };
+          case "tool":
+            return {
+              className: "cs-mark-spin",
+              html: `<path d="M ${c} ${c - r} A ${r} ${r} 0 1 1 ${c - r} ${c}" ${ring} stroke-linecap="round"/>`,
+            };
+          case "thinking": {
+            const dr = Math.max(0.65, s * 0.11),
+              gap = Math.max(1.65, s * 0.3);
+            return {
+              html: [c - gap, c, c + gap]
+                .map(
+                  (x, i) =>
+                    `<circle class="cs-mark-think" data-i="${i}" cx="${x}" cy="${c}" r="${dr}" fill="currentColor"/>`,
+                )
+                .join(""),
+            };
+          }
+          case "question":
+            return {
+              html:
+                halo() +
+                cut(
+                  `<text x="${c}" y="${c + s * 0.14}" font-size="${s * 0.75}" font-family="ui-sans-serif, system-ui" font-weight="700" text-anchor="middle" data-mask fill="black">?</text>`,
+                ),
+            };
+          case "permission": {
+            const bw = Math.max(1, Math.round(s * 0.5)),
+              bh = Math.max(1, Math.round(s * 0.18));
+            return {
+              html:
+                halo() +
+                cut(
+                  `<rect x="${c - bw / 2}" y="${c - bh / 2}" width="${bw}" height="${bh}" rx="${bh * 0.3}" data-mask fill="black"/>`,
+                ),
+            };
+          }
+          case "blocked": {
+            const bw = Math.max(0.9, Math.round(s * 0.14 * 2) / 2),
+              bh = s * 0.5,
+              gap = Math.max(1, s * 0.1);
+            return {
+              html:
+                halo(true) +
+                cut(
+                  `<rect x="${c - gap / 2 - bw}" y="${c - bh / 2}" width="${bw}" height="${bh}" data-mask fill="black"/><rect x="${c + gap / 2}" y="${c - bh / 2}" width="${bw}" height="${bh}" data-mask fill="black"/>`,
+                ),
+            };
+          }
+          case "error": {
+            const bw = Math.max(1, Math.round(s * 0.15 * 2) / 2);
+            return {
+              html: cut(
+                `<rect x="${c - bw / 2}" y="${s * 0.36}" width="${bw}" height="${s * 0.28}" data-mask fill="black"/><rect x="${c - bw / 2}" y="${s * 0.7}" width="${bw}" height="${bw}" data-mask fill="black"/>`,
+                `<path d="M ${c} ${s * 0.04} L ${s} ${s * 0.92} L 0 ${s * 0.92} Z" fill="currentColor" stroke="currentColor" stroke-width="0.6" stroke-linejoin="round"`,
+              ),
+            };
+          }
+          case "ended": {
+            const sw = s <= 8 ? 1.25 : w * 0.85,
+              inset = s * 0.1 + sw / 2;
+            return {
+              html: `<rect x="${inset}" y="${inset}" width="${s - 2 * inset}" height="${s - 2 * inset}" rx="${Math.max(0.5, s * 0.08)}" fill="none" stroke="currentColor" stroke-width="${sw}"/>`,
+            };
+          }
+          case "crashed": {
+            const inset = s * 0.1;
+            return {
+              html: `<rect x="${inset}" y="${inset}" width="${s - 2 * inset}" height="${s - 2 * inset}" rx="${Math.max(0.75, s * 0.1)}" fill="currentColor"/>`,
+            };
+          }
+          case "unknown": {
+            const seg = (2 * Math.PI * r) / 6;
+            return {
+              html: `<circle cx="${c}" cy="${c}" r="${r}" ${ring} stroke-dasharray="${seg * 0.55} ${seg * 0.45}"/>`,
+            };
+          }
+          case "stalled":
+            return {
+              html:
+                circle +
+                `<circle cx="${c}" cy="${c}" r="${Math.max(0.9, s * 0.15)}" fill="currentColor"/>`,
+            };
+          case "offline":
+            return {
+              html:
+                circle +
+                `<line fill="none" x1="${s * 0.15}" y1="${s * 0.85}" x2="${s * 0.85}" y2="${s * 0.15}" stroke="currentColor" stroke-width="${w}" stroke-linecap="round"/>`,
+            };
+        }
+      }
+
+      let markId = 0;
+      function mark(kind, size = 8) {
+        const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+          drawing = statusMarkDrawing(kind, size, "agent-mark-" + markId++);
+        s.setAttribute("width", size);
+        s.setAttribute("height", size);
+        s.setAttribute("viewBox", `0 0 ${size} ${size}`);
+        s.setAttribute("aria-hidden", "true");
+        s.setAttribute("class", "mark " + (drawing.className || ""));
+        s.dataset.mark = kind;
+        s.dataset.tone = ["question", "permission", "blocked"].includes(kind)
+          ? "needs"
+          : ["tool", "thinking"].includes(kind)
+            ? "busy"
+            : ["error", "crashed"].includes(kind)
+              ? "failed"
+              : "idle";
+        s.innerHTML = drawing.html;
+        return s;
+      }
+      // Fold key shapes from src/shared/lib/workspace-key.ts.
+      const teamKey = (t) => "#team-fold:" + t,
+        workspaceKey = (t, w) => "#ws-fold:" + t + (w ? "|" + w : "#no-workspace"),
+        managerKey = (t, h) => "#manager-fold:" + t + "|" + h;
+      const folded = (k) => !freezesFolds && ui.folds?.[k] === true && !temporary.has(k),
+        nameOf = (s) => s?.rowNames?.primary || s?.displayName || s?.handle || "Agent",
+        // The one needs-you predicate: every count, filter, command and row treatment uses it.
+        isNeedsYou = (s) =>
+          !!s &&
+          s.state !== "offline" &&
+          (NEEDS.has(s.effectiveStatus) ||
+            (!!s.pendingAsk && s.state !== "offline" && !STOPPED.has(s.effectiveStatus)));
+      function elapsed(s) {
+        if (STOPPED.has(s.effectiveStatus)) return WORDS[s.effectiveStatus];
+        if (s.startedAtMs == null) return "";
+        const seconds = Math.floor((Date.now() - s.startedAtMs) / 1000);
+        if (seconds < 0) return "";
+        if (seconds < 60) return seconds + "s";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return minutes + "m";
+        return Math.floor(minutes / 60) + "h" + (minutes % 60 ? " " + (minutes % 60) + "m" : "");
+      }
+      function stalledAge(s) {
+        return s?.activityAtMs == null
+          ? "Stalled"
+          : `Last activity ${Math.floor(Math.max(0, Date.now() - s.activityAtMs) / 60000)}m ago`;
+      }
+      function viaGlyph() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 12 12");
+        svg.setAttribute("class", "i");
+        svg.setAttribute("aria-hidden", "true");
+        svg.innerHTML =
+          '<path d="M3 3v3.25A1.75 1.75 0 0 0 4.75 8H10 M8 5.5 10.5 8 8 10.5" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>';
+        return svg;
+      }
+      function lines(s) {
+        const p = s.progress,
+          status = s.effectiveStatus;
+        // Every needs-you row says so, with what it waits on when known.
+        const detail =
+          status === "paused"
+            ? oneLine(s.pendingAsk) || "approval"
+            : status === "blocked" || status === "failed" || status === "errored"
+              ? oneLine(p?.note) || oneLine(s.pendingAsk)
+              : oneLine(s.pendingAsk);
+        const ask = isNeedsYou(s) ? WAITING + (detail ? " · " + detail : "") : null;
+        const activity =
+          status === "stalled"
+            ? "Stalled"
+            : ask || p?.phase === "blocked"
+              ? null
+              : p?.note?.trim() && s.rowNames?.source !== "progress"
+                ? p.note.trim()
+                : p?.total > 0 && typeof p.step === "number"
+                  ? `${p.step} of ${p.total} · ${p.phase}`
+                  : null;
+        return { ask, activity };
+      }
+      // Unwrap code before removing presentation marks; identifiers and code stay literal.
+      function oneLine(text) {
+        return String(text || "")
+          .split(/(```[\s\S]*?```|`[^`\n]+`)/g)
+          .map((part, i) => {
+            if (i % 2)
+              return part.startsWith("```")
+                ? part.slice(3, -3).replace(/^[^\n]*\n/, "")
+                : part.slice(1, -1);
+            return part
+              .replace(/^[ \t]*(?:[-*+]|\d+[.)]|#{1,6})\s+/gm, "")
+              .replace(/(^|[^\w])(\*{1,3}|_{1,3}|~~)(?=\S)(.+?\S|\S)\2(?=$|[^\w])/g, "$1$3");
+          })
+          .join("")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+      function rowInset(row) {
+        return row.pinnedCopy
+          ? 6
+          : 6 +
+              (row.manager ? 16 : row.inWorkspace ? 12 : 0) +
+              Math.min(row.depth || 0, MAX_INDENT_LEVELS) * TREE_INDENT_PX;
+      }
+      function agentHeight(row) {
+        const { s, text } = row;
+        // 4px padding + 20px title (+ 16px detail in Manager view) + 4px padding.
+        let height =
+          (row.manager && !row.pinnedCopy ? 44 : 28) +
+          (!row.pinnedCopy && row.ref?.parentSource === "chosen" ? 15 : 0) +
+          (row.scopeContext ? 15 : 0) +
+          (row.manager && !row.pinnedCopy && s.roleHoldings?.length ? 24 : 0) +
+          (row.manager && !row.pinnedCopy && subagentsWorking(s) ? 16 : 0);
+        // The ask is one 15px line under the title (+2px gap), so heights never depend on text.
+        return height + (text.ask ? 17 : 0);
+      }
+      // Native mapping and availability from src/shared/lib/status-mark.ts;
+      // rendered by src/shared/components/status-mark.tsx with status-mark-svg.ts.
+      // AC7: an agent running subagents is working, whatever its own session says (Claude or
+      // Codex). It wins over Ready/idle and Stalled; needs-you, crashed, offline and ended still win.
+      function subagentsWorking(s) {
+        return (
+          (s?.subagents || 0) > 0 &&
+          s.state !== "offline" &&
+          !STOPPED.has(s.effectiveStatus) &&
+          !isNeedsYou(s)
+        );
+      }
+      const working = (s) =>
+        s?.state !== "offline" && (WORKING.has(s?.effectiveStatus) || subagentsWorking(s));
+      // Only fields that change the row's shape or captured controls replace its node.
+      function agentLayout(row) {
+        const { s, ref, text } = row;
+        return JSON.stringify([
+          nameOf(s),
+          s.rowNames?.full,
+          s.rowNames?.secondary || s.role || s.queueRole,
+          s.face,
+          s.avatar,
+          s.faceTag,
+          s.rolePiece,
+          s.pinned,
+          s.state === "offline",
+          isNeedsYou(s),
+          CRASHED.has(s.effectiveStatus),
+          STOPPED.has(s.effectiveStatus),
+          text.ask,
+          s.launchedBy,
+          s.roleHoldings,
+          s.dueWake,
+          s.tabHidden,
+          s.headless,
+          ref.workspace?.label,
+          ref.workspaceRef,
+          ref.parentSource,
+          row.manager && !row.pinnedCopy && subagentsWorking(s),
+        ]);
+      }
+      function layoutKey(row) {
+        const { s, ref, text, ...layout } = row;
+        if (row.kind === "agent") layout.layout = agentLayout(row);
+        return JSON.stringify(layout);
+      }
+      // What the row says now. Running, thinking and tool runs all read "Working" with one dot;
+      // the detail stays in the tooltip.
+      function liveOf(s) {
+        const status = s.effectiveStatus,
+          offline = s.state === "offline",
+          busy = !offline && working(s),
+          subs = busy && (s.subagents || 0) > 0 ? s.subagents : 0;
+        const word = offline
+          ? "Offline"
+          : STOPPED.has(status)
+            ? WORDS[status] || "Ended"
+            : status === "blocked"
+              ? WORDS.blocked
+              : busy
+                ? "Working"
+                : WORDS[status] || "";
+        return {
+          word,
+          tone: offline
+            ? "offline"
+            : CRASHED.has(status)
+              ? "failed"
+              : isNeedsYou(s)
+                ? "needs"
+                : busy
+                  ? "working"
+                  : null,
+          mark: busy && !offline ? "thinking" : markKind(s),
+          subs,
+          label: offline
+            ? "Offline"
+            : subs
+              ? `Working · ${subs} ${subs === 1 ? "subagent" : "subagents"}`
+              : busy
+                ? "Working"
+                : WORDS[status] || "Activity unknown",
+        };
+      }
+      // A word holds for 300ms before it may change again, so a fast status flip can't strobe.
+      const held = new Map();
+      function heldLive(s) {
+        const live = liveOf(s),
+          key = JSON.stringify(live),
+          now = performance.now(),
+          last = held.get(s.id);
+        if (!last || last.key === key || now - last.at >= 300) {
+          if (last?.key !== key) held.set(s.id, { key, live, at: now });
+          return live;
+        }
+        setTimeout(schedule, 300 - (now - last.at) + 5);
+        return last.live;
+      }
+      function stateEl(live) {
+        return h(
+          "span",
+          { class: "al-state", "data-tone": live.tone },
+          live.word,
+          live.subs
+            ? h(
+                "span",
+                {
+                  class: "al-subs",
+                  role: "img",
+                  "aria-label": `${live.subs} ${live.subs === 1 ? "subagent" : "subagents"} working`,
+                  title: `${live.subs} ${live.subs === 1 ? "subagent" : "subagents"} working`,
+                },
+                icon("git-branch"),
+                String(live.subs),
+              )
+            : null,
+        );
+      }
+      function heldRoleLabel(s) {
+        const roles = s.roleHoldings?.map((role) => role.name || role.label).filter(Boolean);
+        return roles?.length ? "Holds: " + roles.join(", ") : "";
+      }
+      function mainLabel(row, live) {
+        return heldRoleLabel(row.s)
+          ? [nameOf(row.s), live.label, row.text.ask, heldRoleLabel(row.s)]
+              .filter(Boolean)
+              .join(" · ")
+          : null;
+      }
+      function tooltipOf(row, live) {
+        const { s, text } = row,
+          offline = s.state === "offline",
+          role = s.rowNames?.secondary || s.role || s.queueRole || "",
+          details = [s.machine !== "This Mac" ? s.machine : null, s.model]
+            .filter(Boolean)
+            .join(" · ");
+        return [
+          s.rowNames?.full || nameOf(s),
+          [
+            live.word,
+            live.subs ? `${live.subs} ${live.subs === 1 ? "subagent" : "subagents"}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          [role, details, elapsed(s)].filter(Boolean).join(" · "),
+          heldRoleLabel(s),
+          s.effectiveStatus === "stalled"
+            ? stalledAge(s)
+            : WORKING.has(s.effectiveStatus)
+              ? [WORDS[s.effectiveStatus], oneLine(text.activity)].filter(Boolean).join(": ")
+              : oneLine(text.activity),
+          s.startedWith ? "Started with: " + oneLine(s.startedWith).slice(0, 240) : null,
+          text.ask,
+          offline
+            ? "Click, Enter or Space to show it · M for its inbox"
+            : "Click for terminal · Enter, Space, Q or Option-click for Quick view · M for inbox",
+          offline ? `${s.machine || "Machine"} is offline. CodeSense is reconnecting.` : null,
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+      // Patch the live parts of a retained row without replacing its controls.
+      function update(item, row) {
+        if (row?.kind === "workspace") {
+          const tally = tallyOf(row.members.map((id) => sessions.get(id))),
+            key = JSON.stringify(tally);
+          if (item.__tally !== key) {
+            item.__tally = key;
+            item.querySelector(".al-ws-tail")?.replaceWith(wsTail(tally));
+          }
+          return;
+        }
+        if (row?.kind !== "agent" || !row.s) return;
+        const live = heldLive(row.s),
+          key = JSON.stringify(live);
+        if (item.__live !== key) {
+          item.__live = key;
+          const old = item.querySelector(".al-state");
+          const next = live.word ? stateEl(live) : null;
+          if (old && next) old.replaceWith(next);
+          else if (old) old.remove();
+          else if (next) item.querySelector(".al-l1")?.append(next);
+          const dot = item.querySelector(".al-dot");
+          if (dot) {
+            dot.setAttribute("aria-label", live.label);
+            dot.replaceChildren(mark(live.mark));
+          }
+        }
+        const subagents = item.querySelector(".al-l3");
+        if (subagents) {
+          const count = row.s.subagents,
+            text = ` · ${count} ${count === 1 ? "subagent" : "subagents"}`;
+          if (subagents.lastChild.textContent !== text) subagents.lastChild.textContent = text;
+        }
+        const main = item.querySelector(".al-main"),
+          tip = tooltipOf(row, live);
+        if (main && main.title !== tip) main.title = tip;
+        if (main && mainLabel(row, live)) main.setAttribute("aria-label", mainLabel(row, live));
+        item
+          .querySelector(".al-wchip")
+          ?.toggleAttribute(
+            "data-current",
+            !!row.ref.workspace &&
+              currentWorkspace === row.ref.teamKey + "|" + row.ref.workspaceRef,
+          );
+        const pinned = !!heldPin(row);
+        item.querySelector(".al-pin-slot").hidden = !pinned;
+        for (const button of item.querySelectorAll(".al-pin, .al-unpin")) {
+          patchPin(button, row);
+          if (button.classList.contains("al-unpin")) button.hidden = !pinned;
+        }
+        applyMessages(item, row);
+        schedulePinControls();
+      }
+      // Unread messages that need you: an amber count on the row (and on Messages while hovered).
+      // A live field, patched in place; it never adds to a needs-you count.
+      function messagesFor(row) {
+        return Number(inbox.get(row.ref.inboxRef)?.needsYouBySender?.[row.s.handle] || 0);
+      }
+      function applyMessages(item, row) {
+        const n = messagesFor(row);
+        if (item.__msgs === n) return;
+        item.__msgs = n;
+        const root = item.querySelector(".al-row");
+        if (!root) return;
+        const label = `${n} ${n === 1 ? "message needs" : "messages need"} you`;
+        root.toggleAttribute("data-msgs", n > 0);
+        const messages = root.querySelector(".al-messages");
+        if (messages) {
+          if (n) messages.dataset.count = String(n);
+          else delete messages.dataset.count;
+          messages.setAttribute(
+            "aria-label",
+            `Messages for ${nameOf(row.s)}${n ? ` (${label})` : ""}`,
+          );
+        }
+        let pill = root.querySelector(".al-msgs");
+        if (!n) {
+          pill?.remove();
+          return;
+        }
+        if (!pill) {
+          pill = h("button", {
+            type: "button",
+            class: "al-msgs",
+            "data-cs-focus-key": "msgs",
+            onclick: () => popover(row.s, root.querySelector(".al-main"), "agent-inbox-chat"),
+          });
+          root.append(pill);
+        }
+        pill.replaceChildren(h("span", { text: n > 99 ? "99+" : String(n) }));
+        pill.setAttribute("aria-label", label + ": open messages");
+        pill.title = label + " (M)";
+      }
+      function markKind(s) {
+        if (subagentsWorking(s) && !WORKING.has(s.effectiveStatus)) return "thinking";
+        const kind =
+          {
+            running: "thinking",
+            thinking: "thinking",
+            "tool-running": "tool",
+            "awaiting-answer": "question",
+            dropped: "question",
+            paused: "permission",
+            blocked: "blocked",
+            failed: "error",
+            errored: "error",
+            crashed: "crashed",
+            stalled: "stalled",
+            completed: "ended",
+            done: "ended",
+            idle: "ready",
+          }[s.effectiveStatus] || "unknown";
+        return s.state === "offline" && !["ended", "crashed"].includes(kind) ? "offline" : kind;
+      }
+      // StageRailShape from src/shared/components/stage-rail.tsx (12px, neutral ink).
+      function stageRail(info) {
+        const role = info.stageRole,
+          label = info.stageLabel || info.storyStatus || "No stage";
+        const rail = h("span", {
+          class: "al-stage-rail",
+          role: "img",
+          "aria-label": label,
+          title: label,
+          "data-rail-role": role || "off",
+        });
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        const height = 12,
+          width = 16,
+          track = 3,
+          y = 4.5,
+          radius = 1.5;
+        svg.setAttribute("width", width);
+        svg.setAttribute("height", height);
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        const rect = (x, top, w, tall, rx, fill, extra = "") =>
+          `<rect x="${x}" y="${top}" width="${w}" height="${tall}" rx="${rx}" fill="var(--cs-rail-${fill})" ${extra}/>`;
+        if (!role)
+          svg.innerHTML = `<rect x="0.5" y="5" width="15" height="2" rx="1" fill="none" stroke="var(--cs-rail-fill)" stroke-width="1" stroke-dasharray="1.5 1.5"/>`;
+        else if (role === "blocked") {
+          const x = width / 3 + 1.1,
+            wall = 1.75;
+          svg.innerHTML =
+            rect(0, y, width / 3 - 0.6, track, 1, "fill") +
+            rect(x + wall + 1, y, width - x - wall - 1, track, radius, "empty") +
+            rect(x, y - 2.5, wall, track + 5, wall / 2, "wall", 'data-rail="wall"');
+        } else {
+          const third = { not_started: 0, active: 1, review: 2, done: 3 }[role] || 0;
+          svg.innerHTML =
+            rect(0, y, width, track, radius, "empty") +
+            (third
+              ? rect(
+                  0,
+                  y,
+                  role === "done" ? width : (width * third) / 3 - 0.6,
+                  track,
+                  role === "done" ? radius : 1,
+                  role === "done" ? "done" : "fill",
+                  'data-rail="fill"',
+                )
+              : "");
+        }
+        rail.append(svg);
+        return rail;
+      }
+      function report(error) {
+        setTimeout(() => {
+          throw error;
+        });
+      }
+      // Folded counts use the same predicate as the rows they stand for.
+      const attention = (ref) => isNeedsYou(sessions.get(ref.sessionRef));
+      const foldPrefix = crypto.randomUUID();
+      let foldSequence = 0,
+        latestFoldRequest = null;
+      function fold(keyOrFolds, value) {
+        const patch = typeof keyOrFolds === "string" ? { [keyOrFolds]: value } : keyOrFolds;
+        for (const key of Object.keys(patch)) temporary.delete(key);
+        ui = { ...ui, folds: { ...ui.folds, ...patch } };
+        const request = (latestFoldRequest = foldPrefix + ":" + ++foldSequence);
+        paint();
+        cs.setUiState?.("ui:dock", { folds: ui.folds }, request).catch(report);
+      }
+      function goto(s, keyboard) {
+        cs.gotoAgent?.({
+          agentId: s.sessionId || s.id,
+          ...(keyboard ? { preserveFocus: true } : {}),
+        }).catch(report);
+      }
+      function popover(s, anchor, kind) {
+        const rect = anchor.getBoundingClientRect();
+        cs.showPopover?.({
+          kind,
+          sessionId: s.sessionId || s.id,
+          anchorId: anchor.closest("[data-codesense-row]").id,
+          anchorRect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        }).catch(report);
+      }
+      function launch(team) {
+        cs.openLauncher?.({
+          ...(team
+            ? {
+                org: team.slice(0, team.lastIndexOf(":")),
+                team: team.slice(team.lastIndexOf(":") + 1),
+              }
+            : {}),
+          task: "",
+        }).catch(report);
+      }
+      function launchButton(row, label) {
+        return h(
+          "button",
+          {
+            type: "button",
+            class: "al-launch",
+            "data-cs-focus-key": "launch",
+            "aria-label": "Launch in " + label,
+            title: "Launch agent",
+            onclick: () => launch(row.team),
+          },
+          icon("plus"),
+        );
+      }
+      function descendants(ref, children) {
+        return (children.get(ref.id) || []).flatMap((child) => [
+          child,
+          ...descendants(child, children),
+        ]);
+      }
+      function flatten(includeFolded = false) {
+        const out = [],
+          byId = new Map(viewRefs.map((r) => [r.id, r])),
+          children = new Map();
+        for (const ref of viewRefs)
+          if (ref.parentId) {
+            if (!children.has(ref.parentId)) children.set(ref.parentId, []);
+            children.get(ref.parentId).push(ref);
+          }
+        const teams = metadata.teamOrder || [...new Set(references.map((r) => r.teamKey))],
+          manager = ui.arrange === "manager";
+        function agent(ref, parentField, inWorkspace) {
+          const s = sessions.get(ref.sessionRef);
+          if (!s) return;
+          let depth = 0,
+            parent = byId.get(ref[parentField]);
+          while (parent) {
+            depth++;
+            parent = byId.get(parent[parentField]);
+          }
+          const all = manager ? descendants(ref, children) : [],
+            key = managerKey(ref.teamKey, s.handle),
+            canFold = manager && all.length > 0,
+            isFolded = !includeFolded && canFold && folded(key);
+          const hiddenNeeds = isFolded ? all.filter(attention).length : 0,
+            text = lines(s);
+          out.push({
+            id: ref.id,
+            kind: "agent",
+            depth,
+            manager,
+            inWorkspace,
+            foldKey: canFold ? key : null,
+            folded: isFolded,
+            hiddenCount: isFolded ? all.length : 0,
+            hiddenNeeds,
+            selected: ui.selected === s.id || ui.selected === s.sessionId,
+            pinned: !!s.pinned,
+            scopeContext: contextIds.has(ref.id),
+            parentName: nameOf(sessions.get(byId.get(ref.parentId)?.sessionRef)),
+            via: references.find(
+              (r) =>
+                r.teamKey === ref.teamKey && sessions.get(r.sessionRef)?.handle === s.launchedBy,
+            )?.sessionRef,
+            height: agentHeight({
+              s,
+              text,
+              depth,
+              manager,
+              inWorkspace,
+              ref,
+              scopeContext: contextIds.has(ref.id),
+            }),
+            s,
+            ref,
+            text,
+          });
+        }
+        if (ui.arrange === "status") {
+          for (const [rank, label] of [
+            [0, "Needs you"],
+            [1, "Working"],
+            [2, "Ready"],
+            [3, "Other"],
+          ]) {
+            const members = viewRefs.filter(
+              (r) =>
+                (CRASHED.has(sessions.get(r.sessionRef)?.effectiveStatus) ||
+                sessions.get(r.sessionRef)?.state === "offline"
+                  ? 3
+                  : subagentsWorking(sessions.get(r.sessionRef))
+                    ? 1
+                    : (r.statusGroup ?? 3)) === rank,
+            );
+            if (!members.length) continue;
+            out.push({ id: "status:" + rank, kind: "heading", label, height: 26 });
+            for (const ref of members) agent(ref, null, false);
+          }
+          return out;
+        }
+        for (const team of teams) {
+          const refs = viewRefs.filter((r) => r.teamKey === team);
+          if (!refs.length) continue;
+          const key = teamKey(team),
+            isFolded = !includeFolded && folded(key);
+          out.push({
+            id: "team:" + team,
+            kind: "team",
+            team,
+            names: metadata.teamNames?.[team],
+            foldKey: key,
+            folded: isFolded,
+            needs: isFolded ? refs.filter(attention).length : 0,
+            funnel: listedTeams().length > 1,
+            focused: focusTeam() === team,
+            count: refs.length,
+            height: 36,
+          });
+          if (isFolded) continue;
+          if (manager) {
+            let noManager = false;
+            for (const ref of refs) {
+              let parent = byId.get(ref.parentId),
+                hidden = false;
+              while (parent) {
+                if (
+                  !includeFolded &&
+                  folded(managerKey(team, sessions.get(parent.sessionRef)?.handle))
+                )
+                  hidden = true;
+                parent = byId.get(parent.parentId);
+              }
+              if (hidden) continue;
+              if (!ref.parentId && !children.has(ref.id) && !noManager) {
+                out.push({
+                  id: "unmanaged:" + team,
+                  kind: "heading",
+                  label: "No manager",
+                  height: 26,
+                });
+                noManager = true;
+              }
+              agent(ref, "parentId", false);
+            }
+          } else {
+            const groups = new Map();
+            for (const ref of refs) {
+              const id = ref.workspaceRef || "";
+              if (!groups.has(id)) groups.set(id, []);
+              groups.get(id).push(ref);
+            }
+            // Workspace and crew ranks are supplied by the host.
+            for (const [workspace, members] of [...groups].sort(
+              (a, b) => a[1][0].workspaceRank - b[1][0].workspaceRank,
+            )) {
+              const key = workspaceKey(team, workspace),
+                isFolded =
+                  !includeFolded &&
+                  (folded(key) || activeDrag?.id === "workspace:" + team + "|" + workspace);
+              out.push({
+                id: "workspace:" + team + "|" + workspace,
+                kind: "workspace",
+                team,
+                workspace,
+                info: members[0].workspace,
+                foldKey: key,
+                folded: isFolded,
+                dragging: activeDrag?.id === "workspace:" + team + "|" + workspace,
+                members: members.map((r) => r.sessionRef),
+                machineOffline: members.some(
+                  (r) => sessions.get(r.sessionRef)?.state === "offline",
+                ),
+                height: 30,
+              });
+              if (!isFolded)
+                for (const ref of [...members].sort(
+                  (a, b) => (a.crewOrder ?? a.order) - (b.crewOrder ?? b.order),
+                ))
+                  agent(ref, "crewParentId", !!workspace);
+            }
+          }
+        }
+        return out;
+      }
+      // One state per session for counts and bars: waiting, failed, working or other.
+      function stateGroup(s) {
+        if (!s) return "other";
+        if (CRASHED.has(s.effectiveStatus)) return "failed";
+        if (isNeedsYou(s)) return "waiting";
+        return s.state !== "offline" && working(s) ? "working" : "other";
+      }
+      function tallyOf(list) {
+        const tally = { waiting: 0, failed: 0, working: 0, other: 0, total: list.length };
+        for (const s of list) tally[stateGroup(s)]++;
+        return tally;
+      }
+      // Native's MessageSquare (the kit has no message icon; its fallback draws a "?").
+      function messageIcon() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("class", "i");
+        svg.setAttribute("aria-hidden", "true");
+        svg.innerHTML = '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>';
+        return svg;
+      }
+      const GRIP =
+        '<svg viewBox="0 0 8 12" aria-hidden="true"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>';
+      function foldChevron() {
+        return h("span", { class: "al-fchev" }, icon("chevron-right"));
+      }
+      const cardMath = window.agentListCardMath,
+        { CARD_MOVE_REFUSED } = cardMath;
+      let cardPress = null,
+        activeDrag = null,
+        dragFrame = 0,
+        announcementTimer = 0,
+        pendingCardFocus = null;
+      const moveNotice = document.getElementById("al-move-notice");
+      function announceMove(words) {
+        clearTimeout(announcementTimer);
+        moveNotice.textContent = words;
+        moveNotice.title = words;
+        announcementTimer = setTimeout(() => {
+          moveNotice.textContent = "";
+        }, 5000);
+      }
+      const workspaceOrder = (team) => metadata.pane?.workspaceOrder?.[team] || [];
+      function cardLayout(rows) {
+        return rows
+          .filter((row) => row.kind === "workspace")
+          .map((row) => row.id + ":" + !!row.dragging)
+          .join("\n");
+      }
+      function focusCard(id) {
+        const at = flat.findIndex((row) => row.id === id);
+        if (at < 0) return;
+        list?.scrollToIndex(at);
+        box
+          .querySelector(`[data-row-id="${CSS.escape(id)}"] .al-ws-head`)
+          ?.focus({ preventScroll: true });
+      }
+      function cardHasFocus(id) {
+        return (
+          document.hasFocus() &&
+          document.activeElement?.closest("[data-row-id]")?.dataset.rowId === id
+        );
+      }
+      function clearCardFocus() {
+        pendingCardFocus = null;
+      }
+      function cardFocusOut() {
+        const id = pendingCardFocus;
+        if (id)
+          queueMicrotask(() => {
+            if (pendingCardFocus === id && !cardHasFocus(id)) clearCardFocus();
+          });
+      }
+      document.addEventListener("focusout", cardFocusOut);
+      window.addEventListener("blur", clearCardFocus);
+      function cardRefusal(row) {
+        // Architecture: hidden cards leave a drop's position ambiguous; only unfiltered By team can move.
+        if (ui.arrange !== "teams") return CARD_MOVE_REFUSED.byStatus;
+        const filter = search();
+        if (
+          filter.query.trim() ||
+          filter.status !== "all" ||
+          ui.workspaceFilter ||
+          ui.agentFilter ||
+          railScope
+        )
+          return CARD_MOVE_REFUSED.filtered;
+        if (!workspaceOrder(row.team).includes(row.workspace)) return CARD_MOVE_REFUSED.noPill;
+        if (
+          cardMath.teamSlotCards(flat, row.team, workspaceOrder(row.team)).filter((c) => c.pill)
+            .length < 2
+        )
+          return CARD_MOVE_REFUSED.nowhere;
+        return null;
+      }
+      async function moveCard(row, place, keyboard = false) {
+        if (keyboard) pendingCardFocus = row.id;
+        const labelOf = (id) =>
+          flat.find((r) => r.kind === "workspace" && r.team === row.team && r.workspace === id)
+            ?.info?.label || id;
+        const words =
+          "before" in place
+            ? `Moved ${row.info?.label || row.workspace} above ${labelOf(place.before)}`
+            : `Moved ${row.info?.label || row.workspace} below ${labelOf(place.after)}`;
+        try {
+          const result = await cs.act("moveWorkspace", {
+            teamKey: row.team,
+            workspaceId: row.workspace,
+            ...place,
+          });
+          if (!result.moved) {
+            if (keyboard) pendingCardFocus = null;
+            announceMove("This card couldn't move. Its place in the order may have changed.");
+            return;
+          }
+          announceMove(words);
+          if (keyboard && pendingCardFocus === row.id && cardHasFocus(row.id)) focusCard(row.id);
+        } catch (error) {
+          if (keyboard) pendingCardFocus = null;
+          announceMove(String(error.message || error));
+        }
+      }
+      function endCardDrag(commit = false, redraw = true) {
+        const p = cardPress;
+        if (!p) return;
+        const place = activeDrag && p.target?.place;
+        cardPress = null;
+        activeDrag = null;
+        cancelAnimationFrame(dragFrame);
+        dragFrame = 0;
+        p.cleanup();
+        p.preview?.remove();
+        p.line?.remove();
+        document.documentElement.removeAttribute("data-al-card-drag");
+        if (redraw) paint();
+        if (commit && place) void moveCard(p.row, place);
+      }
+      function measureCardDrag() {
+        const p = cardPress;
+        if (!p || !activeDrag) return;
+        const bounds = box.getBoundingClientRect(),
+          y = p.atY - bounds.top + box.scrollTop;
+        p.target = cardMath.cardDropTarget(
+          flat,
+          cardMath.boxes(flat),
+          p.row.team,
+          p.row.workspace,
+          y,
+          workspaceOrder(p.row.team),
+          { x: p.atX, left: bounds.left, right: bounds.right },
+        );
+        const refused = p.target.slot === null;
+        document.documentElement.setAttribute("data-al-card-drag", refused ? "refused" : "");
+        p.preview.toggleAttribute("data-refused", refused);
+        p.preview.style.top = p.atY - p.grabY + "px";
+        p.preview.style.left = bounds.left + 6 + "px";
+        p.preview.style.width = Math.max(0, bounds.width - 12) + "px";
+        p.line.hidden = p.target.lineY === null;
+        p.line.style.top = bounds.top + p.target.lineY - box.scrollTop + "px";
+        p.line.style.left = bounds.left + 6 + "px";
+        p.line.style.width = Math.max(0, bounds.width - 12) + "px";
+      }
+      function beginCardDrag(event, row) {
+        if (
+          !row.workspace ||
+          cardPress ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.shiftKey
+        )
+          return;
+        const head = event.currentTarget,
+          bounds = head.getBoundingClientRect();
+        const p = (cardPress = {
+          row,
+          pointerId: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          atX: event.clientX,
+          atY: event.clientY,
+          grabY: event.clientY - bounds.top,
+          refused: cardRefusal(row),
+        });
+        const tick = () => {
+          dragFrame = 0;
+          if (cardPress !== p || !activeDrag) return;
+          const bounds = box.getBoundingClientRect();
+          let step =
+            p.atY < bounds.top + 44
+              ? -((bounds.top + 44 - p.atY) / 44) * 16
+              : p.atY > bounds.bottom - 44
+                ? ((p.atY - bounds.bottom + 44) / 44) * 16
+                : 0;
+          step = Math.max(-16, Math.min(16, Math.round(step)));
+          const before = box.scrollTop;
+          if (step) box.scrollTop += step;
+          measureCardDrag();
+          if (step && box.scrollTop !== before) dragFrame = requestAnimationFrame(tick);
+        };
+        const onMove = (ev) => {
+          if (ev.pointerId !== p.pointerId) return;
+          if (ev.pointerType === "mouse" && ev.buttons === 0) {
+            endCardDrag();
+            return;
+          }
+          p.atX = ev.clientX;
+          p.atY = ev.clientY;
+          if (p.said) return;
+          if (!activeDrag) {
+            if (Math.hypot(ev.clientX - p.x, ev.clientY - p.y) < 6) return;
+            if (p.refused) {
+              p.said = true;
+              announceMove(p.refused);
+              return;
+            }
+            activeDrag = row;
+            // Architecture: capture on the stable scroller; virtual rows may disappear during a drag.
+            box.setPointerCapture(p.pointerId);
+            p.preview = h(
+              "div",
+              { class: "al-ws-drag-preview", "aria-hidden": "true" },
+              head.cloneNode(true),
+            );
+            p.preview.querySelectorAll("[id], [data-codesense-row]").forEach((el) => {
+              el.removeAttribute("id");
+              el.removeAttribute("data-codesense-row");
+            });
+            p.preview.querySelectorAll("button").forEach((el) => (el.tabIndex = -1));
+            p.line = h("div", { class: "al-drop-line", "aria-hidden": "true" });
+            document.querySelector(".al").append(p.preview, p.line);
+            window.getSelection()?.removeAllRanges();
+            paint();
+          }
+          ev.preventDefault();
+          measureCardDrag();
+          if (!dragFrame) dragFrame = requestAnimationFrame(tick);
+        };
+        const onUp = (ev) => {
+          if (ev.pointerId !== p.pointerId) return;
+          if (activeDrag || p.said) {
+            const swallow = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+            window.addEventListener("click", swallow, { capture: true, once: true });
+            setTimeout(() => window.removeEventListener("click", swallow, true), 0);
+          }
+          if (activeDrag) measureCardDrag();
+          endCardDrag(true);
+        };
+        const onCancel = () => endCardDrag();
+        const onKey = (ev) => {
+          if (ev.key !== "Escape") return;
+          if (activeDrag) {
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+          }
+          endCardDrag();
+        };
+        const onHidden = () => {
+          if (document.hidden) endCardDrag();
+        };
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("pointercancel", onCancel);
+        window.addEventListener("keydown", onKey, true);
+        window.addEventListener("blur", onCancel);
+        box.addEventListener("lostpointercapture", onCancel);
+        box.addEventListener("scroll", measureCardDrag);
+        document.addEventListener("visibilitychange", onHidden);
+        p.cleanup = () => {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          window.removeEventListener("pointercancel", onCancel);
+          window.removeEventListener("keydown", onKey, true);
+          window.removeEventListener("blur", onCancel);
+          box.removeEventListener("lostpointercapture", onCancel);
+          box.removeEventListener("scroll", measureCardDrag);
+          document.removeEventListener("visibilitychange", onHidden);
+          if (box.hasPointerCapture(p.pointerId)) box.releasePointerCapture(p.pointerId);
+        };
+      }
+      function toggleButton(row, className, ...content) {
+        return h(
+          "button",
+          {
+            type: "button",
+            class: className,
+            "data-cs-focus-key": "fold",
+            "aria-expanded": String(!row.folded),
+            onclick: () => fold(row.foldKey, !row.folded),
+          },
+          ...content,
+        );
+      }
+      // Which connector pieces each crew row draws: trunks passing through for ancestors with
+      // later children, its own elbow (the trunk runs on when a sibling follows), and a stem down
+      // from its avatar when its crew is shown under it.
+      function planConnectors(rows) {
+        const laterAt = (i, depth) => {
+          for (
+            let j = i + 1;
+            j < rows.length && rows[j].kind === "agent" && !rows[j].pinnedCopy;
+            j++
+          ) {
+            if (rows[j].depth < depth) return false;
+            if (rows[j].depth === depth) return true;
+          }
+          return false;
+        };
+        rows.forEach((row, i) => {
+          if (row.kind !== "agent" || row.pinnedCopy) return;
+          const next = rows[i + 1],
+            d = row.depth || 0,
+            pass = [];
+          for (let level = 1; level < d; level++) if (laterAt(i, level)) pass.push(level);
+          const stem = next?.kind === "agent" && !next.pinnedCopy && next.depth > d;
+          row.tree = d || stem ? { d, pass, tee: d > 0 && laterAt(i, d), stem } : null;
+        });
+      }
+      function connectors(row) {
+        // Avatar left edge at depth d is base + 18d; its centre is the trunk for depth d + 1.
+        const base = 6 + rowInset({ ...row, depth: 0 }),
+          at = (level) => base + (Math.min(level, MAX_INDENT_LEVELS) - 1) * TREE_INDENT_PX + 10,
+          line = (k, left, width) =>
+            h("span", {
+              class: "al-tree",
+              "data-k": k,
+              "aria-hidden": "true",
+              style: `left:${left}px${width ? `;width:${width}px` : ""}`,
+            });
+        const { d, pass, tee, stem } = row.tree,
+          out = pass.map((level) => line("pass", at(level)));
+        if (d) {
+          const x = at(d),
+            child = base + Math.min(d, MAX_INDENT_LEVELS) * TREE_INDENT_PX;
+          if (tee) out.push(line("pass", x));
+          out.push(line("elbow", x, child - x - 3));
+        }
+        if (stem) out.push(line("stem", at(d + 1)));
+        return out;
+      }
+      function wsTail(t) {
+        const words = [
+          t.waiting && `${t.waiting} waiting on you`,
+          t.failed && `${t.failed} crashed`,
+          t.working && `${t.working} working`,
+          t.other && `${t.other} ready, offline or ended`,
+        ].filter(Boolean);
+        return h(
+          "span",
+          {
+            class: "al-ws-tail",
+            role: "img",
+            "aria-label": `${t.total} ${t.total === 1 ? "agent" : "agents"}: ${words.join(", ")}`,
+            title: words.join(" · "),
+          },
+          t.waiting
+            ? h(
+                "span",
+                { class: "al-hot", "data-needs": true },
+                mark("question", 9),
+                String(t.waiting),
+              )
+            : null,
+          t.failed ? h("span", { class: "al-hot" }, mark("crashed", 9), String(t.failed)) : null,
+          h(
+            "span",
+            { class: "al-bar" },
+            ["waiting", "failed", "working", "other"]
+              .filter((k) => t[k])
+              .map((k) => h("i", { "data-k": k, style: `flex:${t[k]}` })),
+          ),
+          String(t.total),
+        );
+      }
+      const DEALT_FACES = [
+        "sysadmin-goblin",
+        "given-up-engineer",
+        "hardhat-raccoon",
+        "tanktop-philosopher",
+        "yaml-wizard",
+        "tie-cat",
+        "skeptical-goat",
+        "coffee-bot",
+        "hoodie-hacker",
+        "science-alien",
+        "mad-scientist",
+        "fine-dog",
+        "rubber-duck",
+      ];
+      function faceOf(session, label) {
+        if (session.face?.kind === "image")
+          return h("img", { class: "al-face", src: session.face.src, alt: "" });
+        if (!session.face && session.avatar) {
+          const face = kit.avatar({ face: session.avatar, name: label, size: 20 });
+          face.classList.add("al-face");
+          return face;
+        }
+        if (!session.face) {
+          // The host's dealt face (resolveAgentFace): FNV-1a of the agent key, else display name or
+          // handle, into the built-in pack, so a row never waits on initials.
+          const revision = session.agentRevision || "",
+            agentKey =
+              session.agentKey ||
+              (revision.lastIndexOf("@") > 0 ? revision.slice(0, revision.lastIndexOf("@")) : null);
+          let hash = 0x811c9dc5;
+          const key = agentKey || session.displayName || session.handle || label;
+          for (let i = 0; i < key.length; i++) {
+            hash ^= key.charCodeAt(i);
+            hash = Math.imul(hash, 0x01000193);
+          }
+          const face = kit.avatar({
+            face: "builtin-funny:" + DEALT_FACES[(hash >>> 0) % DEALT_FACES.length],
+            name: label,
+            size: 20,
+          });
+          face.classList.add("al-face");
+          return face;
+        }
+        return h("span", {
+          class: "al-face",
+          "aria-hidden": true,
+          text: session.face?.text || label.slice(0, 2),
+          style: session.face?.color ? `background:${session.face.color}` : null,
+        });
+      }
+      function render(row) {
+        const item = h("div", { class: "al-item", role: "listitem", "data-row-id": row.id });
+        if (row.kind === "agent" && newSessions.delete(row.s.id)) item.classList.add("al-enter");
+        if (row.kind === "more") {
+          item.append(
+            h("button", {
+              type: "button",
+              class: "al-link",
+              text: row.label,
+              onclick: () => {
+                expandedPins = !expandedPins;
+                paint();
+              },
+            }),
+          );
+          return item;
+        }
+        if (row.kind === "heading") {
+          item.append(h("h2", { class: "al-section", text: row.label }));
+          return item;
+        }
+        if (row.kind === "team") {
+          item.classList.add("al-team");
+          item.dataset.funnel = row.focused ? "on" : "off";
+          const split = row.team.lastIndexOf(":"),
+            names = row.names || { org: row.team.slice(0, split), team: row.team.slice(split + 1) };
+          item.append(
+            toggleButton(
+              row,
+              "al-team-head",
+              foldChevron(),
+              h("span", { class: "al-team-org", text: names.org }),
+              h("span", { class: "al-team-sep", text: "›" }),
+              h("span", { class: "al-team-name", text: names.team }),
+              row.needs
+                ? h(
+                    "span",
+                    {
+                      class: "al-team-need",
+                      role: "img",
+                      "aria-label": `${row.needs} ${row.needs === 1 ? "agent needs" : "agents need"} you`,
+                    },
+                    mark("question", 6),
+                    String(row.needs),
+                  )
+                : null,
+              h("span", { class: "al-team-count", text: String(row.count) }),
+            ),
+          );
+          item.append(launchButton(row, names.team));
+          if (row.funnel)
+            item.append(
+              h(
+                "button",
+                {
+                  type: "button",
+                  class: "al-team-funnel",
+                  "aria-label": "Filter to " + names.team,
+                  "aria-pressed": String(row.focused),
+                  onclick: () => toggleTeam(row.team),
+                },
+                icon("filter"),
+              ),
+            );
+          return item;
+        }
+        if (row.kind === "workspace") {
+          const title = row.info?.label || "No workspace",
+            tally = tallyOf(row.members.map((id) => sessions.get(id)));
+          item.__tally = JSON.stringify(tally);
+          const card = h(
+            "div",
+            {
+              id: row.id,
+              class: "al-ws-card",
+              "data-dragging": row.dragging,
+              "data-codesense-row": row.workspace
+                ? JSON.stringify({
+                    kind: "workspace",
+                    workspaceId: row.workspace,
+                    teamKey: row.team,
+                  })
+                : null,
+            },
+            toggleButton(
+              row,
+              "al-ws-head",
+              foldChevron(),
+              row.info?.kind === "story" ? stageRail(row.info) : icon("folder"),
+              h("span", { class: "al-ws-name", text: title, title: row.info?.storyTitle || title }),
+              h("span", { class: "al-ws-meta", text: row.info?.sourceRepoSlug || "" }),
+              row.info?.machineId && row.info.machineId !== "local"
+                ? h(
+                    "span",
+                    {
+                      class: "al-ws-machine",
+                      "data-offline": row.machineOffline,
+                      title: row.machineOffline
+                        ? `${row.info.machineId} is offline. CodeSense is reconnecting.`
+                        : `Runs on ${row.info.machineId}`,
+                    },
+                    icon(row.machineOffline ? "wifi-off" : "monitor"),
+                    h("span", { text: row.info.machineId }),
+                  )
+                : null,
+              wsTail(tally),
+            ),
+          );
+          card.append(launchButton(row, title));
+          const head = card.querySelector(".al-ws-head");
+          if (row.workspace) {
+            head.addEventListener("pointerdown", (e) => beginCardDrag(e, row));
+            head.setAttribute("aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown");
+            head.title = "drag to move, or Option+↑ / Option+↓";
+            if (row.movable) {
+              const grip = h("span", { class: "al-ws-grip", "aria-hidden": "true" });
+              grip.innerHTML = GRIP;
+              head.prepend(grip);
+            }
+          }
+          if (row.info?.sourceRepoSlug) card.title = row.info.sourceRepoSlug;
+          item.append(card);
+          return item;
+        }
+        const { s, ref, text } = row,
+          label = nameOf(s),
+          live = heldLive(s),
+          offline = s.state === "offline",
+          depth = Math.min(row.depth, MAX_INDENT_LEVELS);
+        item.__live = JSON.stringify(live);
+        const root = h("div", {
+          class: "al-row",
+          id: "agent-row:" + (row.pinnedCopy ? "pinned:" : "") + ref.id,
+          "data-pinned": row.pinned,
+          "data-manager-view": row.manager && !row.pinnedCopy,
+          "data-agent-id": s.id,
+          "data-handle": s.handle,
+          "data-depth": row.depth,
+          "data-current": row.selected,
+          "data-needs": isNeedsYou(s),
+          "data-waiting": isNeedsYou(s),
+          "data-offline": offline,
+          "data-dead": STOPPED.has(s.effectiveStatus),
+          "data-codesense-row": JSON.stringify({ kind: "agent", sessionId: s.sessionId || s.id }),
+        });
+        if (row.tree) item.append(...connectors(row));
+        if (row.foldKey) {
+          const button = toggleButton(row, "al-fold", foldChevron());
+          button.setAttribute(
+            "aria-label",
+            `${row.folded ? "Expand" : "Collapse"} ${label}'s crew`,
+          );
+          button.toggleAttribute("data-folded", row.folded);
+          button.style.left = `${2 + depth * TREE_INDENT_PX}px`;
+          root.append(button);
+        }
+        const subs = subagentsWorking(s) ? s.subagents : 0;
+        const title = h(
+          "span",
+          { class: "al-line-title" },
+          h("span", { class: "al-name", title: s.rowNames?.full || label, text: label }),
+        );
+        const state = live.word ? stateEl(live) : null;
+        const first = h("span", { class: "al-l1" }, title);
+        const markers = [];
+        if (s.dueWake) {
+          const routine = s.dueWake.name || "A routine",
+            until = s.dueWake.deadlineMs
+              ? ` (until ${new Date(s.dueWake.deadlineMs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })})`
+              : "";
+          markers.push(
+            h(
+              "span",
+              {
+                class: "al-marker",
+                "data-kind": "due",
+                role: "img",
+                "aria-label": "Wake queued: " + routine,
+                title: `${routine} goes in when ${label} is idle${until}`,
+              },
+              icon("alarm-clock"),
+              "due",
+            ),
+          );
+        }
+        if (s.tabHidden || s.headless) {
+          const hidden = s.tabHidden,
+            description = hidden
+              ? "Tab hidden, still running. Click to show it."
+              : "Headless: no terminal. Click to open its run output.";
+          markers.push(
+            h(
+              "span",
+              {
+                class: "al-marker",
+                "data-kind": hidden ? "hidden" : "headless",
+                role: "img",
+                "aria-label": description,
+                title: description,
+              },
+              icon(hidden ? "eye-off" : "scroll-text"),
+            ),
+          );
+        }
+        markers.push(
+          h("span", { class: "al-pin-slot", "aria-hidden": "true", hidden: !heldPin(row) }),
+        );
+        first.append(...markers);
+        if (state) first.append(state);
+        if (row.hiddenCount) {
+          const n = row.hiddenCount,
+            need = row.hiddenNeeds,
+            description = `${n} ${n === 1 ? "agent" : "agents"} folded${need ? `, ${need} ${need === 1 ? "needs" : "need"} you` : ""}`;
+          first.append(
+            h(
+              "span",
+              {
+                class: "al-folded",
+                role: "img",
+                "data-needs": need > 0,
+                title: description,
+                "aria-label": description,
+              },
+              need ? mark("question", 6) : null,
+              "+" + n,
+            ),
+          );
+        }
+        const second = h("span", { class: "al-l2" }),
+          role = s.rowNames?.secondary || s.role || s.queueRole || "",
+          details = [s.machine !== "This Mac" ? s.machine : null, s.model]
+            .filter(Boolean)
+            .join(" · ");
+        // The via pill reveals the launcher wherever it isn't the visible tree parent.
+        const launcher = row.via ? nameOf(sessions.get(row.via)) : s.launchedBy;
+        const viaPill = (withName) =>
+          !row.pinnedCopy && s.launchedBy && (row.manager || !ref.crewParentId)
+            ? h(
+                "span",
+                {
+                  class: "al-via",
+                  role: "button",
+                  "aria-label": "Launched by " + launcher + ": show it",
+                  title: "Launched by " + launcher,
+                  onclick: (event) => {
+                    event.stopPropagation();
+                    revealAgent(row.via);
+                  },
+                },
+                viaGlyph(),
+              )
+            : null;
+        // Manager view's second line names the workspace (the current one in full ink), then the role.
+        if (row.manager && !row.pinnedCopy) {
+          const ws = ref.workspace?.label;
+          second.append(
+            h("span", {
+              class: "al-wchip",
+              "data-none": !ws,
+              "data-current": ws && currentWorkspace === ref.teamKey + "|" + ref.workspaceRef,
+              title: ref.workspace?.storyTitle || ws || "No workspace",
+              text: ws || "no workspace",
+            }),
+            h("span", { class: "al-l2-head", text: role }),
+            ...[viaPill()].filter(Boolean),
+          );
+        } else {
+          const via = viaPill();
+          if (via) title.append(via);
+        }
+        const main = h(
+          "button",
+          {
+            type: "button",
+            class: "al-main",
+            "data-cs-focus-key": "main",
+            "aria-current": row.selected ? "true" : null,
+            "aria-label": mainLabel(row, live),
+            onclick: (event) => {
+              if (event.altKey) {
+                if (!offline) popover(s, event.currentTarget, "agent-quick-send");
+              } else goto(s, false);
+            },
+            onkeydown: (event) => {
+              if (event.metaKey || event.ctrlKey || event.altKey) return;
+              const key = event.key.toLowerCase();
+              if (!["enter", " ", "q", "m"].includes(key)) return;
+              event.preventDefault();
+              if (event.repeat) return;
+              if (key === "m") popover(s, event.currentTarget, "agent-inbox-chat");
+              else if (!offline) popover(s, event.currentTarget, "agent-quick-send");
+              else if (key === "enter" || key === " ") goto(s, true);
+            },
+          },
+          h(
+            "span",
+            { class: "al-av" },
+            faceOf(s, label),
+            s.faceTag
+              ? h("span", {
+                  class: "al-tag",
+                  role: "img",
+                  "aria-label": `Face ${s.faceTag}: tells agents with the same face apart`,
+                  title: `Face ${s.faceTag}: tells agents with the same face apart`,
+                  text: String(s.faceTag),
+                })
+              : null,
+            s.rolePiece
+              ? h(
+                  "span",
+                  {
+                    class: "al-piece",
+                    role: "img",
+                    "aria-label": s.rolePiece.label,
+                    title: s.rolePiece.label,
+                  },
+                  s.rolePiece.src
+                    ? h("img", { src: s.rolePiece.src, alt: "" })
+                    : icon(s.rolePiece.piece === "manager" ? "crown" : "user"),
+                )
+              : null,
+            h(
+              "span",
+              {
+                class: "al-dot",
+                role: "img",
+                "aria-label": live.label,
+              },
+              mark(live.mark),
+            ),
+          ),
+          h(
+            "span",
+            { class: "al-lines" },
+            first,
+            !row.pinnedCopy && ref.parentSource === "chosen"
+              ? h("span", { class: "al-chosen", text: "Chosen manager: " + row.parentName })
+              : null,
+            row.scopeContext ? h("span", { class: "al-chosen", text: "Manager context" }) : null,
+            second,
+            row.manager && !row.pinnedCopy && subs
+              ? h(
+                  "span",
+                  { class: "al-l3" },
+                  h("span", { class: "al-l2-busy", text: "Working" }),
+                  ` · ${subs} ${subs === 1 ? "subagent" : "subagents"}`,
+                )
+              : null,
+            text.ask
+              ? h(
+                  "span",
+                  { class: "al-ask", title: text.ask },
+                  ...(text.ask.startsWith(WAITING)
+                    ? [h("b", { text: WAITING }), text.ask.slice(WAITING.length)]
+                    : [text.ask]),
+                )
+              : null,
+          ),
+        );
+        if (row.scopeContext) main.dataset.context = "true";
+        main.style.paddingLeft = rowInset(row) + "px";
+        main.title = tooltipOf(row, live);
+        const refreshTooltip = () => {
+          const latest = flat.find((item) => item.id === row.id);
+          if (latest) main.title = tooltipOf(latest, heldLive(latest.s));
+        };
+        root.addEventListener("pointerenter", refreshTooltip);
+        root.addEventListener("focusin", refreshTooltip);
+        root.append(
+          main,
+          h(
+            "span",
+            { class: "al-acts" },
+            offline
+              ? null
+              : h(
+                  "button",
+                  {
+                    type: "button",
+                    class: "al-quick",
+                    "data-cs-focus-key": "quick",
+                    "aria-label": "Quick view of " + label,
+                    title: `Quick view: ${label}'s terminal in a popup (Q)`,
+                    onclick: () => popover(s, main, "agent-quick-send"),
+                  },
+                  icon("terminal"),
+                ),
+            h(
+              "button",
+              {
+                type: "button",
+                class: "al-messages",
+                "data-cs-focus-key": "messages",
+                "aria-label": "Messages for " + label,
+                title: `Messages with ${label}: its inbox, without leaving your tab (M)`,
+                onclick: () => popover(s, main, "agent-inbox-chat"),
+              },
+              messageIcon(),
+            ),
+            pinButton(row, "al-pin"),
+          ),
+        );
+        root.append(pinButton(row, "al-unpin"));
+        schedulePinControls();
+        if (s.roleHoldings?.length)
+          root.append(
+            h(
+              "span",
+              { class: "al-holds" },
+              s.roleHoldings.slice(0, 2).map((held) =>
+                h(
+                  "span",
+                  {
+                    class: "al-role",
+                    role: "img",
+                    "aria-label": held.title || held.label,
+                    title: held.title || held.label,
+                  },
+                  held.src ? h("img", { src: held.src, alt: "" }) : icon("users"),
+                  h("span", { text: held.name || held.label }),
+                ),
+              ),
+              s.roleHoldings.length > 2
+                ? h("span", {
+                    text: `+${s.roleHoldings.length - 2}`,
+                    title: s.roleHoldings.map((r) => r.label).join(", "),
+                  })
+                : null,
+            ),
+          );
+        item.append(root);
+        applyMessages(item, row);
+        return item;
+      }
+      const $ = (id) => document.getElementById(id);
+      const openedAt = performance.now(),
+        seenSessions = new Set(),
+        newSessions = new Set();
+      let initialReady = false,
+        sessionsReceived = false,
+        viewRefs = [],
+        contextIds = new Set(),
+        shownPins = [],
+        expandedPins = false,
+        freezesFolds = false,
+        railScope = null,
+        railScopeTitle = "Group",
+        menuOpen = false,
+        counts = {},
+        visibleCount = 0,
+        showRuns = false,
+        runs = null,
+        runQuery = "",
+        runRequest = 0,
+        runListRequest = 0,
+        selectedRun = null,
+        settledRuns = "",
+        historyTimer = 0;
+      const search = () => ui.search || { query: "", status: "all" };
+      const hiddenTeams = () => ui.hiddenTeams || [];
+      const listedTeams = () =>
+        (metadata.teamOrder || [...new Set(references.map((r) => r.teamKey))]).filter((t) =>
+          references.some((r) => r.teamKey === t),
+        );
+      const checklistTeams = () => {
+        const teams = [...new Set([...(metadata.pane?.openTeams || []), ...listedTeams()])];
+        const order = metadata.pane?.teamOrder || metadata.teamOrder || teams;
+        return teams.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+      };
+      const teamName = (t) => {
+        const name = metadata.teamNames?.[t]?.team || t.split(":").pop();
+        return checklistTeams().some(
+          (other) =>
+            other !== t &&
+            (metadata.teamNames?.[other]?.team || other.split(":").pop()) === name &&
+            other.slice(0, other.lastIndexOf(":")) !== t.slice(0, t.lastIndexOf(":")),
+        )
+          ? `${metadata.teamNames?.[t]?.org || t.split(":")[0]} › ${name}`
+          : name;
+      };
+      const focusTeam = () => {
+        const all = listedTeams(),
+          shown = all.filter((t) => !hiddenTeams().includes(t));
+        return all.length > 1 && shown.length === 1 ? shown[0] : null;
+      };
+      const dockPrefix = crypto.randomUUID(),
+        pendingDock = new Map();
+      let dockSequence = 0;
+      function writeDock(patch) {
+        ui = { ...ui, ...patch };
+        syncAgentView();
+        paint();
+        const requestId = dockPrefix + ":" + ++dockSequence;
+        pendingDock.set(requestId, patch);
+        return cs.setUiState?.("ui:dock", patch, requestId).catch((error) => {
+          pendingDock.delete(requestId);
+          report(error);
+        });
+      }
+      let arrangementAnchor = null;
+      function captureArrangementAnchor() {
+        const top = box.getBoundingClientRect().top;
+        const row = [...box.querySelectorAll("[data-row-id]")].find(
+          (el) =>
+            flat.some((r) => r.id === el.dataset.rowId && r.kind === "agent") &&
+            el.getBoundingClientRect().bottom > top,
+        );
+        return {
+          id: row?.dataset.rowId,
+          within: row ? row.getBoundingClientRect().top - top : 0,
+          offset: box.scrollTop,
+          inset:
+            box.querySelector("[data-cs-virtual-list]").getBoundingClientRect().top -
+            top +
+            box.scrollTop,
+        };
+      }
+      function restoreArrangementAnchor(anchor) {
+        const at = flat.findIndex((r) => r.id === anchor.id);
+        box.scrollTop =
+          at < 0
+            ? anchor.offset
+            : Math.max(
+                0,
+                anchor.inset + flat.slice(0, at).reduce((n, r) => n + r.height, 0) - anchor.within,
+              );
+        list?.refresh();
+      }
+      function changeArrange(next) {
+        if (next === ui.arrange) return;
+        arrangementAnchor = captureArrangementAnchor();
+        writeDock({ arrange: next });
+      }
+      function setSearch(patch) {
+        return writeDock({ search: { ...search(), ...patch } });
+      }
+      function showTeam(team) {
+        writeDock({ hiddenTeams: hiddenTeams().filter((t) => t !== team), teamFocus: null });
+      }
+      function toggleTeam(team) {
+        if (focusTeam() === team)
+          writeDock({
+            hiddenTeams: (ui.teamFocus?.teamKey === team ? ui.teamFocus.hidden : []).filter(
+              (t) => t !== team,
+            ),
+            teamFocus: null,
+          });
+        else
+          writeDock({
+            hiddenTeams: [...new Set([...hiddenTeams(), ...checklistTeams()])].filter(
+              (t) => t !== team,
+            ),
+            teamFocus: { teamKey: team, hidden: hiddenTeams() },
+          });
+      }
+      function clearAll() {
+        railScope = null;
+        writeDock({
+          hiddenTeams: [],
+          teamFocus: null,
+          search: { query: "", status: "all" },
+          workspaceFilter: null,
+          agentFilter: null,
+        });
+      }
+      function statusPass(s, status) {
+        return (
+          status === "all" ||
+          (status === "needs"
+            ? isNeedsYou(s)
+            : status === "working"
+              ? working(s)
+              : !isNeedsYou(s) && !working(s) && !CRASHED.has(s?.effectiveStatus))
+        );
+      }
+      function matches(ref, filter = search()) {
+        const s = sessions.get(ref.sessionRef);
+        if (!s || !statusPass(s, filter.status)) return false;
+        const text = (s.searchText || "").toLowerCase();
+        return filter.query
+          .trim()
+          .toLowerCase()
+          .split(/\s+/)
+          .filter(Boolean)
+          .every((word) => text.includes(word));
+      }
+      function scopePass(ref) {
+        const s = sessions.get(ref.sessionRef),
+          ws = ui.workspaceFilter;
+        return (
+          (!ui.agentFilter || s?.agentKey === ui.agentFilter.agentKey) &&
+          (!ws || (ref.teamKey === ws.teamKey && (ref.workspaceRef ?? "") === ws.workspaceId)) &&
+          (!railScope ||
+            (ref.teamKey === railScope.teamKey &&
+              metadata.pane?.railKeys?.[ref.teamKey]?.[ref.workspaceRef] === railScope.railKey))
+        );
+      }
+      function planView() {
+        const filter = search(),
+          hidden = hiddenTeams();
+        const base = references.filter((r) => !hidden.includes(r.teamKey) && scopePass(r));
+        counts = Object.fromEntries(
+          ["all", "needs", "working", "idle"].map((status) => [
+            status,
+            base.filter((r) => statusPass(sessions.get(r.sessionRef), status)).length,
+          ]),
+        );
+        counts.crashed = base.filter((r) =>
+          CRASHED.has(sessions.get(r.sessionRef)?.effectiveStatus),
+        ).length;
+        counts.waiting = counts.needs;
+        const matchesNow = base.filter((r) => matches(r));
+        visibleCount = matchesNow.length;
+        const ids = new Set(matchesNow.map((r) => r.id));
+        if (ui.arrange === "manager") {
+          const byId = new Map(references.map((r) => [r.id, r]));
+          for (const ref of matchesNow) {
+            let parent = byId.get(ref.parentId);
+            while (parent) {
+              ids.add(parent.id);
+              parent = byId.get(parent.parentId);
+            }
+          }
+        }
+        contextIds = new Set([...ids].filter((id) => !matchesNow.some((r) => r.id === id)));
+        viewRefs = references.filter((r) => ids.has(r.id));
+        freezesFolds = !!filter.query.trim() || !!ui.workspaceFilter || !!railScope;
+        const pinIds = new Set(metadata.pane?.pinnedRefs || []);
+        shownPins = references.filter(
+          (ref) =>
+            pinIds.has(ref.id) && !hidden.includes(ref.teamKey) && scopePass(ref) && matches(ref),
+        );
+        shownPins.sort(
+          (a, b) => metadata.pane.pinnedRefs.indexOf(a.id) - metadata.pane.pinnedRefs.indexOf(b.id),
+        );
+      }
+      function chip(label, title, action) {
+        return h(
+          "span",
+          { class: "al-chip", title: label },
+          h("span", { text: label }),
+          h("button", { type: "button", "aria-label": title, onclick: action }, icon("x")),
+        );
+      }
+      function workspaceLabel() {
+        const ws = ui.workspaceFilter;
+        return !ws
+          ? ""
+          : metadata.pane?.workspaceLabel ||
+              (ws.workspaceId === ""
+                ? "No workspace"
+                : references.find(
+                    (r) => r.teamKey === ws.teamKey && r.workspaceRef === ws.workspaceId,
+                  )?.workspace?.label || "Workspace");
+      }
+      function paintChrome() {
+        const f = search(),
+          filtering =
+            f.query.trim() ||
+            f.status !== "all" ||
+            ui.workspaceFilter ||
+            ui.agentFilter ||
+            railScope ||
+            references.some((r) => hiddenTeams().includes(r.teamKey));
+        $("count").textContent = showRuns
+          ? runs === null
+            ? ""
+            : String(runs.length)
+          : filtering
+            ? `${visibleCount}/${references.length}`
+            : String(references.length);
+        $("al-title").textContent = showRuns ? "Run history" : "Agents";
+        for (const id of ["al-arrange-wrap", "al-find-wrap", "list"]) $(id).hidden = showRuns;
+        // Group shows only when this team has workspace groups (or a scope is still chosen).
+        $("al-scope-wrap").hidden =
+          showRuns ||
+          (!railScope && !checklistTeams().some((t) => metadata.pane?.rails?.[t]?.length));
+        $("al-runs").hidden = !showRuns;
+        $("al-history").setAttribute("aria-pressed", String(showRuns));
+        $("al-history").setAttribute("aria-label", showRuns ? "Back to agents" : "Run history");
+        $("al-history").title = showRuns
+          ? "Back to agents"
+          : "Run history: finished runs and their output";
+        const need = references.filter(attention).length;
+        $("al-run-needs").hidden = !showRuns || !need;
+        $("al-run-needs").replaceChildren(mark("question", 6), String(need));
+        $("al-run-needs").setAttribute("aria-label", `${need} agents need you`);
+        $("al-arrange").value = ["manager", "status"].includes(ui.arrange) ? ui.arrange : "teams";
+        paintTally(f);
+        if ($("al-search").value !== f.query) $("al-search").value = f.query;
+        $("al-clear").hidden = !f.query;
+        const chips = [],
+          focused = focusTeam(),
+          hidden = listedTeams().filter((t) => hiddenTeams().includes(t));
+        if (focused)
+          chips.push(
+            chip("Team: " + teamName(focused), "Show the other teams", () => toggleTeam(focused)),
+          );
+        else if (hidden.length)
+          chips.push(
+            chip(
+              hidden.length === 1
+                ? `${teamName(hidden[0])} hidden`
+                : `${hidden.length} teams hidden`,
+              "Show the hidden teams",
+              () => writeDock({ hiddenTeams: [], teamFocus: null }),
+            ),
+          );
+        if (f.status !== "all") {
+          const label = { needs: "Needs you", working: "Working", idle: "Ready" }[f.status];
+          chips.push(chip(label, `Clear the ${label} filter`, () => setSearch({ status: "all" })));
+        }
+        if (ui.arrange === "status")
+          chips.push(chip("By status", "Arrange by team", () => changeArrange("teams")));
+        if (ui.workspaceFilter)
+          chips.push(
+            chip(workspaceLabel(), `Clear the ${workspaceLabel()} filter`, () =>
+              writeDock({ workspaceFilter: null }),
+            ),
+          );
+        if (ui.agentFilter)
+          chips.push(
+            chip("Agent: " + ui.agentFilter.name, "Clear agent filter", () =>
+              writeDock({ agentFilter: null }),
+            ),
+          );
+        $("al-chips").replaceChildren(...chips);
+        $("al-chips").hidden = !chips.length;
+        $("al-search").placeholder = chips.length ? "" : "Find agents…";
+        const options = [h("option", { value: "", text: "All workspace groups" })];
+        for (const team of checklistTeams())
+          for (const rail of metadata.pane?.rails?.[team] || [])
+            options.push(
+              h("option", {
+                value: JSON.stringify({ teamKey: team, railKey: rail.railKey }),
+                text: `${teamName(team)} · ${rail.title}${rail.kind === "custom" ? " (custom group)" : ""}`,
+              }),
+            );
+        if (railScope && !options.some((o) => o.value === JSON.stringify(railScope)))
+          options.push(
+            h("option", {
+              value: JSON.stringify(railScope),
+              text: `${railScopeTitle} (no workspaces)`,
+            }),
+          );
+        $("al-scope").replaceChildren(...options);
+        $("al-scope").value = railScope ? JSON.stringify(railScope) : "";
+        if (menuOpen) paintMenu();
+      }
+      function paintTally(f) {
+        const tallyButton = (status, kind, text, label, extra) =>
+          h(
+            "button",
+            {
+              type: "button",
+              class: extra,
+              "data-status": status,
+              "aria-pressed": String(f.status === status),
+              "aria-label": label,
+              title: f.status === status ? "Show all agents" : label,
+              onclick: () => setSearch({ status: search().status === status ? "all" : status }),
+            },
+            mark(kind, 9),
+            text,
+          );
+        const count = (kind, n, label) =>
+          h(
+            "span",
+            { role: "img", "data-status": kind, "aria-label": label, title: label },
+            mark(kind, 9),
+            String(n),
+          );
+        const entries = references.length
+          ? [
+              counts.waiting
+                ? tallyButton(
+                    "needs",
+                    "question",
+                    `${counts.waiting} waiting`,
+                    `${counts.waiting} waiting on you: show only agents that need you`,
+                    "al-waiting",
+                  )
+                : null,
+              counts.crashed ? count("crashed", counts.crashed, `${counts.crashed} crashed`) : null,
+              counts.working
+                ? tallyButton(
+                    "working",
+                    "thinking",
+                    String(counts.working),
+                    `${counts.working} working: show only these`,
+                  )
+                : null,
+              counts.idle
+                ? tallyButton(
+                    "idle",
+                    "ready",
+                    String(counts.idle),
+                    `${counts.idle} ready, offline or ended: show only these`,
+                  )
+                : null,
+            ].filter(Boolean)
+          : [];
+        kit.keyed($("al-tally"), entries, {
+          key: (entry) => entry.dataset.status,
+          version: () => 0,
+          render: (entry) => entry,
+        });
+        entries.forEach((next, i) => {
+          const current = $("al-tally").children[i];
+          if (current === next) return;
+          for (const attr of next.attributes) current.setAttribute(attr.name, attr.value);
+          current.lastChild.textContent = next.lastChild.textContent;
+        });
+      }
+      function heldPin(row) {
+        const entries = Object.entries(ui.pins || {}).flatMap(([team, pins]) =>
+          pins.map((pin) => ({ team, pin })),
+        );
+        return (
+          entries.find(
+            ({ pin }) => pin.teamKey === row.ref.teamKey && pin.handle === row.s.handle,
+          ) ||
+          (row.s.sessionId && entries.find(({ pin }) => pin.sessionId === row.s.sessionId)) ||
+          null
+        );
+      }
+      function togglePin(row) {
+        const held = heldPin(row),
+          pins = { ...ui.pins };
+        if (held) {
+          const kept = pins[held.team].filter((pin) => pin !== held.pin);
+          if (kept.length) pins[held.team] = kept;
+          else delete pins[held.team];
+        } else {
+          const team = row.ref.teamKey;
+          pins[team] = [
+            ...(pins[team] || []),
+            {
+              kind: "session",
+              teamKey: team,
+              handle: row.s.handle,
+              sessionId: row.s.sessionId || null,
+              name: nameOf(row.s),
+            },
+          ];
+        }
+        return writeDock({ pins });
+      }
+      function patchPin(button, row) {
+        const pinned = !!heldPin(row),
+          label = `${pinned ? "Unpin" : "Pin"} ${nameOf(row.s)}`;
+        button.setAttribute("aria-label", label);
+        button.setAttribute("aria-pressed", String(pinned));
+        button.title = label;
+      }
+      function pinButton(row, className) {
+        const button = h(
+          "button",
+          {
+            type: "button",
+            class: className,
+            "data-cs-focus-key": className === "al-pin" ? "pin" : "unpin",
+            onclick: () => togglePin(row),
+          },
+          icon("pin"),
+        );
+        patchPin(button, row);
+        if (className === "al-unpin") button.hidden = !heldPin(row);
+        return button;
+      }
+      let pinControlsQueued = false;
+      function schedulePinControls() {
+        if (pinControlsQueued) return;
+        pinControlsQueued = true;
+        // virtualList mounts all rows synchronously, including rows first reached by scrolling.
+        queueMicrotask(() => {
+          pinControlsQueued = false;
+          placePinControls();
+        });
+      }
+      function placePinControls() {
+        const positions = [...box.querySelectorAll(".al-unpin:not([hidden])")].map((button) => {
+          const row = button.closest(".al-row"),
+            slot = row.querySelector(".al-pin-slot").getBoundingClientRect(),
+            base = row.getBoundingClientRect();
+          return [
+            button,
+            `${slot.left - base.left + (slot.width - 24) / 2}px`,
+            `${slot.top - base.top + (slot.height - 24) / 2}px`,
+          ];
+        });
+        for (const [button, left, top] of positions) {
+          if (button.style.left !== left) button.style.left = left;
+          if (button.style.top !== top) button.style.top = top;
+        }
+      }
+      function closeMenu(focus = false) {
+        menuOpen = false;
+        const menu = $("al-menu");
+        if (menu) {
+          menu.__retired = true;
+          menu.remove();
+        }
+        $("al-filter").setAttribute("aria-expanded", "false");
+        if (focus) $("al-filter").focus({ preventScroll: true });
+      }
+      function closeMenus() {
+        closeMenu();
+        if (document.activeElement?.matches("#al-arrange, #al-scope"))
+          document.activeElement.blur();
+      }
+      function menuHidden() {
+        if (document.hidden) closeMenus();
+      }
+      function menuEscape(event) {
+        if (event.key === "Escape" && menuOpen) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeMenu(true);
+        }
+      }
+      function positionMenu(menu) {
+        const trigger = $("al-filter").getBoundingClientRect(),
+          gap = 6;
+        const width = Math.min(232, innerWidth - gap * 2);
+        menu.style.width = `${width}px`;
+        menu.style.left = `${Math.max(gap, Math.min(trigger.right - width, innerWidth - width - gap))}px`;
+        const below = Math.max(0, innerHeight - trigger.bottom - gap * 2),
+          above = Math.max(0, trigger.top - gap * 2);
+        const down = below >= Math.min(420, menu.scrollHeight) || below >= above;
+        menu.style.maxHeight = `${Math.min(420, innerHeight - gap * 2, down ? below : above)}px`;
+        const height = menu.getBoundingClientRect().height;
+        const top = down ? trigger.bottom + gap : trigger.top - gap - height;
+        menu.style.top = `${Math.max(gap, Math.min(top, innerHeight - height - gap))}px`;
+      }
+      function menuWheel(event) {
+        const menu = event.currentTarget,
+          delta = event.deltaY;
+        event.stopPropagation();
+        if (
+          !delta ||
+          (delta <= 0 && menu.scrollTop <= 0) ||
+          (delta >= 0 && menu.scrollTop + menu.clientHeight >= menu.scrollHeight)
+        )
+          event.preventDefault();
+      }
+      window.addEventListener("blur", closeMenus);
+      document.addEventListener("visibilitychange", menuHidden);
+      document.addEventListener("keydown", menuEscape);
+      function radioKeys(event) {
+        if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
+        event.preventDefault();
+        const buttons = [...event.currentTarget.querySelectorAll('[role="radio"]:not(:disabled)')],
+          at = buttons.indexOf(document.activeElement);
+        const next =
+          buttons[
+            (at + (["ArrowUp", "ArrowLeft"].includes(event.key) ? -1 : 1) + buttons.length) %
+              buttons.length
+          ];
+        next?.click();
+        $("al-menu")?.querySelector(`[data-choice="${next?.dataset.choice}"]`)?.focus();
+      }
+      function paintMenu() {
+        const previous = $("al-menu"),
+          version = JSON.stringify([
+            ui.arrange,
+            hiddenTeams(),
+            search().status,
+            checklistTeams().map((team) => [
+              team,
+              teamName(team),
+              references.filter((ref) => ref.teamKey === team).length,
+            ]),
+          ]),
+          scroll = previous?.scrollTop || 0,
+          active = previous?.contains(document.activeElement)
+            ? document.activeElement.dataset.choice
+            : null;
+        if (previous?.__version === version) {
+          for (const count of previous.querySelectorAll("[data-status-count]")) {
+            const text = String(counts[count.dataset.statusCount] || 0);
+            if (count.textContent !== text) count.textContent = text;
+          }
+          positionMenu(previous);
+          return;
+        }
+        const menu = h("div", {
+          id: "al-menu",
+          class: "al-fpop",
+          role: "dialog",
+          tabindex: -1,
+          "aria-label": "Filter and arrange agents",
+          onkeydown: (e) => {
+            if (e.key === "Tab") {
+              requestAnimationFrame(() => {
+                if (!$("al-menu")?.contains(document.activeElement)) closeMenu();
+              });
+            }
+          },
+          onfocusout: (event) => {
+            if (
+              !menu.__retired &&
+              (!event.relatedTarget ||
+                (!menu.contains(event.relatedTarget) && event.relatedTarget !== $("al-filter")))
+            )
+              closeMenu();
+          },
+        });
+        menu.__version = version;
+        menu.addEventListener("wheel", menuWheel, { passive: false });
+        let touchY = null;
+        menu.addEventListener(
+          "touchstart",
+          (event) => {
+            touchY = event.touches[0]?.clientY ?? null;
+          },
+          { passive: true },
+        );
+        menu.addEventListener(
+          "touchmove",
+          (event) => {
+            if (event.touches.length !== 1 || touchY === null) return;
+            const y = event.touches[0].clientY,
+              deltaY = touchY - y;
+            touchY = y;
+            menuWheel({
+              currentTarget: menu,
+              deltaY,
+              stopPropagation: () => event.stopPropagation(),
+              preventDefault: () => event.preventDefault(),
+            });
+          },
+          { passive: false },
+        );
+        const section = (title) => h("section", { class: "al-fsec" }, h("h2", { text: title }));
+        const teams = section("Teams");
+        let lastOrg = null;
+        const all = checklistTeams(),
+          shown = all.filter((t) => !hiddenTeams().includes(t));
+        for (const team of all) {
+          const org = metadata.teamNames?.[team]?.org || team.split(":")[0];
+          if (org !== lastOrg) {
+            teams.append(h("div", { class: "al-forg", text: org }));
+            lastOrg = org;
+          }
+          const disabled = shown.length === 1 && shown[0] === team;
+          teams.append(
+            h(
+              "label",
+              {
+                class: "al-fitem",
+                title: disabled ? "The pane always shows at least one team" : null,
+              },
+              h("input", {
+                type: "checkbox",
+                "aria-label": teamName(team),
+                "data-choice": "team:" + team,
+                checked: !hiddenTeams().includes(team),
+                disabled,
+                onchange: (e) =>
+                  writeDock({
+                    hiddenTeams: e.target.checked
+                      ? hiddenTeams().filter((t) => t !== team)
+                      : [...hiddenTeams(), team],
+                    teamFocus: null,
+                  }),
+              }),
+              h("span", { text: teamName(team) }),
+              h("span", {
+                class: "al-fn",
+                text: String(references.filter((r) => r.teamKey === team).length),
+              }),
+            ),
+          );
+        }
+        const show = section("Show"),
+          group = h("div", {
+            role: "radiogroup",
+            "aria-label": "Show agents",
+            onkeydown: radioKeys,
+          });
+        for (const [key, label, kind] of [
+          ["all", "All", null],
+          ["needs", "Needs you", "question"],
+          ["working", "Working", "thinking"],
+          ["idle", "Ready", "ready"],
+        ])
+          group.append(
+            h(
+              "button",
+              {
+                type: "button",
+                role: "radio",
+                class: "al-fitem",
+                "data-choice": "show:" + key,
+                "aria-checked": String(search().status === key),
+                tabindex: search().status === key ? 0 : -1,
+                onclick: () => setSearch({ status: key }),
+              },
+              h("span", {}, kind ? mark(kind, 8) : null),
+              h("span", { text: label }),
+              h("span", {
+                class: "al-fn",
+                "data-status-count": key,
+                text: String(counts[key] || 0),
+              }),
+            ),
+          );
+        show.append(group);
+        const arrange = section("Arrange"),
+          seg = h("div", {
+            class: "al-seg",
+            role: "radiogroup",
+            "aria-label": "Arrange agents",
+            onkeydown: radioKeys,
+          });
+        for (const [key, label] of [
+          ["teams", "By team"],
+          ["status", "By status"],
+          ["manager", "By manager"],
+        ])
+          seg.append(
+            h("button", {
+              type: "button",
+              role: "radio",
+              "data-choice": "arrange:" + key,
+              "aria-checked": String(ui.arrange === key),
+              tabindex: ui.arrange === key ? 0 : -1,
+              text: label,
+              onclick: () => changeArrange(key),
+            }),
+          );
+        arrange.append(seg);
+        menu.append(teams, show, arrange);
+        if (previous) {
+          previous.__retired = true;
+          previous.remove();
+        }
+        $("al-find").append(menu);
+        positionMenu(menu);
+        menu.scrollTop = scroll;
+        if (active)
+          [...menu.querySelectorAll("[data-choice]")]
+            .find((el) => el.dataset.choice === active)
+            ?.focus({ preventScroll: true });
+      }
+      function paintEmpty() {
+        const f = search(),
+          all = checklistTeams(),
+          everyHidden = all.length && all.every((t) => hiddenTeams().includes(t)),
+          hidden = listedTeams().filter((t) => hiddenTeams().includes(t));
+        let title,
+          sentence,
+          busy = false,
+          actions = [];
+        const action = (text, onclick) =>
+          h("button", { type: "button", class: "al-link", text, onclick });
+        const showHidden = (teams) =>
+          teams.map((t) => action("Show " + teamName(t), () => showTeam(t)));
+        const chipHidden = ui.agentFilter
+          ? hidden.filter((t) =>
+              references.some(
+                (r) =>
+                  r.teamKey === t &&
+                  sessions.get(r.sessionRef)?.agentKey === ui.agentFilter.agentKey,
+              ),
+            )
+          : [];
+        const clearAgent = () => writeDock({ agentFilter: null });
+        if (
+          !shownPins.length &&
+          ui.workspaceFilter &&
+          !f.query.trim() &&
+          f.status === "all" &&
+          !ui.agentFilter &&
+          metadata.pane?.workspaceWait
+        ) {
+          const wait = metadata.pane.workspaceWait;
+          title = wait.title;
+          sentence = wait.sentence;
+          busy = wait.busy;
+          if (!busy)
+            actions = [
+              action("Clear the workspace filter", () => writeDock({ workspaceFilter: null })),
+            ];
+        } else if (ui.agentFilter && chipHidden.length) {
+          title =
+            chipHidden.length === 1
+              ? `${ui.agentFilter.name} runs in ${teamName(chipHidden[0])}, a hidden team`
+              : `${ui.agentFilter.name} runs only in hidden teams`;
+          actions = [...showHidden(chipHidden), action("Clear agent filter", clearAgent)];
+        } else if (
+          !ui.agentFilter &&
+          !f.query.trim() &&
+          f.status === "all" &&
+          !ui.workspaceFilter &&
+          !railScope &&
+          hidden.length &&
+          !everyHidden
+        ) {
+          title = "Agents run in hidden teams";
+          sentence = "The teams shown have no agents running.";
+          actions = showHidden(hidden);
+        } else if (
+          ui.agentFilter &&
+          !references.some(
+            (r) => sessions.get(r.sessionRef)?.agentKey === ui.agentFilter.agentKey,
+          ) &&
+          !railScope
+        )
+          title = `No ${ui.agentFilter.name} sessions running`;
+        else if (!references.length && !railScope && !everyHidden) {
+          title = "No agents running";
+          sentence = "Agents you or other agents launch show here, grouped by team and workspace.";
+          actions = [action("Launch an agent", () => $("al-launch").click())];
+        } else if (everyHidden) {
+          title = "Every team is hidden";
+          sentence = "Show a team from the Teams checklist.";
+          actions = [
+            action("Show all teams", () => writeDock({ hiddenTeams: [], teamFocus: null })),
+          ];
+        } else if (
+          f.status !== "all" &&
+          !f.query.trim() &&
+          !ui.workspaceFilter &&
+          !ui.agentFilter &&
+          !railScope
+        ) {
+          title = {
+            needs: "No agents need you",
+            working: "No agents working",
+            idle: "No agents ready",
+          }[f.status];
+          sentence = "The Show filter lists only these agents.";
+          actions = [action("Show all agents", () => setSearch({ status: "all" }))];
+        } else {
+          title = "Nothing matches";
+          sentence = "No agent in these teams matches the current search and filters.";
+          actions = [action("Clear search, filters and teams", clearAll)];
+        }
+        box.append(
+          h(
+            "div",
+            { class: "al-empty", role: "status", "aria-busy": String(busy) },
+            h("span", { class: "al-empty-icon", "aria-hidden": "true" }, icon("users")),
+            h("b", { text: title }),
+            sentence ? h("p", { text: sentence }) : null,
+            actions.length ? h("div", { class: "al-links" }, actions) : null,
+          ),
+        );
+      }
+      function paintRuns() {
+        const root = $("al-runs");
+        if (root.querySelector("input")) return;
+        const input = h("input", {
+          type: "search",
+          "aria-label": "Find runs",
+          placeholder: "Find runs…",
+          oninput: (e) => {
+            runQuery = e.target.value;
+            selectedRun = null;
+            runRequest++;
+            paintRunRows();
+          },
+        });
+        input.value = runQuery;
+        root.replaceChildren(
+          h("label", { class: "al-find" }, icon("search"), input),
+          h("div", { id: "al-run-rows" }),
+        );
+        paintRunRows();
+      }
+      function runLabel(outcome) {
+        const handle = outcome.story_id?.trim();
+        if (!handle) return outcome.run_id;
+        const routine = /^routine:(.+)@[^@]*$/.exec(handle);
+        if (routine) return routine[1].split("/").filter(Boolean).pop();
+        if (!handle.includes("::") && !handle.includes("/")) {
+          const parts = handle.split("#");
+          if (parts.length === 2 && parts[1])
+            return `${parts[0]} · ${parts[1].replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}`;
+        }
+        return (handle.split("::").pop() || handle).split("/").filter(Boolean).pop() || handle;
+      }
+      function runKind(read) {
+        return read.outcome.automation_id ||
+          /^routine:(.+)@[^@]*$/.test(read.outcome.story_id?.trim() || "")
+          ? "Routine"
+          : read.outcome.structured_declared || read.has_structured_transcript
+            ? "Agent"
+            : "Headless";
+      }
+      function ago(ended) {
+        const seconds = Math.max(0, Math.round((Date.now() - Date.parse(ended)) / 1000));
+        return !Number.isFinite(seconds)
+          ? ""
+          : seconds < 5
+            ? "just now"
+            : seconds < 60
+              ? `${seconds}s ago`
+              : seconds < 3600
+                ? `${Math.floor(seconds / 60)}m ago`
+                : seconds < 86400
+                  ? `${Math.floor(seconds / 3600)}h ago`
+                  : `${Math.floor(seconds / 86400)}d ago`;
+      }
+      function paintRunRows() {
+        const root = $("al-run-rows");
+        if (!root || selectedRun) return;
+        if (!runs) {
+          root.replaceChildren(h("p", { class: "al-empty", text: "Loading runs…" }));
+          return;
+        }
+        const statusOf = (read) =>
+          read.validated === "completed"
+            ? "completed"
+            : read.validated === "failed"
+              ? "failed"
+              : "dropped";
+        const shown = runs.filter((read) => {
+          const r = read.outcome,
+            text = [runLabel(r), r.summary, runKind(read), WORDS[statusOf(read)], r.workspace]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+          return runQuery
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(Boolean)
+            .every((word) => text.includes(word));
+        });
+        root.replaceChildren(
+          ...shown.map((read) => {
+            const r = read.outcome,
+              label = runLabel(r),
+              status = statusOf(read),
+              kind = status === "completed" ? "ended" : status === "failed" ? "error" : "question";
+            return h(
+              "div",
+              { class: "al-row" },
+              h(
+                "button",
+                {
+                  type: "button",
+                  class: "al-main al-run",
+                  title: r.summary || label,
+                  onclick: () => openRun(r),
+                },
+                h(
+                  "span",
+                  { class: "al-run-mark", role: "img", "aria-label": WORDS[status] },
+                  mark(kind),
+                ),
+                h(
+                  "span",
+                  { class: "al-lines" },
+                  h(
+                    "span",
+                    { class: "al-l1" },
+                    h(
+                      "span",
+                      { class: "al-line-title" },
+                      h("span", { class: "al-name", text: label }),
+                      r.summary ? h("span", { class: "al-task", text: " · " + r.summary }) : null,
+                    ),
+                  ),
+                  h(
+                    "span",
+                    { class: "al-l2" },
+                    [WORDS[status], runKind(read)].filter(Boolean).join(" · ") + " · ",
+                    h("span", { "data-run-ended": r.ended_at, text: ago(r.ended_at) }),
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+        if (!shown.length)
+          root.append(
+            h(
+              "div",
+              { class: "al-empty" },
+              h("b", { text: runs.length ? "No matching runs" : "No finished runs yet" }),
+              runs.length
+                ? h("button", {
+                    type: "button",
+                    class: "al-link",
+                    text: "Clear search",
+                    onclick: () => {
+                      runQuery = "";
+                      $("al-runs").querySelector("input").value = "";
+                      paintRunRows();
+                    },
+                  })
+                : h("p", {
+                    text: "Runs that leave output, from routines and agents, collect here.",
+                  }),
+            ),
+          );
+      }
+      function backToRuns() {
+        selectedRun = null;
+        runRequest++;
+        paintRunRows();
+      }
+      async function openRun(run) {
+        selectedRun = run.run_id;
+        const mine = ++runRequest,
+          root = $("al-run-rows");
+        root.replaceChildren(h("p", { class: "al-empty", text: "Loading output…" }));
+        try {
+          const output = await cs.run({ runId: run.run_id });
+          if (mine !== runRequest || !showRuns) return;
+          const content = [];
+          if (output.transcript?.turns?.length) {
+            for (const turn of output.transcript.turns) {
+              const section = h(
+                "section",
+                { class: "al-output-turn" },
+                h("b", { text: turn.role }),
+                turn.text ? h("p", { text: turn.text }) : null,
+              );
+              for (const tool of turn.tool_calls || [])
+                section.append(
+                  h(
+                    "details",
+                    {},
+                    h("summary", { text: tool.name }),
+                    h("pre", { text: [tool.input, tool.result].filter(Boolean).join("\n") }),
+                  ),
+                );
+              content.push(section);
+            }
+          } else content.push(h("pre", { text: output.artifact || run.summary || "No output" }));
+          root.replaceChildren(
+            h("button", {
+              type: "button",
+              class: "al-link",
+              text: "Back to runs",
+              onclick: backToRuns,
+            }),
+            h(
+              "div",
+              { class: "al-output" },
+              h("b", { text: runLabel(run) }),
+              content,
+              output.artifactTruncated ? h("p", { text: "Earlier output was truncated." }) : null,
+            ),
+          );
+        } catch (error) {
+          if (mine === runRequest && showRuns)
+            root.replaceChildren(
+              h("p", { class: "al-empty", text: String(error) }),
+              h("button", {
+                type: "button",
+                class: "al-link",
+                text: "Back to runs",
+                onclick: backToRuns,
+              }),
+            );
+        }
+      }
+      async function loadRuns() {
+        if (!showRuns || !visible) return;
+        const mine = ++runListRequest;
+        try {
+          const result = await cs.runs({ limit: 200 });
+          if (!showRuns || mine !== runListRequest) return;
+          runs = result
+            .filter((r) => r.outcome.artifact_ref || r.has_structured_transcript)
+            .sort(
+              (a, b) =>
+                Date.parse(b.outcome.ended_at) - Date.parse(a.outcome.ended_at) ||
+                a.outcome.run_id.localeCompare(b.outcome.run_id),
+            )
+            .slice(0, 50);
+          paintRuns();
+          paintRunRows();
+          paintChrome();
+        } catch (error) {
+          if (showRuns && mine === runListRequest && !selectedRun)
+            $("al-run-rows").replaceChildren(
+              h("p", { class: "al-empty", text: String(error) }),
+              h("button", {
+                type: "button",
+                class: "al-link",
+                text: "Try again",
+                onclick: loadRuns,
+              }),
+            );
+        }
+      }
+      $("al-history").append(icon("history"));
+      $("al-launch").append(icon("plus"));
+      $("al-launch").addEventListener("click", async () => {
+        try {
+          const { activeTeam } = (await cs.context()) || {};
+          if (!activeTeam) throw new Error("unavailable: no team selected");
+          await cs.openLauncher?.({ ...activeTeam, task: "" });
+        } catch (error) {
+          announceMove(error.message || String(error));
+        }
+      });
+      $("al-scope-chevron").append(icon("chevron-down"));
+      $("al-search-icon").append(icon("search"));
+      $("al-clear").append(icon("x"));
+      $("al-filter").append(icon("list-filter"));
+      $("al-arrange").addEventListener("change", (e) => changeArrange(e.target.value));
+      $("al-arrange-chevron").append(icon("chevron-down"));
+      $("al-search").addEventListener("input", (e) => setSearch({ query: e.target.value }));
+      $("al-search").addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && search().query) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.target.value = "";
+          setSearch({ query: "" });
+        }
+      });
+      $("al-clear").addEventListener("click", () => {
+        $("al-search").value = "";
+        setSearch({ query: "" });
+        $("al-search").focus();
+      });
+      // Keep the open menu's focus until click toggles it; Safari otherwise blurs to null on mousedown.
+      $("al-filter").addEventListener("mousedown", (event) => {
+        if (menuOpen) event.preventDefault();
+      });
+      $("al-filter").addEventListener("click", () => {
+        if (menuOpen) closeMenu(true);
+        else {
+          menuOpen = true;
+          $("al-filter").setAttribute("aria-expanded", "true");
+          paintMenu();
+          $("al-menu").querySelector("input:not(:disabled),button:not(:disabled)")?.focus();
+        }
+      });
+      document.addEventListener("pointerdown", (e) => {
+        if (menuOpen && !$("al-menu")?.contains(e.target) && !$("al-filter").contains(e.target))
+          closeMenu();
+      });
+      $("al-scope").addEventListener("change", (e) => {
+        railScope = e.target.value ? JSON.parse(e.target.value) : null;
+        if (railScope) railScopeTitle = e.target.selectedOptions[0].textContent;
+        paint();
+      });
+      $("al-history").addEventListener("click", () => {
+        showRuns = !showRuns;
+        closeMenu();
+        paint();
+        if (!showRuns) {
+          runRequest++;
+          runListRequest++;
+          return;
+        }
+        selectedRun = null;
+        runs = null;
+        paintRuns();
+        paintRunRows();
+        paintChrome();
+        void loadRuns();
+      });
+      const list = kit.virtualList?.({
+        container: box,
+        rows: [],
+        rowHeight: (row) => row.height,
+        overscan: 10,
+        layoutKey,
+        update,
+        render,
+      });
+      // An app without the kit's virtual list cannot draw this view; say so instead of an empty list.
+      if (!list) box.textContent = "This view needs a newer CodeSense.";
+      function paint() {
+        scheduled = 0;
+        if (!initialReady) return;
+        // Architecture: delayed order updates preserve focus only while this card still owns it.
+        const cardFocus =
+          pendingCardFocus && cardHasFocus(pendingCardFocus) ? pendingCardFocus : null;
+        if (!cardFocus) clearCardFocus();
+        const oldCards = cardLayout(flat);
+        const oldBoxes = cardMath.boxes(flat),
+          previous = new Map(flat.map((row, i) => [row.id, oldBoxes[i].start]));
+        planView();
+        flat = flatten();
+        if (shownPins.length) {
+          const tree = flat;
+          flat = [{ id: "pinned-label", kind: "heading", label: "Pinned", height: 26 }];
+          for (const ref of shownPins.slice(0, expandedPins ? undefined : 5)) {
+            const s = sessions.get(ref.sessionRef),
+              text = lines(s);
+            flat.push({
+              id: "pinned:" + ref.id,
+              kind: "agent",
+              pinnedCopy: true,
+              manager: ui.arrange === "manager",
+              depth: 0,
+              height: agentHeight({
+                s,
+                text,
+                pinnedCopy: true,
+                manager: ui.arrange === "manager",
+              }),
+              s,
+              ref,
+              text,
+            });
+          }
+          if (shownPins.length > 5)
+            flat.push({
+              id: "pinned-more",
+              kind: "more",
+              height: 26,
+              label: expandedPins ? "Show fewer pinned" : `+${shownPins.length - 5} more pinned`,
+            });
+          flat.push(...tree);
+        }
+        for (const row of flat) if (row.kind === "workspace") row.movable = !cardRefusal(row);
+        planConnectors(flat);
+        const current = agentReference(ui.selected);
+        currentWorkspace = current ? current.teamKey + "|" + current.workspaceRef : null;
+        paintChrome();
+        list?.setRows(flat);
+        const cardsChanged = oldCards !== cardLayout(flat);
+        if (cardsChanged && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const boxes = cardMath.boxes(flat);
+          box.querySelectorAll("[data-row-id]").forEach((el) => {
+            const at = flat.findIndex((row) => row.id === el.dataset.rowId),
+              was = previous.get(el.dataset.rowId),
+              now = boxes[at]?.start;
+            if (was !== undefined && now !== undefined && was !== now)
+              el.animate(
+                [{ transform: `translateY(${was - now}px)` }, { transform: "translateY(0)" }],
+                { duration: 180, easing: "ease-out" },
+              );
+          });
+        }
+        if (cardsChanged && cardFocus && pendingCardFocus === cardFocus) {
+          focusCard(cardFocus);
+          clearCardFocus();
+        }
+        if (activeDrag) measureCardDrag();
+        if (
+          arrangementAnchor &&
+          referenceOrder === (ui.arrange === "status" ? "status" : "plain")
+        ) {
+          restoreArrangementAnchor(arrangementAnchor);
+          arrangementAnchor = null;
+        }
+        box.querySelector(".al-empty")?.remove();
+        if (!viewRefs.length && (metadata.ready || metadata.pane?.workspaceWait)) paintEmpty();
+        if (pendingReveal) {
+          const target = pendingReveal;
+          pendingReveal = null;
+          revealIndex(
+            flat.findIndex((r) => r.id === target),
+            false,
+          );
+        }
+      }
+      function schedule() {
+        if (!scheduled && visible) scheduled = requestAnimationFrame(paint);
+      }
+      let agentView = null,
+        agentViewRead = null,
+        referenceOrder = null;
+      function syncAgentView() {
+        const order = ui.arrange === "status" ? "status" : "plain";
+        if (agentView?.order === order) return agentViewRead;
+        if (agentView) cs.unsubscribe?.("agentList", agentView.changed, agentView.options);
+        const view = { order, options: order === "status" ? { order: "status" } : {} };
+        view.changed = (snapshot, delta) => {
+          if (agentView !== view) return;
+          receive("agentList", snapshot, delta);
+        };
+        agentView = view;
+        referenceOrder = null;
+        agentViewRead = cs
+          .subscribe?.("agentList", { ...view.options, onChange: view.changed })
+          .then((snapshot) => {
+            if (agentView === view) {
+              referenceOrder = order;
+              receive("agentList", snapshot, null);
+            }
+            return snapshot;
+          });
+        agentViewRead.catch((error) => {
+          if (agentView === view) report(error);
+        });
+        return agentViewRead;
+      }
+      function receive(topic, snapshot, delta) {
+        const rows = snapshot.snapshot || [];
+        if (topic === "agentList") {
+          box.querySelector(".al-loading")?.remove();
+          metadata = rows.find((r) => r.rowType === "state") || {};
+          references = rows.filter((r) => r.sessionRef);
+        } else if (topic === "sessions") {
+          for (const row of rows) {
+            if (
+              sessionsReceived &&
+              !seenSessions.has(row.id) &&
+              performance.now() - openedAt >= 800
+            )
+              newSessions.add(row.id);
+            seenSessions.add(row.id);
+          }
+          sessionsReceived = true;
+          sessions = new Map(rows.map((r) => [r.id, r]));
+          const ended = rows
+            .filter(
+              (r) =>
+                r.alive === false ||
+                STOPPED.has(r.effectiveStatus) ||
+                r.effectiveStatus === "failed",
+            )
+            .map((r) => r.id)
+            .sort()
+            .join("\n");
+          if (showRuns && ended !== settledRuns) {
+            clearTimeout(historyTimer);
+            historyTimer = setTimeout(() => void loadRuns(), 750);
+          }
+          settledRuns = ended;
+        } else if (topic === "inbox") inbox = new Map(rows.map((r) => [r.id, r]));
+        else {
+          const next = rows[0] || {};
+          const before = ui.arrange;
+          const anchor = captureArrangementAnchor();
+          ui =
+            delta?.requestId?.startsWith(foldPrefix) && delta.requestId !== latestFoldRequest
+              ? { ...next, folds: ui.folds }
+              : next;
+          if (delta?.requestId?.startsWith(dockPrefix)) {
+            const ack = Number(delta.requestId.slice(dockPrefix.length + 1));
+            for (const key of pendingDock.keys())
+              if (Number(key.slice(dockPrefix.length + 1)) <= ack) pendingDock.delete(key);
+          }
+          ui = { ...ui, ...Object.assign({}, ...pendingDock.values()) };
+          if (ui.arrange !== before) arrangementAnchor = anchor;
+          syncAgentView();
+        }
+        schedule();
+      }
+      function revealIndex(index, focus) {
+        if (index < 0) return;
+        list?.scrollToIndex(index);
+        if (focus)
+          box.querySelectorAll("[data-row-id]").forEach((el) => {
+            if (el.dataset.rowId === flat[index].id)
+              el.querySelector(".al-main")?.focus({ preventScroll: true });
+          });
+      }
+      function unfoldTo(id) {
+        const ref = references.find((r) => r.sessionRef === id);
+        if (!ref) return;
+        temporary.clear();
+        temporary.add(teamKey(ref.teamKey));
+        temporary.add(workspaceKey(ref.teamKey, ref.workspaceRef));
+        let parent = references.find((r) => r.id === ref.parentId);
+        while (parent) {
+          temporary.add(managerKey(parent.teamKey, sessions.get(parent.sessionRef)?.handle));
+          parent = references.find((r) => r.id === parent.parentId);
+        }
+        pendingReveal = ref.id;
+        paint();
+        return ref;
+      }
+      function revealAgent(id) {
+        if (!unfoldTo(id)) return;
+        const s = sessions.get(id);
+        if (s) goto(s, false);
+      }
+      box.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") clearCardFocus();
+        if (document.activeElement?.id === "al-search" || event.target.closest("#al-search"))
+          return;
+        if (
+          event.altKey &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.shiftKey &&
+          ["ArrowUp", "ArrowDown"].includes(event.key) &&
+          event.target.closest(".al-ws-head")
+        ) {
+          const id = event.target.closest("[data-row-id]").dataset.rowId,
+            row = flat.find((r) => r.id === id);
+          if (row?.workspace) {
+            event.preventDefault();
+            const refused = cardRefusal(row),
+              step =
+                !refused &&
+                cardMath.stepSlot(
+                  cardMath.teamSlotCards(flat, row.team, workspaceOrder(row.team)),
+                  row.workspace,
+                  event.key === "ArrowUp" ? "up" : "down",
+                );
+            if (refused || !step) announceMove(refused || CARD_MOVE_REFUSED.nowhere);
+            else if (!event.repeat) void moveCard(row, step.place, true);
+          }
+          return;
+        }
+        if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+        const item = event.target.closest("[data-row-id]"),
+          at = flat.findIndex((r) => r.id === item?.dataset.rowId);
+        if (at < 0) return;
+        const row = flat[at];
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          if (row.foldKey) {
+            event.preventDefault();
+            if (!event.repeat) fold(row.foldKey, event.key === "ArrowLeft");
+          }
+          return;
+        }
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        event.preventDefault();
+        if (event.repeat) return;
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        let next = at + step;
+        while (next >= 0 && next < flat.length && flat[next].kind !== "agent") next += step;
+        if (next >= 0 && next < flat.length) revealIndex(next, true);
+      });
+      function agentReference(id) {
+        return references.find((r) => {
+          const s = sessions.get(r.sessionRef);
+          return s && (s.id === id || s.sessionId === id);
+        });
+      }
+      function focusAgent(id) {
+        const ref = agentReference(id);
+        if (!ref) return;
+        unfoldTo(ref.sessionRef);
+        revealIndex(
+          flat.findIndex((r) => r.id === ref.id),
+          true,
+        );
+      }
+      function allFoldKeys() {
+        return [
+          ...new Set([
+            ...flatten(true)
+              .map((r) => r.foldKey)
+              .filter(Boolean),
+            ...Object.keys(ui.folds || {}),
+          ]),
+        ];
+      }
+      function stepNeedsYou(step) {
+        const agents = flatten(true).filter((r) => r.kind === "agent"),
+          focused = document.activeElement?.closest("[data-row-id]")?.dataset.rowId,
+          at = agents.findIndex((r) => r.id === focused);
+        for (let offset = 1; offset <= agents.length; offset++) {
+          const index = (at < 0 ? (step > 0 ? -1 : 0) : at) + step * offset,
+            row = agents[(index + agents.length) % agents.length];
+          if (isNeedsYou(row.s)) {
+            focusAgent(row.ref.sessionRef);
+            return;
+          }
+        }
+      }
+      const commands = {
+        "focus-search": () => {
+          showRuns = false;
+          runRequest++;
+          paint();
+          $("al-search").focus({ preventScroll: true });
+        },
+        "switch-arrangement": () => changeArrange(ui.arrange === "teams" ? "manager" : "teams"),
+        "focus-list": () => {
+          const ref =
+            agentReference(ui.selected) || flatten(true).find((r) => r.kind === "agent")?.ref;
+          if (ref) focusAgent(ref.sessionRef);
+          else box.focus();
+        },
+        "reveal-current": () => focusAgent(ui.selected),
+        "collapse-all": () => fold(Object.fromEntries(allFoldKeys().map((key) => [key, true]))),
+        "expand-all": () => fold(Object.fromEntries(allFoldKeys().map((key) => [key, false]))),
+        "next-needs-you": () => stepNeedsYou(1),
+        "previous-needs-you": () => stepNeedsYou(-1),
+        "open-row-menu": () => {
+          const row = document.activeElement?.closest("[data-codesense-row]");
+          const target = row && (row.querySelector(".al-main") || document.activeElement);
+          target?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
+        },
+      };
+      const pendingCommands = [];
+      cs.onCommand?.((command) => {
+        pendingCommands.push(command.id);
+        ready
+          .then(() => {
+            for (const id of pendingCommands.splice(0)) {
+              if (
+                !["focus-search", "switch-arrangement"].includes(id) &&
+                document.activeElement?.closest("input, textarea, select, [contenteditable='true']")
+              )
+                continue;
+              commands[id]?.();
+            }
+          })
+          .catch(report);
+      });
+      cs.onIntent?.((intent) => {
+        if (intent?.kind !== "reveal-workspace") return;
+        showRuns = false;
+        runRequest++;
+        if (ui.arrange === "manager") {
+          paint();
+          return;
+        }
+        temporary.clear();
+        temporary.add(teamKey(intent.teamKey));
+        temporary.add(workspaceKey(intent.teamKey, intent.workspaceId));
+        pendingReveal = "workspace:" + intent.teamKey + "|" + intent.workspaceId;
+        paint();
+      });
+      cs.onFocusIn?.(() => {
+        if (showRuns) {
+          if (!$("al-runs").contains(document.activeElement))
+            $("al-runs").querySelector("input, button")?.focus({ preventScroll: true });
+          return;
+        }
+        if (
+          document.activeElement?.closest(
+            "#al-find, #al-tally, #al-arrange-wrap, #al-scope-wrap, #al-history, #al-launch",
+          )
+        )
+          return;
+        if (box.contains(document.activeElement) && document.activeElement !== box) return;
+        const current =
+          box.querySelector('.al-main[aria-current="true"]') ||
+          box.querySelector(".al-main") ||
+          box.querySelector(".al-team-head");
+        (current || box).focus({ preventScroll: true });
+      });
+      cs.onFocusReturn?.((event) => {
+        const anchor = document.getElementById(event.anchorId);
+        const control = anchor?.matches("button, [tabindex]")
+          ? anchor
+          : anchor?.querySelector(".al-main, .al-ws-head");
+        if (control) control.focus({ preventScroll: true });
+        else {
+          const first = [...document.querySelectorAll("button, input, select, [tabindex]")].find(
+            (el) =>
+              el.tabIndex >= 0 &&
+              !el.disabled &&
+              el.getClientRects().length &&
+              getComputedStyle(el).visibility === "visible",
+          );
+          first?.focus({ preventScroll: true });
+        }
+      });
+      cs.onFlush?.(() => {});
+      cs.onVisibility((shown) => {
+        visible = shown;
+        if (!shown) closeMenus();
+        if (shown) {
+          list?.refresh();
+          schedule();
+          if (showRuns) void loadRuns();
+        }
+      });
+      const runClock = setInterval(() => {
+        if (visible && showRuns)
+          $("al-runs")
+            .querySelectorAll("[data-run-ended]")
+            .forEach((el) => {
+              el.textContent = ago(el.dataset.runEnded);
+            });
+      }, 30000);
+      cs.onTeardown?.(() => {
+        endCardDrag(false, false);
+        clearCardFocus();
+        document.removeEventListener("focusout", cardFocusOut);
+        window.removeEventListener("blur", clearCardFocus);
+        window.removeEventListener("blur", closeMenus);
+        window.removeEventListener("resize", viewportChanged);
+        document.removeEventListener("visibilitychange", menuHidden);
+        document.removeEventListener("keydown", menuEscape);
+        clearTimeout(announcementTimer);
+        clearInterval(runClock);
+        runListRequest++;
+        clearTimeout(historyTimer);
+        runRequest++;
+        if (scheduled) cancelAnimationFrame(scheduled);
+        if (agentView) cs.unsubscribe?.("agentList", agentView.changed, agentView.options);
+        list?.destroy();
+      });
+      if (cs.firstPaint?.topic === "agentList") {
+        referenceOrder = "plain";
+        receive("agentList", cs.firstPaint);
+      }
+      function viewportChanged() {
+        if (menuOpen) positionMenu($("al-menu"));
+        schedule();
+      }
+      window.addEventListener("resize", viewportChanged);
+      const ready = Promise.all(
+        ["sessions", "inbox", "ui:dock"].map((topic) =>
+          cs.subscribe?.(topic, { onChange: (snapshot, delta) => receive(topic, snapshot, delta) }),
+        ),
+      )
+        .then(() => syncAgentView())
+        .then(() => {
+          initialReady = true;
+          paint();
+          cs.ready?.();
+        })
+        .catch(report);
+    </script>
+  </body>
+</html>

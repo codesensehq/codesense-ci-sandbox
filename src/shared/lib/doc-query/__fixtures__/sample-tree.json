@@ -1,0 +1,112 @@
+{
+  "dirPath": "",
+  "dirName": "",
+  "absoluteDirPath": "/ctx",
+  "stories": [],
+  "subEpics": [
+    {
+      "dirPath": "epic-a",
+      "dirName": "epic-a",
+      "absoluteDirPath": "/ctx/epic-a",
+      "stories": [
+        {
+          "fileName": "a1-foundation.md",
+          "filePath": "/ctx/epic-a/a1-foundation.md",
+          "dependsOn": [],
+          "status": "todo",
+          "documentType": "story",
+          "supportingDocs": ["./shared-notes.md", "./arch-notes.excalidraw", "./diagram.bin"],
+          "sourceRepo": "alderco/codesense",
+          "team": null,
+          "openTags": {
+            "context_level": ["team"],
+            "area": ["query"]
+          },
+          "storyId": "A-1",
+          "mtime": 1730000000000000000,
+          "sprint": "2026-08-A",
+          "assignedTo": "octocat-dev"
+        },
+        {
+          "fileName": "a2-consumer.md",
+          "filePath": "/ctx/epic-a/a2-consumer.md",
+          "dependsOn": ["a1-foundation"],
+          "status": "in-progress",
+          "documentType": "story",
+          "supportingDocs": ["./a1-foundation.md"],
+          "sourceRepo": "alderco/codesense",
+          "team": null,
+          "openTags": {
+            "context_level": ["org"]
+          },
+          "storyId": "A-2"
+        },
+        {
+          "fileName": "shared-notes.md",
+          "filePath": "/ctx/epic-a/shared-notes.md",
+          "dependsOn": null,
+          "status": "done",
+          "documentType": "doc",
+          "supportingDocs": null,
+          "sourceRepo": null,
+          "team": null,
+          "openTags": {
+            "area": ["query", "docs"]
+          },
+          "storyId": "A-S"
+        }
+      ],
+      "subEpics": [],
+      "docs": [
+        {
+          "fileName": "arch-notes.excalidraw",
+          "filePath": "/ctx/epic-a/arch-notes.excalidraw"
+        }
+      ],
+      "orderError": null,
+      "mainDoc": null
+    },
+    {
+      "dirPath": "epic-b",
+      "dirName": "epic-b",
+      "absoluteDirPath": "/ctx/epic-b",
+      "stories": [
+        {
+          "fileName": "b1-downstream.md",
+          "filePath": "/ctx/epic-b/b1-downstream.md",
+          "dependsOn": ["../epic-a/a1-foundation"],
+          "status": "blocked",
+          "documentType": "story",
+          "supportingDocs": null,
+          "sourceRepo": null,
+          "team": null,
+          "openTags": {
+            "context_level": ["team"]
+          },
+          "storyId": "B-1"
+        },
+        {
+          "fileName": "b2-custom.md",
+          "filePath": "/ctx/epic-b/b2-custom.md",
+          "dependsOn": null,
+          "status": "shipped",
+          "documentType": "story",
+          "supportingDocs": null,
+          "sourceRepo": null,
+          "team": null,
+          "openTags": {
+            "context_level": ["galaxy"]
+          },
+          "storyId": "B-2"
+        }
+      ],
+      "subEpics": [],
+      "docs": [],
+      "orderError": null,
+      "mainDoc": null
+    }
+  ],
+  "docs": [],
+  "orderError": null,
+  "mainDoc": null
+}

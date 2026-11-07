@@ -1,0 +1,148 @@
+/* The one status mark (`shared/components/status-mark.tsx`). Each state's shape
+   is drawn in SVG with `currentColor`; this sheet picks the colour from the
+   theme-aware `--cs-status-*` tokens (viewer-themes.css) and owns the three
+   motions in the vocabulary: a Tool call's arc turns, Thinking's dots breathe,
+   and Needs you's halo pulses three times and then holds. Nothing fades. */
+
+.cs-mark {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+  vertical-align: middle;
+}
+.cs-mark > svg {
+  display: block;
+}
+
+.cs-mark-tool,
+.cs-mark-thinking {
+  color: var(--cs-status-busy);
+}
+.cs-mark-question,
+.cs-mark-permission,
+.cs-mark-blocked {
+  color: var(--cs-status-needs);
+}
+.cs-mark-error,
+.cs-mark-crashed {
+  color: var(--cs-status-failed);
+}
+.cs-mark-ready,
+.cs-mark-stalled,
+.cs-mark-unknown,
+.cs-mark-ended,
+.cs-mark-offline {
+  color: var(--cs-status-idle);
+}
+
+.cs-mark-spin {
+  animation: cs-mark-spin 1.1s linear infinite;
+}
+@keyframes cs-mark-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cs-mark-halo {
+  opacity: 0.45;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cs-mark-call 1.6s cubic-bezier(0.3, 0, 0.3, 1) 3;
+}
+@keyframes cs-mark-call {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  65% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  66% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+}
+
+/* The blocked halo holds steady — a self-reported block is not "calling you"
+   like a question or an approval is. Rendered via inline opacity on the SVG
+   circle: no animation, no transform. The class name is kept so tests and
+   future motion variants can key off "the still halo family" without churn. */
+.cs-mark-halo-still {
+  /* Intentionally no properties — the inline opacity on the SVG does the work. */
+}
+
+/* Thinking's three dots breathe in a 1.5s cycle, staggered 150ms so they read
+   as a left-to-right wave. The animation stops under reduced motion. */
+.cs-mark-think {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cs-mark-think 1.5s ease-in-out infinite;
+}
+.cs-mark-think[data-i="1"] {
+  animation-delay: 0.15s;
+}
+.cs-mark-think[data-i="2"] {
+  animation-delay: 0.3s;
+}
+@keyframes cs-mark-think {
+  0%,
+  80%,
+  100% {
+    opacity: 0.8;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-mark-spin,
+  .cs-mark-halo,
+  .cs-mark-think {
+    animation: none;
+  }
+  .cs-mark-think {
+    opacity: 0.9;
+  }
+}
+
+/* The story-stage rail (`shared/components/stage-rail.tsx`): neutral ink drawn from
+   the foreground, so it reads on every theme and never competes with an agent's hue. */
+.cs-rail {
+  --cs-rail-fill: color-mix(in srgb, var(--foreground) 62%, transparent);
+  --cs-rail-empty: color-mix(in srgb, var(--foreground) 15%, transparent);
+  --cs-rail-done: var(--foreground);
+  --cs-rail-wall: var(--foreground);
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+  vertical-align: middle;
+}
+.cs-rail > svg {
+  display: block;
+}
+
+/* A mark drawn as an example (a menu option's icon) holds still. */
+.cs-mark-still .cs-mark-spin,
+.cs-mark-still .cs-mark-halo,
+.cs-mark-still .cs-mark-think {
+  animation: none;
+}
+.cs-mark-still .cs-mark-think {
+  opacity: 0.9;
+}
+
+/* Left-nav rows: file drawings in neutral ink (colour belongs to agent marks), and a
+   hover quieter than the selected row's fill. */
+.cs-nav-ink {
+  color: color-mix(in srgb, var(--cs-sidebar-text, var(--foreground)) 58%, transparent);
+}
+.cs-nav-row.cs-sidebar-item:not(.cs-sidebar-item-selected):hover {
+  background: color-mix(in srgb, var(--cs-sidebar-text, var(--foreground)) 6%, transparent);
+}

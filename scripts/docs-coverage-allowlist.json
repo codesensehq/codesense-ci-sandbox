@@ -1,0 +1,1247 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "kind": "agent-yaml",
+      "name": "budget_usd.per_day",
+      "page": "arc-e-agents/agent-yaml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "agent-yaml",
+      "name": "budget_usd.per_week",
+      "page": "arc-e-agents/agent-yaml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "agent-yaml",
+      "name": "context[].dest",
+      "page": "arc-e-agents/agent-yaml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "agent-yaml",
+      "name": "context[].path",
+      "page": "arc-e-agents/agent-yaml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "accounts:manage",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "context:read",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "context:write",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "dashboards:install:private",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "dashboards:publish:team",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "inbox:read:all-teams",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "inbox:read:own",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "machines:manage",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "machines:read",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "records:read:own",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "records:write:own",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "repo:read",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "repo:write",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "routines:manage",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "routines:read",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "routines:run",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "sessions:send",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "sessions:stop",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "terminal:control",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "capability",
+      "name": "terminal:view",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "declaration-key",
+      "name": "collapsedByDefault",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "context": "PaneManifestEntry",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "declaration-key",
+      "name": "reactsTo",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "context": "PaneManifestEntry",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "declaration-key",
+      "name": "showsOn",
+      "page": "arc-i-dashboard-primitives/pane-shapes.html",
+      "context": "PaneManifestEntry",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "live-hub",
+      "name": "agentDefinitions",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "live-hub",
+      "name": "paneSources",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "live-hub",
+      "name": "runEndorsements",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "agent_delete",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "agent_restore",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "agent_unarchive",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "agent_update",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "attach_context_repository",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "avatar_add",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "avatar_list",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "avatar_share",
+      "page": "arc-e-agents/agent-design.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "cancel_remote_agent_task",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "codesense_call_tool",
+      "page": "mcp-explorer.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "codesense_get_tool_schema",
+      "page": "mcp-explorer.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "codesense_search_tools",
+      "page": "mcp-explorer.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "commit_registry_edit_local",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "create_dashboard",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "create_local_organization",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "describe_setup",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "detach_context_repository",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "enroll_private_machine_account",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "feedback_send",
+      "page": "arc-n-reference/troubleshooting.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "get_active_agent_account",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "get_viewer_state",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "health_ping",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "list_agent_accounts",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "list_agent_updates",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "pane_list",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "pane_open",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "pane_write",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "publish_dashboard",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "read_remote_agent_task",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_collections",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_create",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_delete",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_history",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_list",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_read_at",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_read",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_restore",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_search",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_set_fields",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "records_write",
+      "page": "arc-i-dashboard-primitives/records.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "resolve_agent_account",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "save_source_repo_attachment",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "set_active_agent_account",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "set_active_team",
+      "page": "arc-b-model/orgs.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "set_viewer_state",
+      "page": "arc-i-dashboard-primitives/reacting-to-state.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "share_dashboard",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "start_remote_agent_task",
+      "page": "arc-e-agents/spend-caps.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "mcp-tool",
+      "name": "unpublish_dashboard",
+      "page": "arc-i-dashboard-primitives/your-first-dashboard.html",
+      "reason": "Existing assigned-page teaching gap at approved bootstrap baseline.",
+      "story": "SV-DOC-10"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "handover_from.epoch",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "handover_from.machine",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "migrated.from",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "migrated.note",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "migrated.revision",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "policy.budget_usd.per_day",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "policy.budget_usd.per_week",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "policy.max_wakes_per_day",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "policy.min_gap",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.from_agent",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.kind",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.list",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous.key",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous.max",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous.min",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous.op",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous.value",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.previous",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.cursor",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters[].key",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters[].max",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters[].min",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters[].op",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.filters[].value",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.groupBy",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.limit",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.match",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.backlinkedBy",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.dependedOnBy",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.dependsOn",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.hasDeps",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.hasSupportingDoc",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.isBacklinked",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships.parentEpic",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.relationships",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.select",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.sort",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.sort[].dir",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.sort[].key",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.sort[].missing",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.sort[].order",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.text",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.kinds",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.layers",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.orgs",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.pathGlob",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.pathPrefix",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.sameOrgAs",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.sameRootAs",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where.teams",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection.where",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.selection",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target.key",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target.max",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target.min",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target.op",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target.value",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata.target",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.metadata",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event.role",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].event",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].schedule.cron",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].schedule.tz",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "triggers[].schedule",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "variables.*.default",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "routine-yml",
+      "name": "variables.*.type",
+      "page": "arc-g-routines/routine-yml.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "kit.call",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "kit.createEditor",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "kit.has",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "onIntent",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "onMachinesChanged",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "onMenuAction",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "sdk-method",
+      "name": "onRoutinesChanged",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "analyze",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "closeTerminalTab",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "embedMessage",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "getDependencyStatus",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "getDocDir",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "getEpicHandle",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "getWorkspaceStatus",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "markUnread",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "openMessage",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "openRoutineDraft",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "readWorkspace",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "records.delete",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "records.history",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "records.readAt",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "records.restore",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "records.search",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "routeToContext",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "routineRun",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "routineRuns",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "sendAsHuman",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "sendToWorkspaceTab",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "setHumanStatus",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "watchAgentActivity",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "watchAgentInbox",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    },
+    {
+      "kind": "verb",
+      "name": "watchInbox",
+      "page": "arc-i-dashboard-primitives/calling-codesense.html",
+      "reason": "Existing generated public name lacks an authored shipped teaching mention at approved bootstrap baseline.",
+      "story": "SV-DOC-14"
+    }
+  ]
+}

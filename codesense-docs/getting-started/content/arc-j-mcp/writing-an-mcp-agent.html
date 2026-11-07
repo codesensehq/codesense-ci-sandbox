@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="bot" />
+    <title>CodeSense — Writing an MCP-only agent</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/writing-an-mcp-agent"] .cs-main {
+        max-width: 1000px;
+      }
+      body[data-page="arc-j-mcp/writing-an-mcp-agent"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/writing-an-mcp-agent"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 64ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      .arcj-step {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 10px 16px;
+        padding: 18px 20px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 14px 0;
+      }
+      .arcj-step__n {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+        font-family: var(--cs-font-mono);
+        font-size: 15px;
+      }
+      .arcj-step h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .arcj-step h3 code {
+        font-family: var(--cs-font-mono);
+        font-size: 14px;
+      }
+      .arcj-step p {
+        margin: 0 0 8px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .arcj-step pre {
+        margin: 10px 0 0;
+      }
+      .arcj-run {
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: color-mix(in srgb, var(--cs-fg) 3%, var(--cs-surface));
+        margin: 14px 0;
+      }
+      .arcj-run h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-family: var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+      }
+      .arcj-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        margin-right: 6px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-family: var(--cs-font-mono);
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+      }
+      .arcj-tag--read {
+        color: var(--cs-accent);
+        border-color: color-mix(in srgb, var(--cs-accent) 55%, var(--cs-border));
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/writing-an-mcp-agent">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Writing an MCP-only agent — a worked example that sets an active team, adds a source repo, lists worktrees, all with no UI"
+        id="hero"
+      >
+        <h1>No UI. Just four calls.</h1>
+        <p class="lede">
+          Everything CodeSense does is reachable through MCP: it is
+          <strong>MCP-complete</strong>. We'll build an agent that onboards a new team
+          end-to-end without ever touching the UI: pick the active team, add a source repo, list the
+          worktrees that are open on it. Four tool calls. The agent's whole surface area is the
+          bridge.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A headless agent on the left talks only to the CodeSense bridge. Four numbered calls go through it to reach four handlers on the right: list_orgs_teams, set_active_team, add_source_repo, list_worktrees. No UI window, no shell."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-w"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Agent -->
+            <g transform="translate(20 100)">
+              <rect
+                width="180"
+                height="160"
+                rx="12"
+                fill="var(--cs-inset)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                team-onboarder
+              </text>
+              <text x="14" y="40" style="fill: var(--cs-muted-fg); font-size: 10px">
+                runtime: claude
+              </text>
+              <text x="14" y="54" style="fill: var(--cs-muted-fg); font-size: 10px">
+                launch: headless
+              </text>
+              <text
+                x="14"
+                y="76"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                mcp.servers: []
+              </text>
+              <text
+                x="14"
+                y="92"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                permissions.claude:
+              </text>
+              <text
+                x="24"
+                y="106"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                allow: ["mcp__codesense__*"]
+              </text>
+              <text
+                x="24"
+                y="120"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                deny: [Edit, Write, Bash]
+              </text>
+              <text x="14" y="146" style="fill: var(--cs-muted-fg); font-size: 10px">
+                no UI window
+              </text>
+            </g>
+
+            <!-- Bridge -->
+            <g transform="translate(230 130)">
+              <rect
+                width="110"
+                height="100"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text x="55" y="30" text-anchor="middle" style="fill: var(--cs-fg); font-size: 11px">
+                CodeSense
+              </text>
+              <text x="55" y="48" text-anchor="middle" style="fill: var(--cs-fg); font-size: 11px">
+                MCP
+              </text>
+              <text
+                x="55"
+                y="72"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                bridge
+              </text>
+            </g>
+
+            <!-- Four calls -->
+            <g font-family="var(--cs-font-mono)" font-size="10.5" fill="var(--cs-muted-fg)">
+              <path
+                d="M204 134 L 230 134"
+                stroke="var(--cs-muted-fg)"
+                stroke-width="1.2"
+                fill="none"
+                marker-end="url(#arcj-arrow-w)"
+              />
+              <text x="206" y="128">1</text>
+              <path
+                d="M204 160 L 230 160"
+                stroke="var(--cs-muted-fg)"
+                stroke-width="1.2"
+                fill="none"
+                marker-end="url(#arcj-arrow-w)"
+              />
+              <text x="206" y="154">2</text>
+              <path
+                d="M204 186 L 230 186"
+                stroke="var(--cs-muted-fg)"
+                stroke-width="1.2"
+                fill="none"
+                marker-end="url(#arcj-arrow-w)"
+              />
+              <text x="206" y="180">3</text>
+              <path
+                d="M204 212 L 230 212"
+                stroke="var(--cs-muted-fg)"
+                stroke-width="1.2"
+                fill="none"
+                marker-end="url(#arcj-arrow-w)"
+              />
+              <text x="206" y="206">4</text>
+            </g>
+
+            <!-- Handlers -->
+            <g transform="translate(360 50)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                1 · list_orgs_teams
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                discover orgs + teams
+              </text>
+              <rect
+                x="212"
+                y="12"
+                width="38"
+                height="18"
+                rx="4"
+                fill="var(--cs-surface)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="231"
+                y="25"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                read
+              </text>
+            </g>
+            <g transform="translate(360 118)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                2 · set_active_team
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                switch the backend focus
+              </text>
+              <rect
+                x="206"
+                y="12"
+                width="48"
+                height="18"
+                rx="4"
+                fill="var(--cs-surface)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="230"
+                y="25"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                write
+              </text>
+            </g>
+            <g transform="translate(360 186)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                3 · add_source_repo
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                attach a source
+              </text>
+              <rect
+                x="206"
+                y="12"
+                width="48"
+                height="18"
+                rx="4"
+                fill="var(--cs-surface)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="230"
+                y="25"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                write
+              </text>
+            </g>
+            <g transform="translate(360 254)">
+              <rect
+                width="260"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="16"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                4 · list_worktrees
+              </text>
+              <text x="16" y="42" style="fill: var(--cs-muted-fg); font-size: 10px">
+                enumerate workspaces
+              </text>
+              <rect
+                x="212"
+                y="12"
+                width="38"
+                height="18"
+                rx="4"
+                fill="var(--cs-surface)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="231"
+                y="25"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                read
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What this agent is for — pre-conditions and task" id="task">
+        <h2>The task</h2>
+        <p>
+          You've just signed into a Mac that's never used CodeSense before. There's an acme org
+          you belong to; its
+          <code>default</code> team is where you work. You want to:
+        </p>
+        <ol>
+          <li>Make <code>acme / default</code> the active team.</li>
+          <li>
+            Add the repo <code>acme/sample</code> as a source so new worktrees can be spawned
+            from it.
+          </li>
+          <li>Confirm by listing the worktrees the Mac now sees.</li>
+        </ol>
+        <p>
+          A human would click through the team switcher, the settings pane, and the worktrees panel.
+          The agent does the three verbs via MCP alone — no UI window, no shell call, no filesystem
+          write.
+        </p>
+      </section>
+
+      <section data-search="The agent.yaml — three fields keep it locked down" id="agent-yaml">
+        <h2>Step 0 · The agent definition</h2>
+        <p>
+          Save under
+          <code>config/agents/team-onboarder/agent.yaml</code> in your context repo. Pattern from
+          Arc E's <a href="../arc-e-agents/mcp-only-agents.html">MCP-only agents</a>: empty
+          <code>mcp.servers</code>, allowlist <code>mcp__codesense__*</code>, deny filesystem +
+          shell.
+        </p>
+        <pre><code>id: team-onboarder
+name: Team onboarder
+description: Picks the active team, attaches a source repo, confirms by listing worktrees.
+runtime: claude
+launch: headless
+startup:
+  - CLAUDE.md
+  - .claude/skills/team-onboarder/
+mcp:
+  servers: []        # bridge is on by default; nothing else
+permissions:
+  claude:
+    allow: [Read, Grep, Glob, "mcp__codesense__*"]
+    deny:  [Edit, Write, Bash]
+default_prompt: /onboard-team
+revision: 1</code></pre>
+        <p>
+          Launch headless with your Claude CLI; CodeSense wires the bridge; the agent is live. No UI
+          involved so far either.
+        </p>
+      </section>
+
+      <section data-search="The four calls — step by step" id="calls">
+        <h2>The four calls</h2>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">1</span>
+          <div>
+            <h3><code>list_orgs_teams</code> <span class="arcj-tag arcj-tag--read">read</span></h3>
+            <p>
+              Discovery first. Returns every org / team the local user is a member of and whose
+              content is synced. We're looking for
+              <code>{ org: "acme", team: "default" }</code>; if that's not in the reply, the
+              agent stops — the user hasn't joined the team yet.
+            </p>
+            <pre><code>const { entries } = await codesense.invoke('list_orgs_teams', {})
+const target = entries.find(e =&gt; e.org === 'acme' &amp;&amp; e.team === 'default')
+if (!target) throw new Error('team not synced to this Mac')</code></pre>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">2</span>
+          <div>
+            <h3><code>set_active_team</code> <span class="arcj-tag">write</span></h3>
+            <p>
+              Switch the backend focus. The same move as clicking the team switcher: the backend
+              re-targets watchers and the UI follows. Changes org if needed.
+            </p>
+            <pre><code>const switched = await codesense.invoke('set_active_team', {
+  org:  'acme',
+  team: 'default'
+})
+// { status: "ok", data: { orgSlug: "acme", team: "default" } }
+if (switched.status !== 'ok') throw new Error(switched.status)</code></pre>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">3</span>
+          <div>
+            <h3><code>add_source_repo</code> <span class="arcj-tag">write</span></h3>
+            <p>
+              Attach the source repo by remote shorthand
+              <code>owner/repo</code>. CodeSense never clones — if the Mac doesn't have a local
+              clone yet, the repo is tracked remote-only until a worktree is opened or
+              <code>attach_source_repo_path</code> is called with the clone's path.
+            </p>
+            <pre><code>const added = await codesense.invoke('add_source_repo', {
+  org:  'acme',
+  team: 'default',
+  url:  'acme/sample'
+})
+// { status: "ok", data: { owner, repo, provider, host, remoteKey, remoteName } }
+if (added.status === 'validation') throw new Error(added.message)</code></pre>
+          </div>
+        </div>
+
+        <div class="arcj-step">
+          <span class="arcj-step__n">4</span>
+          <div>
+            <h3><code>list_worktrees</code> <span class="arcj-tag arcj-tag--read">read</span></h3>
+            <p>
+              Confirm. Lists every managed worktree on this Mac — story worktrees, epic-integration
+              worktrees, orphans. For a brand new source there are no worktrees yet; the result is
+              <code>{ rows: [], reaped: 0 }</code>. That empty answer is the "done" signal.
+            </p>
+            <pre><code>const trees = await codesense.invoke('list_worktrees', {})
+return {
+  team:      switched.data,
+  source:    added.data,
+  worktrees: trees.rows.length,
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="The whole run — a sample transcript" id="transcript">
+        <h2>A sample run</h2>
+        <div class="arcj-run">
+          <h3>agent output</h3>
+          <pre><code>→ list_orgs_teams {}
+← { entries: [
+    { org: "acme",          team: "default",  synced: true },
+    { org: "acme",          team: "docs",     synced: true },
+    { org: "codesense-docs", team: "getting-started", synced: true }
+  ]}
+
+→ set_active_team { org: "acme", team: "default" }
+← { status: "ok", data: { orgSlug: "acme", team: "default" } }
+
+→ add_source_repo { org: "acme", team: "default", url: "acme/sample" }
+← { status: "ok",
+    data: { owner: "acme", repo: "sample",
+            provider: "github", host: "github.com",
+            remoteKey: "github.com/acme/sample",
+            remoteName: "origin", localPath: null } }
+
+→ list_worktrees {}
+← { rows: [], reaped: 0 }
+
+done — team active, source attached, 0 worktrees so far.</code></pre>
+        </div>
+      </section>
+
+      <section data-search="What this proves — MCP-complete" id="proves">
+        <h2>What this proves</h2>
+        <p>
+          Zero UI calls. Zero shell calls. Zero filesystem writes outside what the bridge did on
+          your behalf — <code>set_active_team</code> and <code>add_source_repo</code> both landed in
+          CodeSense's own state, nothing in your source tree moved. The whole workflow is auditable,
+          log-replayable, scriptable on a cron. MCP-complete means:
+          <strong
+            >every UI action has an MCP tool, so every workflow is reproducible via MCP
+            alone.</strong
+          >
+        </p>
+        <p>
+          Want a shorter version — an agent whose <em>whole</em> job is this shape, not just this
+          task? See Arc E · <a href="../arc-e-agents/mcp-only-agents.html">MCP-only agents</a> for
+          the full posture (empty <code>mcp.servers</code>, allowlist prefix, deny filesystem) and
+          more fits (dashboard caretakers, scheduled reporters, routine sentries).
+        </p>
+      </section>
+
+      <section data-search="Error paths the agent handles" id="errors">
+        <h2>Error paths worth handling</h2>
+        <ul>
+          <li>
+            <strong>Team not synced.</strong>
+            <code>list_orgs_teams</code> omits teams whose content isn't on this Mac. The agent
+            surfaces a clear error, not a cryptic "unauthorizedTeam" later.
+          </li>
+          <li>
+            <strong>Duplicate source.</strong> If <code>acme/sample</code> is already attached,
+            <code>add_source_repo</code> returns
+            <code>{ status: "validation", message: "already tracked" }</code>. Idempotent — the
+            agent can retry without harm.
+          </li>
+          <li>
+            <strong>Permission denied.</strong> The host's <code>deny</code> list wins over the
+            bridge. If <code>mcp__codesense__add_source_repo</code> is blocked, the call errors
+            before reaching the handler.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — run the first read-only step" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Run step 1 — <code>list_orgs_teams</code>. Read-only. The reply shows the agent what it
+          needs to pick a team.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "list_orgs_teams", "args": {}}'
+          label="Run list_orgs_teams"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP (the full agent body)</strong></summary>
+          <pre><code>async function onboardTeam({ org, team, repo }) {
+  const { entries } = await codesense.invoke('list_orgs_teams', {})
+  const target = entries.find(e =&gt; e.org === org &amp;&amp; e.team === team)
+  if (!target) throw new Error(`team ${org}/${team} not synced here`)
+
+  const switched = await codesense.invoke('set_active_team', { org, team })
+  if (switched.status !== 'ok') throw new Error(switched.status)
+
+  const added = await codesense.invoke('add_source_repo', {
+    org, team, url: repo,
+  })
+  if (added.status === 'validation' &amp;&amp; !/already tracked/.test(added.message)) {
+    throw new Error(added.message)
+  }
+
+  const trees = await codesense.invoke('list_worktrees', {})
+  return {
+    team: switched.data,
+    source: added.data,
+    worktrees: trees.rows.length,
+  }
+}
+
+onboardTeam({ org: 'acme', team: 'default', repo: 'acme/sample' })</code></pre>
+          <p>
+            See Arc E's
+            <a href="../arc-e-agents/mcp-only-agents.html">MCP-only agents</a> for the agent-shape
+            write-up, and the <a href="../mcp-explorer.html">mcp-explorer</a> for every tool this
+            agent reaches for.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./calling-by-name.html">codesense_call_tool</a> · Next:
+        <a href="./adding-the-mcp-to-your-agent.html">Adding the MCP to your agent</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · Writing an MCP agent</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

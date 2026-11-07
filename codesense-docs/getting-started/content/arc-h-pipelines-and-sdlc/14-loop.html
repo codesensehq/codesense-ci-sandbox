@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 14 · Loop</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="14"
+    data-page="arc-h-pipelines-and-sdlc/14-loop"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 14 — Loop" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>14</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>LOOP</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>14</span> ·
+                  <span data-cs-phase-name>Loop</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  The sweep that closes the factory loop. Run by a routine on a
+                  schedule, <code>bmad-loop-sweep</code> looks for
+                  work that fell through the cracks and carries it forward.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What loop phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              The loop phase is what makes CodeSense a factory, not a one-shot.
+              <code>bmad-loop-sweep</code> runs on a schedule to catch
+              everything that slipped: stories without owners, review threads
+              gone cold, carried-over sprint points, retro findings nobody
+              scheduled.
+            </p>
+            <p>
+              A good sweep is <em>short</em>. If every run finds work, the
+              earlier phases are under-planned; the retro of the next epic
+              surfaces that pattern.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — sprint FAKE-S1 sweep" id="worked">
+            <h2>Worked example — FAKE-S1 sweep output</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — loop" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in loop" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml loop sweeper" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml loop sweep schedule" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <p>
+              The loop sweep is the only phase whose routine runs on a schedule
+              (a <code>cron</code> expression with a time zone) rather than on
+              mail. Drop this into
+              <code>config/agents/loop-sweeper/routines/loop-sweep/routine.yml</code>.
+            </p>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — loop" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  This Mac fires the schedule. The <code>routines-console.html</code>
+                  dashboard shows the next scheduled sweep, the last run, and
+                  what it found.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  <code>routine_arm_on</code> moves the routine onto a remote
+                  machine, which then fires it on its own clock. Keep sweeps per-machine
+                  — a sweep that touches two context repos should emit its
+                  carry-over as inbox messages, not direct writes to the other
+                  machine.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — loop" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Run the loop sweep against your current repo. It's read-only unless
+              you confirm the carry-over actions it proposes.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-loop-sweep"}'
+              label="Run loop sweep"
+              confirm="Run bmad-loop-sweep in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to loop-sweep via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-loop-sweep' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-14">factory playbook · phase 14</a>
+            &nbsp;·&nbsp; Previous: <a href="./13-ship.html">← 13 Ship</a> ·
+            Back to the start: <a href="./01-idea.html">01 Idea ↻</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 14 · Loop</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

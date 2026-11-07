@@ -1,0 +1,5 @@
+id: solo-founder-builder
+name: Solo founder builder
+icon: builtin-funny:hardhat-raccoon
+# Replace null with the full key returned by agent_create before saving.
+defaultHandler: null

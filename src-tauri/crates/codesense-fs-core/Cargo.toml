@@ -1,0 +1,21 @@
+[package]
+name = "codesense-fs-core"
+version = "0.1.0"
+description = "Tauri-free worktree file service: gated list/read, hidden/secret/VCS filters, the root gate and the debounced worktree watch"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "codesense_fs_core"
+
+[dependencies]
+globset = "0.4"
+log = "0.4"
+notify = "6"
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+tempfile = "3"

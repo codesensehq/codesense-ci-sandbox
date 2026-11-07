@@ -1,0 +1,33 @@
+[workspace]
+members = [
+    "src-tauri",
+    "src-tauri/crates/codesense-guards",
+    "src-tauri/crates/codesense-bridge",
+    "src-tauri/crates/codesense-host-proto",
+    "src-tauri/crates/codesense-pty-core",
+    "src-tauri/crates/codesense-fs-core",
+    "src-tauri/crates/codesense-session-server",
+]
+# Vendored third-party crates build as dependencies only (see each one's PATCHES.md).
+exclude = ["src-tauri/vendor/tauri-plugin-wdio-webdriver"]
+resolver = "2"
+
+# The e2e WebDriver plugin, patched to run scripts inside the frame a session switched to
+# (src-tauri/vendor/tauri-plugin-wdio-webdriver/PATCHES.md). Only the e2e-webdriver feature
+# pulls it in; scripts/verify-wdio-plugin-release-absence.sh proves release builds never do.
+[patch.crates-io]
+tauri-plugin-wdio-webdriver = { path = "src-tauri/vendor/tauri-plugin-wdio-webdriver" }
+
+# Line tables keep file:line in backtraces and panics while cutting target size
+# and link time. Opt back into full debuginfo with CARGO_PROFILE_DEV_DEBUG=2.
+[profile.dev]
+debug = "line-tables-only"
+
+# Every remote connect sha256-verifies ~90 MB of host-agent artifacts, locally
+# and on the machine. Unoptimized sha2 makes that ~10 s per check in dev and
+# test builds, hiding the real connection latency they exercise.
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.dev.package.libsqlite3-sys]
+opt-level = 2

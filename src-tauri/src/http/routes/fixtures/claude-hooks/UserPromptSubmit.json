@@ -1,0 +1,9 @@
+{
+  "cwd": "/tmp/claude-hook-capture",
+  "hook_event_name": "UserPromptSubmit",
+  "permission_mode": "default",
+  "prompt": "Use the Bash tool to run exactly: ls nope-missing-xyz   Then reply 'ok'.",
+  "prompt_id": "c1a0de00-0000-4000-9000-000000000301",
+  "session_id": "c1a0de00-0000-4000-a000-000000000307",
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000307.jsonl"
+}

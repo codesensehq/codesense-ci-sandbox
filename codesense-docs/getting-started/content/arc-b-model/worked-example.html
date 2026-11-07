@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file-tree" />
+    <title>CodeSense — Worked example</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 1040px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-b-model/"] .ex-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      body[data-page^="arc-b-model/"] .ex-card {
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      body[data-page^="arc-b-model/"] .ex-card h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      body[data-page^="arc-b-model/"] .ex-card .tag {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 2px 6px;
+        border: 1px solid var(--cs-border);
+        border-radius: 4px;
+      }
+      body[data-page^="arc-b-model/"] .ex-card p {
+        margin: 6px 0;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page^="arc-b-model/"] .ex-card .path {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--cs-fg);
+      }
+      body[data-page^="arc-b-model/"] .ex-card .who {
+        font-size: 13px;
+        color: var(--cs-fg);
+      }
+      body[data-page^="arc-b-model/"] .ex-card .who b {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/worked-example">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Worked example — three-team chain, one agent launch, an inherited edit" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Worked example</span>
+        </p>
+        <h1>Three teams, one launch, one explanation.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Everything in this arc, concrete. We follow the shipped
+          <a href="../examples/sample-epic/README.md">sample epic</a> DEMO across a
+          three-team chain, put one file in each place, launch one agent, and then edit an
+          inherited file. For each file we spell out where it lives, who sees it, whether
+          it gets pushed, and whether the launch copies it. If a page in this arc hasn't
+          clicked yet, read this one.
+        </p>
+      </section>
+
+      <!-- =============== Setup =============== -->
+      <section data-search="The sample org and three-team chain" id="setup">
+        <h2>The setup</h2>
+        <p>
+          Imagine your org is <code>acme/codesense</code> and
+          <code>teams.yml</code> declares three teams in a chain:
+          <code>default</code> is where you work day-to-day; <code>platform</code>
+          holds skills shared across products; <code>root</code> is the top of the
+          chain and holds the house style guide and the lint rules every team honors.
+        </p>
+        <pre><code># teams.yml, at the root of the org's context repo
+teams:
+  - name: default
+    source_repos:
+      - owner: acme
+        repo: sample-source-repo
+        provider: git
+        host: example.invalid
+    parent_team: platform
+  - name: platform
+    parent_team: root
+  - name: root</code></pre>
+        <p>
+          The active team is <code>default</code>, so its chain is
+          <code>[default, platform, root]</code>: <code>default</code>'s context is its own
+          content plus <code>platform</code>'s plus <code>root</code>'s, decided file by
+          file. The source repo <code>acme/sample-source-repo</code> (the bundled
+          sample) is bound to <code>default</code>.
+        </p>
+      </section>
+
+      <!-- =============== One file per place =============== -->
+      <section data-search="One file in each place: repo, private, all-orgs, team, parents" id="files">
+        <h2>One file in each place</h2>
+        <p>
+          Paths below are relative to the org's context repo (the folder you cloned or
+          created and connected in CodeSense), unless they start with <code>~</code>.
+        </p>
+        <div class="ex-grid">
+
+          <div class="ex-card">
+            <h3><span class="tag">Repo content</span> The dag-kill lint</h3>
+            <p class="path">
+              default/repos/example.invalid/acme/sample-source-repo/content/.claude/skills/dag-kill-lint/SKILL.md
+            </p>
+            <p>
+              A lint skill that only makes sense inside sample-source-repo: it refuses a
+              kill-switch PR that doesn't call the new host primitive. It lives in
+              <code>default</code>'s repo content for that repo.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> <code>default</code>, and only for launches in
+              <code>acme/sample-source-repo</code>. <b>Pushed:</b> yes, it's in the
+              context repo.
+            </p>
+          </div>
+
+          <div class="ex-card">
+            <h3><span class="tag">Private</span> Your DEMO prototype skill</h3>
+            <p class="path">
+              ~/.codesense/users/&lt;you&gt;/scratch/orgs/acme/codesense/content/.claude/skills/fake-killswitch-draft/SKILL.md
+            </p>
+            <p>
+              A prototype skill that drives the DEMO kill switch end to end. You're
+              iterating on it before offering it to the team.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> only you, only in the <code>acme/codesense</code> org.
+              <b>Pushed:</b> never.
+            </p>
+          </div>
+
+          <div class="ex-card">
+            <h3><span class="tag">All-orgs</span> Your &ldquo;explain this diff&rdquo; prompt</h3>
+            <p class="path">
+              ~/.codesense/users/&lt;you&gt;/scratch/all-orgs/prompts/explain-this-diff.md
+            </p>
+            <p>
+              A prompt you've honed and want in every org. It's an inert kind (a prompt), so
+              All-orgs accepts it; an agent manifest here would be refused.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> only you, in every org you open. <b>Pushed:</b> never.
+            </p>
+          </div>
+
+          <div class="ex-card">
+            <h3><span class="tag">Team content · default</span> Default's review checklist</h3>
+            <p class="path">
+              default/content/.claude/skills/review/SKILL.md
+            </p>
+            <p>
+              <code>default</code>'s own review skill. <code>platform</code> has a skill at the
+              same path; this one is closer, so it wins for <code>default</code>.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> everyone on <code>default</code> and any team below it.
+              <b>Pushed:</b> yes, via the org remote.
+            </p>
+          </div>
+
+          <div class="ex-card">
+            <h3><span class="tag">Parent team · platform</span> Platform's deploy and review skills</h3>
+            <p class="path">
+              platform/content/.claude/skills/deploy/SKILL.md<br />platform/content/.claude/skills/review/SKILL.md
+            </p>
+            <p>
+              Skills shared across every product team. <code>default</code> holds no
+              <code>deploy</code> skill, so it inherits <code>platform</code>'s. It does hold
+              its own <code>review</code>, so <code>platform</code>'s review is hidden for
+              <code>default</code> only.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> everyone on <code>platform</code>, and every child team for
+              each file the child doesn't hold itself. <b>Pushed:</b> yes.
+            </p>
+          </div>
+
+          <div class="ex-card">
+            <h3><span class="tag">Parent team · root</span> The house rules</h3>
+            <p class="path">
+              root/content/CLAUDE.md
+            </p>
+            <p>
+              The top of the chain holds the instructions every team honors. Neither
+              <code>default</code> nor <code>platform</code> has a <code>CLAUDE.md</code>,
+              so both inherit this one.
+            </p>
+            <p class="who">
+              <b>Who sees it:</b> every team in the org. <b>Pushed:</b> yes.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =============== One launch =============== -->
+      <section data-search="What one agent launch copies, file by file" id="resolver">
+        <h2>One launch, file by file</h2>
+        <p>
+          Now launch a Claude agent called <code>reviewer</code> on <code>default</code>,
+          in a worktree of <code>acme/sample-source-repo</code>. Its definition asks
+          for two things:
+        </p>
+        <pre><code># default/config/agents/reviewer/agent.yaml (excerpt)
+runtime: claude
+context:
+  - CLAUDE.md
+  - .claude/skills</code></pre>
+        <p>
+          CodeSense resolves each file under those paths through the stack (repo content,
+          private, all-orgs, <code>default</code>, <code>platform</code>,
+          <code>root</code>) and takes the closest copy:
+        </p>
+        <pre><code>CLAUDE.md                               ← root      (no closer team has one;
+                                                     kept as is if the repo tracks its own)
+.claude/skills/dag-kill-lint/SKILL.md   ← repo content for sample-source-repo
+.claude/skills/fake-killswitch-draft/…  ← your private space
+.claude/skills/review/SKILL.md          ← default   (platform's copy is shadowed)
+.claude/skills/deploy/SKILL.md          ← platform  (inherited)
+
+not copied: prompts/explain-this-diff.md
+            (the agent's context doesn't ask for prompts/)</code></pre>
+        <p>
+          CodeSense compares that list with what the worktree already holds, copies the
+          missing files (and newer versions of ones it copied before) in one batch, and
+          adds them to the clone's <code>.git/info/exclude</code>. It never overwrites a
+          file the repo tracks or a copy you edited: if
+          <code>sample-source-repo</code> commits its own <code>CLAUDE.md</code>, that one
+          stays and the launch report lists root's as skipped. The same agent launched in another repo would get everything except
+          the dag-kill lint.
+        </p>
+      </section>
+
+      <!-- =============== After the launch =============== -->
+      <section data-search="After the launch: explicit hydrate and editing an inherited file" id="after">
+        <h2>After the launch</h2>
+        <ul>
+          <li>
+            <strong>A teammate improves <code>platform</code>'s deploy skill.</strong> The
+            running worktree keeps the copy it got. Nothing updates in the background;
+            when the agent wants the new version it calls <code>hydrate_worktree</code>
+            for <code>.claude/skills</code>.
+          </li>
+          <li>
+            <strong>The agent fixes a typo in its copy of the review skill.</strong> That
+            edit stays in the worktree until the agent previews it with
+            <code>preview_reverse_sync_worktree</code> and publishes it with
+            <code>reverse_sync_worktree</code>, which writes it back to
+            <code>default</code>'s file.
+          </li>
+          <li>
+            <strong>You open <code>default</code> in the left nav and edit
+            <code>deploy/SKILL.md</code>.</strong> It's marked as inherited from
+            <code>platform</code>, and the viewer says: "This file comes from platform. Changes
+            you make here update it for platform and every team that inherits from it."
+            Save, and every product team sees the change.
+          </li>
+          <li>
+            <strong>You want a deploy skill for <code>default</code> only.</strong> Choose
+            <strong>Copy into default</strong> on the file. The copy lands in
+            <code>default/content/.claude/skills/deploy/</code>, it's now the closest, and
+            the next launch (or hydrate) picks it up instead of <code>platform</code>'s.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — see your real chain" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge where this page lives. Here that is the bundled docs org; from
+          a page in your own context repo it names your org and team. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Where does this page live?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to inspect a worked example via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            To walk the chain shown above from an agent:
+          </p>
+          <pre><code>// describe_setup {} → { data: { activeOrg, activeTeam, orgs: [...] } }
+const { activeOrg, activeTeam, orgs } = setup.data
+const org = orgs.find(o =&gt; o.slug === activeOrg)
+const chain = []
+let t = activeTeam
+while (t) {
+  chain.push(t)
+  t = org.teams.find(x =&gt; x.name === t)?.parent
+}
+// chain === ['default', 'platform', 'root']</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            The seed data this page cites ships with CodeSense; the sample repo lands
+            under <code>~/.codesense/users/&lt;id&gt;/sample-source-repo/</code> when
+            CodeSense launches.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./private-and-all-orgs.html">← Private &amp; All-orgs</a> ·
+        <a href="./index.html">↑ Arc B index</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a> ·
+        <a href="../examples/sample-epic/README.md">sample epic</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Worked example</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

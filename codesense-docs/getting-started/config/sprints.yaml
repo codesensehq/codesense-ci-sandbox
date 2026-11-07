@@ -1,0 +1,19 @@
+sprints:
+  FAKE-S1:
+    state: active
+    goal: "Ship the per-agent kill switch end-to-end."
+    focus_epics:
+      - DEMO
+    start: "2026-10-05"
+    end: "2026-10-19"
+    delivered_points: 3
+    carried_points: 0
+  FAKE-S0:
+    state: closed
+    goal: "Groundwork sprint — scaffolding the sample demo."
+    focus_epics:
+      - DEMO
+    start: "2026-09-21"
+    end: "2026-10-04"
+    delivered_points: 8
+    carried_points: 2

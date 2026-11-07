@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — The model</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Arc-B scoped bits. Lift into _shared/cs-docs.css when a second arc wants
+         the same thing; the shared layer stays lean until then. */
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 1040px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-b-model/"] .cs-docs-card.diag {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+      }
+      body[data-page^="arc-b-model/"] .layer-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 20px;
+        font-size: 14px;
+      }
+      body[data-page^="arc-b-model/"] .layer-table th,
+      body[data-page^="arc-b-model/"] .layer-table td {
+        border: 1px solid var(--cs-border);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.5;
+      }
+      body[data-page^="arc-b-model/"] .layer-table th {
+        background: color-mix(in oklab, var(--cs-surface) 92%, var(--cs-inset));
+        font-weight: 600;
+      }
+      body[data-page^="arc-b-model/"] .layer-table code {
+        font-size: 12.5px;
+      }
+      /* Hero inline-SVG stand-in — mirrors diagrams/arc-b-model.excalidraw.sketch.md
+         coordinate space (1600x1000). Will be swapped for the rendered PNG once
+         render_canvas lands sibling assets. */
+      body[data-page^="arc-b-model/"] .hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 920px;
+        margin: 16px auto 8px;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .band {
+        fill: var(--cs-surface);
+        stroke-width: 1.6;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .band-team {
+        stroke: #7aa2ff;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .band-private {
+        stroke: #f0a93b;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .band-allorgs {
+        stroke: #39d3bb;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 22px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .path {
+        fill: var(--cs-muted-fg);
+        font: 13px var(--cs-font-mono, ui-monospace), monospace;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .cap {
+        fill: var(--cs-faint-fg);
+        font: 13px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .chip {
+        fill: var(--cs-surface-raised, var(--cs-surface));
+        stroke: #d670d6;
+        stroke-width: 1.4;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .chip-active {
+        stroke-width: 2;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .chain-arrow {
+        stroke: #d670d6;
+        stroke-width: 1.6;
+        fill: none;
+        stroke-dasharray: 4 3;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .edge {
+        stroke: var(--cs-border-strong, var(--cs-border));
+        stroke-width: 1.2;
+        fill: none;
+      }
+      body[data-page^="arc-b-model/"] .hero-fig .prio {
+        stroke: #d670d6;
+        stroke-width: 2;
+        fill: none;
+      }
+      body[data-page^="arc-b-model/"] .hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 920px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Arc B — orgs, teams, the team chain, and where context comes from" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · The model</span>
+        </p>
+        <h1>Orgs, teams, and the team chain.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          One <strong>org</strong> is one context repo. A repo holds <strong>teams</strong>,
+          and a team can name one <code>parent_team</code>. A team's context is its own
+          content plus everything its parents hold, resolved <strong>per file</strong>:
+          the closest team wins. Nothing copies itself anywhere. Content reaches a
+          worktree only when the worktree is created, when an agent launches there (it
+          gets what its <code>context</code> asks for), or when an agent explicitly asks
+          for more. This arc teaches the model with pictures and a worked example, and
+          leaves the schemas to the <a href="../schema-browser.html">schema browser</a>.
+        </p>
+        <figure class="hero-fig" aria-labelledby="hero-cap">
+          <svg
+            viewBox="0 0 1600 1000"
+            role="img"
+            aria-label="Five horizontal bands, checked closest first from the top: repo content, your private space, the active team, its parent, and the parent's parent. Three stacked team-chain chips at right link each team to the band it supplies."
+          >
+            <title>Where an agent's context comes from · one team chain</title>
+
+            <!-- priority arrow in left margin: head at top, tail at bottom -->
+            <g>
+              <line class="prio" x1="56" y1="760" x2="56" y2="160" />
+              <polygon
+                fill="#d670d6"
+                points="56,130 46,160 66,160"
+              />
+              <text class="mut" x="22" y="520" transform="rotate(-90 22 520)">closest wins, per file</text>
+            </g>
+
+            <!-- Five bands (repo 1, private 2, team chain 3-5) -->
+            <g>
+              <!-- layer 1 -->
+              <rect class="band band-team" x="80" y="80" width="1200" height="120" rx="8" />
+              <text class="lbl" x="104" y="128">Repo content · only in that repo</text>
+              <text class="path" x="104" y="168">&lt;org&gt;/&lt;team&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/</text>
+              <!-- layer 2 -->
+              <rect class="band band-private" x="80" y="230" width="1200" height="120" rx="8" />
+              <text class="lbl" x="104" y="278">Private · yours alone</text>
+              <text class="path" x="104" y="318">~/.codesense/users/&lt;you&gt;/scratch/orgs/&lt;org&gt;/  (+ all-orgs, inert only)</text>
+              <!-- layer 3 -->
+              <rect class="band band-team" x="80" y="380" width="1200" height="120" rx="8" />
+              <text class="lbl" x="104" y="428">Team content · default</text>
+              <text class="path" x="104" y="468">&lt;org&gt;/default/content/</text>
+              <!-- layer 4 -->
+              <rect class="band band-team" x="80" y="530" width="1200" height="120" rx="8" />
+              <text class="lbl" x="104" y="578">Parent team · platform</text>
+              <text class="path" x="104" y="618">&lt;org&gt;/platform/content/</text>
+              <!-- layer 5 -->
+              <rect class="band band-team" x="80" y="680" width="1200" height="120" rx="8" />
+              <text class="lbl" x="104" y="728">Its parent · root</text>
+              <text class="path" x="104" y="768">&lt;org&gt;/root/content/</text>
+            </g>
+
+            <!-- Right-margin team chain -->
+            <g>
+              <!-- chain-root -->
+              <rect class="chip" x="1320" y="80" width="220" height="60" rx="10" />
+              <text class="lbl" x="1340" y="110" style="font-size:16px">root</text>
+              <text class="mut" x="1340" y="128">top of the chain</text>
+
+              <!-- chain-platform -->
+              <rect class="chip" x="1320" y="240" width="220" height="60" rx="10" />
+              <text class="lbl" x="1340" y="270" style="font-size:16px">platform</text>
+              <text class="mut" x="1340" y="288">parent_team: root</text>
+
+              <!-- chain-default (active) -->
+              <rect class="chip chip-active" x="1320" y="400" width="220" height="60" rx="10" />
+              <text class="lbl" x="1340" y="430" style="font-size:16px">default · active</text>
+              <text class="mut" x="1340" y="448">parent_team: platform</text>
+
+              <!-- dashed chain arrow: default -> platform -> root -->
+              <path class="chain-arrow" d="M 1430 400 L 1430 300" />
+              <path class="chain-arrow" d="M 1430 240 L 1430 140" />
+              <polygon fill="#d670d6" points="1430,80 1420,110 1440,110" />
+            </g>
+
+            <!-- Chain-to-band edges: each team supplies its own band; the repo band is the active team's -->
+            <g>
+              <path class="edge" d="M 1320 420 C 1300 420 1290 140 1280 140" />
+              <path class="edge" d="M 1320 430 C 1300 430 1290 440 1280 440" />
+              <path class="edge" d="M 1320 270 C 1300 270 1290 590 1280 590" />
+              <path class="edge" d="M 1320 110 C 1300 110 1290 740 1280 740" />
+            </g>
+
+            <!-- Footer caption -->
+            <text class="cap" x="800" y="940" text-anchor="middle">
+              Resolved per file · closest wins · an agent's context picks what a launch copies
+            </text>
+          </svg>
+        </figure>
+        <p class="hero-cap" id="hero-cap">
+          This is the shape; the live
+          <code>arc-b-model.excalidraw</code> canvas has the editable version —
+          click the diagram to open it.
+        </p>
+      </section>
+
+      <!-- =============== Pages =============== -->
+      <section data-search="What this arc covers" id="pages">
+        <h2>What's in this arc</h2>
+        <ol>
+          <li>
+            <a href="./orgs.html"><strong>Orgs</strong></a> — one org per context repo, the
+            slug, <code>org.yml</code>, and the directory layout under
+            <code>~/.codesense</code>.
+          </li>
+          <li>
+            <a href="./teams.html"><strong>Teams</strong></a> — <code>teams.yml</code>, the
+            single-parent chain (depth cap 64), and how a child team inherits its parents'
+            files one file at a time.
+          </li>
+          <li>
+            <a href="./content-layers.html"><strong>Content layers</strong></a> — the places
+            a file can live, the order an agent's launch checks them in, and what each
+            agent's <code>context</code> decides.
+          </li>
+          <li>
+            <a href="./source-repos.html"><strong>Source repos</strong></a> — the code repos
+            a team works in, the add + attach flows, and the per-repo content folder.
+          </li>
+          <li>
+            <a href="./private-and-all-orgs.html"><strong>Private &amp; All-orgs</strong></a>
+            — your per-org scratch space and the one folder that carries across every org.
+          </li>
+          <li>
+            <a href="./worked-example.html"><strong>Worked example</strong></a> — a three-team
+            chain, one agent launch, and an edit to an inherited file, built from the shipped
+            <a href="../examples/sample-epic/README.md">sample epic</a>.
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Mental model =============== -->
+      <section data-search="The model in one picture: team chain, layers, agent context" id="layers-ataglance">
+        <h2>The model at a glance</h2>
+        <p>
+          When an agent launches in a worktree, every file it gets comes from one of
+          these places. CodeSense checks them in this order <strong>for each file</strong>
+          and takes the first one that has it. Folders are never owned by a team: the
+          same folder can hold files from several places, and they are merged.
+        </p>
+        <table class="layer-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Place</th>
+              <th>Lives at</th>
+              <th>Who sees it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><strong>Repo content</strong></td>
+              <td>
+                <code>&lt;org&gt;/&lt;team&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/</code>
+              </td>
+              <td>The team itself (child teams don't inherit it), and only in that repo. Wins over everything below for a launch there.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>Private</strong></td>
+              <td>
+                <code>~/.codesense/users/&lt;you&gt;/scratch/orgs/&lt;org&gt;/</code>, plus
+                <code>scratch/all-orgs/</code> for inert items
+              </td>
+              <td>Only you. Never pushed.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>Team content</strong></td>
+              <td><code>&lt;org&gt;/&lt;team&gt;/content/</code></td>
+              <td>
+                The team and every child team. Pushed and pulled with the org's git
+                remote: the shared-truth layer.
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><strong>Parent teams</strong></td>
+              <td><code>&lt;org&gt;/&lt;parent&gt;/content/</code>, then its parent, up the chain</td>
+              <td>
+                Every team below them, for the files the parent shares in
+                <code>config/sharing.yml</code> (for example <code>share: ['content/**']</code>; see
+                <a href="./teams.html">Teams</a>). With no file, a parent shares nothing. A child
+                team inherits each shared file it doesn't hold itself.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Which paths a launch asks for is up to the agent. Its <code>context</code> list
+          (or, without one, its runtime's default, such as <code>CLAUDE.md</code> and
+          <code>.claude/skills</code> for Claude) names the folders and files; a per-repo
+          override can add or remove some for one repo. At launch CodeSense works out the
+          difference from what the worktree already has, copies the missing files (and
+          newer versions of ones it copied before) in one batch, and adds them to the
+          clone's <code>.git/info/exclude</code> so they stay out of your commits. It never
+          overwrites a file the repo tracks or a copy you edited. An agent launched in a
+          team workspace defaults to <code>.claude/commands</code> and
+          <code>.claude/skills</code>; its files are staged into a separate worker folder
+          that isn't a git repo, so it gets no git exclude. After that nothing moves on its own: an agent calls
+          <code>hydrate_worktree</code> or <code>hydrate_story</code> to pull more in, and
+          <code>reverse_sync_worktree</code> or <code>route_file_to_context</code> to send
+          an edit back. If you want that as a routine, you
+          <a href="../arc-k-sync/write-your-own-sync-skill.html">write your own sync skill</a>.
+        </p>
+        <p>
+          Full rules on <a href="./content-layers.html">content layers</a>. If the picture
+          hasn't clicked yet, jump to the <a href="./worked-example.html">worked example</a>:
+          three teams, one launch, no abstractions.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list the orgs and teams" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge where this page lives: its org, team, layer and folder on disk.
+          Read-only. On a fresh install that is the bundled CodeSense docs org.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Where does this page live?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to list orgs and teams via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            An agent lists the orgs and teams it can target, or reads the whole setup:
+            each org, its teams, each team's <code>parent</code>, and the active team.
+          </p>
+          <pre><code>list_orgs_teams {}
+// → [{ org, team, synced, starterPage? }, …]
+
+describe_setup {}
+// → { activeOrg, activeTeam, orgs: [{ slug, displayName, teams: [{ name, parent?, … }] }], … }</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema and more examples in
+            <a href="../mcp-explorer.html#tool/describe_setup">mcp-explorer</a>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Docs home</a> ·
+        <a href="./orgs.html">Orgs →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml</a> ·
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · The model</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

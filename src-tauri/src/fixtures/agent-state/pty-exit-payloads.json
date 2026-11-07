@@ -1,0 +1,29 @@
+{
+  "note": "pty-exit payloads for real children, asserted by the Rust cross-host exit test (the signal name is platform text, normalized to Killed: 9) and replayed by the frontend's exit seam test",
+  "payloads": {
+    "clean": {
+      "session_id": "clean",
+      "exit_code": 0,
+      "signal": null,
+      "requested": false
+    },
+    "failed": {
+      "session_id": "failed",
+      "exit_code": 5,
+      "signal": null,
+      "requested": false
+    },
+    "sigkill": {
+      "session_id": "sigkill",
+      "exit_code": null,
+      "signal": "Killed: 9",
+      "requested": false
+    },
+    "stopped": {
+      "session_id": "stopped",
+      "exit_code": null,
+      "signal": "Killed: 9",
+      "requested": true
+    }
+  }
+}

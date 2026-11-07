@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="wrench" />
+    <title>CodeSense — Setup machine</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/setup-machine">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Walking the setup-machine skill — local and remote" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Setup</span>
+          <span class="cs-docs-chip">/setup-machine</span>
+        </p>
+        <h1>Get a machine ready — safely, idempotently</h1>
+      </section>
+
+      <section data-search="What the setup-machine skill does" id="why">
+        <p>
+          The <code>/setup-machine</code> skill walks a machine from "fresh host" to
+          "CodeSense can run tabs here." It's safe to re-run: it checks before it
+          changes anything, asks before any <code>sudo</code>, and never asks for a
+          password, key, or token. It installs only the agent CLIs and runtimes you
+          actually use.
+        </p>
+      </section>
+
+      <section data-search="Setup — the five steps" id="steps">
+        <h2>The five steps</h2>
+        <ol>
+          <li>
+            <strong>Connect</strong> — the skill asks for the SSH host (an alias from
+            <code>~/.ssh/config</code> or <code>user@host</code>, port if non-22) and
+            runs a cheap probe: <code>ssh &lt;host&gt; 'uname -sm; echo $ID $VERSION_ID'</code>.
+            If it fails, SSH-first: fix the key / host / port.
+          </li>
+          <li>
+            <strong>Check what's there</strong> — one <code>ssh</code> round-trip prints
+            which of <code>git curl node npm python3 claude codex</code> is present
+            and whether <code>~/work</code> exists. The skill shows you the short list.
+          </li>
+          <li>
+            <strong>Install what's missing</strong> — one item at a time, with the
+            exact command shown first. Preference order: per-user installs
+            (<code>nvm</code>, <code>pyenv</code>, <code>rustup</code>) over system
+            packages; agent CLIs via their official installers. You sign in to each
+            agent CLI yourself, on the machine.
+          </li>
+          <li>
+            <strong>Test from CodeSense</strong> — the skill calls
+            <code>test_machine_connection</code>. First call returns the host-key
+            fingerprint; you confirm; the skill re-runs with that as
+            <code>trustedHostKeyFp</code>. CodeSense pins it.
+          </li>
+          <li>
+            <strong>Summary</strong> — what was already there, what got installed,
+            what you still need to do by hand.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Local vs remote — the same skill, different hop" id="local-vs-remote">
+        <h2>Local or remote</h2>
+        <p>
+          The same skill handles both. The only thing that changes is <em>where</em>
+          the shell commands run:
+        </p>
+        <ul>
+          <li>
+            <strong>Remote</strong> (the common case) — commands run as
+            <code>ssh &lt;host&gt; '…'</code>. Your Mac drives it; the remote account
+            is modified. This is the shape the shipped skill assumes by default.
+          </li>
+          <li>
+            <strong>Local</strong> — if you're bringing up a fresh teammate's Mac
+            under CodeSense, run the skill in a local shell tab and drop the
+            <code>ssh &lt;host&gt;</code> prefix. CodeSense itself needs no local
+            setup, but the agent CLIs do. The same per-user runtime-manager advice
+            applies.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Save the machine so CodeSense can see it" id="save">
+        <h2>Save it in CodeSense</h2>
+        <p>
+          If the machine isn't in CodeSense yet, either:
+        </p>
+        <ul>
+          <li>Use <strong>Machines → Add machine…</strong> in the UI, or</li>
+          <li>
+            Ask the skill to <code>save_machine</code> for you after you say yes.
+            Choose personal (just you) or team-shared (everyone in the team gets the
+            declaration via the normal sync).
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — test a machine connection" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Run the connection test the skill ends with. You'll be prompted to confirm
+          the host key fingerprint the first time.
+        </p>
+        <cs-try-this
+          verb="test_machine_connection"
+          args='{"input":{"label":"build-box-01","host":"build-box-01.lab","port":22,"username":"sam","signIn":{"method":"agent"}}}'
+          label="Test a machine connection"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to drive setup-machine via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// First call: no trusted fingerprint — returns the host-key fp.
+codesense.invoke('test_machine_connection', {
+  input: {
+    label: 'build-box-01',
+    host:  'build-box-01.lab',
+    port:  22,
+    username: 'sam',
+    signIn: { method: 'agent' },
+  },
+})
+
+// Second call: confirm the fp.
+codesense.invoke('test_machine_connection', {
+  input: { /* same */, trustedHostKeyFp: 'SHA256:…' },
+  machineId: 'build-box-01-ab12cd',   // if already saved
+})
+
+// Save the declaration (public).
+codesense.invoke('save_machine', {
+  label: 'build-box-01',
+  host:  'build-box-01.lab',
+  port:  22,
+  share: 'personal',   // or { team: 'ops' }
+})</code></pre>
+        </details>
+      </section>
+
+      <section data-search="Already use Ansible or similar?" id="ansible">
+        <h2>Already use Ansible?</h2>
+        <p>
+          Keep it. <code>/setup-machine</code> is the plain-shell version for teams
+          that don't. The skill can also turn what it did into a playbook if you ask.
+          The important bit for CodeSense is that
+          <code>test_machine_connection</code> ends green and the machine is saved.
+        </p>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./remote-private-account.html">← Remote</a> ·
+        <a href="./add-machine-user.html">Add machine user →</a> ·
+        Edge cases &amp; reference →
+        <a href="../recipes-gallery.html#setup-machine">recipes-gallery / setup-machine</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Setup</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Arc A · First touch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* -----------------------------------------------------------------
+       * Arc-A scoped styles (cs-docs-arcA-*). Lifting any of these up to
+       * the shared chrome is deferred until a second arc wants them, so
+       * the shared layer stays tight.
+       * --------------------------------------------------------------- */
+      .cs-docs-arcA {
+        max-width: 1080px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+
+      /* Dotted lattice background, decorative, matches home + tour. */
+      .cs-docs-arcA::before {
+        content: "";
+        position: fixed;
+        inset: var(--cs-docs-nav-height) 0 0 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 48px 48px;
+        opacity: 0.26;
+        mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+      }
+      .cs-docs-arcA > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .cs-docs-arcA__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      .cs-docs-arcA__title {
+        font-size: clamp(34px, 4.6vw, 54px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+        max-width: 22ch;
+      }
+      .cs-docs-arcA__lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+
+      /* Hero visual: inline animated SVG matching the "worktree-create"
+         motion vocabulary — a book icon appears, then two folders fan out:
+         docs org (read-only) and your first context repo (editable). */
+      .cs-docs-arcA__hero-visual {
+        display: block;
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .cs-docs-arcA__hero-visual svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 240px;
+      }
+      .cs-docs-arcA__hero-cap {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      .cs-docs-arcA__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-6);
+      }
+      .cs-docs-arcA__card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .cs-docs-arcA__card:hover,
+      .cs-docs-arcA__card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+        text-decoration: none;
+      }
+      .cs-docs-arcA__card-step {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-arcA__card-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 2px 0;
+      }
+      .cs-docs-arcA__card-hook {
+        font-size: var(--cs-docs-text-md);
+        color: var(--cs-muted-fg);
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .cs-docs-arcA__section-h {
+        font-size: var(--cs-docs-text-xl);
+        letter-spacing: -0.01em;
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+
+      details.cs-docs-arcA__mcp {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Arc A first touch overview" id="hero">
+        <span class="cs-docs-arcA__eyebrow">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          </svg>
+          Arc A · First touch
+        </span>
+
+        <h1 class="cs-docs-arcA__title">
+          Between install and your first useful minute.
+        </h1>
+        <p class="cs-docs-arcA__lede">
+          You just installed CodeSense and the app opened on this manual. Six short pages below
+          cover every move you make in the first hour: launching, connecting a repo you already
+          have, creating a brand-new one, the identity menu at the top-left, where every file
+          lives on disk, and how these docs stay up to date. <strong>Read in order the first
+          time; after that, search.</strong>
+        </p>
+
+        <figure class="cs-docs-arcA__hero-visual" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 320 200"
+            role="img"
+            aria-label="A book icon appears, then fans out into two folders: the read-only docs org and your editable context repo."
+          >
+            <title>Arc A — book icon → docs org + first context repo</title>
+            <desc>
+              Centered book icon fades in, then two paths animate out to a left folder labelled
+              "docs org (read-only)" and a right folder labelled "your context repo (editable)".
+            </desc>
+            <style>
+              .arcA-surface {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .arcA-accent {
+                fill: var(--cs-accent, #7aa2ff);
+              }
+              .arcA-stroke {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+                stroke-dasharray: 90;
+                stroke-dashoffset: 90;
+                animation: arcA-draw 3.2s ease-out infinite;
+              }
+              .arcA-text {
+                fill: var(--cs-fg, #e6edf3);
+                font: 500 11px -apple-system, system-ui, sans-serif;
+              }
+              .arcA-muted {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font: 10px -apple-system, system-ui, sans-serif;
+              }
+              .arcA-book-icon {
+                opacity: 0;
+                animation: arcA-fade 3.2s ease-in-out infinite;
+              }
+              .arcA-folder-l,
+              .arcA-folder-r {
+                opacity: 0;
+                animation: arcA-fade 3.2s ease-in-out infinite;
+                animation-delay: 1.2s;
+              }
+              .arcA-folder-r {
+                animation-delay: 1.4s;
+              }
+              @keyframes arcA-draw {
+                0%,
+                30% {
+                  stroke-dashoffset: 90;
+                }
+                65%,
+                100% {
+                  stroke-dashoffset: 0;
+                }
+              }
+              @keyframes arcA-fade {
+                0%,
+                25% {
+                  opacity: 0;
+                }
+                55%,
+                100% {
+                  opacity: 1;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .arcA-stroke {
+                  animation: none;
+                  stroke-dashoffset: 0;
+                }
+                .arcA-book-icon,
+                .arcA-folder-l,
+                .arcA-folder-r {
+                  animation: none;
+                  opacity: 1;
+                }
+              }
+            </style>
+
+            <!-- Book icon (center) -->
+            <g class="arcA-book-icon" transform="translate(140 70)">
+              <rect class="arcA-surface" width="40" height="52" rx="4" />
+              <rect class="arcA-accent" x="0" y="0" width="40" height="3" rx="2" />
+              <path
+                d="M8 14h24 M8 22h20 M8 30h22 M8 38h14"
+                stroke="var(--cs-muted-fg, #a3abbb)"
+                stroke-width="1"
+              />
+            </g>
+            <text class="arcA-muted" x="150" y="138" text-anchor="middle">docs org</text>
+
+            <!-- Fan-out paths -->
+            <path class="arcA-stroke" d="M150 100 Q90 110 60 150" />
+            <path class="arcA-stroke" d="M170 100 Q230 110 260 150" style="animation-delay: 0.2s" />
+
+            <!-- Left folder: docs org (read-only) -->
+            <g class="arcA-folder-l" transform="translate(20 150)">
+              <path class="arcA-surface" d="M0 10 L18 10 L24 16 L80 16 L80 48 L0 48 Z" />
+              <text class="arcA-text" x="12" y="32">codesense-docs</text>
+              <text class="arcA-muted" x="12" y="43">read-only</text>
+            </g>
+
+            <!-- Right folder: your context repo (editable) -->
+            <g class="arcA-folder-r" transform="translate(220 150)">
+              <path class="arcA-surface" d="M0 10 L18 10 L24 16 L80 16 L80 48 L0 48 Z" />
+              <text class="arcA-text" x="12" y="32">my-codesense</text>
+              <text class="arcA-muted" x="12" y="43">editable</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap" class="cs-docs-arcA__hero-cap">
+            One docs org · one editable context repo · everything branches from there
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== What you'll learn =============== -->
+      <section data-search="What arc A covers" id="pages">
+        <h2 class="cs-docs-arcA__section-h">The six pages</h2>
+        <div class="cs-docs-arcA__grid" role="list">
+          <a
+            class="cs-docs-arcA__card"
+            href="./first-launch.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 1</span>
+            <h3 class="cs-docs-arcA__card-title">First launch</h3>
+            <p class="cs-docs-arcA__card-hook">
+              What CodeSense does on its first run, and the one dock icon that opens this manual.
+            </p>
+          </a>
+
+          <a
+            class="cs-docs-arcA__card"
+            href="./connect-a-context-repo.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 2 · path A</span>
+            <h3 class="cs-docs-arcA__card-title">Connect a context repo</h3>
+            <p class="cs-docs-arcA__card-hook">
+              You already have one on disk. Point CodeSense at the folder — it does the rest.
+            </p>
+          </a>
+
+          <a
+            class="cs-docs-arcA__card"
+            href="./create-a-context-repo.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 2 · path B</span>
+            <h3 class="cs-docs-arcA__card-title">Create a context repo</h3>
+            <p class="cs-docs-arcA__card-hook">
+              You don't have one yet. Start from the CodeSense example in one click.
+            </p>
+          </a>
+
+          <a
+            class="cs-docs-arcA__card"
+            href="./identity-menu-and-switcher.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 3</span>
+            <h3 class="cs-docs-arcA__card-title">Identity menu &amp; switcher</h3>
+            <p class="cs-docs-arcA__card-hook">
+              The top-left menu, the org/team switcher, and ⌘⇧G to jump between them.
+            </p>
+          </a>
+
+          <a
+            class="cs-docs-arcA__card"
+            href="./files-on-disk.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 4</span>
+            <h3 class="cs-docs-arcA__card-title">Files on disk</h3>
+            <p class="cs-docs-arcA__card-hook">
+              Exact paths under <code>~/.codesense</code> and <code>~/CodeSense</code>, with a tree.
+            </p>
+          </a>
+
+          <a
+            class="cs-docs-arcA__card"
+            href="./update-the-docs.html"
+            role="listitem"
+          >
+            <span class="cs-docs-arcA__card-step">Step 5</span>
+            <h3 class="cs-docs-arcA__card-title">Update the docs</h3>
+            <p class="cs-docs-arcA__card-hook">
+              How these pages stay fresh, and the one skill that pulls new ones in.
+            </p>
+          </a>
+        </div>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Arc A try this now where this page lives" id="try-this-now">
+        <h2 class="cs-docs-arcA__section-h">Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch; margin: 0 0 12px">
+          Ask the page bridge where this page lives: the read-only CodeSense docs org, its team
+          and the folder on disk. Safe to click: it only reads.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Where does this page live?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to tour arc A via MCP" id="via-mcp">
+        <h2 class="cs-docs-arcA__section-h">How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            Every step in this arc is reproducible from an agent through MCP — no UI required.
+            For the first-launch primer:
+          </p>
+          <pre><code>list_orgs_teams {}
+create_local_organization { displayName: "Acme", destinationPath: "/Users/you/CodeSense/acme" }
+set_active_team { org: "acme", team: "billing" }</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See each tool's live schema in
+            <a href="../mcp-explorer.html#tool/create_local_organization">mcp-explorer</a>.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#arc/A">arc-A MCP tools</a>
+        ·
+        <a href="../schema-browser.html#schema/org-yml">org.yml schema</a>
+        ·
+        <a href="../README.html">back to home</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · First touch</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

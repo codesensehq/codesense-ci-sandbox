@@ -1,0 +1,10 @@
+id: reviewer
+name: Reviewer
+description: Writes a short, cited review of durable team work since the previous review.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/cited-retrieval/
+default_prompt: Use cited-retrieval to answer requests with durable team evidence. Scheduled review tasks supply their own window and publication instructions.
+revision: 1

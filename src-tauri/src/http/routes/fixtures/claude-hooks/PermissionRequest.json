@@ -1,0 +1,27 @@
+{
+  "cwd": "/tmp/claude-hook-capture",
+  "hook_event_name": "PermissionRequest",
+  "permission_mode": "default",
+  "permission_suggestions": [
+    {
+      "destination": "session",
+      "directories": [
+        "/tmp/claude-hook-capture"
+      ],
+      "type": "addDirectories"
+    },
+    {
+      "destination": "session",
+      "mode": "acceptEdits",
+      "type": "setMode"
+    }
+  ],
+  "prompt_id": "c1a0de00-0000-4000-a000-000000000306",
+  "session_id": "c1a0de00-0000-4000-a000-000000000303",
+  "tool_input": {
+    "command": "touch created.txt",
+    "description": "Create file created.txt"
+  },
+  "tool_name": "Bash",
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000303.jsonl"
+}

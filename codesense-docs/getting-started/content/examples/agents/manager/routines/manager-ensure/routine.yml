@@ -1,0 +1,25 @@
+# A light check: no wake limits needed (a heavy one would set policy.min_gap,
+# max_wakes_per_day or max_wakes). With machine: any, a Manager on a
+# machine that is offline counts as running: the wake is undelivered
+# (machine_offline) and no second Manager starts while that machine stays
+# offline.
+id: manager-ensure
+name: Keep a manager on the queue
+owner: codesense
+mode: wake
+task: |
+  Check the manager queue. Call role_state with role "manager".
+  If anything is pending, claim it with claim_role_messages and carry on
+  with /manage-team. If nothing is pending, say "manager queue empty" in
+  one line and wait.
+where:
+  kind: team_workspace
+  machine: any
+triggers:
+  - schedule:
+      cron: "0 * * * *"
+      tz: UTC
+policy:
+  max_runtime: 5m
+  overlap: skip
+revision: 1

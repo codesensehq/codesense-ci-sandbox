@@ -1,0 +1,141 @@
+{
+  "provenance": "Read-only CodeSense agent_preview for OpenCode foreground, context/startup empty, declared wildcard plus read allow; no CLI/provider launch. Captured 2026-10-26. Current source generator verified at 69efc0d01.",
+  "deny": {
+    "permissions": [
+      {
+        "action": "*",
+        "effect": "deny",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_ask_user",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_list_sessions",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_post_agent_message",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_read_messages",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_reply",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_context",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_done",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_publish_result",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_signal_done",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_signal_progress",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_who_am_i",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "read",
+        "effect": "allow",
+        "resource": "*"
+      }
+    ]
+  },
+  "ask": {
+    "permissions": [
+      {
+        "action": "*",
+        "effect": "ask",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_ask_user",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_list_sessions",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_post_agent_message",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_read_messages",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_reply",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_context",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_done",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_routine_publish_result",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_signal_done",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_signal_progress",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "codesense_who_am_i",
+        "effect": "allow",
+        "resource": "*"
+      },
+      {
+        "action": "read",
+        "effect": "allow",
+        "resource": "*"
+      }
+    ]
+  }
+}

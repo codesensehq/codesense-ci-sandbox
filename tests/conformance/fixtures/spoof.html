@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Spoof</title>
+  </head>
+  <body class="cs-app">
+    <main>
+      <button id="cancel-run" class="cs-btn">Cancel run</button>
+      <!-- A look-alike of the host dialog, drawn by the page itself. -->
+      <div role="dialog" aria-label="Allow routineCancel?">
+        <p>Allow routineCancel?</p>
+        <button id="fake-allow" class="cs-btn">Allow</button>
+      </div>
+    </main>
+    <script>
+      window.result = null;
+      document.getElementById("cancel-run").addEventListener("click", () => {
+        codesense.routineCancel({ key: "nightly" }).then(
+          (value) => (window.result = value),
+          (error) => (window.result = { error: error.message }),
+        );
+      });
+      // Every way a page might answer the host's dialog for itself.
+      window.spoof = async () => {
+        document.getElementById("fake-allow").click();
+        parent.postMessage({ type: "codesense:verb-answer", allow: true }, "*");
+        parent.postMessage(
+          { type: "codesense:invoke", id: 999, command: "verb_answer", args: { allow: true } },
+          "*",
+        );
+        let error = null;
+        try {
+          await codesense.invoke("verb_answer", { allow: true });
+        } catch (e) {
+          error = e.message;
+        }
+        let reached = true;
+        try {
+          parent.document.querySelector("button").click();
+        } catch {
+          reached = false;
+        }
+        return { error, reached };
+      };
+      codesense.ready();
+    </script>
+  </body>
+</html>

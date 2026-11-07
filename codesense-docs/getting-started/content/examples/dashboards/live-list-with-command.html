@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="codesense:slots" content="right-pane dock" />
+    <meta name="codesense:capabilities" content="sessions:read commands:run" />
+    <meta
+      name="codesense:commands"
+      content='[{"id":"toggle-filter","label":"Toggle running sessions","scope":"slot-focused","defaultChord":"CmdOrCtrl+Alt+L","humanOnly":false}]'
+    />
+    <title>Live sessions</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 12px;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        font: 14px/1.5 var(--cs-font-sans, system-ui);
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-fg);
+        border-radius: 4px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      li:focus-visible {
+        outline: 2px solid var(--cs-accent, #2766ad);
+        outline-offset: 2px;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--cs-border, #aaa);
+        padding: 8px 0;
+      }
+      .name {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .state {
+        font-size: 12px;
+      }
+      [data-narrow="true"] .state {
+        display: block;
+      }
+      #status,
+      #location {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main aria-labelledby="title">
+      <h1 id="title">Live sessions</h1>
+      <button id="filter" type="button" aria-pressed="false">Show running only</button>
+      <p id="status" role="status">Connecting…</p>
+      <p id="location">Standalone preview</p>
+      <ul id="sessions" aria-label="Sessions"></ul>
+    </main>
+    <script>
+      (() => {
+        const cs = window.codesense;
+        const list = document.getElementById("sessions");
+        const status = document.getElementById("status");
+        const filter = document.getElementById("filter");
+        let rows = [],
+          runningOnly = false,
+          visible = true,
+          stale = false,
+          error = "";
+        const render = () => {
+          const focusedSession = list.contains(document.activeElement)
+            ? document.activeElement.closest("li")?.dataset.sessionId
+            : null;
+          const shown = rows.filter((row) => !runningOnly || row.state === "running");
+          list.replaceChildren();
+          for (const row of shown) {
+            const li = document.createElement("li");
+            li.tabIndex = 0;
+            li.dataset.sessionId = row.sessionId || row.id;
+            // The host supplies the native agent row menu. No copied menu implementation.
+            li.dataset.codesenseRow = JSON.stringify({
+              kind: "agent",
+              sessionId: row.sessionId || row.id,
+            });
+            const name = document.createElement("span");
+            name.className = "name";
+            name.textContent = row.displayName || row.id;
+            const state = document.createElement("span");
+            state.className = "state";
+            state.textContent = row.state || "unknown";
+            li.append(name, state);
+            list.append(li);
+          }
+          if (focusedSession) {
+            const replacement = [...list.children].find(
+              (row) => row.dataset.sessionId === focusedSession,
+            );
+            (replacement || filter).focus({ preventScroll: true });
+          }
+          filter.setAttribute("aria-pressed", String(runningOnly));
+          filter.textContent = runningOnly ? "Show all sessions" : "Show running only";
+          status.textContent =
+            error ||
+            (!visible
+              ? "Hidden — updates paused"
+              : stale
+                ? "Catching up…"
+                : `${runningOnly ? "Running only" : "All sessions"} · ${shown.length} session${shown.length === 1 ? "" : "s"}${shown.length ? "" : " · No sessions to show"}`);
+        };
+        const toggle = () => {
+          runningOnly = !runningOnly;
+          render();
+        };
+        filter.addEventListener("click", toggle);
+        if (!cs) {
+          error = "Open in CodeSense for live sessions";
+          render();
+          return;
+        }
+        let viewKey;
+        const receive = (snapshot) => {
+          viewKey = snapshot.viewKey;
+          rows = snapshot.snapshot;
+          error = "";
+          render();
+        };
+        function refresh() {
+          cs.subscribe?.("sessions", { onChange: receive })
+            .then((snapshot) => {
+              stale = false;
+              receive(snapshot);
+            })
+            .catch(report);
+        }
+        const first = cs.firstPaint;
+        if (first && first.topic === "sessions" && Array.isArray(first.snapshot)) receive(first);
+        // A resync can finish without onChange when the snapshot is unchanged.
+        window.addEventListener("message", (event) => {
+          const data = event.data;
+          if (
+            event.source !== window.parent ||
+            data?.type !== "codesense:resync" ||
+            data.topic !== "sessions" ||
+            !visible
+          )
+            return;
+          if (viewKey !== data.viewKey) rows = [];
+          stale = true;
+          error = "";
+          render();
+          refresh();
+        });
+        cs.onSlotContext?.((context) => {
+          document.body.dataset.narrow = String(context.narrow);
+          document.getElementById("location").textContent = context.team
+            ? `${context.slotId} · ${context.team.org}/${context.team.team}`
+            : context.slotId;
+        });
+        cs.onCommand?.((command) => {
+          if (command.id === "toggle-filter") toggle();
+        });
+        cs.onFocusIn?.(() => filter.focus());
+        cs.onFocusReturn?.(() => filter.focus());
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            cs.focusOut?.().catch(report);
+          }
+        });
+        // This read-only pane has no pending writes to flush.
+        cs.onFlush?.(() => {});
+        cs.onTeardown?.(() => {
+          cs.unsubscribe?.("sessions", receive);
+        });
+        cs.onVisibility((shown) => {
+          visible = shown;
+          if (!shown) stale = true;
+          render();
+          if (shown) refresh();
+        });
+        function report(reason) {
+          error = `Sessions unavailable: ${reason.message || reason}`;
+          render();
+        }
+        render();
+        // Install all handlers before explicit readiness; the host queues command delivery.
+        cs.ready?.();
+        refresh();
+      })();
+    </script>
+  </body>
+</html>

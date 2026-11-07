@@ -1,0 +1,387 @@
+[
+  {
+    "name": "mixed rank desc has no comparison cycle",
+    "fields": {},
+    "order": ["rank desc", "updatedAt desc"],
+    "rows": [
+      {
+        "id": "A",
+        "fields": {
+          "updatedAt": "2026-10-21"
+        }
+      },
+      {
+        "id": "B",
+        "fields": {
+          "rank": false,
+          "updatedAt": "2026-10-20"
+        }
+      },
+      {
+        "id": "C",
+        "fields": {
+          "rank": 0,
+          "updatedAt": "2026-10-19"
+        }
+      }
+    ],
+    "expected": ["C", "B", "A"]
+  },
+  {
+    "name": "mixed declared boolean rank normalizes independently",
+    "fields": {
+      "rank": {
+        "type": "boolean",
+        "name": "rank",
+        "official": false
+      }
+    },
+    "order": ["rank desc", "updatedAt desc"],
+    "rows": [
+      {
+        "id": "A",
+        "fields": {
+          "updatedAt": "2026-10-21"
+        }
+      },
+      {
+        "id": "B",
+        "fields": {
+          "rank": false,
+          "updatedAt": "2026-10-20"
+        }
+      },
+      {
+        "id": "C",
+        "fields": {
+          "rank": 0,
+          "updatedAt": "2026-10-19"
+        }
+      }
+    ],
+    "expected": ["C", "A", "B"]
+  },
+  {
+    "name": "Notes without pinned sort by recency",
+    "fields": {
+      "pinned": {
+        "type": "boolean",
+        "name": "pinned",
+        "official": false
+      }
+    },
+    "order": ["pinned desc", "updatedAt desc"],
+    "rows": [
+      {
+        "id": "pinned",
+        "fields": {
+          "pinned": true,
+          "updatedAt": "2026-10-19"
+        }
+      },
+      {
+        "id": "unpinned",
+        "fields": {
+          "pinned": false,
+          "updatedAt": "2026-10-20"
+        }
+      },
+      {
+        "id": "page",
+        "fields": {
+          "updatedAt": "2026-10-21"
+        }
+      }
+    ],
+    "expected": ["pinned", "page", "unpinned"]
+  },
+  {
+    "name": "yes-no boolean alias",
+    "fields": {
+      "pinned": {
+        "type": "yes-no",
+        "name": "pinned",
+        "official": false
+      }
+    },
+    "order": ["pinned desc", "updatedAt desc"],
+    "rows": [
+      {
+        "id": "B",
+        "fields": {
+          "pinned": false,
+          "updatedAt": 1
+        }
+      },
+      {
+        "id": "A",
+        "fields": {
+          "updatedAt": 2
+        }
+      }
+    ],
+    "expected": ["A", "B"]
+  },
+  {
+    "name": "fixed type and value order ascending",
+    "fields": {},
+    "order": ["rank"],
+    "rows": [
+      {
+        "id": "object-b",
+        "fields": {
+          "rank": {
+            "key": 2
+          }
+        }
+      },
+      {
+        "id": "object-a",
+        "fields": {
+          "rank": {
+            "key": 1
+          }
+        }
+      },
+      {
+        "id": "array-b",
+        "fields": {
+          "rank": [2]
+        }
+      },
+      {
+        "id": "array-a",
+        "fields": {
+          "rank": [1]
+        }
+      },
+      {
+        "id": "null",
+        "fields": {
+          "rank": null
+        }
+      },
+      {
+        "id": "z-string",
+        "fields": {
+          "rank": "z"
+        }
+      },
+      {
+        "id": "a-string",
+        "fields": {
+          "rank": "a"
+        }
+      },
+      {
+        "id": "ten",
+        "fields": {
+          "rank": 10
+        }
+      },
+      {
+        "id": "zero",
+        "fields": {
+          "rank": 0
+        }
+      },
+      {
+        "id": "negative",
+        "fields": {
+          "rank": -2
+        }
+      },
+      {
+        "id": "true",
+        "fields": {
+          "rank": true
+        }
+      },
+      {
+        "id": "false",
+        "fields": {
+          "rank": false
+        }
+      },
+      {
+        "id": "missing",
+        "fields": {}
+      }
+    ],
+    "expected": [
+      "missing",
+      "false",
+      "true",
+      "negative",
+      "zero",
+      "ten",
+      "a-string",
+      "z-string",
+      "null",
+      "array-a",
+      "array-b",
+      "object-a",
+      "object-b"
+    ]
+  },
+  {
+    "name": "fixed type and value order descending",
+    "fields": {},
+    "order": ["rank desc"],
+    "rows": [
+      {
+        "id": "missing",
+        "fields": {}
+      },
+      {
+        "id": "false",
+        "fields": {
+          "rank": false
+        }
+      },
+      {
+        "id": "true",
+        "fields": {
+          "rank": true
+        }
+      },
+      {
+        "id": "negative",
+        "fields": {
+          "rank": -2
+        }
+      },
+      {
+        "id": "zero",
+        "fields": {
+          "rank": 0
+        }
+      },
+      {
+        "id": "ten",
+        "fields": {
+          "rank": 10
+        }
+      },
+      {
+        "id": "a-string",
+        "fields": {
+          "rank": "a"
+        }
+      },
+      {
+        "id": "z-string",
+        "fields": {
+          "rank": "z"
+        }
+      },
+      {
+        "id": "null",
+        "fields": {
+          "rank": null
+        }
+      },
+      {
+        "id": "array-a",
+        "fields": {
+          "rank": [1]
+        }
+      },
+      {
+        "id": "array-b",
+        "fields": {
+          "rank": [2]
+        }
+      },
+      {
+        "id": "object-a",
+        "fields": {
+          "rank": {
+            "key": 1
+          }
+        }
+      },
+      {
+        "id": "object-b",
+        "fields": {
+          "rank": {
+            "key": 2
+          }
+        }
+      }
+    ],
+    "expected": [
+      "object-b",
+      "object-a",
+      "array-b",
+      "array-a",
+      "null",
+      "z-string",
+      "a-string",
+      "ten",
+      "zero",
+      "negative",
+      "true",
+      "false",
+      "missing"
+    ]
+  },
+  {
+    "name": "id breaks ties without locale collation",
+    "fields": {},
+    "order": ["rank desc"],
+    "rows": [
+      {
+        "id": "a-first",
+        "fields": {
+          "rank": 1
+        }
+      },
+      {
+        "id": "Z-last",
+        "fields": {
+          "rank": 1
+        }
+      },
+      {
+        "id": "A-upper",
+        "fields": {
+          "rank": 1
+        }
+      }
+    ],
+    "expected": ["A-upper", "Z-last", "a-first"]
+  },
+  {
+    "name": "string values compare without JSON escaping",
+    "fields": {},
+    "order": ["rank"],
+    "rows": [
+      {
+        "id": "slash",
+        "fields": {
+          "rank": "\\"
+        }
+      },
+      {
+        "id": "letter",
+        "fields": {
+          "rank": "a"
+        }
+      },
+      {
+        "id": "newline",
+        "fields": {
+          "rank": "\n"
+        }
+      },
+      {
+        "id": "quote",
+        "fields": {
+          "rank": "\""
+        }
+      }
+    ],
+    "expected": ["newline", "quote", "slash", "letter"]
+  }
+]

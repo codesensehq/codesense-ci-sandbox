@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="book-open-check" />
+    <title>CodeSense — Arc N · Reference catalog</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/index"] .cs-main {
+        max-width: 1080px;
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/index"] h1 {
+        font-size: clamp(32px, 4.4vw, 50px);
+        line-height: 1.06;
+        letter-spacing: -0.028em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+        max-width: 24ch;
+      }
+      body[data-page="arc-n-reference/index"] .lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 66ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/index"] .lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/index"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/index"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 240px;
+      }
+      body[data-page="arc-n-reference/index"] figure.hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms,
+          box-shadow 160ms,
+          border-color 160ms;
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card:hover,
+      body[data-page="arc-n-reference/index"] .cs-docs-card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card .kind {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--cs-fg);
+        margin: 2px 0;
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card .count {
+        align-self: flex-start;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: var(--cs-accent-soft);
+        color: var(--cs-accent);
+        margin-top: 4px;
+      }
+      body[data-page="arc-n-reference/index"] .cs-docs-card .hook {
+        font-size: 13.5px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      body[data-page="arc-n-reference/index"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/index"] p,
+      body[data-page="arc-n-reference/index"] li {
+        max-width: 68ch;
+        line-height: 1.6;
+      }
+      body[data-page="arc-n-reference/index"] li {
+        margin: 6px 0;
+      }
+      body[data-page="arc-n-reference/index"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-n-reference/index"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/index"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc N reference catalog overview" id="hero">
+        <span class="cs-docs-eyebrow">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            <path d="m9 9 2 2 4-4" />
+          </svg>
+          Arc N · Reference catalog
+        </span>
+
+        <h1>Every lookup table CodeSense ships, in one place.</h1>
+        <p class="lede">
+          The other arcs teach you <strong>how</strong>. This arc is the <strong>what</strong>: the
+          YAML field tables, the keyboard shortcuts, the viewable file extensions, the glossary of
+          CodeSense terms, and a troubleshooting index that routes you to the per-arc fix page.
+          Reach for it when you've learned the shape of a thing and now you want its exact fields,
+          chord, or definition.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="Five catalog cards fanned out: schemas, shortcuts, extensions, glossary, troubleshooting; the training arcs on the left point in."
+          >
+            <title>Arc N — reference catalog</title>
+            <desc>
+              Left: a vertical column of 13 small boxes labelled A..M (the other arcs). Arrows feed
+              into the center. Center: five horizontally stacked cards labelled Schemas, Shortcuts,
+              Extensions, Glossary, Troubleshooting.
+            </desc>
+            <style>
+              .n-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .n-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .n-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .n-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .n-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.4;
+                fill: none;
+              }
+              .n-dash {
+                stroke-dasharray: 3 4;
+              }
+            </style>
+
+            <defs>
+              <marker
+                id="n-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Left column of arc chips -->
+            <g>
+              <text class="n-mut" x="20" y="22">Training arcs</text>
+            </g>
+            <g font-family="var(--cs-font-mono)">
+              <!-- 13 small chips in a 3-column grid -->
+              <g transform="translate(20 36)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">A</text>
+              </g>
+              <g transform="translate(50 36)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">B</text>
+              </g>
+              <g transform="translate(80 36)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">C</text>
+              </g>
+              <g transform="translate(20 66)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">D</text>
+              </g>
+              <g transform="translate(50 66)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">E</text>
+              </g>
+              <g transform="translate(80 66)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">F</text>
+              </g>
+              <g transform="translate(20 96)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">G</text>
+              </g>
+              <g transform="translate(50 96)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">H</text>
+              </g>
+              <g transform="translate(80 96)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">I</text>
+              </g>
+              <g transform="translate(20 126)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">J</text>
+              </g>
+              <g transform="translate(50 126)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">K</text>
+              </g>
+              <g transform="translate(80 126)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">L</text>
+              </g>
+              <g transform="translate(20 156)">
+                <rect class="n-ins" width="22" height="22" rx="4" />
+                <text class="n-txt" x="11" y="16" text-anchor="middle">M</text>
+              </g>
+            </g>
+
+            <!-- Converging arrows into the center -->
+            <path class="n-acc n-dash" d="M110 70 L220 100" marker-end="url(#n-arrow)" />
+            <path class="n-acc n-dash" d="M110 110 L220 110" marker-end="url(#n-arrow)" />
+            <path class="n-acc n-dash" d="M110 150 L220 120" marker-end="url(#n-arrow)" />
+
+            <!-- Center: five catalog cards -->
+            <g transform="translate(240 50)">
+              <rect class="n-surf" width="80" height="120" rx="8" />
+              <text class="n-txt" x="40" y="22" text-anchor="middle">Schemas</text>
+              <line x1="12" y1="36" x2="68" y2="36" stroke="var(--cs-border, #262c38)" />
+              <text class="n-mut" x="40" y="56" text-anchor="middle">agent</text>
+              <text class="n-mut" x="40" y="72" text-anchor="middle">routine</text>
+              <text class="n-mut" x="40" y="88" text-anchor="middle">story fm</text>
+              <text class="n-mut" x="40" y="104" text-anchor="middle">+5 more</text>
+            </g>
+            <g transform="translate(328 50)">
+              <rect class="n-surf" width="80" height="120" rx="8" />
+              <text class="n-txt" x="40" y="22" text-anchor="middle">Shortcuts</text>
+              <line x1="12" y1="36" x2="68" y2="36" stroke="var(--cs-border, #262c38)" />
+              <text class="n-mut" x="40" y="56" text-anchor="middle">global</text>
+              <text class="n-mut" x="40" y="72" text-anchor="middle">team</text>
+              <text class="n-mut" x="40" y="88" text-anchor="middle">workspace</text>
+              <text class="n-mut" x="40" y="104" text-anchor="middle">terminal</text>
+            </g>
+            <g transform="translate(416 50)">
+              <rect class="n-surf" width="80" height="120" rx="8" />
+              <text class="n-txt" x="40" y="22" text-anchor="middle">Extensions</text>
+              <line x1="12" y1="36" x2="68" y2="36" stroke="var(--cs-border, #262c38)" />
+              <text class="n-mut" x="40" y="56" text-anchor="middle">.md</text>
+              <text class="n-mut" x="40" y="72" text-anchor="middle">.html</text>
+              <text class="n-mut" x="40" y="88" text-anchor="middle">.excalidraw</text>
+              <text class="n-mut" x="40" y="104" text-anchor="middle">+17 more</text>
+            </g>
+            <g transform="translate(504 50)">
+              <rect class="n-surf" width="80" height="120" rx="8" />
+              <text class="n-txt" x="40" y="22" text-anchor="middle">Glossary</text>
+              <line x1="12" y1="36" x2="68" y2="36" stroke="var(--cs-border, #262c38)" />
+              <text class="n-mut" x="40" y="56" text-anchor="middle">org · team</text>
+              <text class="n-mut" x="40" y="72" text-anchor="middle">worktree</text>
+              <text class="n-mut" x="40" y="88" text-anchor="middle">inbox · role</text>
+              <text class="n-mut" x="40" y="104" text-anchor="middle">routine</text>
+            </g>
+            <g transform="translate(560 180)">
+              <rect class="n-ins" width="64" height="26" rx="13" />
+              <circle fill="var(--cs-accent, #7aa2ff)" cx="12" cy="13" r="4" />
+              <text class="n-txt" x="22" y="17">Troubleshoot</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            Thirteen training arcs converge · five catalog cards hold the fine print
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="The five pages" id="pages">
+        <h2>The five lookup tables</h2>
+        <div class="cs-docs-grid" role="list">
+          <a class="cs-docs-card" href="./yaml-schemas.html" role="listitem">
+            <span class="kind">Schemas</span>
+            <span class="title">YAML schemas</span>
+            <span class="count"><data-count id="schemas">8</data-count> schemas</span>
+            <span class="hook"
+              >Field tables for every file CodeSense parses: <code>agent.yaml</code>,
+              <code>routine.yml</code>, <code>teams.yml</code>, story frontmatter, and more.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./keyboard-shortcuts.html" role="listitem">
+            <span class="kind">Shortcuts</span>
+            <span class="title">Keyboard shortcuts</span>
+            <span class="count"><data-count id="shortcuts">67</data-count> shortcuts</span>
+            <span class="hook"
+              >Every chord, grouped by surface — global, team, workspace, terminal.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./file-extensions.html" role="listitem">
+            <span class="kind">Extensions</span>
+            <span class="title">File extensions</span>
+            <span class="count">20 viewable</span>
+            <span class="hook"
+              >What CodeSense renders inline, what falls back to the code viewer, and which
+              extensions are gated as binary.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./glossary.html" role="listitem">
+            <span class="kind">Glossary</span>
+            <span class="title">Glossary</span>
+            <span class="count">A → W</span>
+            <span class="hook"
+              >Every CodeSense term the training arcs use. Alphabetical, cross-linked back to the
+              arc that teaches it.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./troubleshooting.html" role="listitem">
+            <span class="kind">Index</span>
+            <span class="title">Troubleshooting</span>
+            <span class="count">Top issues</span>
+            <span class="hook"
+              >A one-page symptom → fix index that routes to the per-arc troubleshooting pages (A,
+              C, D, G).</span
+            >
+          </a>
+        </div>
+        <p>
+          Also in this arc: <a href="./updates-and-uninstall.html">Updates, network calls and removing
+          CodeSense</a>, for how the app updates itself, what it sends on its own, and how to remove it.
+        </p>
+      </section>
+
+      <section data-search="When to reach for this arc" id="when">
+        <h2>When to reach for Arc N</h2>
+        <ul>
+          <li>
+            You're authoring an <code>agent.yaml</code> and need to recall whether
+            <code>permissions.claude.default_mode</code> is an alias of <code>defaultMode</code>. →
+            <a href="./yaml-schemas.html">YAML schemas</a>.
+          </li>
+          <li>
+            You pressed a chord that didn't fire and want to see what scope it's bound to. →
+            <a href="./keyboard-shortcuts.html">Keyboard shortcuts</a>.
+          </li>
+          <li>
+            You dropped a <code>.pptx</code> into a workspace and want to know whether CodeSense
+            will preview it or gate as binary. →
+            <a href="./file-extensions.html">File extensions</a>.
+          </li>
+          <li>
+            Someone says "worktree" and you want the one-sentence definition plus the arc that
+            teaches it. →
+            <a href="./glossary.html">Glossary</a>.
+          </li>
+          <li>
+            Something's broken and you don't know where to start. →
+            <a href="./troubleshooting.html">Troubleshooting index</a>.
+          </li>
+          <li>
+            An update won't install, you want to know what CodeSense sends over the network, or you
+            want to remove it. → <a href="./updates-and-uninstall.html">Updates, network calls and
+            removing CodeSense</a>.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Versions — CodeSense release numbers" id="versions">
+        <h2>Versions</h2>
+        <p>
+          Each CodeSense release has a version number, such as 0.1.0. Your version is in
+          <strong>Settings → General → About</strong>, next to <em>Check for Updates</em>.
+        </p>
+      </section>
+
+      <section data-search="How Arc N relates to the explorers" id="relates">
+        <h2>Arc N vs. the explorers</h2>
+        <p>
+          CodeSense ships four reference-shaped dashboards at the top of the docs org:
+          <a href="../schema-browser.html">schema browser</a>,
+          <a href="../mcp-explorer.html">MCP explorer</a>,
+          <a href="../primitives-explorer.html">primitives explorer</a>, and
+          <a href="../ui-mcp-crossref.html">UI ↔ MCP crossref</a>. Each is a list-detail explorer
+          with a live validator or Try-it button. Arc N is their <strong>narrative</strong>: short
+          intros that teach you how to read them, plus the lookup tables that don't fit a
+          list-detail shape (shortcuts, extensions, glossary, troubleshooting).
+        </p>
+        <ul>
+          <li>
+            <strong>Need to validate YAML?</strong> → the
+            <a href="../schema-browser.html">schema browser</a> has a paste-and-check validator.
+            This arc's <a href="./yaml-schemas.html">YAML schemas page</a> teaches you how to read
+            it.
+          </li>
+          <li>
+            <strong>Need every MCP tool?</strong> → the
+            <a href="../mcp-explorer.html">MCP explorer</a>. Arc J teaches it.
+          </li>
+          <li>
+            <strong>Need every primitive?</strong> → the
+            <a href="../primitives-explorer.html">primitives explorer</a>. Arc M teaches it.
+          </li>
+        </ul>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html">schema browser</a>
+        ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+        ·
+        <a href="../primitives-explorer.html">primitives explorer</a>
+        ·
+        <a href="../ui-mcp-crossref.html">UI ↔ MCP crossref</a>
+        ·
+        <a href="../README.html">back to home</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · Reference catalog</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

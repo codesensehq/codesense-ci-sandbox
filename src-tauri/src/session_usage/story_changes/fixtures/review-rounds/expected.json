@@ -1,0 +1,9 @@
+{
+  "reviewRounds": {
+    "DEMO-1": ["demo1-101-r1", "demo1-101-r2", "demo1-101-r3", "demo1-101-r4", "demo1-101-r5", "demo1-102-r1"],
+    "DEMO-2": ["demo2-doc-r1", "demo2-human-r2"],
+    "DEMO-3": ["demo3-numbers-r2"]
+  },
+  "complete": ["demo1-101-r1", "demo1-101-r2", "demo1-101-r3", "demo1-101-r4", "demo1-101-r5", "demo1-102-r1", "demo2-doc-r1", "demo2-human-r2", "demo2-use-r0", "demo2-wave-r0", "demo3-numbers-r2"],
+  "inflight": ["demo1-101-r6", "demo3-boundary-r1"]
+}

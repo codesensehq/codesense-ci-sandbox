@@ -1,0 +1,48 @@
+collection: review-rounds
+scope: team
+folder: content/reviews/rounds
+id: slug
+title: title
+humanOnly: [delete, write, setFields]  # append-only: agents create, never edit or delete (SV-ADT-35 item 8)
+order: ["reportedAt desc"]
+fields:
+  title:            {type: text, required: true}    # "PR #101 r2 code-review"
+  subjectKind:      {type: text, required: true}    # kinds.md
+  subjectRef:       {type: text, required: true}    # kinds.md
+  subjectRev:       {type: text}                    # commit sha / context commit / agent rev
+  subjectKey:       {type: text, required: true}    # "<subjectKind>:<subjectRef>", stable across rounds
+  story:            {type: text}                    # story id when the subject belongs to one
+  storyType:        {type: text}                    # story|bug|spike, copied from story frontmatter
+  storyPoints:      {type: number}
+  epic:             {type: text}                    # parent_epic from story frontmatter
+  teamKey:          {type: text}                    # org/team slug, e.g. acme/team-context/riverside (not `team`: it would shadow the query built-in)
+  sourceRepo:       {type: text}                    # remote_key, e.g. github.com/alderco/codesense; omitted for context-only subjects (named in stampNote)
+  taskType:         {type: text}                    # curated list in kinds.md
+  round:            {type: number, required: true}  # 1..n per subjectKey; 0 = post-merge (wave/use)
+  phase:            {type: choice, allowedValues: [review, wave, use], required: true}
+  scope:            {type: choice, allowedValues: [full, delta], required: true}
+  skill:            {type: text, required: true}    # bmad-code-review | bmad-review:<lenses> | impeccable | design-taste-frontend | human
+  lenses:           {type: text, required: true}    # layers run, "+"-joined
+  failedLayers:     {type: text}
+  reviewer:         {type: text, required: true}    # agent key, or "human"
+  reviewerRevision: {type: number}
+  reviewerModel:    {type: text}
+  reviewerRuntime:  {type: text}                    # claude | codex | hermes | opencode
+  reviewerManifest: {type: text}                    # manifestHash
+  author:           {type: text}                    # agent key that produced the subject rev, or "human"
+  authorRevision:   {type: number}
+  authorModel:      {type: text}
+  authorRuntime:    {type: text}
+  stampNote:        {type: text}                    # names every stamp key that was omitted because it is unknown, e.g. "authorRevision: no dev task id"; never guessed
+  session:          {type: text, required: true}    # reviewer CodeSense session id
+  task:             {type: text}                    # reviewer task id (= session id)
+  reviewsTask:      {type: text}                    # dev/author task id
+  size:             {type: number}
+  sizeUnit:         {type: text}                    # diff-lines | words | frames | sections
+  high:             {type: number, required: true}  # kept findings by severity (after triage)
+  medium:           {type: number, required: true}
+  low:              {type: number, required: true}
+  dismissed:        {type: number, required: true}  # dropped at triage
+  findingIds:       {type: text, required: true}    # comma list: what this round vouches for ("" = clean)
+  converged:        {type: yes-no, required: true}  # high == 0 && medium == 0
+  reportedAt:       {type: number, required: true}  # epoch ms

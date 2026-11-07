@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CodeSense typed theme",
+  "description": "Maximum 256 KB, 2048 tokens, one alias level; enforced by validateTheme. Display names are stripped of controls and bidi characters.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "light", "dark"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "light": {
+      "description": "Optional review.status colour sets the review and PR status hue; without it those statuses use code.function.",
+      "$ref": "#/definitions/group"
+    },
+    "dark": {
+      "description": "Optional review.status colour sets the review and PR status hue; without it those statuses use code.function.",
+      "$ref": "#/definitions/group"
+    }
+  },
+  "definitions": {
+    "token": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["$type", "$value"],
+          "properties": {
+            "$type": {
+              "const": "color"
+            },
+            "$value": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["colorSpace", "components"],
+                  "properties": {
+                    "colorSpace": {
+                      "const": "srgb"
+                    },
+                    "components": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 3,
+                      "items": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "alpha": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\{(light|dark)(\\.[a-zA-Z0-9_-]+)+\\}$"
+                }
+              ]
+            },
+            "$description": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["$type", "$value"],
+          "properties": {
+            "$type": {
+              "const": "dimension"
+            },
+            "$value": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["value", "unit"],
+                  "properties": {
+                    "value": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "enum": ["px", "rem", "em", "%", "ms"]
+                    }
+                  }
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\{(light|dark)(\\.[a-zA-Z0-9_-]+)+\\}$"
+                }
+              ]
+            },
+            "$description": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["$type", "$value"],
+          "properties": {
+            "$type": {
+              "const": "fontFamily"
+            },
+            "$value": {
+              "anyOf": [
+                {
+                  "enum": ["Geist Variable", "ui-monospace", "sans-serif", "monospace"]
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\{(light|dark)(\\.[a-zA-Z0-9_-]+)+\\}$"
+                }
+              ]
+            },
+            "$description": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["$type", "$value"],
+          "properties": {
+            "$type": {
+              "const": "number"
+            },
+            "$value": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\{(light|dark)(\\.[a-zA-Z0-9_-]+)+\\}$"
+                }
+              ]
+            },
+            "$description": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$description": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/token"
+            },
+            {
+              "$ref": "#/definitions/group"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

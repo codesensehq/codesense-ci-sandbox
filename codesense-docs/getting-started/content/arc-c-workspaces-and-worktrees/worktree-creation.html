@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="box" />
+    <title>CodeSense — Worktree creation</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1080px;
+      }
+      /* Diagram embed frame — matches arc-l-factory's convention. */
+      body[data-page="arc-c-workspaces-and-worktrees/worktree-creation"] figure.arcC-diag {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        margin: 0 0 var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      body[data-page="arc-c-workspaces-and-worktrees/worktree-creation"] figure.arcC-diag img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      /* Numbered-step pattern (shared with arc-A). */
+      .arcC-step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .arcC-step:first-of-type {
+        border-top: 0;
+      }
+      .arcC-step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .arcC-step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .arcC-step p {
+        margin: 0 0 10px;
+        line-height: 1.55;
+      }
+      .arcC-step pre,
+      pre {
+        background: var(--cs-inset);
+        padding: 10px 12px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      .arcC-step code {
+        font-size: 13px;
+      }
+      /* "Status timeline" ribbon under the diagram. */
+      .arcC-status {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        overflow: hidden;
+        font-size: var(--cs-docs-text-sm);
+      }
+      .arcC-status__cell {
+        padding: 10px 14px;
+        background: var(--cs-surface);
+        border-right: 1px solid var(--cs-border);
+      }
+      .arcC-status__cell:last-child {
+        border-right: 0;
+      }
+      .arcC-status__eyebrow {
+        display: block;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        margin-bottom: 2px;
+      }
+      .arcC-status__status {
+        display: block;
+        font-weight: 600;
+      }
+      .arcC-status__hint {
+        display: block;
+        color: var(--cs-muted-fg);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      /* Hero inline-SVG stand-in — mirrors
+         diagrams/workspaces/worktree-create.excalidraw.sketch.md coord space
+         (1280x720). Swapped for the rendered PNG once render_canvas lands. */
+      .arcC-hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 980px;
+        margin: 16px auto 8px;
+      }
+      .arcC-hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .arcC-hero-fig .frame {
+        fill: var(--cs-inset);
+        stroke: var(--cs-border);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+      }
+      .arcC-hero-fig .divider {
+        stroke: var(--cs-border);
+        stroke-width: 0.5;
+      }
+      .arcC-hero-fig .node {
+        fill: var(--cs-surface);
+        stroke-width: 1.2;
+      }
+      .arcC-hero-fig .n-repo {
+        stroke: #a08cff;
+      }
+      .arcC-hero-fig .n-agent {
+        stroke: #f0a93b;
+      }
+      .arcC-hero-fig .n-signal {
+        stroke: #5ad1ff;
+      }
+      .arcC-hero-fig .n-source {
+        stroke: #3fb950;
+      }
+      .arcC-hero-fig .n-wt {
+        stroke: #9c7cff;
+        stroke-width: 2;
+      }
+      .arcC-hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .arcC-hero-fig .sub {
+        fill: var(--cs-muted-fg);
+        font: 11px var(--cs-font-mono, ui-monospace), monospace;
+      }
+      .arcC-hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .arcC-hero-fig .col-eyebrow {
+        fill: var(--cs-faint-fg);
+        font: 600 11px var(--cs-font-sans, system-ui), sans-serif;
+        letter-spacing: 0.14em;
+      }
+      .arcC-hero-fig .edge {
+        stroke: #f0a93b;
+        stroke-width: 1.5;
+        fill: none;
+      }
+      .arcC-hero-fig .edge-wt {
+        stroke: #9c7cff;
+        stroke-width: 1.5;
+        fill: none;
+      }
+      .arcC-hero-fig .edge-dash {
+        stroke: var(--cs-border);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        fill: none;
+      }
+      .arcC-hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 980px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/worktree-creation">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="When and how a worktree gets created" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Worktree creation</span>
+        </p>
+        <h1>How a worktree appears</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          You choose <strong>Open CLI</strong> on a story, or an agent calls <code>open_workspace</code>. If the worktree
+          already exists, you land in it immediately. If it doesn't, CodeSense
+          <em>creates</em> one: it resolves the branch (fetching from the remote when it can),
+          lays the directory, links it to the story, and runs the <code>worktree.yaml</code> setup.
+          Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when
+          an agent launches there (its <code>context</code>) or when an agent asks for more with
+          <code>hydrate_story</code> or <code>hydrate_worktree</code>.
+        </p>
+
+        <figure class="arcC-hero-fig" aria-labelledby="arcC-hero-cap">
+          <svg
+            viewBox="0 0 1280 720"
+            role="img"
+            aria-label="Four-column timeline — BEFORE the call there is only a story card; the open_workspace MCP call triggers four DURING steps (fetch, worktree add, link the story, run setup) and the AFTER column shows the new worktree frame with source repo, story link, and setup chips."
+          >
+            <title>Create a story worktree · timeline</title>
+
+            <!-- Timeline frame -->
+            <rect class="frame" x="40" y="60" width="1200" height="600" rx="12" />
+
+            <!-- Column dividers -->
+            <line class="divider" x1="340" y1="100" x2="340" y2="620" />
+            <line class="divider" x1="640" y1="100" x2="640" y2="620" />
+            <line class="divider" x1="940" y1="100" x2="940" y2="620" />
+
+            <!-- Column eyebrows -->
+            <text class="col-eyebrow" x="190" y="92" text-anchor="middle">BEFORE</text>
+            <text class="col-eyebrow" x="490" y="92" text-anchor="middle">CALL</text>
+            <text class="col-eyebrow" x="790" y="92" text-anchor="middle">DURING</text>
+            <text class="col-eyebrow" x="1090" y="92" text-anchor="middle">AFTER</text>
+
+            <!-- Column 1 · BEFORE -->
+            <rect class="node n-repo" x="110" y="180" width="180" height="86" rx="8" />
+            <text class="lbl" x="200" y="222" text-anchor="middle">DEMO-1</text>
+            <text class="sub" x="200" y="248" text-anchor="middle">story · depends_on: []</text>
+            <!-- faint context repo behind story -->
+            <rect
+              class="node n-repo"
+              x="90" y="310" width="220" height="90" rx="8"
+              style="stroke-dasharray:3 3; opacity:0.55"
+            />
+            <text class="mut" x="200" y="348" text-anchor="middle">context repo</text>
+            <text class="sub" x="200" y="368" text-anchor="middle">codesense/docs</text>
+            <text class="mut" x="190" y="580" text-anchor="middle">No worktree yet · nothing on disk</text>
+
+            <!-- Column 2 · CALL -->
+            <rect class="node n-agent" x="380" y="200" width="220" height="110" rx="10" />
+            <text class="lbl" x="490" y="248" text-anchor="middle">open_workspace</text>
+            <text class="sub" x="490" y="276" text-anchor="middle">target: 'DEMO-1'</text>
+            <text class="mut" x="490" y="358" text-anchor="middle">any agent · any user</text>
+            <text class="mut" x="490" y="580" text-anchor="middle">ensure_story_worktree does the work</text>
+            <!-- edge: story → call -->
+            <path class="edge" d="M 290 223 L 376 255" />
+            <polygon fill="#f0a93b" points="376,255 362,249 362,261" />
+
+            <!-- Column 3 · DURING -->
+            <!-- vertical connector -->
+            <line class="edge-dash" x1="800" y1="186" x2="800" y2="356" />
+            <!-- d-fetch -->
+            <rect class="node n-repo" x="680" y="140" width="240" height="46" rx="8" />
+            <text class="sub" x="698" y="156">STEP 1</text>
+            <text class="lbl" x="900" y="170" text-anchor="end">git fetch (if reachable)</text>
+            <!-- d-add -->
+            <rect class="node n-repo" x="680" y="200" width="240" height="46" rx="8" />
+            <text class="sub" x="698" y="216">STEP 2</text>
+            <text class="lbl" x="900" y="230" text-anchor="end">git worktree add</text>
+            <!-- d-hydr -->
+            <rect class="node n-signal" x="680" y="260" width="240" height="46" rx="8" />
+            <text class="sub" x="698" y="276">STEP 3</text>
+            <text class="lbl" x="900" y="290" text-anchor="end">link the story</text>
+            <!-- d-setup -->
+            <rect class="node n-agent" x="680" y="320" width="240" height="46" rx="8" />
+            <text class="sub" x="698" y="336">STEP 4</text>
+            <text class="lbl" x="900" y="350" text-anchor="end">run worktree.yaml · setup</text>
+            <!-- clock caption -->
+            <circle cx="696" cy="408" r="10" fill="none" stroke="var(--cs-muted-fg)" stroke-width="1.4" />
+            <line x1="696" y1="408" x2="696" y2="402" stroke="var(--cs-muted-fg)" stroke-width="1.4" />
+            <line x1="696" y1="408" x2="702" y2="408" stroke="var(--cs-muted-fg)" stroke-width="1.4" />
+            <text class="mut" x="714" y="413">setup time varies</text>
+            <text class="mut" x="790" y="580" text-anchor="middle">CodeSense runs these git steps for you</text>
+            <!-- edge: call → d-fetch -->
+            <path class="edge" d="M 600 255 Q 640 255 680 163" />
+            <polygon fill="#f0a93b" points="680,163 668,166 673,177" />
+
+            <!-- Column 4 · AFTER -->
+            <!-- worktree frame -->
+            <rect class="node n-wt" x="980" y="140" width="240" height="320" rx="10" />
+            <text class="sub" x="1100" y="162" text-anchor="middle">../repo-wt/feat-DEMO-1/</text>
+            <!-- wt-source -->
+            <rect class="node n-source" x="1000" y="180" width="200" height="50" rx="8" />
+            <text class="lbl" x="1100" y="206" text-anchor="middle">source repo</text>
+            <text class="sub" x="1100" y="222" text-anchor="middle">cloned branch</text>
+            <!-- wt-selected -->
+            <rect class="node n-signal" x="1000" y="240" width="200" height="50" rx="8" />
+            <text class="lbl" x="1100" y="266" text-anchor="middle">story link</text>
+            <text class="sub" x="1100" y="282" text-anchor="middle">no context copied</text>
+            <!-- wt-config -->
+            <rect class="node n-agent" x="1000" y="300" width="200" height="50" rx="8" />
+            <text class="lbl" x="1100" y="326" text-anchor="middle">worktree.yaml setup</text>
+            <text class="sub" x="1100" y="342" text-anchor="middle">ran · exit 0</text>
+            <!-- ready check -->
+            <circle cx="1180" cy="430" r="12" fill="none" stroke="#3fb950" stroke-width="1.6" />
+            <path d="M 1174 430 L 1178 434 L 1186 426" stroke="#3fb950" stroke-width="1.6" fill="none" />
+            <text class="mut" x="1100" y="430" text-anchor="middle">ready</text>
+            <text class="mut" x="1090" y="580" text-anchor="middle">index entry written · agent attaches</text>
+            <!-- edge: d-setup → worktree -->
+            <path class="edge-wt" d="M 920 343 Q 950 343 980 300" />
+            <polygon fill="#9c7cff" points="980,300 968,303 973,314" />
+            <text class="mut" x="950" y="312" text-anchor="middle">created</text>
+
+            <!-- Legend footer -->
+            <g transform="translate(60, 650)">
+              <rect x="0" y="-10" width="12" height="12" fill="#9c7cff" />
+              <text class="mut" x="18" y="0">worktree frame</text>
+              <rect x="140" y="-10" width="12" height="12" fill="#3fb950" />
+              <text class="mut" x="158" y="0">source repo</text>
+              <rect x="260" y="-10" width="12" height="12" fill="#5ad1ff" />
+              <text class="mut" x="278" y="0">story link</text>
+              <rect x="390" y="-10" width="12" height="12" fill="#f0a93b" />
+              <text class="mut" x="408" y="0">agent / MCP</text>
+            </g>
+          </svg>
+        </figure>
+        <p class="arcC-hero-cap" id="arcC-hero-cap">
+          This is the shape; the live
+          <code>workspaces/worktree-create.excalidraw</code> canvas has the editable
+          version — click the diagram to open it.
+        </p>
+      </section>
+
+      <!-- =============== Status ribbon =============== -->
+      <section data-search="Worktree creation progress lines" id="status-ribbon">
+        <h2>What you see in the UI</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          The workspace shows <strong>Setting up worktree…</strong> until the worktree is ready,
+          with a line that names each step as it runs (<em>Fetching &lt;repo&gt;</em>,
+          <em>Creating worktree</em>, <em>Running setup</em>) and a checklist of the setup
+          commands. On a remote machine the repo is copied there first:
+        </p>
+        <div class="arcC-status">
+          <div class="arcC-status__cell">
+            <span class="arcC-status__eyebrow">Fetch</span>
+            <span class="arcC-status__status">Fetching &lt;repo&gt;</span>
+            <span class="arcC-status__hint">with an object count when known</span>
+          </div>
+          <div class="arcC-status__cell">
+            <span class="arcC-status__eyebrow">Pack &amp; copy</span>
+            <span class="arcC-status__status">Copying &lt;repo&gt; to &lt;machine&gt;</span>
+            <span class="arcC-status__hint">after "Bundling &lt;repo&gt; for &lt;machine&gt;"</span>
+          </div>
+          <div class="arcC-status__cell">
+            <span class="arcC-status__eyebrow">Check</span>
+            <span class="arcC-status__status">Verifying the copy on &lt;machine&gt;</span>
+            <span class="arcC-status__hint">the copy is verified</span>
+          </div>
+          <div class="arcC-status__cell">
+            <span class="arcC-status__eyebrow">Create</span>
+            <span class="arcC-status__status">Creating worktree on &lt;machine&gt;</span>
+            <span class="arcC-status__hint">then the setup runs</span>
+          </div>
+        </div>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          If a step fails, its details say where it stopped (<em>Stopped while</em>) and why
+          (<em>Reason</em>), and <em>Retry</em> creates the worktree again. If a setup command
+          fails, the details name the step, its exit code and the command.
+        </p>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="Four steps of worktree creation" id="steps">
+        <h2>Step-by-step</h2>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">1</span>
+          <div>
+            <h3>Resolve the source repo and branch</h3>
+            <p>
+              CodeSense reads the story's frontmatter: its <code>source_repo</code> field
+              (e.g. <code>acme/api</code>, a repo the team has configured) and its
+              <code>branch</code> field. With no <code>branch</code>, the branch is the
+              <code>worktree.yaml</code>'s <code>branch_prefix</code> (default <code>feat/</code>)
+              plus the story id. The worktree goes at <code>worktree_dir</code> (default
+              <code>../{repo}-wt/{slug}</code>, beside the clone), where the slug is the branch
+              with <code>/</code> turned into <code>-</code>:
+            </p>
+            <pre><code>source_repo:   acme/api
+story_id:      DEMO-1
+branch:        feat/DEMO-1
+worktree path: ../api-wt/feat-DEMO-1/</code></pre>
+          </div>
+        </div>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">2</span>
+          <div>
+            <h3>Fetch and add the worktree</h3>
+            <p>
+              CodeSense fetches from <code>origin</code> when the remote is reachable (it falls back to
+              local refs when it isn't), then runs <code>git worktree add</code> at the resolved path
+              on the branch. A branch that doesn't exist yet starts from the branch of the story's
+              first <code>depends_on</code> story, or else from <code>default_start_point</code>
+              (default <code>main</code>).
+            </p>
+          </div>
+        </div>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">3</span>
+          <div>
+            <h3>Link the worktree to the story</h3>
+            <p>
+              CodeSense records which story owns the worktree, so a second open reattaches instead of
+              creating another. Nothing is copied from the context repo in this step: there is no
+              automatic sync. An agent launched here gets the files its definition's
+              <code>context</code> (or its runtime's default) names, in one batched copy that never
+              overwrites a file the repo tracks or a copy you edited. The copied paths go into the
+              clone's <code>.git/info/exclude</code> (shared by all its worktrees) so they stay out of
+              your commits. Story docs arrive when an agent calls
+              <code>hydrate_story</code>.
+            </p>
+            <p style="color: var(--cs-muted-fg)">
+              See <a href="./hydration.html">hydration</a> for the explicit calls.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">4</span>
+          <div>
+            <h3>Run the <code>worktree.yaml</code> setup</h3>
+            <p>
+              Finally CodeSense runs each line of the <code>setup:</code> block from
+              <code>worktree.yaml</code> (if any), with the <code>env:</code> block applied and the
+              <code>timeout_seconds</code> ceiling in effect (600 seconds by default).
+            </p>
+            <p>
+              Exit 0 on every line → the worktree is ready, the index entry is written, and any
+              waiting agent attaches. A non-zero exit stops setup and shows
+              <strong>Setup failed</strong> with the step; the worktree stays, so you can fix the
+              command and retry.
+            </p>
+            <p>
+              When the setup came from the team's shared context repo rather than from you,
+              CodeSense first shows the commands: <strong>Run setup from your team for …?</strong>
+              with <strong>Approve &amp; run</strong> or <strong>Skip setup</strong>. It asks again
+              whenever the commands change.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== When =============== -->
+      <section data-search="When a worktree is created" id="when">
+        <h2>When this happens</h2>
+        <ul>
+          <li>
+            <strong>First open from the UI.</strong> You choose <strong>Open CLI</strong> on the
+            story's right-click menu (on a team with machines, it asks <strong>This Mac</strong> or
+            a machine); the workspace shows <em>Setting up worktree…</em> until it's ready.
+          </li>
+          <li>
+            <strong>First open by an agent.</strong>
+            <code>open_workspace</code> creates the worktree if it isn't linked yet. This
+            path lets an orchestrator open a story cold with no prior human open.
+          </li>
+          <li>
+            <strong>Never on second open.</strong> The worktree index remembers the mapping. A
+            follow-up <code>open_workspace</code> on the same story reattaches to the existing
+            worktree in sub-second time.
+          </li>
+          <li>
+            <strong>Not for team or generic workspaces.</strong> This page covers story
+            worktrees. Team workspaces reuse the context repo's own clone; generic workspaces
+            are just folders. Epic workspaces are covered in
+            <a href="./workspace-kinds.html">workspace kinds</a>.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — open a story and watch the worktree appear" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          List the worktrees CodeSense manages on this Mac, each with its story and branch.
+          Then choose <strong>Open CLI</strong> on one of your own stories to watch one appear.
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="List my worktrees"
+          needs-repo="false"
+          confirm=""
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to create a worktree via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            An agent calls <code>open_workspace</code> directly; the trusted-side spine runs the
+            four steps and settles with a typed result.
+          </p>
+          <pre><code>codesense.invoke('open_workspace', {
+  storyId: 'DEMO-1'
+})
+// → { handle: 'DEMO-1', mode: 'headed', headed: true, reconciled: null }
+
+// Peek at a worktree's config before letting it run setup commands
+codesense.invoke('read_worktree_config', {
+  source_repo: 'acme/api'
+})</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See
+            <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> and
+            <a href="../mcp-explorer.html#tool/read_worktree_config">read_worktree_config</a>
+            for the live schemas.
+          </p>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> ·
+        <a href="../schema-browser.html#schema/worktree-yaml">worktree.yaml schema</a> ·
+        <a href="./hydration.html">hydration →</a> ·
+        <a href="./troubleshooting.html">troubleshooting</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Worktree creation</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layout" />
+    <title>CodeSense — Workspace and tab lifecycle tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/workspace-and-tab-lifecycle">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Workspace and tab lifecycle tools">
+        <span class="cs-docs-eyebrow">Arc C · Workspaces and worktrees</span>
+        <h1>Workspace and tab lifecycle tools</h1>
+        <p class="lede">
+          Reference for the tools that open, read, drive, rename and close terminal tabs, close and rename workspaces, update a machine workspace's base, and manage custom workspace groups.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>A tab is addressed by its opaque <code>handle</code> (from the open call or <code>list_sessions</code>), never by a raw session id. Several tools also accept the tab's current name as <code>tab</code>, narrowed by <code>machine</code> and <code>workspace</code>; a name that more than one tab has, or that no tab has, is refused with the tabs it could mean.</p>
+        <p>Workspace ids are viewer ids such as <code>story:DEMO-13</code>, <code>root:...</code> or <code>generic:...</code>. Team keys are written <code>org:team</code>.</p>
+      </section>
+      <section id="sessions" data-search="Sessions and tabs">
+        <h2>Sessions and tabs</h2>
+        <p>Tool calls that change a tab (open, type, close) are gated by the trusted-side Interactive tier.</p>
+        <h3 id="tool-list_sessions"><code>list_sessions</code></h3>
+        <p>Lists every session CodeSense is running, local and remote, as <code>{sessions:[{handle, displayName, state, sessionId, effectiveStatus, launchedBy, unread, ...}]}</code>. <code>state</code> is <code>running</code>, <code>idle</code>, <code>needs-you</code>, <code>exited</code>, <code>offline</code> or <code>unknown</code>. <code>handle</code> is how other tools address a session, and <code>launchedBy</code> is the launcher handle or null for a human launch. Optional <code>launched_by</code> filters to sessions that launcher started. Listing marks nothing read. The served description has the full row, including progress, launch telemetry and inbox fields.</p>
+        <pre data-tool-example="list_sessions"><code>{
+  &quot;tool&quot;: &quot;list_sessions&quot;,
+  &quot;arguments&quot;: {
+    &quot;launched_by&quot;: &quot;&lt;launcher handle&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-open_terminal_tab"><code>open_terminal_tab</code></h3>
+        <p>Opens a normal terminal tab in an already-open workspace and returns <code>{handle, headed, kind}</code>. <code>workspaceId</code> is required and must be an open workspace. <code>headed</code> (default true) focuses the tab; false opens it quietly. <code>name</code> labels the tab (default <code>Terminal &lt;n&gt;</code>). The caller never learns the raw session id. For a tab on a machine use <code>open_remote_tab</code>.</p>
+        <pre data-tool-example="open_terminal_tab"><code>{
+  &quot;tool&quot;: &quot;open_terminal_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;workspaceId&quot;: &quot;story:DEMO-13&quot;,
+    &quot;name&quot;: &quot;build watch&quot;,
+    &quot;headed&quot;: false
+  }
+}</code></pre>
+        <h3 id="tool-open_remote_tab"><code>open_remote_tab</code></h3>
+        <p>Creates or attaches a native remote terminal tab in an already-open workspace. Create needs <code>operation: &quot;create&quot;</code>, a UUID <code>requestId</code>, a configured <code>machineId</code>, <code>teamKey</code> (<code>org:team</code>), <code>workspaceId</code> and an absolute existing host <code>cwd</code>; <code>launch</code> is <code>shell</code> (default), <code>claude</code> or <code>codex</code>. A saved Agent starts with <code>agentKey</code> plus <code>preparedWorkspaceHandle</code> from a verified prepared worktree. <code>permissionMode: &quot;bypass&quot;</code> applies only to raw <code>claude</code>/<code>codex</code> launches and needs an updated terminal server (otherwise <code>terminalServerOutdated</code>). Attach needs <code>operation: &quot;attach&quot;</code> with exactly one of <code>handle</code> or <code>requestId</code>; retry an unknown Create only with Attach, never with a new <code>requestId</code>. Opening the CLI does not prove authenticated inference.</p>
+        <pre data-tool-example="open_remote_tab"><code>{
+  &quot;tool&quot;: &quot;open_remote_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;operation&quot;: &quot;create&quot;,
+    &quot;requestId&quot;: &quot;6f1c2e0a-8f55-4a3e-9d57-0b6a1b0f6c11&quot;,
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;workspaceId&quot;: &quot;story:DEMO-13&quot;,
+    &quot;cwd&quot;: &quot;/home/dev/worktrees/app-example&quot;,
+    &quot;launch&quot;: &quot;shell&quot;
+  }
+}</code></pre>
+        <h3 id="tool-read_terminal_tab"><code>read_terminal_tab</code></h3>
+        <p>Reads a tab's current scrollback as a one-shot snapshot, not a live subscription. Address it by <code>handle</code>, or by <code>tab</code> plus optional <code>machine</code> and <code>workspace</code>. Local tabs return <code>{output, altScreen}</code>; remote tabs return <code>{status:&quot;ok&quot;, output, head, reset, altScreen}</code> and every remote read returns the full text (<code>reset</code> is always true). <code>view</code> is <code>scrollback</code> (default) or <code>screen</code>, the current frame of a redraw-in-place program.</p>
+        <pre data-tool-example="read_terminal_tab"><code>{
+  &quot;tool&quot;: &quot;read_terminal_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;&lt;handle from open_terminal_tab or list_sessions&gt;&quot;,
+    &quot;view&quot;: &quot;scrollback&quot;
+  }
+}</code></pre>
+        <h3 id="tool-run_in_terminal_tab"><code>run_in_terminal_tab</code></h3>
+        <p>Types input into a tab and submits it, or presses one key. Give exactly one of <code>command</code> or <code>key</code>. At a shell prompt a <code>command</code> runs as a shell command; when Claude or Codex is running in the tab it is sent as a prompt, then Enter as a separate keystroke. <code>key</code> is one of <code>enter</code>, <code>escape</code>, <code>tab</code>, <code>shift-tab</code>, <code>backspace</code>, <code>ctrl-c</code>, <code>ctrl-d</code>, <code>up</code>, <code>down</code>, <code>left</code>, <code>right</code>. A local tab returns <code>{submitted, input?}</code>; a remote tab returns <code>{status: submitted|notSent|unknown|refused, ...}</code>, where <code>unknown</code> means the input may have been submitted: check with <code>read_terminal_tab</code> and never resend automatically.</p>
+        <pre data-tool-example="run_in_terminal_tab"><code>{
+  &quot;tool&quot;: &quot;run_in_terminal_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;&lt;handle from open_terminal_tab or list_sessions&gt;&quot;,
+    &quot;command&quot;: &quot;pnpm test&quot;
+  }
+}</code></pre>
+        <h3 id="tool-send_to_session"><code>send_to_session</code></h3>
+        <p>Sends a prompt to a running Claude or Codex session by <code>handle</code>. A raw session id, or a handle with no running session, is refused and nothing is written. <code>text</code> is non-empty and may be a slash command; it is typed into the input box and Enter is sent separately. Local returns <code>{submitted}</code> (false: the agent may not have started, so check <code>read_terminal_tab</code>). Remote returns a <code>status</code> of <code>submitted</code>, <code>notSent</code>, <code>unknown</code> or <code>refused</code>; never automatically resend after <code>unknown</code>. The text is also recorded in the target's inbox conversation as typed into the terminal and already read.</p>
+        <pre data-tool-example="send_to_session"><code>{
+  &quot;tool&quot;: &quot;send_to_session&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;&lt;handle from open_terminal_tab or list_sessions&gt;&quot;,
+    &quot;text&quot;: &quot;Summarize your progress so far&quot;
+  }
+}</code></pre>
+        <h3 id="tool-rename_terminal_tab"><code>rename_terminal_tab</code></h3>
+        <p>Renames a tab as a person would from its tab bar; the new name shows at once and in <code>list_sessions</code>. Address it by <code>handle</code>, or by current name <code>tab</code> narrowed by <code>machine</code> (its label, <code>This Mac</code> for this one) and <code>workspace</code>. <code>name</code> must be non-empty. A tab on a remote machine is renamed in that machine's layout. Returns <code>{renamed:true, name, machine, workspace, handle?}</code>.</p>
+        <pre data-tool-example="rename_terminal_tab"><code>{
+  &quot;tool&quot;: &quot;rename_terminal_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;&lt;handle from open_terminal_tab or list_sessions&gt;&quot;,
+    &quot;name&quot;: &quot;claude: triage&quot;
+  }
+}</code></pre>
+        <h3 id="tool-close_terminal_tab"><code>close_terminal_tab</code></h3>
+        <p>Closes a tab opened with <code>open_terminal_tab</code> or <code>open_remote_tab</code>; local and remote alike. Takes the opaque <code>handle</code> only (a raw session id is refused). It ends the CLI if one runs, closes the tab and drops it from <code>list_sessions</code>, and never removes the worktree or its files, even for the last tab. Idempotent: a session already gone returns <code>{closed:true, alreadyClosed:true}</code>; an unknown handle returns <code>{closed:false, reason:&quot;unknownHandle&quot;}</code>; a session closing its own tab is refused with <code>reason:&quot;selfClose&quot;</code>.</p>
+        <pre data-tool-example="close_terminal_tab"><code>{
+  &quot;tool&quot;: &quot;close_terminal_tab&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;&lt;handle from open_terminal_tab or list_sessions&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="workspaces" data-search="Workspaces">
+        <h2>Workspaces</h2>
+        <h3 id="tool-close_workspace"><code>close_workspace</code></h3>
+        <p>Ends every live terminal session in a workspace, on every machine that holds it, and removes its pill from the workspace tray. Address it by <code>story_id</code> or by the raw viewer <code>workspace_id</code>. It keeps files: the worktree, its files and git registration are never removed. <code>discardUnsaved</code> is always refused (<code>discardUnsavedRefused</code>) and <code>machine_id</code> is accepted but ignored. Other refusals: <code>selfClose</code>, <code>ambiguousWorkspace</code> (a bare <code>story_id</code> live in more than one team), <code>unknownWorkspace</code> and <code>tabsNotClosed</code>. Idempotent. It does not archive the agent definition (<code>agent_delete</code> does) or touch chat history or documents.</p>
+        <pre data-tool-example="close_workspace"><code>{
+  &quot;tool&quot;: &quot;close_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;story_id&quot;: &quot;DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-rename_workspace"><code>rename_workspace</code></h3>
+        <p>Sets the org's display name, the same edit as the UI's workspace rename. Pass <code>org</code> (<code>owner/repo</code>; the slug does not change) and <code>name</code>. An empty name returns <code>{status:&quot;validation&quot;, message}</code>; success returns <code>{status:&quot;ok&quot;, data:{orgSlug, edit:&quot;RenameWorkspace&quot;}}</code>.</p>
+        <pre data-tool-example="rename_workspace"><code>{
+  &quot;tool&quot;: &quot;rename_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;name&quot;: &quot;Acme context&quot;
+  }
+}</code></pre>
+        <h3 id="tool-update_workspace_base"><code>update_workspace_base</code></h3>
+        <p>Moves a machine workspace to the newest commit of its base, where newest means what <code>baseRef</code> names in your attached local clone now (fetch or pull there first for the provider's latest). Name it by <code>machineId</code> + <code>workspaceHandle</code>, or by <code>storyId</code> / <code>workspaceId</code> of an open workspace (add <code>teamKey</code> if several teams match). Only commits the machine lacks are sent. The worktree fast-forwards only when it is clean and its branch has no commits of its own; otherwise it is refused (<code>refusedDirty</code>, <code>refusedDiverged</code>, or <code>refusedManagedOverlap</code> when the new base tracks files that already exist there). <code>removeManagedCopies: true</code> deletes the unedited CodeSense copies in the overlap and replaces them with the repo's versions; edited copies and other files are never removed. Returns <code>status</code>, <code>previousCommit</code>, <code>commit</code> and <code>bundleBytes</code>. Reopening a workspace never updates its base.</p>
+        <pre data-tool-example="update_workspace_base"><code>{
+  &quot;tool&quot;: &quot;update_workspace_base&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;workspaceHandle&quot;: &quot;&lt;workspaceHandle from the workspace record&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-list_move_intents"><code>list_move_intents</code></h3>
+        <p>Lists open <code>move_workspace</code> intents for the active principal: <code>[{teamKey, workspaceId, from, to, step, dirtyAllowed, startedAtMs, lastProgressAtMs}]</code>, empty when no move is in flight. The app calls it on load so a restart mid-move keeps the moving state. Read-only. To start a move, see <code>move_workspace</code>.</p>
+        <pre data-tool-example="list_move_intents"><code>{
+  &quot;tool&quot;: &quot;list_move_intents&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+      </section>
+      <section id="groups" data-search="Custom workspace groups">
+        <h2>Custom workspace groups</h2>
+        <p>Personal groups of workspaces. <code>teamKey</code> (<code>org:team</code>) defaults to the active team on every group tool, and every group tool returns <code>{status:&quot;ok&quot;, ...}</code> with the resulting groups, or <code>{status:&quot;validation&quot;, message}</code>. A workspace is named by <code>workspaceId</code> or <code>storyId</code>; the plural forms take lists.</p>
+        <h3 id="tool-workspace_group_list"><code>workspace_group_list</code></h3>
+        <p>Lists the personal custom workspace groups, including empty groups.</p>
+        <pre data-tool-example="workspace_group_list"><code>{
+  &quot;tool&quot;: &quot;workspace_group_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_create"><code>workspace_group_create</code></h3>
+        <p>Creates a named custom group. Names must be unique within the team, are trimmed, and are at most 80 characters. <code>workspaceIds</code> or <code>storyIds</code> optionally seed its members.</p>
+        <pre data-tool-example="workspace_group_create"><code>{
+  &quot;tool&quot;: &quot;workspace_group_create&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;name&quot;: &quot;Docs&quot;,
+    &quot;storyIds&quot;: [
+      &quot;DEMO-13&quot;
+    ]
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_rename"><code>workspace_group_rename</code></h3>
+        <p>Renames a custom group by <code>groupId</code>.</p>
+        <pre data-tool-example="workspace_group_rename"><code>{
+  &quot;tool&quot;: &quot;workspace_group_rename&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;groupId&quot;: &quot;&lt;groupId from workspace_group_list&gt;&quot;,
+    &quot;name&quot;: &quot;Docs wave&quot;
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_delete"><code>workspace_group_delete</code></h3>
+        <p>Deletes a custom group by <code>groupId</code>. Its workspaces stay open and return to their epic groups.</p>
+        <pre data-tool-example="workspace_group_delete"><code>{
+  &quot;tool&quot;: &quot;workspace_group_delete&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;groupId&quot;: &quot;&lt;groupId from workspace_group_list&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_add"><code>workspace_group_add</code></h3>
+        <p>Adds a workspace to a group by <code>groupId</code>. It applies to current membership atomically, moves the workspace out of any other custom group, and preserves the other members.</p>
+        <pre data-tool-example="workspace_group_add"><code>{
+  &quot;tool&quot;: &quot;workspace_group_add&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;groupId&quot;: &quot;&lt;groupId from workspace_group_list&gt;&quot;,
+    &quot;storyId&quot;: &quot;DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_remove"><code>workspace_group_remove</code></h3>
+        <p>Removes a workspace from a group by <code>groupId</code>. Other members, including closed workspaces, and the group itself remain, even if it is now empty.</p>
+        <pre data-tool-example="workspace_group_remove"><code>{
+  &quot;tool&quot;: &quot;workspace_group_remove&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;groupId&quot;: &quot;&lt;groupId from workspace_group_list&gt;&quot;,
+    &quot;storyId&quot;: &quot;DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-workspace_group_set_members"><code>workspace_group_set_members</code></h3>
+        <p>Replaces a group's membership with the given <code>workspaceIds</code> or <code>storyIds</code>. Membership moves from other custom groups, empty groups remain, and roots cannot join.</p>
+        <pre data-tool-example="workspace_group_set_members"><code>{
+  &quot;tool&quot;: &quot;workspace_group_set_members&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;groupId&quot;: &quot;&lt;groupId from workspace_group_list&gt;&quot;,
+    &quot;storyIds&quot;: [
+      &quot;DEMO-13&quot;,
+      &quot;DEMO-12&quot;
+    ]
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc C pages</a> ·
+        <a href="./move-workspace.html">Move a workspace</a> ·
+        <a href="./workspace-kinds.html">Workspace kinds</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc C · Workspaces and worktrees</div>
+    </footer>
+  </body>
+</html>

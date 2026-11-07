@@ -1,0 +1,2782 @@
+{
+  "initial": {
+    "order": {
+      "rev": 1,
+      "snapshot": [
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-49",
+          "inboxRef": "counts:team:o/a",
+          "order": -51200.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-49",
+          "statusGroup": 1,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-0",
+          "inboxRef": "counts:team:o/a",
+          "order": -50176.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-00",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-1",
+          "inboxRef": "counts:team:o/a",
+          "order": -49152.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-01",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-2",
+          "inboxRef": "counts:team:o/a",
+          "order": -48128.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-02",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-3",
+          "inboxRef": "counts:team:o/a",
+          "order": -47104.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-03",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-4",
+          "inboxRef": "counts:team:o/a",
+          "order": -46080.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-04",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-5",
+          "inboxRef": "counts:team:o/a",
+          "order": -45056.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-05",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-6",
+          "inboxRef": "counts:team:o/a",
+          "order": -44032.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-06",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-7",
+          "inboxRef": "counts:team:o/a",
+          "order": -43008.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-07",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-8",
+          "inboxRef": "counts:team:o/a",
+          "order": -41984.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-08",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-9",
+          "inboxRef": "counts:team:o/a",
+          "order": -40960.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-09",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-10",
+          "inboxRef": "counts:team:o/a",
+          "order": -39936.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-10",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-11",
+          "inboxRef": "counts:team:o/a",
+          "order": -38912.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-11",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-12",
+          "inboxRef": "counts:team:o/a",
+          "order": -37888.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-12",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-13",
+          "inboxRef": "counts:team:o/a",
+          "order": -36864.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-13",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-14",
+          "inboxRef": "counts:team:o/a",
+          "order": -35840.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-14",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-15",
+          "inboxRef": "counts:team:o/a",
+          "order": -34816.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-15",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-16",
+          "inboxRef": "counts:team:o/a",
+          "order": -33792.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-16",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-17",
+          "inboxRef": "counts:team:o/a",
+          "order": -32768.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-17",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-18",
+          "inboxRef": "counts:team:o/a",
+          "order": -31744.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-18",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-19",
+          "inboxRef": "counts:team:o/a",
+          "order": -30720.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-19",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-20",
+          "inboxRef": "counts:team:o/a",
+          "order": -29696.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-20",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-21",
+          "inboxRef": "counts:team:o/a",
+          "order": -28672.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-21",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-22",
+          "inboxRef": "counts:team:o/a",
+          "order": -27648.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-22",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-23",
+          "inboxRef": "counts:team:o/a",
+          "order": -26624.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-23",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-24",
+          "inboxRef": "counts:team:o/a",
+          "order": -25600.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-24",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-25",
+          "inboxRef": "counts:team:o/a",
+          "order": -24576.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-25",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-26",
+          "inboxRef": "counts:team:o/a",
+          "order": -23552.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-26",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-27",
+          "inboxRef": "counts:team:o/a",
+          "order": -22528.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-27",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-28",
+          "inboxRef": "counts:team:o/a",
+          "order": -21504.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-28",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-29",
+          "inboxRef": "counts:team:o/a",
+          "order": -20480.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-29",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-30",
+          "inboxRef": "counts:team:o/a",
+          "order": -19456.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-30",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-31",
+          "inboxRef": "counts:team:o/a",
+          "order": -18432.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-31",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-32",
+          "inboxRef": "counts:team:o/a",
+          "order": -17408.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-32",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-33",
+          "inboxRef": "counts:team:o/a",
+          "order": -16384.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-33",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-34",
+          "inboxRef": "counts:team:o/a",
+          "order": -15360.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-34",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-35",
+          "inboxRef": "counts:team:o/a",
+          "order": -14336.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-35",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-36",
+          "inboxRef": "counts:team:o/a",
+          "order": -13312.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-36",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-37",
+          "inboxRef": "counts:team:o/a",
+          "order": -12288.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-37",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-38",
+          "inboxRef": "counts:team:o/a",
+          "order": -11264.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-38",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-39",
+          "inboxRef": "counts:team:o/a",
+          "order": -10240.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-39",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-40",
+          "inboxRef": "counts:team:o/a",
+          "order": -9216.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-40",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-41",
+          "inboxRef": "counts:team:o/a",
+          "order": -8192.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-41",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-42",
+          "inboxRef": "counts:team:o/a",
+          "order": -7168.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-42",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-43",
+          "inboxRef": "counts:team:o/a",
+          "order": -6144.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-43",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-44",
+          "inboxRef": "counts:team:o/a",
+          "order": -5120.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-44",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-45",
+          "inboxRef": "counts:team:o/a",
+          "order": -4096.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-45",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-46",
+          "inboxRef": "counts:team:o/a",
+          "order": -3072.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-46",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-47",
+          "inboxRef": "counts:team:o/a",
+          "order": -2048.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-47",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "crewLead": false,
+          "crewOrder": null,
+          "crewParentId": null,
+          "id": "row-48",
+          "inboxRef": "counts:team:o/a",
+          "order": -1024.0,
+          "parentId": null,
+          "parentSource": null,
+          "placementTeamRef": null,
+          "sessionRef": "scale-48",
+          "statusGroup": 2,
+          "storyRef": null,
+          "teamKey": "o:a",
+          "workspaceRank": 0,
+          "workspaceRef": null
+        },
+        {
+          "homeTeam": null,
+          "id": "agentList:state",
+          "order": 1.7976931348623157e+308,
+          "ready": true,
+          "rowType": "state",
+          "teamOrder": null
+        }
+      ],
+      "topic": "agentList",
+      "viewKey": "all|status"
+    },
+    "sessions": {
+      "rev": 0,
+      "snapshot": [
+        {
+          "alive": true,
+          "displayName": "Session 0",
+          "effectiveStatus": "idle",
+          "handle": "scale-00",
+          "id": "scale-00",
+          "sessionId": "scale-00",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 1",
+          "effectiveStatus": "idle",
+          "handle": "scale-01",
+          "id": "scale-01",
+          "sessionId": "scale-01",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 2",
+          "effectiveStatus": "idle",
+          "handle": "scale-02",
+          "id": "scale-02",
+          "sessionId": "scale-02",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 3",
+          "effectiveStatus": "idle",
+          "handle": "scale-03",
+          "id": "scale-03",
+          "sessionId": "scale-03",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 4",
+          "effectiveStatus": "idle",
+          "handle": "scale-04",
+          "id": "scale-04",
+          "sessionId": "scale-04",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 5",
+          "effectiveStatus": "idle",
+          "handle": "scale-05",
+          "id": "scale-05",
+          "sessionId": "scale-05",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 6",
+          "effectiveStatus": "idle",
+          "handle": "scale-06",
+          "id": "scale-06",
+          "sessionId": "scale-06",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 7",
+          "effectiveStatus": "idle",
+          "handle": "scale-07",
+          "id": "scale-07",
+          "sessionId": "scale-07",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 8",
+          "effectiveStatus": "idle",
+          "handle": "scale-08",
+          "id": "scale-08",
+          "sessionId": "scale-08",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 9",
+          "effectiveStatus": "idle",
+          "handle": "scale-09",
+          "id": "scale-09",
+          "sessionId": "scale-09",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 10",
+          "effectiveStatus": "idle",
+          "handle": "scale-10",
+          "id": "scale-10",
+          "sessionId": "scale-10",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 11",
+          "effectiveStatus": "idle",
+          "handle": "scale-11",
+          "id": "scale-11",
+          "sessionId": "scale-11",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 12",
+          "effectiveStatus": "idle",
+          "handle": "scale-12",
+          "id": "scale-12",
+          "sessionId": "scale-12",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 13",
+          "effectiveStatus": "idle",
+          "handle": "scale-13",
+          "id": "scale-13",
+          "sessionId": "scale-13",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 14",
+          "effectiveStatus": "idle",
+          "handle": "scale-14",
+          "id": "scale-14",
+          "sessionId": "scale-14",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 15",
+          "effectiveStatus": "idle",
+          "handle": "scale-15",
+          "id": "scale-15",
+          "sessionId": "scale-15",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 16",
+          "effectiveStatus": "idle",
+          "handle": "scale-16",
+          "id": "scale-16",
+          "sessionId": "scale-16",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 17",
+          "effectiveStatus": "idle",
+          "handle": "scale-17",
+          "id": "scale-17",
+          "sessionId": "scale-17",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 18",
+          "effectiveStatus": "idle",
+          "handle": "scale-18",
+          "id": "scale-18",
+          "sessionId": "scale-18",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 19",
+          "effectiveStatus": "idle",
+          "handle": "scale-19",
+          "id": "scale-19",
+          "sessionId": "scale-19",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 20",
+          "effectiveStatus": "idle",
+          "handle": "scale-20",
+          "id": "scale-20",
+          "sessionId": "scale-20",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 21",
+          "effectiveStatus": "idle",
+          "handle": "scale-21",
+          "id": "scale-21",
+          "sessionId": "scale-21",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 22",
+          "effectiveStatus": "idle",
+          "handle": "scale-22",
+          "id": "scale-22",
+          "sessionId": "scale-22",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 23",
+          "effectiveStatus": "idle",
+          "handle": "scale-23",
+          "id": "scale-23",
+          "sessionId": "scale-23",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 24",
+          "effectiveStatus": "idle",
+          "handle": "scale-24",
+          "id": "scale-24",
+          "sessionId": "scale-24",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 25",
+          "effectiveStatus": "idle",
+          "handle": "scale-25",
+          "id": "scale-25",
+          "sessionId": "scale-25",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 26",
+          "effectiveStatus": "idle",
+          "handle": "scale-26",
+          "id": "scale-26",
+          "sessionId": "scale-26",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 27",
+          "effectiveStatus": "idle",
+          "handle": "scale-27",
+          "id": "scale-27",
+          "sessionId": "scale-27",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 28",
+          "effectiveStatus": "idle",
+          "handle": "scale-28",
+          "id": "scale-28",
+          "sessionId": "scale-28",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 29",
+          "effectiveStatus": "idle",
+          "handle": "scale-29",
+          "id": "scale-29",
+          "sessionId": "scale-29",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 30",
+          "effectiveStatus": "idle",
+          "handle": "scale-30",
+          "id": "scale-30",
+          "sessionId": "scale-30",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 31",
+          "effectiveStatus": "idle",
+          "handle": "scale-31",
+          "id": "scale-31",
+          "sessionId": "scale-31",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 32",
+          "effectiveStatus": "idle",
+          "handle": "scale-32",
+          "id": "scale-32",
+          "sessionId": "scale-32",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 33",
+          "effectiveStatus": "idle",
+          "handle": "scale-33",
+          "id": "scale-33",
+          "sessionId": "scale-33",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 34",
+          "effectiveStatus": "idle",
+          "handle": "scale-34",
+          "id": "scale-34",
+          "sessionId": "scale-34",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 35",
+          "effectiveStatus": "idle",
+          "handle": "scale-35",
+          "id": "scale-35",
+          "sessionId": "scale-35",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 36",
+          "effectiveStatus": "idle",
+          "handle": "scale-36",
+          "id": "scale-36",
+          "sessionId": "scale-36",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 37",
+          "effectiveStatus": "idle",
+          "handle": "scale-37",
+          "id": "scale-37",
+          "sessionId": "scale-37",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 38",
+          "effectiveStatus": "idle",
+          "handle": "scale-38",
+          "id": "scale-38",
+          "sessionId": "scale-38",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 39",
+          "effectiveStatus": "idle",
+          "handle": "scale-39",
+          "id": "scale-39",
+          "sessionId": "scale-39",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 40",
+          "effectiveStatus": "idle",
+          "handle": "scale-40",
+          "id": "scale-40",
+          "sessionId": "scale-40",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 41",
+          "effectiveStatus": "idle",
+          "handle": "scale-41",
+          "id": "scale-41",
+          "sessionId": "scale-41",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 42",
+          "effectiveStatus": "idle",
+          "handle": "scale-42",
+          "id": "scale-42",
+          "sessionId": "scale-42",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 43",
+          "effectiveStatus": "idle",
+          "handle": "scale-43",
+          "id": "scale-43",
+          "sessionId": "scale-43",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 44",
+          "effectiveStatus": "idle",
+          "handle": "scale-44",
+          "id": "scale-44",
+          "sessionId": "scale-44",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 45",
+          "effectiveStatus": "idle",
+          "handle": "scale-45",
+          "id": "scale-45",
+          "sessionId": "scale-45",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 46",
+          "effectiveStatus": "idle",
+          "handle": "scale-46",
+          "id": "scale-46",
+          "sessionId": "scale-46",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 47",
+          "effectiveStatus": "idle",
+          "handle": "scale-47",
+          "id": "scale-47",
+          "sessionId": "scale-47",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 48",
+          "effectiveStatus": "idle",
+          "handle": "scale-48",
+          "id": "scale-48",
+          "sessionId": "scale-48",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        },
+        {
+          "alive": true,
+          "displayName": "Session 49",
+          "effectiveStatus": "thinking",
+          "handle": "scale-49",
+          "id": "scale-49",
+          "sessionId": "scale-49",
+          "team": {
+            "org": "o",
+            "team": "a"
+          }
+        }
+      ],
+      "topic": "sessions",
+      "viewKey": "all"
+    }
+  },
+  "steps": [
+    {
+      "case": 47,
+      "expected": "dropped",
+      "expectedOrder": [
+        [
+          "scale-49",
+          "dropped"
+        ],
+        [
+          "scale-00",
+          "idle"
+        ],
+        [
+          "scale-01",
+          "idle"
+        ],
+        [
+          "scale-02",
+          "idle"
+        ],
+        [
+          "scale-03",
+          "idle"
+        ],
+        [
+          "scale-04",
+          "idle"
+        ],
+        [
+          "scale-05",
+          "idle"
+        ],
+        [
+          "scale-06",
+          "idle"
+        ],
+        [
+          "scale-07",
+          "idle"
+        ],
+        [
+          "scale-08",
+          "idle"
+        ],
+        [
+          "scale-09",
+          "idle"
+        ],
+        [
+          "scale-10",
+          "idle"
+        ],
+        [
+          "scale-11",
+          "idle"
+        ],
+        [
+          "scale-12",
+          "idle"
+        ],
+        [
+          "scale-13",
+          "idle"
+        ],
+        [
+          "scale-14",
+          "idle"
+        ],
+        [
+          "scale-15",
+          "idle"
+        ],
+        [
+          "scale-16",
+          "idle"
+        ],
+        [
+          "scale-17",
+          "idle"
+        ],
+        [
+          "scale-18",
+          "idle"
+        ],
+        [
+          "scale-19",
+          "idle"
+        ],
+        [
+          "scale-20",
+          "idle"
+        ],
+        [
+          "scale-21",
+          "idle"
+        ],
+        [
+          "scale-22",
+          "idle"
+        ],
+        [
+          "scale-23",
+          "idle"
+        ],
+        [
+          "scale-24",
+          "idle"
+        ],
+        [
+          "scale-25",
+          "idle"
+        ],
+        [
+          "scale-26",
+          "idle"
+        ],
+        [
+          "scale-27",
+          "idle"
+        ],
+        [
+          "scale-28",
+          "idle"
+        ],
+        [
+          "scale-29",
+          "idle"
+        ],
+        [
+          "scale-30",
+          "idle"
+        ],
+        [
+          "scale-31",
+          "idle"
+        ],
+        [
+          "scale-32",
+          "idle"
+        ],
+        [
+          "scale-33",
+          "idle"
+        ],
+        [
+          "scale-34",
+          "idle"
+        ],
+        [
+          "scale-35",
+          "idle"
+        ],
+        [
+          "scale-36",
+          "idle"
+        ],
+        [
+          "scale-37",
+          "idle"
+        ],
+        [
+          "scale-38",
+          "idle"
+        ],
+        [
+          "scale-39",
+          "idle"
+        ],
+        [
+          "scale-40",
+          "idle"
+        ],
+        [
+          "scale-41",
+          "idle"
+        ],
+        [
+          "scale-42",
+          "idle"
+        ],
+        [
+          "scale-43",
+          "idle"
+        ],
+        [
+          "scale-44",
+          "idle"
+        ],
+        [
+          "scale-45",
+          "idle"
+        ],
+        [
+          "scale-46",
+          "idle"
+        ],
+        [
+          "scale-47",
+          "idle"
+        ],
+        [
+          "scale-48",
+          "idle"
+        ]
+      ],
+      "name": "managed outcome",
+      "orderDeltas": [
+        {
+          "removes": [],
+          "rev": 2,
+          "topic": "agentList",
+          "upserts": [
+            {
+              "crewLead": false,
+              "crewOrder": null,
+              "crewParentId": null,
+              "id": "row-49",
+              "inboxRef": "counts:team:o/a",
+              "order": -51200.0,
+              "parentId": null,
+              "parentSource": null,
+              "placementTeamRef": null,
+              "sessionRef": "scale-49",
+              "statusGroup": 0,
+              "storyRef": null,
+              "teamKey": "o:a",
+              "workspaceRank": 0,
+              "workspaceRef": null
+            }
+          ],
+          "viewKey": "all|status"
+        }
+      ],
+      "reorderBytes": 363,
+      "sessionDeltas": [
+        {
+          "removes": [],
+          "rev": 1,
+          "topic": "sessions",
+          "upserts": [
+            {
+              "alive": true,
+              "displayName": "Session 49",
+              "effectiveStatus": "dropped",
+              "handle": "scale-49",
+              "hasAgent": true,
+              "id": "scale-49",
+              "managedState": "needs-attention",
+              "needsYouKind": null,
+              "sessionId": "scale-49",
+              "status": "running",
+              "team": {
+                "org": "o",
+                "team": "a"
+              }
+            }
+          ],
+          "viewKey": "all"
+        }
+      ]
+    },
+    {
+      "case": 90,
+      "expected": "done",
+      "expectedOrder": [
+        [
+          "scale-00",
+          "idle"
+        ],
+        [
+          "scale-01",
+          "idle"
+        ],
+        [
+          "scale-02",
+          "idle"
+        ],
+        [
+          "scale-03",
+          "idle"
+        ],
+        [
+          "scale-04",
+          "idle"
+        ],
+        [
+          "scale-05",
+          "idle"
+        ],
+        [
+          "scale-06",
+          "idle"
+        ],
+        [
+          "scale-07",
+          "idle"
+        ],
+        [
+          "scale-08",
+          "idle"
+        ],
+        [
+          "scale-09",
+          "idle"
+        ],
+        [
+          "scale-10",
+          "idle"
+        ],
+        [
+          "scale-11",
+          "idle"
+        ],
+        [
+          "scale-12",
+          "idle"
+        ],
+        [
+          "scale-13",
+          "idle"
+        ],
+        [
+          "scale-14",
+          "idle"
+        ],
+        [
+          "scale-15",
+          "idle"
+        ],
+        [
+          "scale-16",
+          "idle"
+        ],
+        [
+          "scale-17",
+          "idle"
+        ],
+        [
+          "scale-18",
+          "idle"
+        ],
+        [
+          "scale-19",
+          "idle"
+        ],
+        [
+          "scale-20",
+          "idle"
+        ],
+        [
+          "scale-21",
+          "idle"
+        ],
+        [
+          "scale-22",
+          "idle"
+        ],
+        [
+          "scale-23",
+          "idle"
+        ],
+        [
+          "scale-24",
+          "idle"
+        ],
+        [
+          "scale-25",
+          "idle"
+        ],
+        [
+          "scale-26",
+          "idle"
+        ],
+        [
+          "scale-27",
+          "idle"
+        ],
+        [
+          "scale-28",
+          "idle"
+        ],
+        [
+          "scale-29",
+          "idle"
+        ],
+        [
+          "scale-30",
+          "idle"
+        ],
+        [
+          "scale-31",
+          "idle"
+        ],
+        [
+          "scale-32",
+          "idle"
+        ],
+        [
+          "scale-33",
+          "idle"
+        ],
+        [
+          "scale-34",
+          "idle"
+        ],
+        [
+          "scale-35",
+          "idle"
+        ],
+        [
+          "scale-36",
+          "idle"
+        ],
+        [
+          "scale-37",
+          "idle"
+        ],
+        [
+          "scale-38",
+          "idle"
+        ],
+        [
+          "scale-39",
+          "idle"
+        ],
+        [
+          "scale-40",
+          "idle"
+        ],
+        [
+          "scale-41",
+          "idle"
+        ],
+        [
+          "scale-42",
+          "idle"
+        ],
+        [
+          "scale-43",
+          "idle"
+        ],
+        [
+          "scale-44",
+          "idle"
+        ],
+        [
+          "scale-45",
+          "idle"
+        ],
+        [
+          "scale-46",
+          "idle"
+        ],
+        [
+          "scale-47",
+          "idle"
+        ],
+        [
+          "scale-48",
+          "idle"
+        ],
+        [
+          "scale-49",
+          "done"
+        ]
+      ],
+      "name": "dismissed crash",
+      "orderDeltas": [
+        {
+          "removes": [],
+          "rev": 3,
+          "topic": "agentList",
+          "upserts": [
+            {
+              "crewLead": false,
+              "crewOrder": null,
+              "crewParentId": null,
+              "id": "row-49",
+              "inboxRef": "counts:team:o/a",
+              "order": 0.0,
+              "parentId": null,
+              "parentSource": null,
+              "placementTeamRef": null,
+              "sessionRef": "scale-49",
+              "statusGroup": 2,
+              "storyRef": null,
+              "teamKey": "o:a",
+              "workspaceRank": 0,
+              "workspaceRef": null
+            }
+          ],
+          "viewKey": "all|status"
+        }
+      ],
+      "reorderBytes": 358,
+      "sessionDeltas": [
+        {
+          "removes": [],
+          "rev": 2,
+          "topic": "sessions",
+          "upserts": [
+            {
+              "alive": true,
+              "displayName": "Session 49",
+              "effectiveStatus": "done",
+              "handle": "scale-49",
+              "hasAgent": true,
+              "id": "scale-49",
+              "managedState": "failed",
+              "needsYouKind": null,
+              "sessionId": "scale-49",
+              "status": "running",
+              "team": {
+                "org": "o",
+                "team": "a"
+              }
+            }
+          ],
+          "viewKey": "all"
+        }
+      ]
+    },
+    {
+      "case": 14,
+      "expected": "running",
+      "expectedOrder": [
+        [
+          "scale-49",
+          "running"
+        ],
+        [
+          "scale-00",
+          "idle"
+        ],
+        [
+          "scale-01",
+          "idle"
+        ],
+        [
+          "scale-02",
+          "idle"
+        ],
+        [
+          "scale-03",
+          "idle"
+        ],
+        [
+          "scale-04",
+          "idle"
+        ],
+        [
+          "scale-05",
+          "idle"
+        ],
+        [
+          "scale-06",
+          "idle"
+        ],
+        [
+          "scale-07",
+          "idle"
+        ],
+        [
+          "scale-08",
+          "idle"
+        ],
+        [
+          "scale-09",
+          "idle"
+        ],
+        [
+          "scale-10",
+          "idle"
+        ],
+        [
+          "scale-11",
+          "idle"
+        ],
+        [
+          "scale-12",
+          "idle"
+        ],
+        [
+          "scale-13",
+          "idle"
+        ],
+        [
+          "scale-14",
+          "idle"
+        ],
+        [
+          "scale-15",
+          "idle"
+        ],
+        [
+          "scale-16",
+          "idle"
+        ],
+        [
+          "scale-17",
+          "idle"
+        ],
+        [
+          "scale-18",
+          "idle"
+        ],
+        [
+          "scale-19",
+          "idle"
+        ],
+        [
+          "scale-20",
+          "idle"
+        ],
+        [
+          "scale-21",
+          "idle"
+        ],
+        [
+          "scale-22",
+          "idle"
+        ],
+        [
+          "scale-23",
+          "idle"
+        ],
+        [
+          "scale-24",
+          "idle"
+        ],
+        [
+          "scale-25",
+          "idle"
+        ],
+        [
+          "scale-26",
+          "idle"
+        ],
+        [
+          "scale-27",
+          "idle"
+        ],
+        [
+          "scale-28",
+          "idle"
+        ],
+        [
+          "scale-29",
+          "idle"
+        ],
+        [
+          "scale-30",
+          "idle"
+        ],
+        [
+          "scale-31",
+          "idle"
+        ],
+        [
+          "scale-32",
+          "idle"
+        ],
+        [
+          "scale-33",
+          "idle"
+        ],
+        [
+          "scale-34",
+          "idle"
+        ],
+        [
+          "scale-35",
+          "idle"
+        ],
+        [
+          "scale-36",
+          "idle"
+        ],
+        [
+          "scale-37",
+          "idle"
+        ],
+        [
+          "scale-38",
+          "idle"
+        ],
+        [
+          "scale-39",
+          "idle"
+        ],
+        [
+          "scale-40",
+          "idle"
+        ],
+        [
+          "scale-41",
+          "idle"
+        ],
+        [
+          "scale-42",
+          "idle"
+        ],
+        [
+          "scale-43",
+          "idle"
+        ],
+        [
+          "scale-44",
+          "idle"
+        ],
+        [
+          "scale-45",
+          "idle"
+        ],
+        [
+          "scale-46",
+          "idle"
+        ],
+        [
+          "scale-47",
+          "idle"
+        ],
+        [
+          "scale-48",
+          "idle"
+        ]
+      ],
+      "name": "working subagents",
+      "orderDeltas": [
+        {
+          "removes": [],
+          "rev": 4,
+          "topic": "agentList",
+          "upserts": [
+            {
+              "crewLead": false,
+              "crewOrder": null,
+              "crewParentId": null,
+              "id": "row-49",
+              "inboxRef": "counts:team:o/a",
+              "order": -76288.0,
+              "parentId": null,
+              "parentSource": null,
+              "placementTeamRef": null,
+              "sessionRef": "scale-49",
+              "statusGroup": 1,
+              "storyRef": null,
+              "teamKey": "o:a",
+              "workspaceRank": 0,
+              "workspaceRef": null
+            }
+          ],
+          "viewKey": "all|status"
+        }
+      ],
+      "reorderBytes": 363,
+      "sessionDeltas": [
+        {
+          "removes": [],
+          "rev": 3,
+          "topic": "sessions",
+          "upserts": [
+            {
+              "alive": true,
+              "displayName": "Session 49",
+              "effectiveStatus": "running",
+              "handle": "scale-49",
+              "hasAgent": true,
+              "id": "scale-49",
+              "needsYouKind": null,
+              "sessionId": "scale-49",
+              "status": "running",
+              "subagents": 2,
+              "team": {
+                "org": "o",
+                "team": "a"
+              }
+            }
+          ],
+          "viewKey": "all"
+        }
+      ]
+    },
+    {
+      "case": 69,
+      "expected": "awaiting-answer",
+      "expectedOrder": [
+        [
+          "scale-49",
+          "awaiting-answer"
+        ],
+        [
+          "scale-00",
+          "idle"
+        ],
+        [
+          "scale-01",
+          "idle"
+        ],
+        [
+          "scale-02",
+          "idle"
+        ],
+        [
+          "scale-03",
+          "idle"
+        ],
+        [
+          "scale-04",
+          "idle"
+        ],
+        [
+          "scale-05",
+          "idle"
+        ],
+        [
+          "scale-06",
+          "idle"
+        ],
+        [
+          "scale-07",
+          "idle"
+        ],
+        [
+          "scale-08",
+          "idle"
+        ],
+        [
+          "scale-09",
+          "idle"
+        ],
+        [
+          "scale-10",
+          "idle"
+        ],
+        [
+          "scale-11",
+          "idle"
+        ],
+        [
+          "scale-12",
+          "idle"
+        ],
+        [
+          "scale-13",
+          "idle"
+        ],
+        [
+          "scale-14",
+          "idle"
+        ],
+        [
+          "scale-15",
+          "idle"
+        ],
+        [
+          "scale-16",
+          "idle"
+        ],
+        [
+          "scale-17",
+          "idle"
+        ],
+        [
+          "scale-18",
+          "idle"
+        ],
+        [
+          "scale-19",
+          "idle"
+        ],
+        [
+          "scale-20",
+          "idle"
+        ],
+        [
+          "scale-21",
+          "idle"
+        ],
+        [
+          "scale-22",
+          "idle"
+        ],
+        [
+          "scale-23",
+          "idle"
+        ],
+        [
+          "scale-24",
+          "idle"
+        ],
+        [
+          "scale-25",
+          "idle"
+        ],
+        [
+          "scale-26",
+          "idle"
+        ],
+        [
+          "scale-27",
+          "idle"
+        ],
+        [
+          "scale-28",
+          "idle"
+        ],
+        [
+          "scale-29",
+          "idle"
+        ],
+        [
+          "scale-30",
+          "idle"
+        ],
+        [
+          "scale-31",
+          "idle"
+        ],
+        [
+          "scale-32",
+          "idle"
+        ],
+        [
+          "scale-33",
+          "idle"
+        ],
+        [
+          "scale-34",
+          "idle"
+        ],
+        [
+          "scale-35",
+          "idle"
+        ],
+        [
+          "scale-36",
+          "idle"
+        ],
+        [
+          "scale-37",
+          "idle"
+        ],
+        [
+          "scale-38",
+          "idle"
+        ],
+        [
+          "scale-39",
+          "idle"
+        ],
+        [
+          "scale-40",
+          "idle"
+        ],
+        [
+          "scale-41",
+          "idle"
+        ],
+        [
+          "scale-42",
+          "idle"
+        ],
+        [
+          "scale-43",
+          "idle"
+        ],
+        [
+          "scale-44",
+          "idle"
+        ],
+        [
+          "scale-45",
+          "idle"
+        ],
+        [
+          "scale-46",
+          "idle"
+        ],
+        [
+          "scale-47",
+          "idle"
+        ],
+        [
+          "scale-48",
+          "idle"
+        ]
+      ],
+      "name": "headless question",
+      "orderDeltas": [
+        {
+          "removes": [],
+          "rev": 5,
+          "topic": "agentList",
+          "upserts": [
+            {
+              "crewLead": false,
+              "crewOrder": null,
+              "crewParentId": null,
+              "id": "row-49",
+              "inboxRef": "counts:team:o/a",
+              "order": -76288.0,
+              "parentId": null,
+              "parentSource": null,
+              "placementTeamRef": null,
+              "sessionRef": "scale-49",
+              "statusGroup": 0,
+              "storyRef": null,
+              "teamKey": "o:a",
+              "workspaceRank": 0,
+              "workspaceRef": null
+            }
+          ],
+          "viewKey": "all|status"
+        }
+      ],
+      "reorderBytes": 363,
+      "sessionDeltas": [
+        {
+          "removes": [],
+          "rev": 4,
+          "topic": "sessions",
+          "upserts": [
+            {
+              "alive": true,
+              "displayName": "Session 49",
+              "effectiveStatus": "awaiting-answer",
+              "handle": "scale-49",
+              "hasAgent": true,
+              "id": "scale-49",
+              "managedState": "awaiting-answer",
+              "needsYouKind": "question",
+              "sessionId": "scale-49",
+              "status": "running",
+              "team": {
+                "org": "o",
+                "team": "a"
+              }
+            }
+          ],
+          "viewKey": "all"
+        }
+      ]
+    },
+    {
+      "case": 23,
+      "expected": "stalled",
+      "expectedOrder": [
+        [
+          "scale-00",
+          "idle"
+        ],
+        [
+          "scale-01",
+          "idle"
+        ],
+        [
+          "scale-02",
+          "idle"
+        ],
+        [
+          "scale-03",
+          "idle"
+        ],
+        [
+          "scale-04",
+          "idle"
+        ],
+        [
+          "scale-05",
+          "idle"
+        ],
+        [
+          "scale-06",
+          "idle"
+        ],
+        [
+          "scale-07",
+          "idle"
+        ],
+        [
+          "scale-08",
+          "idle"
+        ],
+        [
+          "scale-09",
+          "idle"
+        ],
+        [
+          "scale-10",
+          "idle"
+        ],
+        [
+          "scale-11",
+          "idle"
+        ],
+        [
+          "scale-12",
+          "idle"
+        ],
+        [
+          "scale-13",
+          "idle"
+        ],
+        [
+          "scale-14",
+          "idle"
+        ],
+        [
+          "scale-15",
+          "idle"
+        ],
+        [
+          "scale-16",
+          "idle"
+        ],
+        [
+          "scale-17",
+          "idle"
+        ],
+        [
+          "scale-18",
+          "idle"
+        ],
+        [
+          "scale-19",
+          "idle"
+        ],
+        [
+          "scale-20",
+          "idle"
+        ],
+        [
+          "scale-21",
+          "idle"
+        ],
+        [
+          "scale-22",
+          "idle"
+        ],
+        [
+          "scale-23",
+          "idle"
+        ],
+        [
+          "scale-24",
+          "idle"
+        ],
+        [
+          "scale-25",
+          "idle"
+        ],
+        [
+          "scale-26",
+          "idle"
+        ],
+        [
+          "scale-27",
+          "idle"
+        ],
+        [
+          "scale-28",
+          "idle"
+        ],
+        [
+          "scale-29",
+          "idle"
+        ],
+        [
+          "scale-30",
+          "idle"
+        ],
+        [
+          "scale-31",
+          "idle"
+        ],
+        [
+          "scale-32",
+          "idle"
+        ],
+        [
+          "scale-33",
+          "idle"
+        ],
+        [
+          "scale-34",
+          "idle"
+        ],
+        [
+          "scale-35",
+          "idle"
+        ],
+        [
+          "scale-36",
+          "idle"
+        ],
+        [
+          "scale-37",
+          "idle"
+        ],
+        [
+          "scale-38",
+          "idle"
+        ],
+        [
+          "scale-39",
+          "idle"
+        ],
+        [
+          "scale-40",
+          "idle"
+        ],
+        [
+          "scale-41",
+          "idle"
+        ],
+        [
+          "scale-42",
+          "idle"
+        ],
+        [
+          "scale-43",
+          "idle"
+        ],
+        [
+          "scale-44",
+          "idle"
+        ],
+        [
+          "scale-45",
+          "idle"
+        ],
+        [
+          "scale-46",
+          "idle"
+        ],
+        [
+          "scale-47",
+          "idle"
+        ],
+        [
+          "scale-48",
+          "idle"
+        ],
+        [
+          "scale-49",
+          "stalled"
+        ]
+      ],
+      "name": "stall deadline",
+      "orderDeltas": [
+        {
+          "removes": [],
+          "rev": 6,
+          "topic": "agentList",
+          "upserts": [
+            {
+              "crewLead": false,
+              "crewOrder": null,
+              "crewParentId": null,
+              "id": "row-49",
+              "inboxRef": "counts:team:o/a",
+              "order": 0.0,
+              "parentId": null,
+              "parentSource": null,
+              "placementTeamRef": null,
+              "sessionRef": "scale-49",
+              "statusGroup": 2,
+              "storyRef": null,
+              "teamKey": "o:a",
+              "workspaceRank": 0,
+              "workspaceRef": null
+            }
+          ],
+          "viewKey": "all|status"
+        }
+      ],
+      "reorderBytes": 358,
+      "sessionDeltas": [
+        {
+          "removes": [],
+          "rev": 5,
+          "topic": "sessions",
+          "upserts": [
+            {
+              "alive": true,
+              "displayName": "Session 49",
+              "effectiveStatus": "stalled",
+              "handle": "scale-49",
+              "hasAgent": true,
+              "id": "scale-49",
+              "needsYouKind": null,
+              "sessionId": "scale-49",
+              "status": "running",
+              "team": {
+                "org": "o",
+                "team": "a"
+              }
+            }
+          ],
+          "viewKey": "all"
+        }
+      ]
+    }
+  ]
+}

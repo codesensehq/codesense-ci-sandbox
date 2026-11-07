@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="plug-zap" />
+    <title>CodeSense — MCP-only agents</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arce-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arce-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arce-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arce-tools {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-tools th,
+      .arce-tools td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-tools th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-tools code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/mcp-only-agents">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="MCP-only agents — agents whose whole surface area is the CodeSense bridge, no UI needed" id="hero">
+        <h1>No UI. Just the bridge.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A headless agent on the left talks only to CodeSense MCP in the middle. No UI window, no SSH tab, no filesystem writes. The MCP tools reach into orgs, teams, inboxes, routines on the right."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Left: the agent -->
+            <g transform="translate(30 100)">
+              <rect
+                width="160"
+                height="160"
+                rx="10"
+                fill="var(--cs-inset-strong, var(--cs-inset))"
+                stroke="var(--cs-border)"
+              />
+              <text x="80" y="26" text-anchor="middle" style="fill: var(--cs-fg); font-size: 12px">
+                headless agent
+              </text>
+              <text x="80" y="46" text-anchor="middle" style="fill: var(--cs-muted-fg); font-size: 11px">
+                claude --session
+              </text>
+              <text x="12" y="80" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                launch: headless
+              </text>
+              <text x="12" y="98" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                mcp.servers: []
+              </text>
+              <text x="12" y="116" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                permissions.claude:
+              </text>
+              <text x="22" y="132" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                allow: ["mcp__codesense__*"]
+              </text>
+              <text x="22" y="148" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                deny:  [Edit, Write, Bash]
+              </text>
+            </g>
+
+            <path d="M194 180 L 240 180" stroke="var(--cs-muted-fg)" stroke-width="1.4" fill="none" marker-end="url(#arrow)" />
+            <text x="196" y="170" style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-ui)">
+              bridge only
+            </text>
+
+            <!-- Middle: the bridge -->
+            <g transform="translate(250 110)">
+              <rect
+                width="140"
+                height="140"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text x="70" y="26" text-anchor="middle" style="fill: var(--cs-fg); font-size: 12px">
+                CodeSense MCP
+              </text>
+              <text x="70" y="46" text-anchor="middle" style="fill: var(--cs-muted-fg); font-size: 10px">
+                every CodeSense tool
+              </text>
+              <text x="14" y="76" style="fill: var(--cs-muted-fg); font-size: 10px">
+                describe_setup
+              </text>
+              <text x="14" y="90" style="fill: var(--cs-muted-fg); font-size: 10px">
+                agent_list / preview
+              </text>
+              <text x="14" y="104" style="fill: var(--cs-muted-fg); font-size: 10px">
+                send_message
+              </text>
+              <text x="14" y="118" style="fill: var(--cs-muted-fg); font-size: 10px">
+                routine_create
+              </text>
+            </g>
+
+            <path d="M394 180 L 440 180" stroke="var(--cs-muted-fg)" stroke-width="1.4" fill="none" marker-end="url(#arrow)" />
+
+            <!-- Right: codesense state -->
+            <g transform="translate(450 60)">
+              <rect
+                width="170"
+                height="240"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="24" style="fill: var(--cs-fg); font-size: 12px">
+                CodeSense state
+              </text>
+              <text x="14" y="48" style="fill: var(--cs-muted-fg); font-size: 11px">
+                orgs &amp; teams
+              </text>
+              <text x="14" y="76" style="fill: var(--cs-muted-fg); font-size: 11px">
+                agents
+              </text>
+              <text x="14" y="104" style="fill: var(--cs-muted-fg); font-size: 11px">
+                inboxes &amp; queues
+              </text>
+              <text x="14" y="132" style="fill: var(--cs-muted-fg); font-size: 11px">
+                routines
+              </text>
+              <text x="14" y="160" style="fill: var(--cs-muted-fg); font-size: 11px">
+                sessions
+              </text>
+              <text x="14" y="188" style="fill: var(--cs-muted-fg); font-size: 11px">
+                canvases
+              </text>
+              <text x="14" y="216" style="fill: var(--cs-muted-fg); font-size: 11px">
+                rendered docs
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What an MCP-only agent is" id="why">
+        <p>
+          The CodeSense MCP server is enough on its own. If what the agent
+          does is "read CodeSense state and act on it" — not "write code,"
+          not "poke a repo," not "answer in Slack" — you don't need a
+          filesystem writer, a shell, or any other MCP server. You need the
+          bridge. The result is a tiny, fast, auditable agent you can run on
+          a cron without worrying about scope.
+        </p>
+      </section>
+
+      <section data-search="When this shape fits" id="fits">
+        <h2>When it fits</h2>
+        <ul>
+          <li>
+            <strong>Dashboard caretakers.</strong> Keep a canvas or an HTML
+            dashboard fresh — read inbox counts, re-render the pane, done.
+          </li>
+          <li>
+            <strong>Scheduled reporters.</strong> Walk open sessions once a
+            day, build a <code>send_message</code> digest to the human.
+          </li>
+          <li>
+            <strong>Routine sentries.</strong> Watch a role queue; when it
+            crosses a threshold, open a story in the pipeline.
+          </li>
+          <li>
+            <strong>Setup wizards (read side).</strong> Describe the current
+            setup, point out gaps — writes stay behind a human confirm.
+          </li>
+          <li>
+            <strong>Audit / lookback.</strong> Walk retrospectives, inbox
+            threads, feedback. Writes markdown to a path via the bridge's
+            document tools — not through a shell.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="How to lock it down — three fields do all the work" id="lockdown">
+        <h2>Three fields do all the work</h2>
+
+        <div class="arce-step">
+          <span class="arce-step__n">1</span>
+          <div>
+            <h3>Leave <code>mcp.servers</code> empty</h3>
+            <p>
+              The bridge is on by default. Not listing anything means the
+              agent can't reach <em>any</em> external service — not Slack,
+              not GitHub, not a third-party API — even if the team's
+              <code>.mcp.json</code> defines them. Everything the agent
+              does, it does through the CodeSense bridge.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">2</span>
+          <div>
+            <h3>Allowlist the <code>mcp__codesense__*</code> prefix</h3>
+            <p>
+              Claude's tool-name convention is
+              <code>mcp__&lt;server&gt;__&lt;tool&gt;</code>. A single
+              <code>"mcp__codesense__*"</code> allow lets the agent call
+              every CodeSense tool and nothing else. Narrow further with
+              <code>"mcp__codesense__send_message"</code> if the agent
+              really only needs one.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">3</span>
+          <div>
+            <h3>Deny filesystem &amp; shell</h3>
+            <p>
+              <code>deny: [Edit, Write, Bash]</code> for Claude. For Codex,
+              <code>sandbox_mode: read-only</code>. The agent still gets
+              <code>Read</code>, <code>Grep</code>, <code>Glob</code> — fine
+              for reading its own skill files and planning — but can't
+              touch the user's tree outside what the bridge offers.
+            </p>
+            <p><strong>Policy for Codex.</strong> CodeSense auto-approves its
+              generated bridge alias even under <code>on-request</code> or
+              <code>untrusted</code>; bridge calls do not prompt. The captured
+              bridge grant plus <code>mcp.bridge_tools</code> control least
+              privilege. Shell and filesystem sandbox settings stay unchanged,
+              but bridge tools execute outside that sandbox. Use an explicit
+              list such as <code>[who_am_i, read_messages, reply, signal_done]</code>
+              to avoid granting mutation tools. Omitted or <code>null</code>
+              permits all bridge tools; <code>[]</code> permits none. A call through
+              <code>codesense_call_tool</code> requires both its own name and the
+              target name enabled. <code>agent_preview</code> shows the effective
+              tools and warns about unknown names or missing completion/inbox
+              tools. See <a href="../setting-up-agents/mcp-access-per-agent.md">MCP access per agent</a>.
+              This restriction is currently local: remote saved-agent preparation
+              refuses any explicit list, including <code>[]</code>, rather than
+              dropping it. Preview warns about the limitation. Omitted or
+              <code>null</code> keeps unrestricted remote behavior.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="A full MCP-only agent.yaml example" id="example">
+        <h2>Full example — <code>sprint-reporter</code></h2>
+        <p>
+          An agent that walks every open session once an hour and posts a
+          digest card to the human's inbox. Zero filesystem writes, zero
+          external MCP, nothing to spill.
+        </p>
+        <pre><code>id: sprint-reporter
+name: Sprint reporter
+description: Hourly digest of open sessions and inbox state to the human.
+runtime: claude
+launch: headless
+startup:
+  - CLAUDE.md
+  - .claude/skills/sprint-report/
+permissions:
+  claude:
+    allow: [Read, Grep, Glob, "mcp__codesense__*"]
+    deny:  [Edit, Write, Bash]
+default_prompt: /sprint-report
+revision: 1</code></pre>
+      </section>
+
+      <section data-search="The eight MCP tools these agents reach for most" id="tools">
+        <h2>The tools you'll actually reach for</h2>
+        <table class="arce-tools">
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>describe_setup</code></td>
+              <td>What the user has today — orgs, teams, source repos, machines.</td>
+            </tr>
+            <tr>
+              <td><code>list_sessions</code></td>
+              <td>Open sessions with state, progress, unread mail.</td>
+            </tr>
+            <tr>
+              <td><code>agent_list</code></td>
+              <td>Every agent the active team can see.</td>
+            </tr>
+            <tr>
+              <td><code>send_message</code></td>
+              <td>Post a card to an inbox — human, role, or named session.</td>
+            </tr>
+            <tr>
+              <td><code>read_rendered_document</code></td>
+              <td>See a doc as a reader sees it, not raw HTML / markdown.</td>
+            </tr>
+            <tr>
+              <td><code>apply_canvas</code> / <code>render_canvas</code></td>
+              <td>Author and render Excalidraw diagrams through the bridge.</td>
+            </tr>
+            <tr>
+              <td><code>routine_list</code></td>
+              <td>Routines the team has, when they last fired, next trigger.</td>
+            </tr>
+            <tr>
+              <td><code>who_am_i</code></td>
+              <td>This session's handle — useful for self-referential digests.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          See <a href="../mcp-explorer.html">mcp-explorer</a> for the full
+          catalog; filter by <em>read-only</em> to find the ones safe to
+          pair with a <code>deny: [Edit, Write, Bash]</code> posture.
+        </p>
+      </section>
+
+      <section data-search="What this shape won't do" id="limits">
+        <h2>What it won't do</h2>
+        <ul>
+          <li>
+            <strong>Write code.</strong> No <code>Edit</code> /
+            <code>Write</code> / <code>Bash</code>. If the agent has to
+            change a file in the user's source tree, it's not MCP-only — it's
+            a builder (see <a href="./designing-for-a-role.html#builder"
+              >builder role</a
+            >).
+          </li>
+          <li>
+            <strong>Talk to Slack, GitHub, or any outside service.</strong>
+            Those need their own MCP server listed on
+            <code>mcp.servers</code>. MCP-only means CodeSense bridge only.
+          </li>
+          <li>
+            <strong>Run a shell.</strong> No tests, no linters, no git.
+            Point the agent at a builder with
+            <code>send_message</code> instead.
+          </li>
+          <li>
+            <strong>Author its own skills.</strong> The agent can't write
+            files, so skills have to arrive the usual way — committed by a
+            human or a builder to the team's content.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — preview a locked-down MCP-only agent" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Preview the <code>sprint-reporter</code> shape against the real
+          validator. The reply tells you which tools the permissions let it
+          call, and warns if the <code>deny</code> list would block
+          CodeSense's own completion signalling.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Sprint reporter", "runtime": "claude", "launch": "headless", "startup": ["CLAUDE.md"], "permissions": {"claude": {"allow": ["Read", "Grep", "Glob", "mcp__codesense__*"], "deny": ["Edit", "Write", "Bash"]}}, "defaultPrompt": "/sprint-report"}}'
+          label="Preview an MCP-only draft"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Preview, then create. Nothing writes until agent_create fires.
+codesense.invoke('agent_preview', {
+  name: 'Sprint reporter',
+  runtime: 'claude', launch: 'headless',
+  startup: ['CLAUDE.md', '.claude/skills/sprint-report/'],
+  permissions: { claude: {
+    allow: ['Read', 'Grep', 'Glob', 'mcp__codesense__*'],
+    deny:  ['Edit', 'Write', 'Bash'],
+  }},
+})
+
+// The three bridge calls an MCP-only reporter typically makes:
+codesense.invoke('list_sessions', { teamId })
+codesense.invoke('describe_setup', {})
+codesense.invoke('send_message', { to: 'human', body })</code></pre>
+          <p>
+            See <a href="../mcp-explorer.html">mcp-explorer</a> for every
+            CodeSense tool, and
+            <a href="./designing-for-a-role.html">designing for a role</a>
+            when the agent you want needs more than the bridge.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Previous: <a href="./user-recipes.html">User recipes</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+          <!--tool-reference-->
+      <section id="tool-reference" data-search="Tool reference">
+        <h2>Tool reference</h2>
+        <p>Reference for the tools an agent uses to ask the human, report progress and results, finish, hand off, spawn workers and read usage. Where a tool takes <code>sessionId</code> to identify the caller, identity comes from the verified MCP connection; a supplied <code>sessionId</code> must name the caller itself, and an unbound caller is refused (start the CLI in a CodeSense terminal). Three tools below are exceptions: in <code>dismiss_agent_mark</code>, <code>session_usage</code> and <code>session_read</code>, <code>sessionId</code> names a target session, not the caller.</p>
+        <p id="talk"><strong>Talking to the user</strong></p>
+        <h3 id="tool-ask_user"><code>ask_user</code></h3>
+        <p>Asks the human a blocking question through the CodeSense UI and waits for the answer. Inputs: <code>sessionId</code> and <code>question</code>; optional <code>options</code> (discrete choices) and <code>category</code>/<code>stakes</code> triage hints, which are never used to auto-answer. Returns <code>{action, content}</code> where <code>action</code> is <code>accept</code> (<code>content</code> is the answer), <code>decline</code>, <code>cancel</code> (dismissed, timed out or the session died) or <code>handled</code> (the human settled it outside the question: check the current state before acting). Always branch on <code>action</code>. Contrast <code>post_agent_message</code>, which is fire-and-forget.</p>
+        <pre data-tool-example="ask_user"><code>{
+  &quot;tool&quot;: &quot;ask_user&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;question&quot;: &quot;Which branch should the docs change target?&quot;,
+    &quot;options&quot;: [
+      &quot;main&quot;,
+      &quot;release&quot;
+    ]
+  }
+}</code></pre>
+        <h3 id="tool-post_agent_message"><code>post_agent_message</code></h3>
+        <p>Posts a progress note to the chat surface bound to your session and to the agent-updates store that dashboards read through <code>codesense.updates()</code>. Notes do not appear in the native human Inbox; to report there, use <code>send_message</code> to <code>human</code> with kind <code>update</code>. Fire-and-forget. Inputs: <code>sessionId</code>, <code>text</code>; optional <code>role</code> (default <code>agent</code>), <code>subclass</code> (<code>review</code>, <code>research</code>, <code>impl</code> or <code>planning</code>) and <code>hasArtifacts: true</code> after <code>report_artifact</code> for better routing, and <code>openDocPath</code>, the absolute context-repo path to open in the viewer.</p>
+        <pre data-tool-example="post_agent_message"><code>{
+  &quot;tool&quot;: &quot;post_agent_message&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;text&quot;: &quot;Draft of the reference page is ready for review&quot;
+  }
+}</code></pre>
+        <h3 id="tool-signal_progress"><code>signal_progress</code></h3>
+        <p>Reports where in the run you are, mid-task, so dashboards show live per-story progress. Call it repeatedly; contrast <code>signal_done</code>, your final act. <code>phase</code> is <code>planning</code>, <code>dev</code>, <code>review</code>, <code>pr</code>, <code>blocked</code> (call it whenever you stop to wait on the human) or <code>done</code>. Optional <code>step</code>/<code>total</code> drive an N-of-M sub-bar, and <code>note</code> is a short line. Fire-and-forget.</p>
+        <pre data-tool-example="signal_progress"><code>{
+  &quot;tool&quot;: &quot;signal_progress&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;phase&quot;: &quot;dev&quot;,
+    &quot;step&quot;: 2,
+    &quot;total&quot;: 5,
+    &quot;note&quot;: &quot;Writing examples&quot;
+  }
+}</code></pre>
+        <h3 id="tool-signal_done"><code>signal_done</code></h3>
+        <p>Reports that your managed task is finished, as your final act. <code>status</code> is <code>success</code>, <code>failed</code> or <code>needs-attention</code>. CodeSense records the outcome and notifies watchers; it does not run tests, validate, or move the story's status. Without it the session is flagged <code>needs-attention</code>. <code>needs-attention</code> records a completed outcome; it does not mean a permission prompt. Optional <code>summary</code>, <code>requestId</code> (a retry key; reuse it after a disconnect) and <code>doneRecord</code> (<code>{dispatchId, leg1Source, leg2Footprint, leg3Packet}</code>, the Weft three-leg verify payload). A routine run is the exception: its task decides whether to call it, and <code>routine_done</code> finishes one routine run without ending the session. Returns <code>{recorded}</code>.</p>
+        <pre data-tool-example="signal_done"><code>{
+  &quot;tool&quot;: &quot;signal_done&quot;,
+  &quot;arguments&quot;: {
+    &quot;status&quot;: &quot;success&quot;,
+    &quot;summary&quot;: &quot;Reference page written and validated&quot;
+  }
+}</code></pre>
+        <p id="evidence"><strong>Evidence, usage and Weft workers</strong></p>
+        <h3 id="tool-report_step_result"><code>report_step_result</code></h3>
+        <p>Records what a step produced and touched so a reviewer can reconstruct the run without reading the transcript. Repeatable: later reports accumulate, <code>summary</code> and <code>outputs</code> are latest-wins and <code>footprint</code> is union-deduplicated. Optional <code>nodeId</code> (default: your agent node), <code>summary</code>, <code>outputs</code> (<code>[{key, value}]</code>, value any JSON) and <code>footprint</code> (<code>[{kind, reference, change?}]</code>, kind <code>file</code>, <code>pr</code> or <code>entity</code>, change <code>created</code> or <code>modified</code>). Values are scrubbed and size-bounded. Returns <code>{recorded}</code>, which is <code>false</code> (not an error) for a session with no run. Distinct from <code>signal_done</code> and <code>post_agent_message</code>.</p>
+        <pre data-tool-example="report_step_result"><code>{
+  &quot;tool&quot;: &quot;report_step_result&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;summary&quot;: &quot;Wrote the page&quot;,
+    &quot;outputs&quot;: [
+      {
+        &quot;key&quot;: &quot;pages&quot;,
+        &quot;value&quot;: 1
+      }
+    ],
+    &quot;footprint&quot;: [
+      {
+        &quot;kind&quot;: &quot;file&quot;,
+        &quot;reference&quot;: &quot;docs/guide.md&quot;,
+        &quot;change&quot;: &quot;created&quot;
+      }
+    ]
+  }
+}</code></pre>
+        <h3 id="tool-report_artifact"><code>report_artifact</code></h3>
+        <p>Records one named artifact the step produced, so it appears in the run's result view with a stable reference. Inputs: <code>sessionId</code>, <code>kind</code> (<code>file</code>, <code>pr</code> or <code>entity</code>) and <code>reference</code> (a repo-relative path, a PR/MR URL or an entity id); optional <code>nodeId</code> and <code>label</code>. Call it once per artifact; <code>report_step_result</code> records several things at once. Returns <code>{recorded}</code>, <code>false</code> for a session with no run.</p>
+        <pre data-tool-example="report_artifact"><code>{
+  &quot;tool&quot;: &quot;report_artifact&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;kind&quot;: &quot;pr&quot;,
+    &quot;reference&quot;: &quot;https://github.com/acme/app/pull/1&quot;,
+    &quot;label&quot;: &quot;Docs PR&quot;
+  }
+}</code></pre>
+        <h3 id="tool-dismiss_agent_mark"><code>dismiss_agent_mark</code></h3>
+        <p>Dismisses the current crash or failure mark for a visible session. <code>sessionId</code> names that failed target session, not the caller, and <code>crashId</code> comes from the same <code>list_sessions</code> row. The dismissal persists across restart and never dismisses a later crash. It needs no confirmation or ownership.</p>
+        <pre data-tool-example="dismiss_agent_mark"><code>{
+  &quot;tool&quot;: &quot;dismiss_agent_mark&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;sessionId from the failed session's list_sessions row&gt;&quot;,
+    &quot;crashId&quot;: &quot;&lt;crashId from the same row&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-story_changes"><code>story_changes</code> — what a story changed</h3>
+        <p>Call <code>story_changes({storyId: "DEMO-29"})</code>, or from a page <code>await codesense.storyChanges({storyId: "DEMO-29"})</code>. Both read the same backend. The page gets every array in full: all linked sessions in the <code>session_read</code> shape without conversation, each once with <code>basis: exact</code>; tasks oldest first with review task ids and the same <code>outcome</code> as <code>task_read</code>; and totals.</p>
+        <p>The MCP answer is that read shaped for an agent, and stays under 64 KB. Sessions are summaries (<code>sessionId, nativeSessionIds, basis, agent, cli, model, branch, worktree, timing, costUsd, costReason</code>) unless you pass <code>include: ["sessions.full"]</code>; tasks are summaries (<code>taskId, parentId, taskType, status, goal</code> cut to 200 characters with <code>goalTruncated</code>, <code>mainSkill, createdAtMs, closedAtMs, reviews</code>) unless you pass <code>include: ["tasks.full"]</code>. Every array pages by <code>limit</code> (default 20, at most 500), and <code>pages.&lt;array&gt;</code> gives <code>{total, truncated, cursor}</code>. Pass a page's <code>cursor</code> with the same storyId for that array's next page; that read returns only that array, the others empty. Commits keep <code>nextCursor</code>. <code>prs[].files</code> and <code>commits[].files</code> list 20 with <code>filesTotal</code> when cut; <code>actual</code> pages every file. When the answer would pass 64 KB, the heaviest array ends its page early and its cursor resumes at the first row left out. Totals always cover the full set.</p>
+        <p><code>totals</code> contains <code>sessions, costUsd, wallMs, activeMs, idleMs, reviewRounds, reviewTasks, commits, files</code>. Wall time spans the earliest observed session start to the latest observed end; active and idle time sum each session, including overlapping sessions. Time is milliseconds. Missing timing has an explicit reason and covers only observed sessions. No observed timing gives null totals. An empty story has zero sessions and time, and null cost. Cost is null with <code>unavailable.costUsd</code> when any session has unknown cost: a partial sum is never called the total. <code>reviewRounds</code> counts the story's complete <code>review-rounds</code> markers of <code>phase: review</code> (every stamp present or named in <code>stampNote</code>; the rule is <code>check_records.py</code> <code>review_rounds()</code>), so document, design and human-lens review rounds count too, while wave and use observations (round 0) never do; it is null with <code>unavailable.reviewRounds</code> when the markers cannot be read. <code>reviewTasks</code> counts distinct review tasks (cost and time). When no task is typed as a review, it counts the distinct tasks the review-rounds markers name (<code>warnings.reviewTasks</code> says so), and is null with <code>unavailable.reviewTasks</code> when rounds are recorded but name no task; it is never a 0 that recorded rounds contradict. When the two disagree, <code>warnings.reviewRounds</code> says how; it is never a gate.</p>
+        <p>Durable story links survive worktree removal and restart. Line tracking installs automatically on macOS with Apple silicon; a session launched while installation is running needs to relaunch for capture. Launch capture must have recorded the link. <code>branches</code> and <code>worktrees</code> preserve recorded links even after worktree removal; absent refs carry reasons. <code>commits</code> gives sha, subject, author, authoredAt (epoch ms), files, sessionIds and basis (exact with git-ai notes, associated when absent; unknown with an unavailable reason when note objects are not local). Merges on origin&#39;s default branch (<code>refs/remotes/origin/HEAD</code>, else <code>origin/main</code> or <code>origin/master</code>) identify PR numbers and merged SHAs within <code>scanLimit: 2000</code> first-parent commits; what the checkout has checked out never matters. A merge links to a story branch when its subject names the branch, or when its second parent is the live head of one of the story&#39;s branches or one of its recorded tips (each story worktree&#39;s branch head, kept per story at agent launch, at a trail read, at close and before removal, apart from the worktree&#39;s record), so a custom merge subject or a deleted branch, worktree and record still link (<code>basis: exact</code>). A subject naming another branch (GitHub&#39;s <code>from owner/branch</code>, git&#39;s <code>Merge branch &#39;b&#39;</code> or <code>Merge remote-tracking branch &#39;origin/b&#39;</code>) wins; a merge whose tip is also another story&#39;s branch head is not linked by its tip, for either story, and <code>unavailable.prs</code> says so. A tip found only by branch naming convention is <code>associated</code>; a recorded tip is <code>exact</code>. A two-parent merge under the story&#39;s squash-style title (<code>STORY: title (#N)</code>) whose second parent is no tip is reported as <code>source: merge-commit, branch: null</code>, and its <code>M^1..M^2</code> commits are read. The PR number is the subject&#39;s <code>#N</code>, else a local PR head ref (<code>refs/remotes/pr/N</code>, <code>refs/pull/N/head</code>) at the second parent, else null with <code>numberReason</code>. <code>prs</code> lists every matching PR in that scan, newest first: <code>{number, url/urlReason, mergedAt/mergedAtReason, mergedSha, source, branch}</code>. Merge subjects name an exact branch; each branch lists its PR numbers in <code>prs</code> and current <code>availability: local|remote|missing</code>. Repeated merge ranges and later live commits are combined. Recorded/live-index branch and worktree links carry <code>basis: exact</code>; convention-only branches carry <code>associated</code>. Merge PRs inherit their branch basis; squash PRs are associated. Squash subjects give a story-only PR (<code>source: squash-subject, branch: null, commits: {unavailable: "squash-merged"}</code>); they never claim a later missing branch. Squashes report <code>squash-merged</code>; open PR lookup needs GitHub and is unavailable here. Nothing calls GitHub. Reads use local history only, with one exception: opening the trail of a landed story (<code>status: done</code> or <code>merged</code>, any case) whose merge is missing here (the scan stopped at a shallow boundary, or no merge was found) fetches origin, bounded at 10 seconds across all its checkouts; if that fails, <code>unavailable.historyFetch</code> says why and the trail answers from what is local. A fetch that fully landed and still found no merge is not repeated until origin&#39;s head moves (through <code>refresh_history</code> or an attach); until then <code>unavailable.historyFetch</code> is <code>already fetched at this origin head; call refresh_history</code>. A failed fetch is tried again on the next open. A story still in progress never fetches: it reads its branch, and when the scan reached the boundary with merges seen or no branch here, it gets the shallow reason too. When the scan found some merges but reached the boundary, the reason is <code>history past shallow boundary; older merges may be missing; call refresh_history</code>. <code>historyAsOf</code> gives <code>{fetchedAt, originHead}</code>. History cut off by a shallow copy reports <code>history past shallow boundary; call refresh_history</code>.
+        On the page, <code>limit</code> pages commits only, defaults to 100 and caps at 500; pass <code>cursor: result.nextCursor</code> with the same storyId to continue. Stale cursors are refused. <code>total</code> and commit totals cover all discovered commits across pages; the file total also includes selected landed-diff paths.
+        <code>planned</code> lists backtick paths from Touchpoints, stripping line suffixes; directories and globs match descendants. <code>plannedBase</code> is only an explicit <code>Paths are under `X/`</code> declaration, otherwise null. Tokens keep their original spelling and match either root-relative or with that declared base. The declaration is metadata, not a broad touchpoint. Decisions may use that same explicit base-relative file name; dated Decisions headings are accepted. <code>actual</code> lists path, inPlanned, area (first two path segments), and the first matching Decisions number; <code>plannedUntouched</code> lists unmatched planned tokens. Missing Touchpoints carries <code>unavailable.planned</code>. These are facts, with no scoring. Private MCP and page reads accept <code>include: ["ranges"]</code> to enrich only the current page of commits. Each commit adds <code>ranges</code> (path, inclusive start/end, introducing commit and the resolver’s native/session IDs, basis and reasons), <code>rangesBasis</code> and, when needed, <code>rangesReason</code>. Only newly added lines introduced by that SHA are returned; unchanged lines between hunks are excluded. No-note commits return empty ranges with unknown basis and a reason (<code>unsupported_cli: &lt;cli&gt;</code> for a commit an OpenCode or Hermes session made); merge commits return empty ranges with reason <code>merge commit</code>. Missing local clones, revisions, files or objects preserve the durable contribution facts with range unavailability. Missing or empty include preserves the default response. Calls use each changed file’s added-line bounding span, split into at most 2000 inclusive lines; the underlying resolver still attributes the full file internally. Use <code>session_read</code> for conversation and <code>task_read</code> for task outcomes. Each task’s <code>outcome</code> includes measured <code>time</code>, <code>cost</code>, <code>reviewRounds</code> and <code>unavailable</code>, using its own session or interval scope. Two subtasks sharing a session keep separate interval actuals; story totals still count the session once. Missing measurements remain null with the existing reasons. Published dashboards may declare <code>live.queries: [storyChanges]</code>; their projection shares session ids, models, cost, timing and task ids/reviews, alongside commit SHAs/dates, repo-relative tracked files and planned/actual facts, and PR/merged SHAs plus worktree state/basis. Published queries reject <code>include</code> and never expose ranges. Host paths, worktree paths, branch names, commit subjects, account data, goals and summaries stay private.</p>
+
+        <pre data-tool-example="story_changes"><code>{
+          &quot;tool&quot;: &quot;story_changes&quot;,
+          &quot;arguments&quot;: { &quot;storyId&quot;: &quot;DEMO-29&quot;, &quot;limit&quot;: 50, &quot;include&quot;: [&quot;ranges&quot;] }
+        }</code></pre>
+        <h3 id="tool-story_totals"><code>story_totals</code> — many stories' totals in one read</h3>
+        <p>Call <code>story_totals({storyIds: ["DEMO-29", "DEMO-140"]})</code> (1 to 500 ids), or from a page <code>await codesense.storyTotals({storyIds})</code>. It answers every story's <code>totals</code> from the Mac's story totals index without walking git, so a Stories page reads all its rows in one or two calls instead of one <code>story_changes</code> per row. Each story's <code>totals</code> equals <code>story_changes({storyId}).totals</code>, and its <code>unavailable</code> reasons are the same, each given as an index into the answer's <code>reasons</code> list so 500 stories fit in one answer. Beside the totals each story has <code>mergedAt</code> (the latest merge time of its merged PRs, or null with <code>mergedAtReason</code>), <code>prs</code> (its newest 5 merged PRs as <code>{number, merged}</code>) with <code>prsTotal</code>, and <code>runtimes</code> (the ids of the CLIs that reported its sessions' usage).</p>
+        <p>A story not indexed yet answers <code>{pending: true}</code>: it is queued, so show it as loading and ask again; never read it as 0. <code>indexing: {done, total}</code> counts this scope's indexed stories while the backfill runs. <code>refreshing: true</code> means a commit, merge, session, task or review marker changed the story since <code>computedAtMs</code>; a recompute is queued and the values shown are the last computed. The index computes a story the first time it is asked for, then again after a change (after a few seconds of quiet, at most every 30 s); it computes one story at a time with a rest after each, so it never takes more than a core, and a story too large to count its lines in the background keeps its other totals with <code>unavailable.lines</code> (it is tried again later); branch, remote and default-branch refs of the repositories it read are checked every 15 s without fetching. A cut answer (past 240 KB) carries <code>truncated: true</code> and <code>rest</code>, the ids to ask again. Published dashboards declare <code>live.queries: [storyTotals]</code> with a <code>storyTotals.storyIds</code> pin (literals or <code>{epic}</code>/<code>{team}</code> selectors, every id must pass); they share the totals and only the reasons <code>storyChanges</code> publishes. A hosted ask holds only the ids that fit its 2 KB of args (about 120 to 150), so a page calls <code>CS.storyTotals(ids)</code> (hosted) or <code>codesense.kit.storyTotals(ids)</code> (in the app): both take any number of ids, ask in parts and merge one answer. When every query slot on the owner's Mac stays taken for 3 s, a hosted read answers <code>mac_busy</code>, and a relay with every slot taken answers <code>rate_limited</code>; <code>CS.query</code>, <code>CS.storyTotals</code> and the kit ask again after 1, 2, 4, 8 and 8 s.</p>
+        <pre data-tool-example="story_totals"><code>{
+          &quot;tool&quot;: &quot;story_totals&quot;,
+          &quot;arguments&quot;: { &quot;storyIds&quot;: [&quot;DEMO-29&quot;, &quot;DEMO-140&quot;] }
+        }</code></pre>
+        <h3 id="tool-session_read"><code>session_read</code></h3>
+        <p>Ask about one session with a CodeSense or native CLI <code>sessionId</code>. The id names the session being read, not the caller. A dashboard calls <code>await codesense.sessionRead(args)</code> with the same arguments and receives identical JSON from the same backend.</p>
+        <pre data-tool-example="session_read"><code>{
+  &quot;tool&quot;: &quot;session_read&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;your-session-id&quot;,
+    &quot;include&quot;: [&quot;conversation&quot;],
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <p>The result joins <code>session</code> (the stored launch record, including its account provenance, allowed tools, provided skills, timing and unavailable reasons), <code>nativeSessionIds</code>, <code>story</code>, <code>run</code>, <code>models</code>, <code>cost</code>, <code>tools</code>, <code>retries</code> and <code>unavailable</code>. A native id and its CodeSense launch id resolve to the same answer. Usage covers every native id attributed to that launch. It adds no copy of the usage data.</p>
+        <ul>
+          <li>Each model has <code>model</code>, <code>calls</code>, <code>tokens</code> (input, output, cacheRead, cacheWrite), <code>costUsd</code>, <code>costSource</code> and <code>reason</code>. Costs sum the stored calls and are never priced again from aggregate tokens.</li>
+          <li><code>cost</code> has <code>state</code>, <code>totalUsd</code>, <code>source</code> and <code>reason</code>. Source is <code>reported</code>, <code>rate_table</code>, <code>mixed</code> when both contributed, or null when no call has a known source. An unpriced call makes totalUsd null with an <code>unpriced models: …</code> reason. No usage gives null with <code>no usage events for this session</code>. A real zero-token call can cost 0; unknown cost is never called free.</li>
+          <li><code>tools.allowed</code> keeps the record's <code>mcpAllow</code> and effective <code>bridgeTools</code> with unavailable reasons. <code>tools.used</code> groups indexed calls by name and mcpServer, with calls, errors and errorUnknown. <code>tools.usedState</code> and <code>tools.usedReason</code> describe index availability: absent, unsupported or unavailable means <code>used: null</code>; present with no calls means <code>[]</code>. Expired conversation text keeps the indexed counts and an expired state; truncated captures keep their indexed counts and a truncated state. Only a known true error flag counts as an error. Codex can leave the flag unknown: errorUnknown counts that explicitly and never treats it as success.</li>
+          <li><code>session.timing</code> gives wallMs, activeMs, idleMs, turnCount, toolCallCount, timingSource and idleGaps with waiting reasons. Durations are milliseconds. For an open session wallMs ends at the last finished turn. <code>retries</code> is null with <code>unavailable.retries</code>: <code>not recorded: no retry signal in the session timeline</code>.</li>
+          <li><code>run.state</code> is present with the existing run outcome, unlinked with a reason when there is no run, or absent with a reason when the linked run has no recorded outcome yet. Use session.runId with <code>read_run</code> for the transcript and output.</li>
+          <li>A session with usage but no durable record returns <code>session: null</code> with an unavailable reason. Hand-started sessions keep their unknown account/model/tool facts and their reasons. An id with neither a record nor usage is an <code>unknown session</code> error.</li>
+        </ul>
+        <p><code>tasks</code> contains the existing task records linked to the session, including goal, taskType, parentId and outcome/status facts, through the same task-store reader. It is <code>[]</code> when there are none; CodeSense and native session ids return the same tasks.</p>
+        <p>Omit <code>include</code> for facts only. <code>include: [&quot;conversation&quot;]</code> adds the existing <code>conversation</code> page unchanged: turns, nextCursor, counts, lookup, sourceFormat, truncated and unavailable metadata. State is <code>present</code>, <code>truncated</code>, <code>absent</code>, <code>expired</code> or <code>unsupported</code>, with a reason when there are no turns. The tool-call index survives conversation expiry.</p>
+        <p>Continue with <code>cursor: conversation.nextCursor</code> (a turn index), or jump with <code>turn</code> (zero-based) or <code>toolUseId</code> (the CLI-native call id). Choose only one selector. <code>limit</code> is 1–200 turns, default 20 for a page or 1 for a jump. Selectors and limit require the conversation include. Conversation is omitted from the response otherwise.</p>
+        <p><strong>Read scope:</strong> this matches <code>session_usage</code>. Every local agent can read every session on the machine; these runtime facts are not filtered by org or team. Caller content scope only gates story-file enrichment. This tool adds no new isolation boundary.</p>
+
+        <h3 id="tool-session_usage"><code>session_usage</code></h3>
+        <p>Reads token use and spend per agent session on this Mac and its connected machines, from each agent CLI's own reports. It is read-only and covers only sessions CodeSense launched. Optional <code>sinceMs</code>/<code>untilMs</code> (counted by whole local day; the <code>untilMs</code> day is excluded), <code>sessionId</code> (a filter for one target session, not the caller's identity), <code>cwd</code> (exact path), <code>story</code>, and <code>limit</code> (the most sessions returned, newest first; totals still cover all). Returns <code>{sessions, days, totals}</code>. <code>costUsd</code> is null for a model with no confirmed price, and <code>unpricedModels</code> names it; see <code>model_rates</code> and <code>set_model_rate</code>.</p>
+        <p>A session keeps the first stored story link. Without one, usage looks for the story
+          worktree containing its working folder, then the story on its durable session record,
+          with the live launch registry as a fallback. Reading a record-only story creates no link.
+          At launch, a known worktree story takes precedence over the launch story and the link
+          is stored even before the first usage event, so it survives closing the workspace or
+          restarting CodeSense. An explicit <code>story_id</code> on <code>open_workspace</code>
+          also links a <code>team-workspace</code> session. Without an explicit story, a worker
+          inherits its launcher's recorded story only within the same org and team; otherwise
+          its story stays null. An explicit story wins across teams too. The session
+          record and task keep that launch story. A session with neither stays <code>null</code>:
+          story ids are never guessed from workspace names, branches or prompt text. Routines
+          have no launch story. An explicit story id remains linked if its scoped source is
+          unavailable; title, status and epic are then null. A failed lookup never creates a
+          durable link for an inherited id. Past sessions are not backfilled.</p>
+        <pre data-tool-example="session_usage"><code>{
+  &quot;tool&quot;: &quot;session_usage&quot;,
+  &quot;arguments&quot;: {
+    &quot;story&quot;: &quot;DEMO-5&quot;,
+    &quot;limit&quot;: 10
+  }
+}</code></pre>
+        <h3 id="tool-open_workspace"><code>open_workspace</code></h3>
+        <p>Launch a team-workspace session linked to an explicit story with <code>story_id</code>. Its usage, session record and task retain that launch story as described above.</p>
+        <pre data-tool-example="open_workspace"><code>{
+  &quot;tool&quot;: &quot;open_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;target&quot;: &quot;team-workspace&quot;,
+    &quot;name&quot;: &quot;Site review&quot;,
+    &quot;story_id&quot;: &quot;DEMO-5&quot;
+  }
+}</code></pre>
+        <h3 id="tool-why_line"><code>why_line</code>: committed line attribution</h3>
+        <p>Ask who introduced committed lines and inspect the linked session facts, even when your agent has no source checkout. This is read-only: CodeSense answers from the history of its bound local copy (its git common dir), with no network or fetch, whatever branch the checkout has checked out. Every local agent can read every attached repo's attribution.</p>
+        <p>Required inputs are <code>repo</code> (a configured slug from <code>list_source_repos</code>; use its <code>host/owner/repo</code> remote key if the name is ambiguous), <code>path</code> relative to that repo, and <code>start</code>/<code>end</code>. Lines are 1-based and inclusive, with <code>end - start &le; 2000</code>. Optional <code>rev</code> accepts a local commit or ref and is honored as given. Without it, optional <code>story</code> picks the revision: the story&#39;s merged SHA, else its branch head (local, else <code>origin/&lt;branch&gt;</code>), else origin&#39;s default branch (<code>origin/HEAD</code>, which a fetch records when it is missing, else whichever of <code>origin/main</code> and <code>origin/master</code> exists; no branch name is assumed). An omitted rev never reads the checkout&#39;s <code>HEAD</code>; <code>revSource</code> says which was used (<code>explicit</code>, <code>mergedSha</code>, <code>branch</code> or <code>defaultBranch</code>). Revision and path cannot start with a dash or contain NUL.</p>
+        <pre data-tool-example="why_line"><code>{
+  &quot;tool&quot;: &quot;why_line&quot;,
+  &quot;arguments&quot;: {
+    &quot;repo&quot;: &quot;acme/api&quot;,
+    &quot;story&quot;: &quot;DEMO-19&quot;,
+    &quot;path&quot;: &quot;src/lib.rs&quot;,
+    &quot;start&quot;: 40,
+    &quot;end&quot;: 60
+  }
+}</code></pre>
+        <p>From a dashboard, call <code>await codesense.whyLine({repo, rev, story, path, start, end})</code> with the same arguments to receive identical JSON from the same backend. Published dashboards can declare the <code>whyLine</code> query: it shares range evidence and session ids, models, cost and timing, while omitting native session ids, records, accounts, host paths, commit subjects and conversation.</p>
+        <p>The result contains <code>repo</code>, <code>rev</code>, <code>revSource</code>, <code>historyAsOf</code> (<code>{fetchedAt, originHead}</code>: the last CodeSense fetch, epoch ms or null, and origin&#39;s default branch head), <code>resolvedCommit</code>, <code>path</code>, <code>notesRef</code> (an opaque snapshot id of the notes refs read, <code>sense=&lt;sha&gt; ai=&lt;sha&gt;</code>), <code>ranges</code> and <code>sessions</code>. Each range reports its introducing <code>commit</code>, tool, native session id, model, story id, and attribution <code>basis</code>:</p>
+        <p>CodeSense supplies git-ai automatically when needed. Check <code>describe_setup.attribution</code>
+          for <code>installing</code> or <code>install_failed</code> before relaunching a session for capture.</p>
+        <p>A dashboard reads the same attribution and <code>capture</code> status with <code>await codesense.setup()</code>, returning <code>{attribution}</code>. A published dashboard declares the <code>setup</code> query and receives only the allow-listed fields: status kind (with a reason only if the status is off; per-launch states are on worktrees rows), git-ai version, daemon state, supported versions and the capture counters. The git-ai path, warnings and status message text stay on this Mac.</p>
+        <ul>
+          <li><code>exact</code>: a git-ai note records the lines, including human lines. Blame follows renamed and moved lines to their introducing commit before reading its note.</li>
+          <li><code>associated</code>: the introducing commit has no note, but its story-prefixed squash subject or pull-request merge branch identifies a story. <code>candidateSessions</code> lists up to 20 sessions associated with that story; it never claims one session wrote the lines. GitHub-side squash and rebase merges can lose exact attribution. This fallback is a story association, not recovered exact evidence.</li>
+          <li><code>unknown</code>: the lines have no readable attribution. Notes are read from <code>refs/notes/sense</code> (CodeSense&#39;s local notes) first, then <code>refs/notes/ai</code>. If the local copy has neither, every range is unknown with <code>no git-ai notes in local copy</code> and <code>notesRef: null</code>. For a repo whose notes stay local, a missing note adds &quot;notes for this repo stay on the machine that wrote them (local-only)&quot;; a note that does not cover a line says <code>no attribution in note</code>. Lines a session of a CLI CodeSense cannot capture yet (OpenCode, Hermes) committed have no note by design and read as <code>unknown</code> with that CLI as <code>tool</code> and reason <code>unsupported_cli</code>, while a local reflog still records the commit. They are never credited to a person; while a local reflog records the commit they are also never associated with a story.</li>
+        </ul>
+        <p>An exact agent range is <code>linked</code> when its native id resolves to a durable CodeSense record. Its <code>sessionId</code> keys one facts-only <code>session_read</code> result in <code>sessions</code>, shared by all ranges from that session. This includes models, tools, account, cost, story and run facts, without conversation text. Otherwise <code>sessionId</code> is null and <code>link</code> is <code>unlinked</code>, with <code>no session record (hand-started or older session)</code>, <code>human</code>, or <code>no native session id in note</code>. Unknown and associated ranges retain their basis-specific explanation.</p>
+        <p>Unavailable reads return <code>{status: &quot;unavailable&quot;, reason}</code>: <code>no local copy</code>, <code>revision not in local copy</code>, <code>path not in revision</code>, <code>objects not in local copy</code> (including missing promised objects in a partial clone), <code>notes changed during read</code> after bounded retries, <code>origin default branch not known locally; call refresh_history</code> (no <code>origin/HEAD</code>, <code>origin/main</code> or <code>origin/master</code> here), or <code>history past shallow boundary; call refresh_history</code> (a story with no branch whose merge lies past the boundary). An explicit rev that is not here is <code>revision not in local copy</code>. In a shallow copy, ranges that blame folds into a boundary commit are <code>unknown</code> with that same reason. The reader never fetches missing commits, blobs or notes.</p>
+        <h3 id="tool-refresh_history"><code>refresh_history</code>: fetch an attached checkout&#39;s history</h3>
+        <p>Reads never touch the network. When history is missing, call <code>refresh_history({repo, storyId?, timeoutMs?})</code> (an MCP tool; pages have no verb for it yet). It runs <code>git fetch origin</code> into <code>refs/remotes/origin/*</code> only (no tags, notes or local branches; the working tree, index and <code>HEAD</code> are untouched) and sets a missing <code>origin/HEAD</code> from origin. With the <code>storyId</code> of a landed story, a shallow copy deepens only until that story&#39;s merge scan (2000 first-parent commits) is inside the boundary, then unshallows if that was not enough; for a story still in progress it is a plain fetch. <code>timeoutMs</code> bounds the call (default 60000, from 1000 to 300000). When the first fetch landed but a deepen did not, the answer has <code>status: &quot;partial&quot;</code> with the reason, and <code>fetchedAt</code> is recorded. It never prompts: terminal and askpass prompts are off and ssh runs in batch mode (added to <code>GIT_SSH_COMMAND</code> or <code>core.sshCommand</code>; a <code>GIT_SSH</code> program is left as you set it), while your credential helper still answers. It returns <code>{repo, historyAsOf, shallow, deepened}</code>, or <code>{status: &quot;unavailable&quot;, reason}</code> with <code>fetch needs credentials</code>, <code>fetch skipped, repo busy</code> (another git command holds a lock; there is no retry), <code>fetch timed out</code> or <code>fetch failed</code>. CodeSense also fetches once, in the background, when you attach a checkout.</p>
+        <pre data-tool-example="refresh_history"><code>{
+  &quot;tool&quot;: &quot;refresh_history&quot;,
+  &quot;arguments&quot;: {
+    &quot;repo&quot;: &quot;acme/api&quot;,
+    &quot;storyId&quot;: &quot;DEMO-19&quot;
+  }
+}</code></pre>
+        <p>A linked exact agent range can carry <code>turn: {sessionId, toolUseId, turn, basis, taskId, taskBasis, reason?}</code>, where the inner <code>turn</code> is the zero-based conversation index that <code>session_read {turn}</code> and <code>{toolUseId}</code> page by (never the prompt-turn count). <code>basis: &quot;edit&quot;</code> is the call of the recorded edit, from the git-ai trace and the conversation index; it does not load conversation text. A Codex <code>exec-…</code> file-change id resolves to the enclosing <code>call_…</code>, and <code>session_read {toolUseId: &quot;exec-…&quot;}</code> jumps there too. <code>taskId</code> is the innermost sub-task (<code>task_start</code>) of the session whose interval holds the call's time (<code>taskBasis: &quot;interval&quot;</code>), else the session's own task (<code>&quot;session&quot;</code>); an open sub-task ends at the next sibling <code>task_start</code> (same parent) in the session, else at the session's end. Trace ids stay internal. If no edit mapping is available, the range has <code>unavailable.turn</code> and <code>turn: null</code> unless the commit turn below applies: <code>checkpoint log not available (pruned, another machine, or before capture)</code> when no live or archive directory was ever seen for the commit, <code>edit not recorded by git-ai</code> when one was seen but holds no record of the edit, or <code>ambiguous turn link</code> for conflicting mappings. For <code>edit not recorded by git-ai</code>, <code>turn</code> may be the commit's turn with <code>basis: &quot;commit&quot;</code>: the linked session's last <code>Bash</code>, <code>exec</code>, <code>exec_command</code> or <code>shell</code> call at or before the committer time that started at most 10 minutes before it, and only when that time lies inside the session's observed span; otherwise <code>turn</code> stays null. A commit turn is never the edit turn. Other ranges do not carry <code>unavailable.turn</code>. <code>story_changes {include: [&quot;ranges&quot;]}</code> and the dashboard <code>whyLine</code> return the same <code>turn</code> objects.</p>
+        <p>A known tool id without a conversation index keeps its pointer with <code>turn: null</code> and <code>reason: &quot;conversation not captured&quot;</code>. An expired conversation keeps its numeric index with <code>reason: &quot;conversation expired&quot;</code>. When truncation dropped the pointed turn's text, its index is retained with <code>reason: &quot;conversation text truncated&quot;</code>; a turn whose text was retained has no truncation reason.</p>
+        <p>At startup, CodeSense sweeps retained completed checkpoint archives and live logs for attached clones whose attribution setting enables capture. Exact agent queries remain the on-demand reconciliation path, including warm raw-cache reads: they inspect the introducing commits and their parents and resume appended logs; unchanged logs need no content read. Stored trace and Claude <code>s_</code> identities survive a store reopen and later log deletion. Logs pruned before a startup sweep or eligible query cannot be recovered; no retention interval is assumed. Capture runs at startup, on completed archive events while the app is open, and on demand. The coverage caveat is: directory label = base, mapping inferred, unverified without a binary. Inspect <code>describe_setup.attribution.capture</code> for the last sweep's counters and error; this status lives in memory since app start.</p>
+        <p>Published dashboards receive only the nested pointer fields <code>sessionId</code>, <code>toolUseId</code>, <code>turn</code>, <code>basis</code>, <code>taskId</code>, <code>taskBasis</code> and <code>reason</code>, and only <code>turn</code> inside a range's <code>unavailable</code>. Native identities, trace ids, checkpoint payloads and conversation text are omitted.</p>
+
+        <h3 id="tool-wv_spawn_worker"><code>wv_spawn_worker</code></h3>
+        <p>Spawns a typed ephemeral background worker for one story. Args: <code>story_id</code> (also the roster key: one live worker per story per scope; a second call while one is live returns <code>alreadyLive</code> with no new PTY) and <code>subclass</code> (<code>impl</code>, <code>review</code>, <code>planning</code> or <code>research</code>). Every subclass gets the <code>codesense</code> server as its only MCP server. A Claude worker also gets a deny-list: review denies Bash, planning denies Bash/Edit/Write, research denies Edit/Write; a Codex worker gets none. Optional <code>initial_prompt</code>, <code>provider</code> (<code>claude</code> default, or <code>codex</code>) and <code>scope</code> (only <code>root</code> is supported). A bound caller uses its launch team's Weft store; a missing team or a story of another team is refused. A spawned worker can spawn another. Returns <code>{status: spawned|alreadyLive, handle}</code>.</p>
+        <pre data-tool-example="wv_spawn_worker"><code>{
+  &quot;tool&quot;: &quot;wv_spawn_worker&quot;,
+  &quot;arguments&quot;: {
+    &quot;story_id&quot;: &quot;DEMO-13&quot;,
+    &quot;subclass&quot;: &quot;impl&quot;,
+    &quot;provider&quot;: &quot;claude&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_report_cycle"><code>wv_report_cycle</code></h3>
+        <p>Reports one verify-and-fix cycle against an open (<code>claimed</code> or <code>dispatched</code>) queue item, for the mid-flight tripwire. It increments <code>verify_fix_cycles</code> atomically; the call that takes the count to 3 flips the item's verdict to <code>delegate</code> and the caller must stop and dispatch the remainder. Returns <code>{status:&quot;tripwire_fired&quot;, row:5, verdict:&quot;delegate&quot;, cycles}</code> on crossing, <code>{status:&quot;ok&quot;, cycles}</code> below, or <code>{status:&quot;invalidState&quot;}</code> if the row is not open. The caller is not identified.</p>
+        <pre data-tool-example="wv_report_cycle"><code>{
+  &quot;tool&quot;: &quot;wv_report_cycle&quot;,
+  &quot;arguments&quot;: {
+    &quot;queueId&quot;: 7
+  }
+}</code></pre>
+        <h3 id="tool-wv_report_handoff"><code>wv_report_handoff</code></h3>
+        <p>Reports a drafted handoff packet at task end: a finding for whoever picks the job up next. A handoff is data, never instructions, and always a draft. Call it before <code>signal_done</code>. Required: <code>storyId</code> (your roster key), <code>sessionId</code> (the completion hook matches the packet by it) and a non-blank <code>finding</code>. Optional <code>toRole</code> (advisory) and <code>refs</code>. Returns <code>{id}</code>.</p>
+        <pre data-tool-example="wv_report_handoff"><code>{
+  &quot;tool&quot;: &quot;wv_report_handoff&quot;,
+  &quot;arguments&quot;: {
+    &quot;storyId&quot;: &quot;DEMO-13&quot;,
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;finding&quot;: &quot;All 94 entries validate against the served schema&quot;,
+    &quot;toRole&quot;: &quot;reviewer&quot;
+  }
+}</code></pre>
+      </section>
+      <!--/tool-reference-->
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · MCP-only agents</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

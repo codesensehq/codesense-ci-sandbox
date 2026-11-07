@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <!-- Example dashboard · Agent inbox console. Who is running, every role queue and
+         who holds it, and your inbox, kept live. Reply, mark read and set your status
+         from here. Built on the agents read model: sessions(), roles(), inbox(),
+         humanStatus(), act('replyAsHuman' | 'markRead' | 'setHumanStatus'). -->
+    <title>Agent inbox console</title>
+    <style>
+      /* Colours come from the app's theme (--cs-* tokens the host sets), so the page
+         follows light/dark and the viewer theme wherever it is open. Spacing, radius,
+         the mono font and the cs- components come from the dashboard kit every live
+         doc gets (see the kit section of get_live_data_contract). */
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--cs-bg); color: var(--cs-fg); }
+      body { font: 13px/1.5 var(--cs-font-sans); -webkit-font-smoothing: antialiased; }
+      .page { padding: 20px 24px 40px; }
+      header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+      h1 { font-size: 16px; margin: 0; }
+      h2 { font-size: 12px; font-weight: 600; margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--cs-border); display: flex; justify-content: space-between; }
+      .muted { color: var(--cs-muted-fg); }
+      .faint { color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-size: 11px; }
+      .state { font-size: 12px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .state.stale { color: var(--cs-danger); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; align-items: start; }
+      section { background: var(--cs-surface); border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); }
+      ul { list-style: none; margin: 0; padding: 8px; display: grid; gap: 6px; }
+      li { background: var(--cs-inset); border: 1px solid var(--cs-border); border-radius: 6px; padding: 6px 10px; }
+      .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+      .who { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+      .mono { font: 11px var(--cs-font-mono); color: var(--cs-accent); }
+      .pill { font-size: 11px; padding: 0 6px; border-radius: 9px; border: 1px solid var(--cs-border); white-space: nowrap; }
+      .live, .online { color: var(--cs-success); }
+      .pending, .busy { color: var(--cs-warning); }
+      .offline, .lapsed { color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .unread { border-left: 3px solid var(--cs-accent); }
+      .text { white-space: pre-wrap; word-break: break-word; margin: 4px 0; }
+      .empty { padding: 16px; text-align: center; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      button, select, textarea {
+        font: 12px var(--cs-font-sans);
+        color: var(--cs-fg);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        padding: 3px 8px;
+      }
+      button { cursor: pointer; }
+      textarea { width: 100%; min-height: 3em; margin-top: 4px; }
+      .actions { display: flex; gap: 6px; margin-top: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <h1>Agent inbox console</h1>
+        <label class="muted">You are
+          <select id="status">
+            <option value="online">online</option>
+            <option value="away">away</option>
+            <option value="busy">busy</option>
+            <option value="offline">offline</option>
+          </select>
+        </label>
+        <span id="state" class="state">loading…</span>
+      </header>
+      <div class="grid">
+        <section><h2><span>Sessions</span><span id="session-count" class="muted"></span></h2><ul id="sessions"></ul></section>
+        <section><h2><span>Role queues</span><span id="role-count" class="muted"></span></h2><ul id="roles"></ul></section>
+        <section><h2><span>Your inbox</span><span id="unread" class="muted"></span></h2><ul id="inbox"></ul></section>
+      </div>
+    </div>
+    <script>
+      const CONFIG = {
+        // How many of your newest messages to show.
+        inboxLimit: 25,
+        // Registrations and claims lapse with time; re-read this often while visible.
+        pollMs: 30000,
+      };
+      const cs = window.codesense;
+      const kit = cs.kit;
+      const $ = (id) => document.getElementById(id);
+
+      // Safe DOM only: every value is set with textContent, never parsed as HTML.
+      function h(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+      }
+      const ago = (ms) => {
+        const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+        return s < 60 ? s + "s ago" : s < 3600 ? Math.round(s / 60) + "m ago" : Math.round(s / 3600) + "h ago";
+      };
+      function fill(list, items, empty) {
+        list.replaceChildren(...(items.length ? items : [h("div", "empty", empty)]));
+      }
+
+      function drawSessions(rows) {
+        $("session-count").textContent = String(rows.length);
+        fill($("sessions"), rows.map((s) => {
+          const li = h("li");
+          const top = h("div", "row");
+          // The kit draws the app's own face, status colours and labels.
+          const who = h("span", "who");
+          who.append(kit.avatar({ face: s.avatar, name: s.displayName, size: 20 }), h("span", null, s.displayName));
+          top.append(who, kit.statusBadge(s.state));
+          li.append(top);
+          const meta = [s.handle, s.machine, s.agent, s.story].filter(Boolean).join(" · ");
+          li.append(h("div", "faint", meta + (s.unread ? " · " + s.unread + " unread" : "")));
+          return li;
+        }), "No sessions running.");
+      }
+
+      function drawRoles(roles) {
+        $("role-count").textContent = String(roles.length);
+        fill($("roles"), roles.map((q) => {
+          const li = h("li");
+          const top = h("div", "row");
+          const c = q.counts;
+          top.append(
+            h("span", null, q.roleName || q.role),
+            h("span", "faint", c.pending + " pending · " + c.claimed + " claimed · " + c.accepted + " accepted · " + c.acknowledged + " done"),
+          );
+          li.append(top);
+          const live = q.registrations.filter((r) => r.live);
+          li.append(h("div", "faint", live.length
+            ? "held by " + live.map((r) => r.instanceName || r.instanceId).join(", ")
+            : "no live instance"));
+          for (const d of q.deliveries.filter((d) => d.state !== "acknowledged")) {
+            const line = h("div", "row");
+            const who = d.claimOwnerName || d.claimOwner;
+            line.append(
+              h("span", "faint", (d.fromName || d.from) + ": " + d.excerpt),
+              h("span", "pill " + (d.claimLapsed ? "lapsed" : d.state), d.claimLapsed ? "claim lapsed" : who ? d.state + " by " + who : d.state),
+            );
+            li.append(line);
+          }
+          return li;
+        }), "No role has a registration or a message.");
+      }
+
+      function drawInbox(view) {
+        $("unread").textContent = view.humanUnread ? view.humanUnread + " unread" : "";
+        fill($("inbox"), view.messages.map((m) => {
+          const li = h("li", m.unread ? "unread" : "");
+          const top = h("div", "row");
+          top.append(h("span", null, m.fromName), h("span", "faint", ago(m.createdAtMs)));
+          li.append(top, h("div", "text", m.text));
+          const actions = h("div", "actions");
+          const box = h("textarea");
+          box.hidden = true;
+          box.placeholder = "Reply to " + m.fromName;
+          const reply = h("button", null, "Reply");
+          reply.onclick = async () => {
+            if (box.hidden) { box.hidden = false; box.focus(); return; }
+            if (!box.value.trim()) return;
+            reply.disabled = true;
+            try {
+              const r = await cs.act("replyAsHuman", { messageId: m.messageId, text: box.value });
+              if (r.status !== "sent") throw new Error(r.message);
+            } catch (e) {
+              reply.textContent = e.message;
+            } finally {
+              reply.disabled = false;
+            }
+          };
+          actions.append(reply);
+          if (m.unread) {
+            const read = h("button", null, "Mark read");
+            read.onclick = () => cs.act("markRead", { messageIds: [m.messageId] }).catch((e) => (read.textContent = e.message));
+            actions.append(read);
+          }
+          li.append(actions, box);
+          return li;
+        }), "Nothing addressed to you.");
+      }
+
+      let gen = 0;
+      async function refresh() {
+        const my = ++gen;
+        const state = $("state");
+        try {
+          const [sessions, roles, inbox, status] = await Promise.all([
+            cs.sessions(),
+            cs.roles(),
+            cs.inbox({ scope: "to-human", limit: CONFIG.inboxLimit }),
+            cs.humanStatus(),
+          ]);
+          if (my !== gen) return;
+          drawSessions(sessions);
+          drawRoles(roles.roles);
+          drawInbox(inbox);
+          $("status").value = status.status;
+          state.textContent = "live";
+          state.className = "state";
+        } catch (e) {
+          if (my !== gen) return;
+          state.textContent = "stale: " + e.message;
+          state.className = "state stale";
+        }
+      }
+
+      $("status").addEventListener("change", (e) => {
+        cs.act("setHumanStatus", { status: e.target.value }).catch((err) => {
+          $("state").textContent = err.message;
+        });
+      });
+
+      // Re-read on every change the host pushes, and on a slow timer while visible.
+      const sessionsChanged = snapshot => drawSessions(snapshot.snapshot);
+      cs.subscribe?.("sessions", {onChange:sessionsChanged});
+      const offs = [() => cs.unsubscribe?.("sessions",sessionsChanged), cs.onAgentsChanged(refresh), cs.onInboxChanged(refresh)];
+      let timer = null;
+      offs.push(cs.onVisibility((visible) => {
+        if (visible && timer === null) timer = setInterval(refresh, CONFIG.pollMs);
+        if (!visible && timer !== null) { clearInterval(timer); timer = null; }
+      }));
+      cs.onVisibility(visible => { if (visible) refresh(); });
+      window.addEventListener("pagehide", () => offs.forEach((off) => off()), { once: true });
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

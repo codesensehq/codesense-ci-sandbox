@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="life-buoy" />
+    <title>CodeSense — Troubleshooting worktrees</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1080px;
+      }
+      .arcC-hero {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-6);
+        overflow: hidden;
+      }
+      .arcC-hero span {
+        padding: 20px;
+        text-align: center;
+      }
+      /* Problem card — one per issue. */
+      .arcC-problem {
+        margin: var(--cs-docs-space-4) 0;
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      .arcC-problem h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .arcC-problem p,
+      .arcC-problem li {
+        line-height: 1.55;
+      }
+      .arcC-problem__eyebrow {
+        display: inline-block;
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        margin-bottom: 4px;
+      }
+      .arcC-problem ul {
+        margin: 8px 0 0;
+        padding-left: 1.1em;
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 10px 12px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      .arcC-problem__fix {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-left: 3px solid color-mix(in oklab, #4fd4bb 70%, var(--cs-border));
+        background: color-mix(in oklab, #4fd4bb 6%, transparent);
+        border-radius: 0 var(--cs-docs-radius-sm) var(--cs-docs-radius-sm) 0;
+      }
+      .arcC-problem__fix strong {
+        color: var(--cs-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/troubleshooting">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Troubleshooting workspaces and worktrees" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Troubleshooting</span>
+        </p>
+        <h1>When a workspace is being difficult</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          Worktree creation is deterministic, but it reaches across your filesystem, your git clone,
+          and the <code>worktree.yaml</code> setup. When something refuses to open or hangs on step
+          4, the message almost always names the layer. This is the index of what each symptom means
+          and the smallest thing you can try first.
+        </p>
+      </section>
+
+      <!-- =============== Where to look first =============== -->
+      <section data-search="Where to look first for workspace problems" id="where-to-look">
+        <h2>Where to look first</h2>
+        <ol>
+          <li>
+            <strong>The progress line while the worktree is created.</strong> On this Mac it reads
+            <em>Setting up worktree…</em>; on a remote machine it names the step
+            (<em>Fetching &lt;repo&gt;…</em>, <em>Copying &lt;repo&gt; to &lt;machine&gt;…</em>,
+            <em>Creating the worktree on &lt;machine&gt;…</em>) and, when it stops, says which step
+            and why.
+          </li>
+          <li>
+            <strong><code>list_worktrees</code>.</strong> Returns every managed worktree with its
+            status, last-check-in, and the resolved disk path. If the row isn't there, CodeSense
+            doesn't think the worktree exists; if it is, the status tells you why it isn't ready.
+          </li>
+          <li>
+            <strong><code>read_worktree_config</code>.</strong> Prints the resolved
+            <code>worktree.yaml</code> the setup step will run — handy when a surprise
+            <code>setup:</code> line is tripping things.
+          </li>
+          <li>
+            <strong>The terminal tab bound to the worktree.</strong> If the agent is stuck inside
+            <code>pnpm install</code>, the terminal tab tells you more than any dashboard.
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Problem — worktree creation stuck on fetch =============== -->
+      <section data-search="Worktree creation stuck on fetching" id="stuck-fetch">
+        <h2>Common issues</h2>
+
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 1</span>
+          <h3>Creation stuck while fetching</h3>
+          <p>
+            <code>git fetch origin</code> isn't returning. Usually a network, auth, or disk-space
+            issue — same symptoms you'd get at the command line.
+          </p>
+          <ul>
+            <li>
+              <strong>Expected cause</strong> — your SSH key isn't loaded, or you're on a new Mac
+              without the credential helper configured. The host-agent runs as you; if
+              <code>ssh -o BatchMode=yes git@github.com</code> fails in your terminal, the
+              host-agent will too.
+            </li>
+            <li>
+              <strong>Expected cause</strong> — the source repo clone under
+              <code>~/.codesense/users/&lt;you&gt;/&lt;org&gt;/&lt;repo&gt;/</code> has a broken
+              remote. Run <code>git remote -v</code> there and reset the origin URL.
+            </li>
+          </ul>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — resolve the git-side problem first (test with a plain
+            <code>git fetch</code> in the terminal tab), then open the story again. Creation starts
+            over from the first step.
+          </div>
+        </div>
+
+        <!-- =============== Problem — worktree add fails =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 2</span>
+          <h3>"fatal: '&lt;path&gt;' is already checked out"</h3>
+          <p>
+            Step 2 (<code>git worktree add</code>) refused because the branch is already checked out
+            somewhere else — usually a stale CodeSense worktree from a previous attempt or a manual
+            <code>git worktree add</code> you ran at the command line.
+          </p>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — run <code>git worktree remove &lt;path&gt;</code> in a terminal tab
+            against the source-repo clone (or <code>git worktree prune</code> if the path is already
+            gone), then open the story again.
+          </div>
+        </div>
+
+        <!-- =============== Problem — hydration says 0 =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 3</span>
+          <h3>Hydration landed, but the agent says "no docs"</h3>
+          <p>
+            The agent called <code>hydrate_story</code>, yet the story's docs aren't in the worktree
+            and <code>list_hydrated</code> shows no epic for it.
+          </p>
+          <ul>
+            <li>
+              <strong>Expected cause</strong> — the call failed: the story id isn't in the team's
+              story index, or its epic folder has no files. The result's <code>status</code> is
+              <code>failed</code> and says why.
+            </li>
+            <li>
+              <strong>Expected cause</strong> — the files were there already and someone edited them
+              in the worktree, or the repo tracks them. Those are reported under
+              <code>keptModified</code> and <code>skippedTracked</code> and are never overwritten.
+            </li>
+          </ul>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — read the result of the <code>hydrate_story</code> call, fix the story
+            id or the story's location in the context repo, then call it again on the same target.
+            A repeat call only copies what changed, so there's no need to recreate the worktree. To
+            replace edited copies with the team's version, call <code>hydrate_worktree</code> with
+            <code>overwriteModified: true</code> for those paths.
+          </div>
+        </div>
+
+        <!-- =============== Problem — setup failed =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 4</span>
+          <h3>The worktree's setup failed</h3>
+          <p>
+            One of the <code>setup:</code> lines in <code>worktree.yaml</code> exited non-zero. The
+            error names the step that stopped.
+          </p>
+          <ul>
+            <li>
+              <strong>Expected cause</strong> — a missing tool (<code>pnpm</code> isn't on
+              <code>PATH</code> for the host-agent's shell). The <code>env.PATH</code> in
+              <code>worktree.yaml</code> may need the tool's install dir added.
+            </li>
+            <li>
+              <strong>Expected cause</strong> — <code>timeout_seconds</code> fired. The setup took
+              longer than the ceiling and was killed.
+            </li>
+          </ul>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — reproduce the failure in the terminal tab bound to the worktree
+            (same shell, same cwd), fix the <code>worktree.yaml</code> in the source repo, then
+            open the story again so the setup runs once more.
+          </div>
+        </div>
+
+        <!-- =============== Problem — second open hangs =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 5</span>
+          <h3>Second open hangs with "busy"</h3>
+          <p>
+            <code>open_workspace</code> returns <code>{ status: 'busy' }</code> and the tab waits.
+            Something else is holding the worktree's write-lease — usually a Builder agent still
+            mid-run on that story, sometimes a stuck <code>hydrate_worktree</code> from a terminated
+            session.
+          </p>
+          <ul>
+            <li>
+              <strong>Expected cause</strong> — a parallel agent on another Mac has the lease. Check
+              the <code>list_worktrees</code> row's <code>machine</code>
+              column.
+            </li>
+            <li>
+              <strong>Expected cause</strong> — a crashed previous session left the lease
+              unreleased. The lease TTL (default 10 min) will expire; or you can kill it.
+            </li>
+          </ul>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — on the row, <em>Release lease</em> (if yours), or
+            <em>Kill lease-holder</em> (confirmed) if an agent is wedged. The tab retries
+            automatically once the lease clears.
+          </div>
+        </div>
+
+        <!-- =============== Problem — index entry lost =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 6</span>
+          <h3>Index entry lost its directory</h3>
+          <p>
+            <code>list_worktrees</code> shows a row whose <code>path</code> no longer exists on disk
+            (you <code>rm -rf</code>'d it, or restored from a backup that excluded
+            the <code>&lt;repo&gt;-wt/</code> folder beside the clone).
+          </p>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — open the story again: CodeSense fetches and
+            re-runs <code>git worktree add</code> in place. Context comes back at the next agent launch,
+            or when an agent calls <code>hydrate_story</code>. Local uncommitted work
+            in that worktree is gone (there isn't anything to recover — it's not on disk), but the
+            branch and its pushed commits are untouched.
+          </div>
+        </div>
+
+        <!-- =============== Problem — rename collisions =============== -->
+        <div class="arcC-problem">
+          <span class="arcC-problem__eyebrow">Problem 7</span>
+          <h3>Rename refused — the new name collides</h3>
+          <p>
+            <code>rename_workspace</code> refused because another workspace already uses the target
+            name, or the new slug would collide with a reserved form (<code>_epic/*</code>,
+            <code>_worker/*</code>).
+          </p>
+          <div class="arcC-problem__fix">
+            <strong>Fix</strong> — pick a name that isn't in use (the refusal message lists the
+            clashing handle). Reserved prefixes are the ones with a leading <code>_</code>; see
+            <a href="./workspace-kinds.html#tell-them-apart"
+              >workspace kinds → how to tell them apart</a
+            >.
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Diagnostics =============== -->
+      <section data-search="Diagnostics commands for workspace problems" id="diagnostics">
+        <h2>Diagnostic one-liners</h2>
+        <pre><code># All worktrees CodeSense knows about on this Mac
+codesense.invoke('list_worktrees', {})
+
+# Which epics have been hydrated into a given worktree
+codesense.invoke('list_hydrated', {
+  target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '&lt;your session id&gt;' }
+})
+
+# The resolved worktree.yaml the host-agent will run
+codesense.invoke('read_worktree_config', {
+  source_repo: 'acme/sample-source-repo'
+})
+
+# Open a terminal tab in the worktree to run git by hand
+codesense.invoke('open_terminal_tab', {
+  target: 'DEMO-1',
+  cwd: '$WORKTREE'
+})</code></pre>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list worktrees to begin triage" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          If something feels off, start here: list the worktrees CodeSense tracks on this Mac. The
+          status column names the step; the <code>machine</code> column names the holder. Everything
+          else on this page descends from one of those rows.
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="List my worktrees"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to triage worktree issues via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            An escalation routine (or a human operator) runs the same four tools against the same
+            handle. The output is the full triage sheet for a workspace.
+          </p>
+          <pre><code>// Full triage of a single workspace
+await Promise.all([
+  codesense.invoke('list_worktrees', {}),
+  codesense.invoke('list_hydrated', { target: 'DEMO-1' }),
+  codesense.invoke('read_worktree_config', {
+    source_repo: 'acme/sample-source-repo'
+  }),
+])</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See
+            <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a>,
+            <a href="../mcp-explorer.html#tool/list_hydrated">list_hydrated</a>, and
+            <a href="../mcp-explorer.html#tool/read_worktree_config">read_worktree_config</a>
+            for the live schemas.
+          </p>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> ·
+        <a href="../schema-browser.html#schema/worktree-yaml">worktree.yaml schema</a> ·
+        <a href="./index.html">← Arc C index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Troubleshooting</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

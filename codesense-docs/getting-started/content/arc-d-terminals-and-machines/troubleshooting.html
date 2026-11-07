@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="life-buoy" />
+    <title>CodeSense — Troubleshooting</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/troubleshooting">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Troubleshooting — SSH, posture, permissions" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Troubleshooting</span>
+        </p>
+        <h1>When it goes sideways, start here</h1>
+      </section>
+
+      <section data-search="Troubleshooting posture" id="why">
+        <p>
+          Remote work has more moving parts than local, so when things wobble it
+          helps to know which part. CodeSense's refusal messages name the layer; this
+          page is the index of what to do when you see each one.
+        </p>
+      </section>
+
+      <section data-search="SSH can't connect — key, host, port" id="ssh">
+        <h2>1 · SSH can't connect</h2>
+        <p>You see <code>test_machine_connection</code> fail at step 1 (connect).</p>
+        <ul>
+          <li>
+            <strong>Try plain SSH first.</strong>
+            <code>ssh -o BatchMode=yes &lt;host&gt; 'uname -sm'</code> from your Mac's
+            Terminal.app. If that fails, CodeSense will too — it's a key/host/port
+            problem, not CodeSense.
+          </li>
+          <li>
+            <strong>Key not loaded.</strong> If you use an SSH agent, run
+            <code>ssh-add -L</code>. If you use a key file, confirm the path on the
+            machine binding (your personal half) matches the key's location.
+          </li>
+          <li>
+            <strong>Host alias missing.</strong> If you connect by alias, check
+            <code>~/.ssh/config</code> has an entry with <code>HostName</code>,
+            <code>User</code>, and (if non-22) <code>Port</code>.
+          </li>
+          <li>
+            <strong>Jump host.</strong> Set <code>jump_host</code> on the machine
+            declaration, or <code>ProxyJump</code> in your SSH config.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Pinned host key mismatch" id="host-key">
+        <h2>2 · "Pinned host key does not match"</h2>
+        <p>
+          CodeSense refuses the connection: the host key the server offered isn't the
+          one you confirmed the first time.
+        </p>
+        <ul>
+          <li>
+            <strong>Expected cause</strong> — the remote machine was reinstalled,
+            re-imaged, or rolled its host keys. Confirm with the admin.
+          </li>
+          <li>
+            <strong>Unexpected cause</strong> — <em>stop</em>. Someone has rotated
+            that machine's identity without telling you. Don't blindly re-pin.
+          </li>
+          <li>
+            <strong>Fix (expected case)</strong> — in Machines, <em>Replace host key
+            pin</em>, confirm the new fingerprint matches the admin's. CodeSense pins
+            the new key.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Terminal server outdated" id="terminal-server-outdated">
+        <h2>3 · <code>terminalServerOutdated</code></h2>
+        <p>
+          A newer verb (for example <code>permissionMode: 'bypass'</code>) isn't
+          understood by the terminal server on the remote. The server is older than
+          this CodeSense release.
+        </p>
+        <ul>
+          <li>
+            <strong>Fix</strong> — <em>Machines → Replace terminal server</em>. It
+            prepares the new binary alongside the live one, then swaps. Existing
+            tabs survive (they live under the old server; new tabs under the new).
+            Close and re-open any tabs that need the new verb.
+          </li>
+          <li>
+            <strong>If replace won't start</strong> — likely a stale
+            <code>pinned_server_id</code>. The declaration pins the server identity;
+            if it was retired manually on the machine, re-run
+            <code>test_machine_connection</code> to re-verify, then replace.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Permission denied — sudo and account" id="permissions">
+        <h2>4 · "Permission denied" during setup</h2>
+        <p>Common during <code>/setup-machine</code> or <code>/add-machine-user</code>.</p>
+        <ul>
+          <li>
+            <strong>Password-prompted <code>sudo</code>.</strong> CodeSense never
+            handles passwords. If <code>sudo</code> needs one and you can't make it
+            passwordless, open your own Terminal.app, run the exact command the
+            skill printed, then resume.
+          </li>
+          <li>
+            <strong><code>authorized_keys</code> permissions.</strong> The skill sets
+            <code>700</code> on <code>~/.ssh</code> and <code>600</code> on
+            <code>authorized_keys</code>. If the key was added by hand with the wrong
+            modes, SSH silently refuses the login. Fix: re-run the skill (it's
+            idempotent) or set the modes yourself.
+          </li>
+          <li>
+            <strong>SELinux / AppArmor.</strong> On some hardened Linuxes
+            <code>sshd</code> wants <code>restorecon ~/.ssh ~/.ssh/authorized_keys</code>
+            after you create the directory under <code>sudo</code>. The skill names
+            this in the summary when it detects such a system.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Agent CLI isn't signed in on the remote" id="agent-signin">
+        <h2>5 · Agent CLI isn't signed in on the remote</h2>
+        <p>
+          You launch <code>claude</code> or <code>codex</code> on the remote and it
+          immediately asks you to sign in — even though you're signed in locally.
+        </p>
+        <ul>
+          <li>
+            <strong>By design.</strong> Each person signs in to each agent CLI on
+            each machine. CodeSense never copies agent sign-ins across machines.
+          </li>
+          <li>
+            <strong>What to do.</strong> Open a shell tab on the remote and run the
+            CLI's sign-in flow (<code>claude /login</code>, Codex's
+            <code>codex login</code>). The sign-in persists in the account on the
+            remote the same way it persists on your Mac.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Remote tab didn't come back after reconnect" id="reconnect">
+        <h2>6 · A remote tab didn't come back</h2>
+        <p>You wake your Mac; most remote tabs are back, one is missing.</p>
+        <ul>
+          <li>
+            <strong>First suspect — the terminal server was replaced.</strong> Tabs
+            under the old server don't migrate; they stop when the old server stops.
+            Check <em>Machines → &lt;host&gt; → History</em>.
+          </li>
+          <li>
+            <strong>Second suspect — the remote machine rebooted.</strong> Confirm
+            with <code>uptime</code>. If so, the PTYs are gone; re-open the tabs.
+          </li>
+          <li>
+            <strong>Third suspect — scrollback exceeded limits.</strong> The tab
+            still exists; the scrollback is just large. Give it a moment to re-render,
+            or <em>re-attach</em> from the hidden-tabs list.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Routines didn't fire while I was away" id="routines">
+        <h2>7 · Scheduled routine didn't fire</h2>
+        <ul>
+          <li>
+            <strong>Local-owned routine, Mac was asleep.</strong> Standard macOS
+            behavior — scheduled fires skip when the Mac is asleep. Move ownership
+            to an always-on machine if the schedule must fire.
+          </li>
+          <li>
+            <strong>Remote-owned routine, terminal server was down.</strong> Check
+            <em>Machines → &lt;host&gt; → Terminal server</em>. If it bounced during
+            your window, the fire was skipped.
+          </li>
+          <li>
+            <strong>Routine disabled.</strong> <em>Routines console → &lt;routine&gt;</em>.
+            A failed run can disable itself; re-enable after you've fixed the cause.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Host-agent on this Mac is wedged" id="host-agent">
+        <h2>8 · Host-agent on this Mac is wedged</h2>
+        <ul>
+          <li>
+            <strong>Symptom</strong> — local tabs don't accept input; file watchers
+            stop reporting.
+          </li>
+          <li>
+            <strong>Fix</strong> — quit CodeSense and relaunch it; the host-agent is launched by
+            the app on boot. If that doesn't help, choose <em>Restart terminal server</em> (or call
+            <code>restart_terminal_server</code>). That ends every terminal and agent running on
+            it, so save what you need first.
+          </li>
+          <li>
+            <strong>Remote tabs are unaffected.</strong> They live under the remote
+            terminal server; a wedged local host-agent doesn't touch them.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Private-account enrollment stuck" id="private-enrollment">
+        <h2>9 · Private-account enrollment stuck</h2>
+        <p>
+          First connection to a remote machine stops at "verifying private account"
+          and doesn't complete.
+        </p>
+        <ul>
+          <li>
+            <strong>Likely cause</strong> — the account's canonical home isn't an
+            absolute path, or <code>uid</code> conflicts with another known
+            enrollment. CodeSense refuses the binding with
+            <code>invalid private account binding</code>.
+          </li>
+          <li>
+            <strong>Fix</strong> — remove the stale enrollment file
+            (<code>~/.codesense/users/&lt;p&gt;/machines-private-v1.d/&lt;id&gt;.yaml</code>),
+            then re-run <code>test_machine_connection</code>. CodeSense re-enrolls
+            with a fresh id.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — terminal server status" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>Show this Mac's terminal server: its state, version and sessions.</p>
+        <cs-try-this
+          verb="terminal_server_status"
+          args="{}"
+          label="Show terminal server status"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="Diagnostic tools via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to diagnose via MCP</strong></summary>
+          <pre><code>// Who's talking to whom.
+codesense.invoke('list_machines', { orgSlug: '…' })
+codesense.invoke('list_sessions', {})
+
+// Health of this Mac's terminal server.
+codesense.invoke('terminal_server_status', {})
+
+// Remote terminal servers: list_machines shows each machine's terminalServer.
+
+// Replace a stale terminal server.
+codesense.invoke('prepare_machine_terminal_server_replacement', { machineId: '…' })
+codesense.invoke('restart_machine_terminal_server',             { machineId: '…' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./parity-matrix.html">← Parity matrix</a> ·
+        <a href="./index.html">Arc D home</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/terminal_server_status">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Troubleshooting</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

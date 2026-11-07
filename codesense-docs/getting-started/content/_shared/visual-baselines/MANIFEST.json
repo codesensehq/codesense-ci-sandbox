@@ -1,0 +1,27 @@
+{
+  "_comment": "Visual-regression baseline manifest. Phase 1 covers the 7 primary surfaces × 2 themes × 2 viewports = 28 shots. Phase 2 (tracked as a follow-up) adds per-element thresholds and every other shipped page.",
+  "schema": 1,
+  "runner": "pixelmatch",
+  "defaults": {
+    "colorThreshold": 0.08,
+    "maxDiffPixels": 500,
+    "ignoreAntialiasing": true,
+    "ignoreAlpha": false
+  },
+  "viewports": {
+    "wide":   { "width": 1440, "height": 900 },
+    "narrow": { "width": 768,  "height": 1024 }
+  },
+  "themes": ["dark", "light"],
+  "phase_1_surfaces": [
+    { "page": "content/README.html",             "label": "home",              "critical_elements": ["nav.cs-topnav", "[data-arc]", "[data-cs-palette-open]"] },
+    { "page": "content/factory-playbook.html",   "label": "factory-playbook",  "critical_elements": ["[data-phase]", "[data-cs-phase-big]", "[data-cs-lr-toggle]"] },
+    { "page": "content/mcp-explorer.html",       "label": "mcp-explorer",      "critical_elements": ["data-count[id='mcp-tools']", ".cs-explorer-list"] },
+    { "page": "content/primitives-explorer.html","label": "primitives",        "critical_elements": ["[data-tab='invoke']", "[data-tab='kit']", "[data-tab='classes']", "[data-tab='tokens']", "[data-tab='events']", "[data-tab='contexts']"] },
+    { "page": "content/schema-browser.html",     "label": "schema-browser",    "critical_elements": ["[data-schema]", ".cs-schema-list"] },
+    { "page": "content/recipes-gallery.html",    "label": "recipes-gallery",   "critical_elements": ["[data-recipe]", "article"] },
+    { "page": "content/ui-mcp-crossref.html",    "label": "ui-mcp-crossref",   "critical_elements": ["[data-cs-tab='paired']", "[data-cs-tab='uiOnly']", "[data-cs-tab='mcpOnly']"] }
+  ],
+  "phase_1_capture_count": 28,
+  "phase_2_followup": "Phase 2 adds every shipped page × 4 viewports with per-element pixel budgets."
+}

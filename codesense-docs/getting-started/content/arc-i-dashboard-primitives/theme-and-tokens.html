@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="palette" />
+    <title>CodeSense — Theme &amp; tokens</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Live swatch grid — rendered against the active token values. */
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 10px;
+        margin: 12px 0 24px;
+        max-width: 1000px;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw .chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        border: 1px solid var(--cs-border);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw .name {
+        font: 500 12.5px/1.3 var(--cs-font-mono);
+        color: var(--cs-fg);
+        word-break: break-all;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw .role {
+        font-size: 11px;
+        color: var(--cs-muted-fg);
+        line-height: 1.4;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw.border-chip .chip {
+        background: transparent;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw.text-chip .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font: 600 18px/1 var(--cs-font-sans);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .sw.font-chip .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+
+      /* Side-by-side dark+light preview mock. */
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 12px 0 24px;
+        max-width: 1000px;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .side {
+        padding: 14px 16px;
+        border-radius: 10px;
+        border: 1px solid #262c38;
+        box-shadow: var(--cs-docs-shadow-sm);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .dark {
+        /* Fixed dark scheme so the mock reads the same no matter the viewer theme. */
+        --cs-bg: #0d1117;
+        --cs-fg: #e6edf3;
+        --cs-muted-fg: #9fa8ba;
+        --cs-border: #262c38;
+        --cs-surface: #161b22;
+        --cs-accent: #7aa2ff;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .light {
+        /* Fixed light scheme. */
+        --cs-bg: #ffffff;
+        --cs-fg: #0f1419;
+        --cs-muted-fg: #536074;
+        --cs-border: #d8dde5;
+        --cs-surface: #f5f7fa;
+        --cs-accent: #2558c7;
+        --cta-fg: #ffffff;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        border-color: var(--cs-border);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .side h4 {
+        margin: 0 0 8px;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .side .row {
+        padding: 8px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        background: var(--cs-surface);
+        margin: 6px 0;
+        font-family: var(--cs-font-mono, ui-monospace, monospace);
+        font-size: 12px;
+      }
+      body[data-page="arc-i-dashboard-primitives/theme-and-tokens"] .pair .side .cta {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 6px;
+        /* WCAG 2.1 AA: the preview CTAs sit on each side's
+         * local --cs-accent. Dark preview: accent is bright blue → dark fg
+         * clears AA. Light preview: accent is darker blue (#2558c7) → white
+         * fg clears AA. */
+        background: var(--cs-accent);
+        color: var(--cta-fg, var(--cs-accent-fg));
+        font-size: 12px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/theme-and-tokens">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Theme tokens cs classes swatches dark light" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · Theme</span>
+        <h1>Consume tokens. Don't author colours.</h1>
+        <p class="lede">
+          You don't ship a theme file. The viewer pushes a <strong>palette of
+          <code>--cs-*</code> custom properties</strong> on every doc, swaps them when the user
+          switches dark ↔ light, and keeps them in sync across every pane. Your job is to
+          <strong>reach for the right token</strong> — background, surface, border, accent — and
+          let the viewer paint. The same HTML renders correctly on both themes with zero
+          conditional code.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <div class="pair" style="margin:0">
+            <div class="side dark" aria-label="Dark theme preview">
+              <h4>dark</h4>
+              <div class="row">--cs-surface</div>
+              <div class="row">--cs-border</div>
+              <span class="cta">--cs-accent</span>
+            </div>
+            <div class="side light" aria-label="Light theme preview">
+              <h4>light</h4>
+              <div class="row">--cs-surface</div>
+              <div class="row">--cs-border</div>
+              <span class="cta">--cs-accent</span>
+            </div>
+          </div>
+          <figcaption id="hero-cap">
+            same markup · same tokens · the viewer picks the values
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== How the theme arrives =============== -->
+      <section data-search="How the theme arrives via onTheme and CSS variables" id="arrival">
+        <h2>How the theme reaches your doc</h2>
+        <p>
+          The viewer sets every <code>--cs-*</code> token at <code>:root</code> before your
+          first paint. The frame and its host container use the same resolved surface background.
+          Use <code>background: var(--cs-bg)</code> for the body; never hard-code a white body background. You can rely on them in any CSS without a script. If you want to react
+          to a change, subscribe:
+        </p>
+        <pre><code>codesense.onTheme((theme) =&gt; {
+  if (!theme) return;
+  // theme.scheme === "dark" | "light"
+  // theme.tokens is the full palette object
+  console.log("accent is now", theme.tokens["--cs-accent"]);
+});</code></pre>
+        <p>
+          You rarely need the explicit callback — the CSS tokens update by themselves. Reach
+          for <code>onTheme</code> only when you draw into a <code>&lt;canvas&gt;</code> or
+          generate inline SVG whose fills can't read a CSS variable.
+        </p>
+      </section>
+
+      <!-- =============== The tokens, live =============== -->
+      <section data-search="Token swatches live cs bg fg accent border" id="tokens">
+        <h2>The tokens, live</h2>
+        <p>
+          These are the <strong>authored</strong> tokens — the ones every dashboard can rely
+          on. Each swatch below is painted with the token's actual value in the viewer's
+          current theme. Switch dark ↔ light (⌘⇧Y in the identity menu) and watch them move.
+        </p>
+        <div class="swatches">
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-bg)"></span>
+            <div>
+              <div class="name">--cs-bg</div>
+              <div class="role">Document background</div>
+            </div>
+          </div>
+          <div class="sw text-chip">
+            <span class="chip" style="color: var(--cs-fg); background: var(--cs-bg)">Ag</span>
+            <div>
+              <div class="name">--cs-fg</div>
+              <div class="role">Document foreground text</div>
+            </div>
+          </div>
+          <div class="sw text-chip">
+            <span class="chip" style="color: var(--cs-muted-fg); background: var(--cs-bg)">Ag</span>
+            <div>
+              <div class="name">--cs-muted-fg</div>
+              <div class="role">Muted / secondary text</div>
+            </div>
+          </div>
+          <div class="sw border-chip">
+            <span class="chip" style="border: 2px solid var(--cs-border)"></span>
+            <div>
+              <div class="name">--cs-border</div>
+              <div class="role">Border colour</div>
+            </div>
+          </div>
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-surface)"></span>
+            <div>
+              <div class="name">--cs-surface</div>
+              <div class="role">Card · raised surface background</div>
+            </div>
+          </div>
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-accent)"></span>
+            <div>
+              <div class="name">--cs-accent</div>
+              <div class="role">Accent · primary action</div>
+            </div>
+          </div>
+          <div class="sw text-chip">
+            <span class="chip"
+                  style="color: var(--cs-accent-fg); background: var(--cs-accent)">Ag</span>
+            <div>
+              <div class="name">--cs-accent-fg</div>
+              <div class="role">Foreground on accent</div>
+            </div>
+          </div>
+          <div class="sw text-chip">
+            <span class="chip" style="color: var(--cs-link); background: var(--cs-bg)">Ag</span>
+            <div>
+              <div class="name">--cs-link</div>
+              <div class="role">Hyperlink colour</div>
+            </div>
+          </div>
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-danger)"></span>
+            <div>
+              <div class="name">--cs-danger</div>
+              <div class="role">Error · destructive</div>
+            </div>
+          </div>
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-success)"></span>
+            <div>
+              <div class="name">--cs-success</div>
+              <div class="role">Success · added</div>
+            </div>
+          </div>
+          <div class="sw">
+            <span class="chip" style="background: var(--cs-warning)"></span>
+            <div>
+              <div class="name">--cs-warning</div>
+              <div class="role">Warning · modified</div>
+            </div>
+          </div>
+          <div class="sw font-chip">
+            <span class="chip" style="font-family: var(--cs-font-sans)">Ag</span>
+            <div>
+              <div class="name">--cs-font-sans</div>
+              <div class="role">Sans-serif family</div>
+            </div>
+          </div>
+          <div class="sw font-chip">
+            <span class="chip" style="font-family: var(--cs-font-mono)">Ag</span>
+            <div>
+              <div class="name">--cs-font-mono</div>
+              <div class="role">Monospace family</div>
+            </div>
+          </div>
+          <div class="sw text-chip">
+            <span class="chip"
+                  style="color: var(--cs-fg); background: var(--cs-surface); font-size: 10px"
+                  >scheme</span>
+            <div>
+              <div class="name">--cs-color-scheme</div>
+              <div class="role">"dark" or "light" — derived from <code>--cs-bg</code></div>
+            </div>
+          </div>
+        </div>
+        <p>
+          Every token has a <strong>fallback chain</strong> — a sequence of older names the
+          viewer will try before giving up. See each chain plus the source of truth in the
+          <a href="../primitives-explorer.html#tokens">tokens tab of the explorer</a>.
+        </p>
+      </section>
+
+      <!-- =============== The cs-* classes =============== -->
+      <section data-search="cs classes layout sidebar tabs cards" id="classes">
+        <h2>The <code>cs-*</code> classes</h2>
+        <p>
+          Where tokens are the atoms, the <code>cs-*</code> classes are the <em>molecules</em> —
+          pre-themed building blocks every dashboard shell uses so three dashboards side by
+          side feel like one app. Reach for them before you author your own class names.
+        </p>
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Classes</th>
+              <th>What it is</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>layout</td>
+              <td><code>cs-page</code>, <code>cs-topnav</code>, <code>cs-main</code>,
+                  <code>cs-footer</code></td>
+              <td>The shell every dashboard body wears.</td>
+            </tr>
+            <tr>
+              <td>sidebar</td>
+              <td><code>cs-sidebar-item</code> &amp; its <code>-selected</code> /
+                  <code>-active</code> / <code>-ready</code> siblings</td>
+              <td>List rows inside any left/right nav. Themed from the viewer sidebar palette.</td>
+            </tr>
+            <tr>
+              <td>tabs</td>
+              <td><code>cs-tab-item</code>, <code>cs-tab-item-active</code></td>
+              <td>Tab strip buttons. Pair with <code>aria-selected</code>.</td>
+            </tr>
+            <tr>
+              <td>cards</td>
+              <td><code>cs-workspace-card</code>, <code>cs-workspace-card-selected</code></td>
+              <td>Raised card surface for tiles / workspace rows.</td>
+            </tr>
+            <tr>
+              <td>focus</td>
+              <td><code>cs-focus-pane</code>, <code>cs-focus-line</code></td>
+              <td>Focus indicator applied to a focused pane root.</td>
+            </tr>
+            <tr>
+              <td>prose</td>
+              <td><code>cs-redline-add</code>, <code>cs-redline-del</code>,
+                  <code>cs-note-link</code></td>
+              <td>Diff spans and scratch-note links.</td>
+            </tr>
+            <tr>
+              <td>terminal</td>
+              <td><code>cs-terminal-display</code></td>
+              <td>Container that wraps the xterm.js display with viewer-matched colours.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Each class in the <a href="../primitives-explorer.html#classes">classes tab</a> lists
+          the tokens it consumes — your handy map from "visible element" back to "token to
+          tweak".
+        </p>
+      </section>
+
+      <section id="overlay-elevation" data-search="Overlay elevation shadow large token">
+        <h2>Elevated surfaces</h2>
+        <p>
+          Use <code>--cs-shadow-lg</code> for floating overlays and <code>--cs-shadow</code> for
+          small controls. Both are shared layout tokens, available in the host and page kit.
+          Keep the surface opaque and pair elevation with a theme-derived edge.
+        </p>
+        <pre><code>.floating-preview {
+  background: var(--cs-bg);
+  color: var(--cs-fg);
+  border-radius: var(--cs-radius-lg);
+  box-shadow: var(--cs-shadow-lg);
+}</code></pre>
+      </section>
+
+      <!-- =============== Dark + light preview =============== -->
+      <section data-search="Dark and light preview side by side" id="pair">
+        <h2>What your dashboard looks like on both themes</h2>
+        <p>
+          Same markup, same tokens — only the token values change. If a surface disappears on
+          one theme (e.g. a near-white card on a near-white background), you're authoring a
+          colour instead of consuming a token. Fix is almost always:
+          <code>background: var(--cs-surface)</code> on a <code>cs-bg</code> body, or vice versa.
+        </p>
+        <div class="pair">
+          <div class="side dark">
+            <h4>dark</h4>
+            <div class="row">worktree · demo-1-sync-engine</div>
+            <div class="row">worktree · demo-2-wake-mode</div>
+            <span class="cta">Open</span>
+          </div>
+          <div class="side light">
+            <h4>light</h4>
+            <div class="row">worktree · demo-1-sync-engine</div>
+            <div class="row">worktree · demo-2-wake-mode</div>
+            <span class="cta">Open</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now theme change invoke" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Hit ⌘⇧Y (from the identity menu) to flip the viewer theme and watch every swatch,
+          every row, every button on this page update at once. Then invoke the read below —
+          same bridge, same colours, both themes:
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="Call worktrees() on the active theme"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP theme read-only tokens" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            Agents can't flip the viewer theme, and there is no MCP tool that reads it. A page
+            reads the current palette from the theme's CSS variables:
+          </p>
+          <pre><code>getComputedStyle(document.documentElement).getPropertyValue("--cs-bg")
+// → "#0d1117" (dark)</code></pre>
+        </details>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#tokens">every token</a>
+        ·
+        <a href="../primitives-explorer.html#classes">every cs-* class</a>
+        ·
+        <a href="../primitives-explorer.html#kit/codesense.onTheme">codesense.onTheme</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Theme &amp; tokens</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

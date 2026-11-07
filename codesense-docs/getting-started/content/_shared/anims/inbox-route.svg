@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  inbox-route — a message travels from an inbox to a triager to a role queue to a worker.
+  Duration: 3.6s per loop. Reduced-motion fallback: static end state.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" role="img" aria-label="Message routes from inbox to triager to worker">
+  <title>Inbox route</title>
+  <desc>A dot representing a message animates left-to-right across four stations: inbox, triager, role queue, worker.</desc>
+  <style>
+    .station { fill: var(--cs-surface, #161b22); stroke: var(--cs-border, #262c38); stroke-width: 1; }
+    .text    { fill: var(--cs-fg, #e6edf3); font: 500 10px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+    .muted   { fill: var(--cs-muted-fg, #a3abbb); font: 9px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+    .track   { stroke: var(--cs-border, #262c38); stroke-width: 1; fill: none; stroke-dasharray: 3 3; }
+    .msg     { fill: var(--cs-accent, #7aa2ff); animation: hop 3.6s cubic-bezier(.6,.1,.4,.9) infinite; }
+
+    @keyframes hop {
+      0%   { transform: translateX(0);   }
+      25%  { transform: translateX(90px); }
+      50%  { transform: translateX(180px); }
+      75%  { transform: translateX(270px); }
+      100% { transform: translateX(270px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .msg { animation: none; transform: translateX(270px); }
+    }
+  </style>
+
+  <!-- Track -->
+  <path class="track" d="M50 80 L350 80"/>
+
+  <!-- Stations -->
+  <g>
+    <rect class="station" x="20" y="60" width="60" height="40" rx="6"/>
+    <text class="text" x="50" y="78">Inbox</text>
+    <text class="muted" x="50" y="92">arrival</text>
+  </g>
+  <g>
+    <rect class="station" x="110" y="60" width="60" height="40" rx="6"/>
+    <text class="text" x="140" y="78">Triager</text>
+    <text class="muted" x="140" y="92">routes</text>
+  </g>
+  <g>
+    <rect class="station" x="200" y="60" width="60" height="40" rx="6"/>
+    <text class="text" x="230" y="78">Role</text>
+    <text class="muted" x="230" y="92">builder</text>
+  </g>
+  <g>
+    <rect class="station" x="290" y="60" width="60" height="40" rx="6"/>
+    <text class="text" x="320" y="78">Worker</text>
+    <text class="muted" x="320" y="92">handles</text>
+  </g>
+
+  <!-- Message dot -->
+  <circle class="msg" cx="50" cy="80" r="5"/>
+</svg>

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-commit-horizontal" />
+    <title>CodeSense — Line attribution</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 24px 28px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .arce-hero p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--cs-muted-fg);
+      }
+      code.arce-path {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .arce-callout {
+        margin: 16px 0;
+        padding: 14px 18px;
+        border-left: 3px solid var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 8%, var(--cs-surface));
+        border-radius: 6px;
+      }
+      .arce-callout p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/line-attribution">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Line attribution — which agent session wrote each committed line, captured with git-ai" id="hero">
+        <figure class="cs-docs-card arce-hero">
+          <p>
+            When a CodeSense agent edits a managed worktree, CodeSense can record which session wrote each
+            line you later commit. It uses <a href="https://github.com/git-ai-project/git-ai">git-ai</a>, which
+            stores the answer in Git itself, as notes in <code>refs/notes/sense</code> that stay on this Mac.
+            CodeSense reads them (and any older <code>refs/notes/ai</code> notes) back through one
+            small adapter, so a line resolves to a tool, the agent CLI's own session id and the model.
+          </p>
+        </figure>
+      </section>
+
+      <section data-search="What is captured — session id, tool and model per line, no prompt text" id="captured">
+        <h2>What is captured</h2>
+        <p>For each line an agent wrote, in a commit made while capture was on:</p>
+        <ul>
+          <li>the <strong>tool</strong> (<code>claude</code> or <code>codex</code>);</li>
+          <li>the agent CLI's own <strong>session id</strong>;</li>
+          <li>the <strong>model</strong>, when git-ai could read it from the session's transcript.</li>
+        </ul>
+        <p>
+          <strong>No prompt text.</strong> CodeSense runs git-ai with prompts excluded from every repository, so
+          the note holds who wrote a line and never what was asked. CodeSense also writes nothing into the notes
+          itself. A line nobody tracked (a commit made with capture off, or a line the note does not cover) reads
+          as <code>unknown</code>, never as human.
+        </p>
+        <p>
+          Capture is on this Mac for the CodeSense-managed worktrees agents launch into. CodeSense does not run
+          <code>git-ai install-hooks</code> and never edits your <code>~/.gitconfig</code> or <code>~/.claude</code>: git-ai runs in its own
+          home under <code>~/.codesense/git-ai/</code>, and a launch gets the hooks in its own private settings.
+          Codex receives trust hashes for CodeSense-injected hooks through launch flags; CodeSense may also
+          add those hashes to its native <code>hooks.state</code>, preserving unrelated configuration. Remote machines and OpenCode report
+          <code>unsupported</code> for now. git-ai's own telemetry and update checks are switched off.
+        </p>
+        <p>
+          <strong>CLIs without capture.</strong> A session of a CLI CodeSense cannot capture yet (OpenCode and
+          Hermes) in a managed worktree is launched with <code>GIT_REFLOG_ACTION=codesense-unsupported-cli &lt;cli&gt;</code>,
+          so git-ai never credits its commits to you. Their lines count as unattributed, and <code>why_line</code> names the CLI with
+          reason <code>unsupported_cli</code> while a local reflog still records the commit. Git also records that
+          session's branch switches under that name, so <code>git checkout -</code>, <code>git switch -</code> and
+          <code>@{-N}</code> skip them: in these sessions, and in the same worktree afterwards, switch branches by name.
+        </p>
+        <p>
+          <strong>Only your attached clones.</strong> CodeSense's git-ai daemon does work only for the source
+          repos attached on this Mac (by any profile), so repos it does not manage, such as the scratch repos an
+          agent's tests create, cost it nothing. It lists each attached clone's Git directory in git-ai's
+          <code>daemon_repo_roots</code>; a clone's linked worktrees share it, so they are covered. Attaching or
+          detaching a repo updates the list straight away, with no daemon restart, and every launch and app start
+          rebuilds it from the attachments. With no repo attached the list is left out and git-ai tracks every
+          repo. A managed worktree whose repo isn't attached launches with capture <code>off</code>
+          (<code>repo_not_attached</code>): attach its clone and the next launch captures, with no app restart. <code>describe_setup.attribution.daemonRepoRoots</code> counts the
+          clones CodeSense lists (0: no list). If clones are attached but none can be read as a Git repo, the
+          list written before is kept rather than widened to every repo, and the count is <code>null</code>.
+        </p>
+        <p>
+          If you also run git-ai yourself and installed its hooks (<code>git-ai install-hooks</code>), they
+          stay in your settings and keep working outside CodeSense. In a CodeSense session with capture on
+          (<code>active</code>), they cannot reach any git-ai daemon: the session points
+          <code>GIT_AI_DAEMON_HOME</code> and its sockets at a path that does not exist, Claude and Codex run hooks
+          with the session's environment, so your hooks exit without recording and exactly one checkpoint,
+          CodeSense's, counts per hook event. <code>describe_setup.attribution</code> warns
+          <code>user_hooks_present</code> when it finds them in your Claude settings (user, local,
+          <code>CLAUDE_CONFIG_DIR</code> or an attached checkout's <code>.claude/</code>) or Codex config. In those
+          sessions, your own <code>git-ai</code> commands that need its daemon fail fast. If your git-ai's
+          <code>git</code> shim is on <code>PATH</code>, git commands still run through it; its wait for a note
+          finds no daemon and git carries on. A session with capture off changes none of this.
+        </p>
+      </section>
+
+      <section data-search="Automatic line tracking — pinned verified git-ai installation" id="install">
+        <h2>Line tracking is installed automatically</h2>
+        <p>On macOS with Apple silicon, CodeSense installs its bundled build of git-ai
+          into <code>~/.codesense/bin/git-ai</code>. It checks the bundled bytes against the app's
+          pinned SHA-256 and exact version before making the copy available. No runtime download
+          or separate git-ai installation is needed. A user's copy on <code>PATH</code> is reported
+          as <code>user_copy_present</code> and is never run or changed. User symlinks are preserved.</p>
+        <p>Installation runs in the background at startup and when a managed launch needs it.
+          Turning attribution on also requests an install and waits up to 30 seconds.
+          <code>installing</code> means installation is still running: a session launched then
+          needs to relaunch to capture lines. Launches continue even if installation fails.</p>
+        <p>An own copy whose exact version differs from the bundle is replaced, unless its numeric
+          version is newer. Newer copies are kept with <code>unsupported: newer</code> and capture
+          stays off. Before replacement, the old binary is kept as
+          <code>~/.codesense/bin/git-ai.prev-&lt;old-version&gt;</code>; only the most recent previous
+          copy is kept. Notes, managed config and user settings are untouched by replacement.</p>
+        <p>To undo a replacement, run
+          <code>cd ~/.codesense/bin &amp;&amp; mv git-ai.prev-1.7.5 git-ai</code>
+          (use the previous filename shown by the doctor). On the next start, CodeSense recognises
+          the restored bytes and reports <code>unsupported: user_pinned</code>, keeping capture off
+          and respecting the restored copy. To release that pin and reinstall the bundled build, use the
+          existing MCP call (with an absolute path to your checkout):</p>
+        <pre><code>save_source_repo_attachment {"repoPath":"/absolute/path/to/repo","attribution":"on"}</code></pre>
+        <p><code>describe_setup.attribution</code> reports the binary, exact version, daemon reachability
+          and any installation warning. It announces
+          <code>replaced git-ai &lt;old&gt; → &lt;new&gt; (previous kept at …)</code> once,
+          including after an app restart before its first read. That read marks the notice shown
+          in the existing replacement receipt; it changes no capture settings.
+          Its <code>previousBinary</code> field keeps <code>{version, replacement, path}</code>
+          readable after an app restart, even after the one-time warning is consumed. The recorded
+          previous path may be absent after you move that file back to undo the replacement.
+          A <code>user_pinned</code> warning names the MCP recovery call above.
+          While the old managed daemon is running, capture stays off and the doctor shows
+          <code>restart pending</code>; the next launch restarts it before capture is enabled.
+          <code>list_worktrees</code> carries the attribution status from each worktree's last launch:
+          <code>active</code>, <code>off</code>, <code>installing</code>, <code>install_failed</code>,
+          <code>not_installed</code>, <code>unsupported_version</code>, <code>unsupported</code>
+          or <code>error</code>.</p>
+        <p>A missing bundle or checksum/version mismatch reports <code>install_failed</code>
+          with <code>bundle_missing</code>, <code>sha_mismatch</code> or <code>version_mismatch</code>
+          in the message. The last failure remains readable from disk after an app restart until
+          a successful retry. A restart retries installation. During one app run, these failures
+          retry only when attribution is explicitly turned on. Other file or version-probe
+          failures retry after 60 seconds, or immediately when attribution is explicitly turned on.
+          A failed replacement keeps the old binary on disk and capture off until the pinned build
+          is available. Other platforms report <code>unsupported</code>.</p>
+        <p>At startup, a background sweep imports retained completed checkpoint archives and live logs from attached clones with capture enabled. While the app is open, completed archive events trigger a debounced capture using the same importer. Line queries reconcile on demand. Stored turn links and Claude <code>s_</code> identities survive later log pruning; logs already pruned before either capture cannot be recovered. No retention interval is assumed.</p>
+        <p><code>describe_setup.attribution.capture</code> reports the last completed sweep: <code>lastSweepAt</code> (epoch milliseconds, or null before a sweep), <code>trigger</code> (<code>startup</code> or <code>watcher</code>, or null), <code>clonesSwept</code>, <code>logsSeen</code>, <code>logsNew</code>, <code>traceRowsStored</code>, <code>sessionMappingRowsStored</code>, <code>watchErrors</code> (registration errors in the latest watch reconciliation), and <code>lastError</code>. Counts describe that sweep; <code>logsNew</code> counts first-imported files, and session mapping rows are stored checkpoint rows carrying an <code>s_</code> identity. This status is retained per CodeSense home in memory since app start. Reading setup does not run a sweep. Capture runs at startup, on completed archive events, and on demand.</p>
+        <p>
+          A terminal server can keep running across app updates. If the server selected for a Codex launch
+          predates checkpoint-hook trust, that launch reports <code>error</code> with an outdated-terminal-server message and starts without
+          capture hooks. Review the live sessions before
+          <a href="../arc-d-terminals-and-machines/terminal-servers.html">restarting the terminal server</a>,
+          then relaunch the agent to enable capture. An app restart alone does not replace that server.
+        </p>
+      </section>
+
+      <section data-search="Notes stay on this Mac by default; push opt-in, turn attribution off per repo" id="policy">
+        <h2>Notes stay on this Mac, unless you opt in to push</h2>
+        <p>
+          <strong>Capture is on for every managed worktree, public or private, and its notes never leave this
+          Mac.</strong> CodeSense's git-ai writes them to <code>refs/notes/sense</code>, not git-ai's usual
+          <code>refs/notes/ai</code>, and is configured never to push them. So you can analyze everything agents
+          work on, including a public or company repo, without publishing who wrote what.
+        </p>
+        <p>
+          <strong>Pushing is a per-repo opt-in.</strong> A repo set <code>notes: "push"</code> pushes its notes to
+          its origin with the branch, so teammates and other machines read the same attribution. Only that
+          origin is allowed (its https and ssh forms); a push anywhere else keeps the notes. A repo with no origin
+          refuses <code>push</code> with <code>no_remote</code> and nothing in that request is saved. The change
+          applies to the next push at once, with no relaunch; the call reports <code>applied</code>:
+          <code>now</code>, <code>pending</code> (saved; git-ai is not installed yet, and it applies before the daemon
+          next starts), <code>unsupported</code> (this git-ai cannot keep notes local) or <code>failed</code>
+          (saved, applied at the next launch). The push list is one per Mac: every local profile's choices
+          count. Choices are shared by all checkouts of the same repository and
+          survive detaching and reattaching a clone.
+        </p>
+        <pre><code>save_source_repo_attachment { repoPath: "/path/to/clone", notes: "push" }         // share notes with origin
+save_source_repo_attachment { repoPath: "/path/to/clone", notes: "local" }        // the default
+save_source_repo_attachment { repoPath: "/path/to/clone", attribution: "off" }    // never capture
+save_source_repo_attachment { repoPath: "/path/to/clone", attribution: "auto" }   // the default: on</code></pre>
+        <p>
+          <code>describe_setup.attribution</code> reports <code>notesRef</code> (<code>sense</code>) and
+          <code>notesPushRepos</code>, the repos set to push. The old <code>private</code> parameter is accepted
+          for one release and ignored: capture no longer depends on whether a repo is private.
+        </p>
+        <h3>The trade-offs</h3>
+        <ul>
+          <li><strong>Other machines see <code>unknown</code>.</strong> A local-only note exists only where it was
+            written. <code>why_line</code> and <code>story_changes</code> elsewhere report <code>basis: unknown</code>
+            with a reason that ends "notes for this repo stay on the machine that wrote them (local-only)"; nothing
+            is inferred. Set the repo to <code>push</code> if other machines should read it.</li>
+          <li><strong>Your own pushes can still send notes.</strong> git-ai keeps notes local on the pushes it
+            sees. <code>git push --mirror</code>, or naming the ref yourself
+            (<code>git push origin refs/notes/sense</code>), is git's own push and sends it anyway.</li>
+          <li><strong>Opting in shares the history.</strong> git-ai pushes the whole
+            <code>refs/notes/sense</code> ref, so notes written while the repo was local go too.</li>
+          <li><strong>Notes already pushed stay pushed.</strong> Repos that pushed <code>refs/notes/ai</code>
+            before keep it on their remote; CodeSense never deletes remote refs. To remove it, run
+            <code>git push origin :refs/notes/ai</code>.</li>
+          <li><strong>A git-ai of your own keeps its settings.</strong> Your own git-ai (on <code>PATH</code>,
+            with <code>~/.git-ai</code>) writes and pushes <code>refs/notes/ai</code> as before and never carries
+            CodeSense's <code>refs/notes/sense</code>.</li>
+        </ul>
+        <p>
+          If the git-ai in use cannot keep notes local (it refuses the local-notes settings), a repo set
+          <code>local</code> reports <code>off</code> with reason <code>notes_would_push</code> and captures
+          nothing; a repo set <code>push</code> still captures. Merges are merge commits only, which CodeSense's
+          repos already require.
+        </p>
+      </section>
+
+      <section data-search="Known limitation — GitHub squash and rebase merges lose exact attribution" id="limitation">
+        <h2>Known limitation: GitHub squash and rebase merges</h2>
+        <div class="arce-callout">
+          <p>
+            A squash or rebase merge done <strong>on GitHub</strong> rewrites the commits, and the new commits carry
+            no note, so the exact line &rarr; session link is lost for them. A merge done locally, under git-ai,
+            keeps it. Today a commit with no note resolves as <code>unknown</code>, never as human. A fallback that
+            resolves those lines through the pull request's branch commits, whose notes are still in
+            the local notes refs, as <code>associated</code> rather than <code>exact</code> is planned for
+            a later release; it is not part of this one.
+          </p>
+        </div>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> &middot; See also →
+        <a href="./notify-hook.html">The notify hook</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Line attribution</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

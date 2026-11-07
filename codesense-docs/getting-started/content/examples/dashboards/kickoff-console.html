@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <!-- Example dashboard · Kickoff console. Lists every story in your context (query +
+         taxonomy) and acts on it through two verbs: openWorkspace (opens the story's
+         worktree with its agent) and setStatus (moves its `status` frontmatter). -->
+    <title>Kickoff console</title>
+    <style>
+      /* Colours come from the app's theme (--cs-* tokens the host sets), so the page
+         follows light/dark and the viewer theme wherever it is open. Spacing, radius,
+         the mono font and the cs- components come from the dashboard kit every live
+         doc gets (see the kit section of get_live_data_contract). */
+      * { box-sizing: border-box; }
+      html { background: var(--cs-bg); }
+      body {
+        margin: 0;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        font: 13px/1.5 var(--cs-font-sans);
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection { background: color-mix(in srgb, var(--cs-accent) 14%, transparent); color: var(--cs-fg); }
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-thumb { background: var(--cs-border); border-radius: 10px; border: 2px solid var(--cs-bg); }
+      ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); }
+      ::-webkit-scrollbar-track { background: transparent; }
+      a { color: var(--cs-accent); text-decoration: none; text-underline-offset: 2px; }
+      a:hover { text-decoration: underline; }
+      :focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; border-radius: 4px; }
+      code, .mono { font-family: var(--cs-font-mono); font-size: 12px; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 20px 24px 40px; }
+
+      /* Header */
+      .hd { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+      .hd-main { flex: 1; min-width: 0; }
+      .hd h1 { font-size: 18px; line-height: 1.3; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+      .hd-sub { margin: 4px 0 0; color: var(--cs-muted-fg); max-width: 72ch; text-wrap: pretty; }
+      .hd-side { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-top: 1px; }
+
+      /* Live status pill */
+      .live { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 4px 10px;
+        border: 1px solid var(--cs-border); border-radius: 999px; color: var(--cs-muted-fg); font-size: 12px; white-space: nowrap; }
+      .live i { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .live[data-state="live"] i { background: var(--cs-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-success) 22%, transparent); }
+      .live[data-state="loading"] i { background: var(--cs-accent); animation: pulse 1.2s ease-in-out infinite; }
+      .live[data-state="error"] i { background: var(--cs-danger); }
+      .live[data-state="off"] i { background: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+
+      /* Buttons */
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px;
+        border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius); background: var(--cs-surface); color: var(--cs-fg);
+        font: 500 12px/1 var(--cs-font-sans); cursor: pointer; white-space: nowrap;
+        transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out; }
+      .btn:hover:not(:disabled) { background: var(--cs-inset); border-color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .btn:active:not(:disabled) { transform: translateY(1px); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn.primary { background: var(--cs-accent); border-color: var(--cs-accent); color: #fff; }
+      .btn.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--cs-accent) 86%, #000); border-color: transparent; }
+      .btn.ghost { background: transparent; border-color: transparent; color: var(--cs-muted-fg); }
+      .btn.ghost:hover:not(:disabled) { background: var(--cs-inset); color: var(--cs-fg); border-color: transparent; }
+      .btn.icon { width: 28px; padding: 0; }
+      .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+      .btn[aria-busy="true"] svg { animation: spin 0.9s linear infinite; }
+
+      /* Sections + lists */
+      .section { margin-top: 22px; }
+      .section:first-child { margin-top: 0; }
+      .section-hd { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
+      .section-hd h2 { margin: 0; font-size: 13px; font-weight: 600; }
+      .count { display: inline-flex; min-width: 20px; height: 18px; padding: 0 6px; align-items: center; justify-content: center;
+        border-radius: 999px; background: var(--cs-inset); color: var(--cs-muted-fg); font-size: 11px; font-weight: 600; }
+      .section-hd .aside { margin-left: auto; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-size: 12px; }
+      .list { border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); background: var(--cs-surface); overflow: hidden; }
+      .row { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start;
+        padding: 10px 14px; border-top: 1px solid var(--cs-border); transition: background-color 120ms ease-out; }
+      .row:first-child { border-top: 0; }
+      .row:hover { background: var(--cs-inset); }
+      .row .mark { width: 16px; height: 16px; margin-top: 2px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .row .mark svg { width: 16px; height: 16px; display: block; }
+      .row .title { font-weight: 500; color: var(--cs-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+      .row a.title:hover { color: var(--cs-accent); }
+      .row .meta { color: var(--cs-muted-fg); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 1px; }
+      .row .meta .sep::before { content: "·"; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .row .side { color: var(--cs-muted-fg); font-size: 12px; white-space: nowrap; text-align: right; display: flex; align-items: center; gap: 8px; }
+      .ok { color: var(--cs-success); } .bad { color: var(--cs-danger); } .warn { color: var(--cs-warning); } .run { color: var(--cs-warning); }
+      .tag { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border));
+        color: var(--cs-muted-fg); font-size: 11px; font-weight: 500; white-space: nowrap; }
+      .tag .swatch { width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; background: currentColor; }
+
+      /* The three-part state: what happened, why, one action. */
+      .state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+        padding: 40px 24px; border: 1px dashed color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius-lg); background: var(--cs-surface); }
+      .state-icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 6px;
+        background: var(--cs-inset); color: var(--cs-muted-fg); }
+      .state-icon svg { width: 18px; height: 18px; }
+      .state[data-tone="connect"] .state-icon { background: color-mix(in srgb, var(--cs-accent) 14%, transparent); color: var(--cs-accent); }
+      .state[data-tone="error"] .state-icon { color: var(--cs-danger); }
+      .state h3 { margin: 0; font-size: 14px; font-weight: 600; }
+      .state p { margin: 0; max-width: 52ch; color: var(--cs-muted-fg); text-wrap: pretty; }
+      .state .btn { margin-top: 10px; }
+
+      /* Skeleton */
+      .sk { display: block; height: 10px; border-radius: 4px; background: var(--cs-inset); animation: pulse 1.4s ease-in-out infinite; }
+      .notice { display: flex; gap: 8px; align-items: flex-start; padding: 9px 12px; margin-bottom: 14px; border-radius: var(--cs-radius);
+        border: 1px solid color-mix(in srgb, var(--cs-warning) 45%, transparent); background: color-mix(in srgb, var(--cs-warning) 8%, transparent);
+        color: var(--cs-fg); font-size: 12px; }
+      .notice svg { width: 14px; height: 14px; color: var(--cs-warning); flex-shrink: 0; margin-top: 2px; }
+      .foot { margin-top: 18px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-size: 12px; }
+
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+      @media (max-width: 560px) {
+        .page { padding: 16px; }
+        .hd { flex-direction: column; gap: 10px; }
+        .row { grid-template-columns: 16px minmax(0, 1fr); }
+        .row .side { grid-column: 2; justify-content: flex-start; }
+      }
+      .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+      .seg { display: inline-flex; padding: 2px; gap: 2px; border: 1px solid var(--cs-border); border-radius: var(--cs-radius); background: var(--cs-surface); }
+      .seg button { height: 24px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; color: var(--cs-muted-fg);
+        font: 500 12px var(--cs-font-sans); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background-color 120ms ease-out, color 120ms ease-out; }
+      .seg button:hover { color: var(--cs-fg); }
+      .seg button[aria-pressed="true"] { background: var(--cs-inset); color: var(--cs-fg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); }
+      .seg .n { color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-weight: 600; }
+      .filter { position: relative; flex: 1 1 200px; max-width: 280px; }
+      .filter svg { position: absolute; left: 9px; top: 7px; width: 14px; height: 14px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); pointer-events: none; }
+      .filter input { width: 100%; height: 28px; padding: 0 10px 0 30px; border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius);
+        background: var(--cs-surface); color: var(--cs-fg); font: 12px var(--cs-font-sans); }
+      .filter input::placeholder { color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .filter input:focus { outline: none; border-color: var(--cs-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 14%, transparent); }
+      .row { align-items: center; }
+      .row .mark { display: grid; place-items: center; margin-top: 0; }
+      .row .mark i { width: 9px; height: 9px; border-radius: 50%; background: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .row .side { gap: 6px; }
+      select { height: 28px; max-width: 150px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius);
+        background: var(--cs-surface); color: var(--cs-fg); font: 12px var(--cs-font-sans); cursor: pointer; }
+      select:hover:not(:disabled) { border-color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      select:focus-visible { outline: none; border-color: var(--cs-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 14%, transparent); }
+      select:disabled { opacity: 0.5; cursor: not-allowed; }
+      .step { grid-column: 2 / -1; font-size: 12px; color: var(--cs-muted-fg); }
+      .step:empty { display: none; }
+      .step.ok { color: var(--cs-success); } .step.bad { color: var(--cs-danger); } .step.run { color: var(--cs-accent); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hd">
+        <div class="hd-main">
+          <h1>Kickoff console</h1>
+          <p class="hd-sub" id="sub">Pick up the next story — open its workspace with an agent, or move its status, without leaving this page.</p>
+        </div>
+        <div class="hd-side">
+          <span class="live" id="live" data-state="loading" aria-live="polite"><i></i><span>Loading</span></span>
+          <button class="btn icon ghost" id="refresh" type="button" title="Refresh now" aria-label="Refresh now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8" /><path d="M21 3v5h-5" /></svg></button>
+        </div>
+      </header>
+      <div class="toolbar" id="toolbar" hidden>
+        <div class="seg" id="seg" role="group" aria-label="Show stories"></div>
+        <label class="filter"><span id="filter-icon"></span><input id="q" type="search" placeholder="Filter by id, title or epic" aria-label="Filter stories" /></label>
+      </div>
+      <main id="main"></main>
+    </div>
+    <script>
+      const CONFIG = {
+        maxRows: 200,
+        refreshMs: 60000,
+      };
+      // ── Page helpers (edit freely). ──
+      // Safe DOM only: every value is set with textContent / attributes, never parsed as HTML.
+      const cs = window.codesense;
+      const $ = (id) => document.getElementById(id);
+
+      function h(tag, attrs, ...kids) {
+        const n = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs || {})) {
+          if (v == null || v === false) continue;
+          if (k === "class") n.className = v;
+          else if (k === "text") n.textContent = v;
+          else if (k === "href") n.href = /^https?:\/\//i.test(v) ? v : "#";
+          else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+          else n.setAttribute(k, v === true ? "" : v);
+        }
+        for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid);
+        return n;
+      }
+
+      // Authored 24px stroke icons (Lucide geometry). "c:x,y,r" is a circle; else a path.
+      const ICONS = {
+        refresh: ["M21 12a9 9 0 1 1-2.64-6.36L21 8", "M21 3v5h-5"],
+        plug: ["M12 22v-5", "M9 8V2", "M15 8V2", "M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"],
+        shield: ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"],
+        alert: ["M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z", "M12 9v4", "M12 17h.01"],
+        check: ["c:12,12,9", "m8.5 12 2.5 2.5 4.5-5"],
+        x: ["c:12,12,9", "m15 9-6 6", "m9 9 6 6"],
+        clock: ["c:12,12,9", "M12 7v5l3 2"],
+        dot: ["c:12,12,4"],
+        ring: ["c:12,12,8"],
+        skip: ["c:12,12,9", "M8 12h8"],
+        pr: ["c:6,6,2.5", "c:18,18,2.5", "M6 8.5V21", "M13 6h3a2 2 0 0 1 2 2v7.5"],
+        draft: ["c:6,6,2.5", "c:18,18,2.5", "M6 8.5V21", "M18 11v2", "M18 6v1"],
+        repo: ["M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"],
+        inbox: ["M22 12h-6l-2 3h-4l-2-3H2", "M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"],
+        chart: ["M3 3v18h18", "M18 17V9", "M13 17V5", "M8 17v-3"],
+        terminal: ["m4 17 6-6-6-6", "M12 19h8"],
+        search: ["c:11,11,7", "m20 20-3.5-3.5"],
+        issue: ["c:12,12,9", "c:12,12,1.5"],
+        external: ["M15 3h6v6", "M10 14 21 3", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"],
+      };
+      function icon(name) {
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "1.75");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+        for (const part of ICONS[name] || []) {
+          let el;
+          if (part.startsWith("c:")) {
+            const [cx, cy, r] = part.slice(2).split(",");
+            el = document.createElementNS(NS, "circle");
+            el.setAttribute("cx", cx);
+            el.setAttribute("cy", cy);
+            el.setAttribute("r", r);
+          } else {
+            el = document.createElementNS(NS, "path");
+            el.setAttribute("d", part);
+          }
+          svg.append(el);
+        }
+        return svg;
+      }
+
+      function ago(value) {
+        const t = typeof value === "number" ? value : Date.parse(value);
+        if (!Number.isFinite(t)) return "";
+        const s = Math.max(0, (Date.now() - t) / 1000);
+        if (s < 60) return "just now";
+        if (s < 3600) return Math.floor(s / 60) + "m ago";
+        if (s < 86400) return Math.floor(s / 3600) + "h ago";
+        if (s < 86400 * 30) return Math.floor(s / 86400) + "d ago";
+        return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      }
+      const plural = (n, word, many) => n + " " + (n === 1 ? word : many || word + "s");
+
+      // Header status pill: loading · live · error · off.
+      function setLive(state, label) {
+        const pill = $("live");
+        if (!pill) return;
+        pill.dataset.state = state;
+        pill.lastChild.textContent = label;
+      }
+
+      // The three-part state (what, why, ONE action) — used for empty, connect, error.
+      function stateView({ tone, glyph, title, body, action }) {
+        return h(
+          "div",
+          { class: "state", "data-tone": tone || "empty", role: "status" },
+          h("div", { class: "state-icon" }, icon(glyph || "inbox")),
+          h("h3", { text: title }),
+          body ? h("p", { text: body }) : null,
+          action
+            ? h("button", { class: "btn" + (action.primary === false ? "" : " primary"), type: "button", onclick: action.run }, action.icon ? icon(action.icon) : null, action.label)
+            : null,
+        );
+      }
+      function skeletonList(rows) {
+        return h(
+          "div",
+          { class: "list", "aria-busy": "true", "aria-label": "Loading" },
+          Array.from({ length: rows }, (_, i) =>
+            h(
+              "div",
+              { class: "row" },
+              h("span", { class: "sk", style: "width:14px;height:14px;border-radius:50%;margin-top:2px" }),
+              h("div", {}, h("span", { class: "sk", style: "width:" + (46 + ((i * 17) % 38)) + "%" }), h("span", { class: "sk", style: "width:28%;margin-top:8px;height:8px" })),
+              h("span", { class: "sk", style: "width:44px" }),
+            ),
+          ),
+        );
+      }
+      function section(title, count, aside, body) {
+        return h(
+          "section",
+          { class: "section" },
+          h("div", { class: "section-hd" }, h("h2", { text: title }), count != null ? h("span", { class: "count", text: String(count) }) : null, aside ? h("span", { class: "aside", text: aside }) : null),
+          body,
+        );
+      }
+
+      // Refresh loop: an interval (paused while hidden) plus focus/visibility accelerators,
+      // with a single in-flight guard so a slow upstream never stacks requests.
+      function poll(fn, everyMs) {
+        let timer = null;
+        let inFlight = false;
+        let last = 0;
+        const run = async () => {
+          if (inFlight) return;
+          inFlight = true;
+          last = Date.now();
+          try { await fn(); } finally { inFlight = false; }
+        };
+        const start = () => { if (!timer) timer = setInterval(run, everyMs); };
+        const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+        const onVisible = () => {
+          if (document.visibilityState === "visible") {
+            if (Date.now() - last > 10000) run();
+            start();
+          } else stop();
+        };
+        document.addEventListener("visibilitychange", onVisible);
+        window.addEventListener("focus", onVisible);
+        const btn = $("refresh");
+        if (btn) btn.addEventListener("click", async () => {
+          btn.setAttribute("aria-busy", "true");
+          await run();
+          btn.removeAttribute("aria-busy");
+        });
+        run();
+        start();
+      }
+      const main = $("main");
+      const state = { docs: [], states: [], loaded: false, view: null, q: "", steps: new Map(), busy: new Set(), moving: new Set() };
+      const stepEls = new Map(); // story path → its live status line
+
+      // ── Taxonomy: the team's status vocabulary drives the views, colours and the status menu. ──
+      const byId = () => new Map(state.states.map((s) => [String(s.id).toLowerCase(), s]));
+      const stateOf = (status) => byId().get(String(status || "").trim().toLowerCase()) || null;
+      function roleOf(doc) {
+        const s = stateOf(doc.status);
+        if (s) return ["not_started", "active", "review", "done", "blocked"].includes(s.role) ? s.role : "active";
+        return doc.status ? "active" : "not_started"; // unknown status reads as in-flight; unset as not started
+      }
+      const VIEWS = [
+        { id: "next", label: "Up next", roles: ["not_started"] },
+        { id: "doing", label: "In progress", roles: ["active", "blocked"] },
+        { id: "review", label: "In review", roles: ["review"] },
+        { id: "done", label: "Done", roles: ["done"] },
+        { id: "all", label: "All", roles: null },
+      ];
+      const inView = (doc, view) => !view.roles || view.roles.includes(roleOf(doc));
+
+      const isStory = (d) => d && (d.documentType == null || d.documentType === "story");
+      const hasStoryId = (d) => d.id && d.id !== d.fileName;
+      const epicOf = (d) => { const segs = String(d.path || "").split("/").filter(Boolean); return segs.length >= 2 ? segs[segs.length - 2] : ""; };
+      function titleOf(d) {
+        // The frontmatter `title:` (an open tag) is the story's name everywhere else; the
+        // file name is only the fallback.
+        const named = d.tags && Array.isArray(d.tags.title) ? String(d.tags.title[0] || "").trim() : "";
+        if (named) return named;
+        let t = String(d.fileName || d.id || "").replace(/\.md$/i, "");
+        if (hasStoryId(d) && t.toLowerCase().startsWith(d.id.toLowerCase())) t = t.slice(d.id.length);
+        t = t.replace(/[-_]+/g, " ").trim();
+        return t ? t.charAt(0).toUpperCase() + t.slice(1) : d.id;
+      }
+
+      // Typed bridge rejections → one honest line the user can act on.
+      function explain(err) {
+        const s = String((err && err.message) || err || "");
+        if (s.startsWith("denied: write budget")) return "Paused after many changes — try again in a few seconds.";
+        if (s.startsWith("denied:")) return "Refused: " + s.slice(7).trim();
+        if (s.startsWith("busy")) return "Too many workspaces are starting — try again in a moment.";
+        if (s.startsWith("unavailable:")) return "Unavailable: " + s.slice(12).trim();
+        return s || "That didn't work.";
+      }
+      function setStep(doc, cls, text) {
+        state.steps.set(doc.path, { cls, text });
+        const el = stepEls.get(doc.path);
+        if (el && el.isConnected) { el.className = "step " + cls; el.textContent = text; }
+      }
+
+      async function openStory(doc, btn) {
+        if (state.busy.has(doc.path)) return;
+        state.busy.add(doc.path);
+        btn.disabled = true;
+        setStep(doc, "run", "Opening " + doc.id + "…");
+        try {
+          await cs.act("openWorkspace", { target: { kind: "story", storyId: doc.id } });
+          setStep(doc, "ok", "Workspace open — switch to its terminal to work with the agent.");
+        } catch (err) {
+          setStep(doc, "bad", explain(err));
+        } finally {
+          state.busy.delete(doc.path);
+          btn.disabled = false;
+        }
+      }
+
+      async function moveStory(doc, select, dot) {
+        const next = select.value;
+        const prev = doc.status || "";
+        if (next === prev || state.moving.has(doc.path)) return;
+        state.moving.add(doc.path);
+        select.disabled = true;
+        setStep(doc, "run", "Moving to " + ((stateOf(next) && stateOf(next).label) || next) + "…");
+        try {
+          await cs.act("setStatus", { path: doc.path, status: next });
+          doc.status = next;
+          setStep(doc, "ok", "Moved to " + ((stateOf(next) && stateOf(next).label) || next) + ".");
+          // Keep the row in place so the confirmation stays visible; the next refresh regroups it.
+          const s = stateOf(next);
+          dot.style.background = s ? s.color : "";
+          renderSeg(state.docs.filter(isStory));
+        } catch (err) {
+          select.value = prev;
+          setStep(doc, "bad", explain(err));
+        } finally {
+          state.moving.delete(doc.path);
+          select.disabled = false;
+          select.blur(); // hand refreshes back to the list
+        }
+      }
+
+      function storyRow(doc) {
+        const s = stateOf(doc.status);
+        const role = roleOf(doc);
+        const select = h(
+          "select",
+          { "aria-label": "Status of " + doc.id, disabled: !state.states.length || state.moving.has(doc.path), title: state.states.length ? "Move this story" : "Your status taxonomy didn't load" },
+          !s ? h("option", { value: doc.status || "", text: doc.status || "No status", selected: true }) : null,
+          state.states.map((st) => h("option", { value: st.id, text: st.label, selected: s && s.id === st.id })),
+        );
+        const dot = h("i", { style: s ? "background:" + s.color : null });
+        select.addEventListener("change", () => moveStory(doc, select, dot));
+        const open = h(
+          "button",
+          { class: "btn" + (role === "not_started" ? " primary" : ""), type: "button", disabled: !hasStoryId(doc) || state.busy.has(doc.path), title: hasStoryId(doc) ? "Open " + doc.id + "'s worktree with its agent" : "Add a story_id to this story's frontmatter to open its workspace" },
+          icon("terminal"),
+          role === "not_started" ? "Start" : "Open",
+        );
+        open.addEventListener("click", () => openStory(doc, open));
+        const step = state.steps.get(doc.path);
+        const stepEl = h("div", { class: "step" + (step ? " " + step.cls : ""), role: "status", text: step ? step.text : "" });
+        stepEls.set(doc.path, stepEl);
+        return h(
+          "div",
+          { class: "row" },
+          h("span", { class: "mark", title: s ? s.label : doc.status || "No status" }, dot),
+          h(
+            "div",
+            {},
+            h("span", { class: "title", text: titleOf(doc), title: doc.path }),
+            h(
+              "div",
+              { class: "meta" },
+              h("span", { class: "mono", text: doc.id }),
+              doc.points != null ? [h("span", { class: "sep" }), h("span", { text: doc.points + " pts" })] : null,
+              doc.sprint ? [h("span", { class: "sep" }), h("span", { text: doc.sprint })] : null,
+              doc.assignedTo ? [h("span", { class: "sep" }), h("span", { text: "@" + doc.assignedTo })] : null,
+            ),
+          ),
+          h("div", { class: "side" }, select, open),
+          stepEl,
+        );
+      }
+
+      function renderSeg(stories) {
+        const seg = $("seg");
+        seg.replaceChildren(
+          ...VIEWS.map((v) => {
+            const n = stories.filter((d) => inView(d, v)).length;
+            const b = h("button", { type: "button", "aria-pressed": String(state.view === v.id) }, v.label, h("span", { class: "n", text: String(n) }));
+            b.addEventListener("click", () => { state.view = v.id; render(); });
+            return b;
+          }),
+        );
+      }
+
+      function render() {
+        const stories = state.docs.filter(isStory);
+        if (!stories.length) {
+          $("toolbar").hidden = true;
+          main.replaceChildren(stateView({ glyph: "inbox", title: "No stories yet", body: "This console lists the stories in your team's context. Add an epic folder with a story — a markdown file with `type: story` and a `story_id` in its frontmatter — and it shows up here, ready to start." }));
+          return;
+        }
+        if (!state.view) {
+          const firstNonEmpty = VIEWS.find((v) => v.roles && stories.some((d) => inView(d, v)));
+          state.view = firstNonEmpty ? firstNonEmpty.id : "all";
+        }
+        $("toolbar").hidden = false;
+        renderSeg(stories);
+        const view = VIEWS.find((v) => v.id === state.view) || VIEWS[VIEWS.length - 1];
+        const q = state.q.trim().toLowerCase();
+        const shown = stories
+          .filter((d) => inView(d, view))
+          .filter((d) => !q || (d.id + " " + titleOf(d) + " " + epicOf(d)).toLowerCase().includes(q))
+          .sort((a, b) => epicOf(a).localeCompare(epicOf(b)) || String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+        if (!shown.length) {
+          main.replaceChildren(h("div", { class: "list" }, h("div", { class: "row" }, h("span", { class: "mark" }, h("i")), h("span", { class: "meta", text: q ? "No stories match “" + state.q + "” here." : "Nothing " + view.label.toLowerCase() + " right now." }))));
+          return;
+        }
+        const byEpic = new Map();
+        for (const d of shown.slice(0, CONFIG.maxRows)) {
+          const k = epicOf(d) || "Other";
+          if (!byEpic.has(k)) byEpic.set(k, []);
+          byEpic.get(k).push(d);
+        }
+        main.replaceChildren(
+          ...[...byEpic.entries()].map(([epic, docs]) => section(epic, docs.length, null, h("div", { class: "list" }, docs.map(storyRow)))),
+          ...(shown.length > CONFIG.maxRows ? [h("p", { class: "foot", text: "Showing " + CONFIG.maxRows + " of " + shown.length + " — filter to narrow it down." })] : []),
+        );
+      }
+
+      // This team's stories through the context engine, in the doc
+      // shape the page renders (scoped to the content root this page lives in).
+      function toDoc(r) {
+        const f = r.fields || {};
+        const tags = {};
+        for (const k in f) tags[k] = [].concat(f[k] == null ? [] : f[k]).map(String);
+        const pts = Number(f.points);
+        return { id: r.id, path: r.path, fileName: r.fileName, status: f.status ?? null, documentType: f.type ?? null, sprint: f.sprint ?? null, points: f.points == null || !Number.isFinite(pts) ? null : pts, assignedTo: f.assigned_to ?? null, tags };
+      }
+      let docDir;
+      async function readStories() {
+        if (docDir === undefined) {
+          const dir = await cs.invoke("getDocDir").catch(() => null);
+          docDir = typeof dir === "string" && dir ? dir : null;
+        }
+        const res = await cs.queryContext({ where: { kinds: ["story", "bug", "spike"], ...(docDir ? { sameRootAs: docDir } : {}) }, limit: 10000 });
+        return ((res && res.rows) || []).map(toDoc);
+      }
+
+      async function refresh() {
+        try {
+          const [q, tax] = await Promise.all([readStories(), typeof cs.taxonomy === "function" ? cs.taxonomy().catch(() => null) : null]);
+          // A status write in flight owns its row; the next refresh picks up the result.
+          if (state.moving.size) return;
+          state.docs = q || [];
+          if (tax && Array.isArray(tax.states)) state.states = tax.states.slice().sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+          state.loaded = true;
+          // Don't yank a status menu out from under the user mid-choice.
+          const focused = document.activeElement;
+          if (!(focused && focused.tagName === "SELECT" && main.contains(focused))) render();
+          setLive("live", "Live");
+        } catch (err) {
+          const msg = String((err && err.message) || err);
+          if (!state.loaded) {
+            main.replaceChildren(stateView({ tone: "error", glyph: "alert", title: "Couldn't read your stories", body: "The story read didn't complete (" + msg + "). This page keeps retrying on its own.", action: { label: "Try again", icon: "refresh", primary: false, run: refresh } }));
+            setLive("error", "Unreachable");
+          } else {
+            setLive("error", "Retrying");
+          }
+        }
+      }
+
+      $("filter-icon").replaceWith(icon("search"));
+      $("q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+      if (!cs || typeof cs.queryContext !== "function") {
+        main.replaceChildren(stateView({ glyph: "shield", title: "Open this page inside CodeSense", body: "The kickoff console reads and acts on your stories through CodeSense. Open it from your team's context in the app." }));
+        setLive("off", "Off");
+      } else {
+        main.replaceChildren(skeletonList(5));
+        poll(refresh, CONFIG.refreshMs);
+      }
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

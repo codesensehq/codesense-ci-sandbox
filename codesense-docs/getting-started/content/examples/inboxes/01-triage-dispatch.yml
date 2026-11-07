@@ -1,0 +1,54 @@
+# Thread 1 of 4 — Triage dispatch (analyst → builder)
+#
+# A user asks for a per-agent kill switch. The analyst (Mary) drafts the epic,
+# dispatches the first story to a builder (Amelia) through the `builder` role.
+# Shape: one triage message plus the first dispatch reply.
+#
+# Read-only on the docs org (refuse_write_at). Copy into your own
+# context repo's config/inboxes/ to seed your inbox with this shape.
+
+thread_id: fake-thread-triage-dispatch
+title: "Triage: per-agent kill switch for agent-dag"
+subject_story: DEMO-1
+flow: triage-dispatch
+roles: [analyst, builder]
+status: closed
+created_at: "2026-10-02T09:12:00Z"
+
+messages:
+  - message_id: fake-triage-dispatch-001
+    from: human
+    to: role:analyst
+    sent_at: "2026-10-02T09:12:00Z"
+    content_type: markdown
+    body: |
+      Can we add a kill switch to the agent-dag? When an agent goes off the rails
+      it's a pain to open the Agents panel to stop it. One click on the DAG node
+      would be ideal.
+    on_click:
+      type: show-message
+
+  - message_id: fake-triage-dispatch-002
+    from: agent:mary-analyst
+    to: human
+    sent_at: "2026-10-02T09:38:00Z"
+    content_type: markdown
+    body: |
+      Drafted DEMO as a 5-story epic. Foundation (host kill ladder) first,
+      then UI, MCP, persistence, and the dag rerender. Dispatching DEMO-1 to
+      the builder role now.
+    on_click:
+      type: open-file
+      path: content/examples/sample-epic/README.md
+
+  - message_id: fake-triage-dispatch-003
+    from: agent:mary-analyst
+    to: role:builder
+    sent_at: "2026-10-02T09:38:30Z"
+    content_type: markdown
+    body: |
+      DEMO-1 — host kill ladder + internal MCP wrapper. Grace period comes from
+      agent.yaml's graceful_shutdown_ms (default 3000). ACs in the story file.
+    on_click:
+      type: open-file
+      path: content/examples/sample-epic/DEMO-1-foundation.md

@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "features": [
+    "dashboard-publish"
+  ],
+  "inputs": {
+    "Cargo.lock": "277250b960f407aa883c761dc8cb4b5a4bb80572b1111f6c250cff38a022ec99",
+    "src-tauri/Cargo.toml": "76fc35d76b7f8c5ed4fbe3a45d2dd4b837dec40ca6284a9f28e4fa39f21e6786",
+    "src-tauri/src/context_query/model.rs": "4e81c3eaa7ed4ea0dc93fe5017c7defe77655b124f0d5bc447557b646f42d345",
+    "src-tauri/src/dashboard_publish/agents.rs": "d23099cc81e529efe61fb42bb86ac70ff6c0040d715fdf3db83c439cc045d65b",
+    "src-tauri/src/dashboard_publish/catalog.rs": "daa270f7a7ec72ef14b728ee43d0cbda7f8b4a64aea5ebc02ec0c40a16b07341",
+    "src-tauri/src/dashboard_publish/create.rs": "d156ac88b66ea60870d585c5dfc896f8165b182088f256b57c5c5a4a8ce88058",
+    "src-tauri/src/dashboard_publish/inbox.rs": "7e1bfe65d82d0729c56575b0df5ace8d4289004583546401f957047f5f905265",
+    "src-tauri/src/dashboard_publish/inbox/faces.rs": "4cebaf60f75f5c3cbabf289596ce6261509cf966c7b091706d84eddb6697528a",
+    "src-tauri/src/dashboard_publish/inbox/media.rs": "d2513f771721480927a47728a96ddfc20f74771b7d3452d730246d4fd6eeff58",
+    "src-tauri/src/dashboard_publish/inbox/tests.rs": "63f938474f140e6c958c411546db355b3cb5a2a6fd01213e474ad01fd32f8c85",
+    "src-tauri/src/dashboard_publish/toolkit/cs-live.js": "3296389ae01beebc31b4e3a67fa09e1b1de9dd505330e5d835c9d737e0340840",
+    "src-tauri/src/http/routes/viewer.rs": "8612bfbcadfea4c08b99d5ac63995077696a3960486412f54cbb997ffb464df1",
+    "src-tauri/src/mcp/live-data-starter.html": "5de6771ae5c84d74caf264f97a3038b3c826375147f1cf66eb12e87e868a8c61",
+    "src-tauri/src/mcp/live_data_authoring.rs": "2d37923e73eb7d95d313239ebf2cb9d0faa1969707e45801107cbd4f13f6fa4b",
+    "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
+    "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
+    "src-tauri/src/verbs/commands.rs": "e850a56fb795505d67f0836d2e3646bb30b01ec1f6b52da210380813c02d1974",
+    "src-tauri/src/verbs/dispatcher.rs": "47c3e9aff56be82cab8d5e3e25d7119158d43d82144c90b2fbf9c6d32fc3f932",
+    "src-tauri/src/verbs/grant_tests.rs": "d3f3a39dae1da2927310eb36376bf93a7d19ba5f12e9cc8a885e4cef715c9f6f",
+    "src-tauri/src/verbs/mod.rs": "67d8f4dbe9889cd0f3983dbd4d85400aa7fd3485a88a1b3b442e8405438f566a",
+    "src-tauri/src/verbs/policy.rs": "c1fe81f79a639040ae9d7f27bea572b2c14d08a950bbd7b738f66357eebdd24c",
+    "src-tauri/src/verbs/registry.generated.json": "5dbd84256de4d213a93eb8afd3e955063a24d4b13d33316b27b9b60491f6f3a9",
+    "src-tauri/src/verbs/registry.rs": "3e6945361b475ab01ebda7df4e029dacc86a4a51c0c56a2141249a5b4ab81317",
+    "src-tauri/src/verbs/schema.rs": "5628b1381c41665fd0b9a698a55ccefb8bb0922d1c133020f38f9f168aeebfc5",
+    "src-tauri/src/verbs/tests.rs": "9c33d1d493484128463e4dbc6992abd86bd44173b357c46106a85c20d37394fe"
+  },
+  "outputSha256": "4455a2f64415f1b901788806f6e0b8fa536a2c5761c17620e731fd4391c2f1d7"
+}

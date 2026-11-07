@@ -1,0 +1,412 @@
+/* SPDX-License-Identifier: MIT */
+/* The launch sheet and an agent's Messages: forms and threads drawn in the agents' own
+   vocabulary (faces, pieces, quiet secondary text), on the popover / page surface. */
+
+.ls-sheet {
+  /* Pieces and tags cut out of the face by the surface they sit on. */
+  --ag-bg: var(--popover);
+  --ag-text: var(--popover-foreground);
+  --ls-line: color-mix(in oklab, var(--foreground) 11%, transparent);
+  --ls-field: color-mix(in oklab, var(--foreground) 3.5%, var(--popover));
+  --ls-side: color-mix(in oklab, var(--foreground) 2.5%, var(--popover));
+}
+.ls-sheet ::selection {
+  background: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+.ls-head {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--ls-line);
+  gap: 4px;
+}
+.ls-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 308px;
+  height: min(560px, calc(100vh - 13rem));
+  min-height: 0;
+}
+.ls-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.ls-faces {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--ls-line);
+  background: var(--ls-side);
+}
+.ls-foot {
+  margin: 0;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ls-line);
+  align-items: center;
+}
+.ls-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ls-line) transparent;
+}
+
+.ls-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--muted-foreground);
+}
+.ls-note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted-foreground);
+}
+.ls-field-error {
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--destructive);
+}
+.ls-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--destructive);
+}
+
+/* The CLI-release warning above the first prompt: the shared warning tokens, as Settings uses. */
+.ls-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cs-warning-text);
+  background: var(--cs-warning-bg);
+}
+
+/* One field look for inputs, the task box and the pickers' triggers. */
+.ls-input {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--foreground);
+  background: var(--ls-field);
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+  outline: none;
+  transition:
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+.ls-input::placeholder,
+.ls-input input::placeholder {
+  color: color-mix(in oklab, var(--muted-foreground) 85%, transparent);
+}
+.ls-input:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+.ls-input:focus-visible,
+.ls-input:focus-within,
+.ls-trigger[data-state="open"] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--ring) 80%, transparent),
+    0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent);
+}
+.ls-input[aria-invalid="true"],
+.ls-invalid {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--destructive) 70%, transparent);
+}
+.ls-trigger {
+  cursor: pointer;
+  text-align: left;
+}
+.ls-textarea {
+  display: block;
+  height: auto;
+  min-height: 92px;
+  padding: 8px 10px;
+  line-height: 19px;
+  resize: vertical;
+}
+
+/* Segmented choices: Where, Role. */
+.ls-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--ls-field);
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+}
+.ls-seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.ls-seg button:hover {
+  color: var(--foreground);
+}
+.ls-seg button[aria-checked="true"] {
+  color: var(--foreground);
+  font-weight: 500;
+  background: var(--popover);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 1px 2px color-mix(in oklab, black 18%, transparent);
+}
+.ls-seg button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
+}
+
+.ls-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 24px;
+  background: var(--ls-field);
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+  transition: box-shadow 120ms ease;
+}
+.ls-chip:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 24%, transparent);
+}
+.ls-chip[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.ls-chip:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.ls-none-face {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+/* The preview: the new agent as the agents list will draw it, under its manager. */
+.ls-preview {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--foreground) 3%, var(--popover));
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+}
+.ls-preview-parent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.ls-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+.ls-preview-child {
+  position: relative;
+  margin-top: 4px;
+  padding-left: 22px;
+}
+/* The tree guide from the manager down to the new row, as the agents list draws it. */
+.ls-preview-child::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: -6px;
+  height: 24px;
+  width: 9px;
+  border-left: 1px solid color-mix(in oklab, var(--foreground) 22%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--foreground) 22%, transparent);
+  border-bottom-left-radius: 6px;
+}
+.ls-preview-face .ag-face {
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ls-preview-face .ag-face img {
+  animation: ls-face-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ls-face-in {
+  from {
+    opacity: 0.2;
+    transform: scale(0.82);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ls-preview-face .ag-face img {
+    animation: none;
+  }
+}
+
+/* The face grid. */
+.ls-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 6px 0 9px;
+  border-radius: 8px;
+  color: var(--muted-foreground);
+  background: var(--popover);
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+}
+.ls-search:focus-within {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--ring) 80%, transparent),
+    0 0 0 3px color-mix(in oklab, var(--ring) 20%, transparent);
+}
+.ls-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 13px;
+  color: var(--foreground);
+  background: transparent;
+  outline: 0;
+}
+.ls-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.ls-search-clear {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+.ls-search-clear:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.ls-auto {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: var(--popover);
+  box-shadow: inset 0 0 0 1px var(--ls-line);
+  transition: box-shadow 120ms ease;
+}
+.ls-auto:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+.ls-auto[aria-checked="true"] {
+  box-shadow:
+    inset 0 0 0 1.5px var(--primary),
+    0 0 0 3px color-mix(in oklab, var(--primary) 14%, transparent);
+}
+.ls-pack {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 -4px 4px;
+  padding: 6px 4px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: var(--ls-side);
+}
+.ls-pack-note {
+  font-weight: 400;
+  color: color-mix(in oklab, var(--muted-foreground) 80%, transparent);
+}
+.ls-face {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* The compact grid (the Roles icon picker): cells of at most 40px. */
+.ls-face-compact {
+  width: 40px;
+  height: 40px;
+}
+.ls-face:hover {
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+.ls-face:hover .ag-face {
+  transform: scale(1.06);
+}
+.ls-face .ag-face {
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ls-face-on,
+.ls-face-on:hover {
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.ls-face:focus-visible,
+.ls-auto:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.ls-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-right: 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 7%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+
+/* ---- An agent's page --------------------------------------------------------------- */
+
+[data-testid="agent-detail"] {
+  /* Pieces and tags cut out of faces by the page surface. */
+  --ag-bg: var(--background);
+  --ag-text: var(--foreground);
+}

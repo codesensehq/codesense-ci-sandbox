@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "resources": {
+      "binaries/codesense-session-server-x86_64-unknown-linux-musl": "host-agent/codesense-session-server-x86_64-unknown-linux-musl",
+      "binaries/codesense-session-server-x86_64-unknown-linux-musl.sha256": "host-agent/codesense-session-server-x86_64-unknown-linux-musl.sha256",
+      "binaries/codesense-session-server-aarch64-unknown-linux-musl": "host-agent/codesense-session-server-aarch64-unknown-linux-musl",
+      "binaries/codesense-session-server-aarch64-unknown-linux-musl.sha256": "host-agent/codesense-session-server-aarch64-unknown-linux-musl.sha256",
+      "binaries/codesense-emulator-x86_64-unknown-linux-musl": "host-agent/codesense-emulator-x86_64-unknown-linux-musl",
+      "binaries/codesense-emulator-x86_64-unknown-linux-musl.sha256": "host-agent/codesense-emulator-x86_64-unknown-linux-musl.sha256",
+      "binaries/codesense-emulator-aarch64-unknown-linux-musl": "host-agent/codesense-emulator-aarch64-unknown-linux-musl",
+      "binaries/codesense-emulator-aarch64-unknown-linux-musl.sha256": "host-agent/codesense-emulator-aarch64-unknown-linux-musl.sha256",
+      "binaries/codesense-emulator-NOTICE.md": "host-agent/codesense-emulator-NOTICE.md",
+      "binaries/codesense-bridge-x86_64-unknown-linux-musl": "host-agent/codesense-bridge-x86_64-unknown-linux-musl",
+      "binaries/codesense-bridge-x86_64-unknown-linux-musl.sha256": "host-agent/codesense-bridge-x86_64-unknown-linux-musl.sha256",
+      "binaries/codesense-bridge-aarch64-unknown-linux-musl": "host-agent/codesense-bridge-aarch64-unknown-linux-musl",
+      "binaries/codesense-bridge-aarch64-unknown-linux-musl.sha256": "host-agent/codesense-bridge-aarch64-unknown-linux-musl.sha256"
+    }
+  }
+}

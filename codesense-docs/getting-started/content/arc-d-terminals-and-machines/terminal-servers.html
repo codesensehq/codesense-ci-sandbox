@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="terminal" />
+    <title>CodeSense — Terminal server tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/terminal-servers">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Terminal server tools">
+        <span class="cs-docs-eyebrow">Arc D · Terminals and machines</span>
+        <h1>Terminal server tools</h1>
+        <p class="lede">
+          Reference for the tools that inspect, start, stop, restart, update and replace terminal servers, on This Mac and on registered machines.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>The terminal server hosts every terminal tab and agent, and outlives the app. Stopping or restarting one ends the terminals and agents it runs, so these tools bind to what you reviewed: pass <code>expected</code> back exactly as the status or listing tool returned it, and confirm explicitly. If anything changed since, the call is refused and nothing ends; read the status again.</p>
+      </section>
+      <section id="this-mac" data-search="This Mac">
+        <h2>This Mac</h2>
+        <h3 id="tool-terminal_server_status"><code>terminal_server_status</code></h3>
+        <p>Reports This Mac's terminal server for this CodeSense instance: <code>state</code> (<code>running</code>, <code>stopped</code>, <code>incompatible</code>, <code>unreachable</code> or <code>notApplicable</code>), <code>pid</code>, <code>version</code>, session counts, <code>ends</code> (in words, what a stop or restart would end), <code>connectedInstances</code>, <code>unowned</code> sessions no app holds, and <code>expected</code>, what stop and restart bind to. It never starts a server.</p>
+        <pre data-tool-example="terminal_server_status"><code>{
+  &quot;tool&quot;: &quot;terminal_server_status&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-start_terminal_server"><code>start_terminal_server</code></h3>
+        <p>Starts This Mac's terminal server when none runs, as opening a terminal does; a running one is only connected to. Returns the same fields as <code>terminal_server_status</code>.</p>
+        <pre data-tool-example="start_terminal_server"><code>{
+  &quot;tool&quot;: &quot;start_terminal_server&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-stop_terminal_server"><code>stop_terminal_server</code></h3>
+        <p>Stops This Mac's terminal server, ending every terminal and agent it runs, including other CodeSense instances' tabs. Nothing is started in its place. Requires <code>confirmEndSessions: true</code> and <code>expected</code> from <code>terminal_server_status</code>. Returns <code>{ended, ends, otherInstances}</code>.</p>
+        <pre data-tool-example="stop_terminal_server"><code>{
+  &quot;tool&quot;: &quot;stop_terminal_server&quot;,
+  &quot;arguments&quot;: {
+    &quot;confirmEndSessions&quot;: true,
+    &quot;expected&quot;: {
+      &quot;serverId&quot;: &quot;&lt;serverId from terminal_server_status&gt;&quot;,
+      &quot;epoch&quot;: &quot;&lt;epoch from terminal_server_status&gt;&quot;,
+      &quot;pid&quot;: 4242,
+      &quot;sessionIds&quot;: [
+        &quot;&lt;session ids from terminal_server_status&gt;&quot;
+      ],
+      &quot;otherInstances&quot;: 0
+    }
+  }
+}</code></pre>
+        <h3 id="tool-restart_terminal_server"><code>restart_terminal_server</code></h3>
+        <p>Restarts This Mac's terminal server: the running one stops, ending its terminals and agents, and this build's starts in its place. Requires <code>confirmEndSessions: true</code> and <code>expected</code>; <code>expected</code> may be omitted only while the state is <code>incompatible</code>, where <code>reviewedIncompatible</code> <code>{pid, sessions, otherInstances}</code> guards against change. Returns <code>{restarted:true, ended, ends, otherInstances}</code>.</p>
+        <pre data-tool-example="restart_terminal_server"><code>{
+  &quot;tool&quot;: &quot;restart_terminal_server&quot;,
+  &quot;arguments&quot;: {
+    &quot;confirmEndSessions&quot;: true,
+    &quot;expected&quot;: {
+      &quot;serverId&quot;: &quot;&lt;serverId from terminal_server_status&gt;&quot;,
+      &quot;epoch&quot;: &quot;&lt;epoch from terminal_server_status&gt;&quot;,
+      &quot;pid&quot;: 4242,
+      &quot;sessionIds&quot;: [
+        &quot;&lt;session ids from terminal_server_status&gt;&quot;
+      ],
+      &quot;otherInstances&quot;: 0
+    }
+  }
+}</code></pre>
+        <h3 id="tool-end_unowned_terminal_session"><code>end_unowned_terminal_session</code></h3>
+        <p>Ends one session that no app holds: a leftover of a CodeSense instance that crashed or was force-quit, and whatever it runs. Take <code>session</code> from <code>unowned</code> in <code>terminal_server_status</code>. Requires <code>confirmEndSession: true</code>. It is refused, and nothing ends, if an app holds the session by then or it is gone.</p>
+        <pre data-tool-example="end_unowned_terminal_session"><code>{
+  &quot;tool&quot;: &quot;end_unowned_terminal_session&quot;,
+  &quot;arguments&quot;: {
+    &quot;session&quot;: &quot;&lt;session from unowned&gt;&quot;,
+    &quot;confirmEndSession&quot;: true
+  }
+}</code></pre>
+      </section>
+      <section id="updates" data-search="Updating servers to this build">
+        <h2>Updating servers to this build</h2>
+        <h3 id="tool-list_out_of_date_terminal_servers"><code>list_out_of_date_terminal_servers</code></h3>
+        <p>Lists terminal servers older than this app: the <code>list_machines</code> rows whose <code>terminalServer.relation</code> is <code>older</code>, each with the live <code>tabs</code> an update ends, <code>untabbedSessions</code>, <code>isCaller</code>, and <code>expected</code>, what <code>update_terminal_servers</code> binds to, or <code>unavailable</code> with why it cannot be updated now. <code>orgSlug</code> is required.</p>
+        <pre data-tool-example="list_out_of_date_terminal_servers"><code>{
+  &quot;tool&quot;: &quot;list_out_of_date_terminal_servers&quot;,
+  &quot;arguments&quot;: {
+    &quot;orgSlug&quot;: &quot;acme&quot;
+  }
+}</code></pre>
+        <h3 id="tool-update_terminal_servers"><code>update_terminal_servers</code></h3>
+        <p>Updates terminal servers to this app's build, ending every terminal and agent each runs (tabs reopen; agents as shells unless their Agent has <code>resumeAfterRestart</code>). Requires <code>orgSlug</code>, <code>confirmEndSessions: true</code>, <code>expected</code> per machine exactly as the listing returned it (<code>sessionIds</code> included) and either <code>machineIds</code> or <code>all: true</code>. It is asynchronous: it returns <code>{opId, machines, skipped}</code> at once, and the outcome goes to the caller's inbox. Your own machine updates last, so your tab may end before any reply.</p>
+        <pre data-tool-example="update_terminal_servers"><code>{
+  &quot;tool&quot;: &quot;update_terminal_servers&quot;,
+  &quot;arguments&quot;: {
+    &quot;orgSlug&quot;: &quot;acme&quot;,
+    &quot;confirmEndSessions&quot;: true,
+    &quot;machineIds&quot;: [
+      &quot;&lt;machineId&gt;&quot;
+    ],
+    &quot;expected&quot;: {
+      &quot;&lt;machineId&gt;&quot;: {
+        &quot;serverId&quot;: &quot;&lt;serverId&gt;&quot;,
+        &quot;epoch&quot;: &quot;&lt;epoch&gt;&quot;,
+        &quot;sessionIds&quot;: [
+          &quot;&lt;session id&gt;&quot;
+        ]
+      }
+    }
+  }
+}</code></pre>
+      </section>
+      <section id="machines" data-search="Registered machines">
+        <h2>Registered machines</h2>
+        <h3 id="tool-install_terminal_server"><code>install_terminal_server</code></h3>
+        <p>Installs the bundled terminal server on a trusted machine. It uses no sudo and no arbitrary provisioner. <code>input</code> is the machine draft, as for <code>save_machine</code>; <code>machineId</code> is optional.</p>
+        <pre data-tool-example="install_terminal_server"><code>{
+  &quot;tool&quot;: &quot;install_terminal_server&quot;,
+  &quot;arguments&quot;: {
+    &quot;input&quot;: {
+      &quot;label&quot;: &quot;build-box-01&quot;,
+      &quot;host&quot;: &quot;build-box-01.example.com&quot;,
+      &quot;port&quot;: 22,
+      &quot;username&quot;: &quot;dev&quot;,
+      &quot;signIn&quot;: {
+        &quot;method&quot;: &quot;agent&quot;
+      }
+    }
+  }
+}</code></pre>
+        <h3 id="tool-prepare_machine_terminal_server_replacement"><code>prepare_machine_terminal_server_replacement</code></h3>
+        <p>Prepares a one-use restart token for a registered machine. It does not stop sessions. Confirming the restart later ends every terminal and agent running at shutdown, including sessions started after preparation.</p>
+        <pre data-tool-example="prepare_machine_terminal_server_replacement"><code>{
+  &quot;tool&quot;: &quot;prepare_machine_terminal_server_replacement&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-restart_machine_terminal_server"><code>restart_machine_terminal_server</code></h3>
+        <p>Executes a prepared restart. Requires the one-use <code>serverToken</code> and <code>confirmEndSessions: true</code>. Returns <code>{status:&quot;replaced&quot;, count, restored?}</code> or <code>{status:&quot;failed&quot;, oldStopped, count, repair}</code>. <code>restored</code> lists tabs reopened on the new server; agents that ran there end and reopen as shells, except a saved Agent with <code>resumeAfterRestart</code>.</p>
+        <pre data-tool-example="restart_machine_terminal_server"><code>{
+  &quot;tool&quot;: &quot;restart_machine_terminal_server&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;serverToken&quot;: &quot;&lt;token from prepare_machine_terminal_server_replacement&gt;&quot;,
+    &quot;confirmEndSessions&quot;: true
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc D pages</a> ·
+        <a href="./machine-tools.html">Machine tools</a> ·
+        <a href="./remote-workspaces.html">Remote workspace tools</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc D · Terminals and machines</div>
+    </footer>
+  </body>
+</html>

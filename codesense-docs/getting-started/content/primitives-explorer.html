@@ -1,0 +1,2887 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — Dashboard SDK (primitives-explorer)</title>
+
+    <!-- Shared docs chrome: top-nav + palette + token palette. The nav mounts
+         into <nav class="cs-topnav"> and sets body[data-nav-ready]=true. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+    <script src="./_shared/create-repo-primer.js" defer></script>
+
+    <style>
+      /* -------------------------------------------------------------------
+       * primitives-explorer — local styles, scoped `cs-pe-*`.
+       *
+       * Shell + sidebar + detail are canonical sibling of mcp-explorer /
+       * recipes-gallery; the Tokens tab's live swatch wall is the one
+       * flourish.
+       * ----------------------------------------------------------------- */
+      body.cs-pe {
+        font-family: var(--cs-font-sans);
+        color: var(--cs-fg);
+        background: var(--cs-bg);
+      }
+
+      .cs-pe-app {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        /* Nav mounts a 48px top-nav; the rest fills remaining viewport. */
+        min-height: calc(100vh - 48px);
+      }
+
+      /* Topbar / tabs row (dashboard header). */
+      .cs-pe-header {
+        display: grid;
+        grid-template-rows: auto auto;
+        border-bottom: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+      }
+      .cs-pe-topbar {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3);
+        padding: var(--cs-docs-space-3) var(--cs-docs-space-4);
+      }
+      .cs-pe-brand {
+        display: inline-flex;
+        align-items: baseline;
+        gap: var(--cs-docs-space-2);
+        font-weight: 600;
+      }
+      .cs-pe-brand small {
+        color: var(--cs-muted-fg);
+        font-weight: 400;
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-pe-counts {
+        margin-left: auto;
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .cs-pe-counts strong {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+
+      .cs-pe-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 var(--cs-docs-space-4);
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .cs-pe-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .cs-pe-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px 11px;
+        border: 0;
+        background: transparent;
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        white-space: nowrap;
+        font-family: inherit;
+      }
+      .cs-pe-tab:hover {
+        color: var(--cs-fg);
+      }
+      .cs-pe-tab[aria-selected="true"] {
+        color: var(--cs-fg);
+        border-bottom-color: var(--cs-accent);
+      }
+      .cs-pe-tab .cs-pe-tab-n {
+        font: 500 10px/1 var(--cs-font-mono);
+        padding: 2px 5px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset-strong);
+        color: var(--cs-muted-fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .cs-pe-tab[aria-selected="true"] .cs-pe-tab-n {
+        background: color-mix(in srgb, var(--cs-accent) 15%, transparent);
+        color: var(--cs-accent);
+      }
+
+      /* Main split pane. */
+      .cs-pe-main {
+        display: grid;
+        grid-template-columns: minmax(300px, 380px) 1fr;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      /* Left: filters + list. */
+      .cs-pe-list-col {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        border-right: 1px solid var(--cs-border);
+        background: var(--cs-inset);
+      }
+      .cs-pe-filters {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-2);
+        padding: var(--cs-docs-space-3);
+        border-bottom: 1px solid var(--cs-border);
+        background: var(--cs-inset);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .cs-pe-search {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        padding: 0 var(--cs-docs-space-2) 0 var(--cs-docs-space-3);
+        height: 34px;
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        transition:
+          border-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cs-pe-search {
+          transition: none;
+        }
+      }
+      .cs-pe-search:focus-within {
+        border-color: var(--cs-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 20%, transparent);
+      }
+      .cs-pe-search svg {
+        width: 14px;
+        height: 14px;
+        color: var(--cs-muted-fg);
+        flex: none;
+      }
+      .cs-pe-search input {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--cs-fg);
+        font: var(--cs-docs-text-md) / 1.4 var(--cs-font-sans);
+      }
+      .cs-pe-search input::placeholder {
+        color: var(--cs-subtle-fg);
+      }
+      .cs-pe-search .cs-pe-kbd {
+        font: 500 10.5px/1 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+        padding: 2px 6px;
+        border: 1px solid var(--cs-border);
+        border-bottom-width: 2px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset-strong);
+        flex: none;
+      }
+      .cs-pe-subfilters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cs-docs-space-1);
+        align-items: center;
+      }
+      .cs-pe-seg {
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--cs-border);
+        background: var(--cs-surface);
+        border-radius: var(--cs-docs-radius-sm);
+      }
+      .cs-pe-seg button {
+        padding: 3px 10px;
+        border: 0;
+        background: transparent;
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs);
+        font-weight: 500;
+        border-radius: var(--cs-docs-radius-xs);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .cs-pe-seg button[aria-pressed="true"] {
+        background: var(--cs-fg);
+        color: var(--cs-surface);
+      }
+
+      /* List. */
+      .cs-pe-list {
+        overflow-y: auto;
+        padding-bottom: var(--cs-docs-space-5);
+      }
+      .cs-pe-group-head {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        padding: 10px var(--cs-docs-space-3) 6px;
+        background: var(--cs-inset);
+        border-bottom: 1px solid var(--cs-border);
+        z-index: 1;
+      }
+      .cs-pe-group-head .label {
+        font: 600 10px/1 var(--cs-font-sans);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cs-muted-fg);
+      }
+      .cs-pe-group-head .count {
+        margin-left: auto;
+        font-size: 10px;
+        /* WCAG 2.1 AA: --cs-subtle-fg misses 4.5:1 at 10px. */
+        color: var(--cs-muted-fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .cs-pe-group-head.starter .label {
+        color: var(--cs-accent);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .cs-pe-group-head.starter {
+        border-bottom-color: color-mix(in srgb, var(--cs-accent) 30%, var(--cs-border));
+      }
+
+      .cs-pe-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        padding: 7px 12px 7px 16px;
+        cursor: pointer;
+        position: relative;
+        border-left: 3px solid transparent;
+        min-height: 32px;
+        border: 0;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        font-family: inherit;
+        color: inherit;
+      }
+      .cs-pe-row:hover {
+        background: var(--cs-hover);
+      }
+      .cs-pe-row[aria-selected="true"] {
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+        border-left-color: var(--cs-accent);
+      }
+      .cs-pe-row .name {
+        font: 500 var(--cs-docs-text-sm) / 1.3 var(--cs-font-mono);
+        color: var(--cs-fg);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .cs-pe-row .name mark {
+        background: color-mix(in srgb, var(--cs-accent) 25%, transparent);
+        color: inherit;
+        padding: 0 1px;
+        border-radius: 2px;
+      }
+      .cs-pe-row .write {
+        display: inline-flex;
+        align-items: center;
+        font: 600 9px/1 var(--cs-font-sans);
+        padding: 2px 5px;
+        border-radius: var(--cs-docs-radius-xs);
+        color: var(--cs-warning);
+        background: color-mix(in srgb, var(--cs-warning) 10%, transparent);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .cs-pe-chip {
+        display: inline-grid;
+        place-items: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset-strong);
+        color: var(--cs-muted-fg);
+        font: 600 9px/1 var(--cs-font-mono);
+        border: 1px solid var(--cs-border);
+        flex: none;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .cs-pe-chip.r {
+        color: var(--cs-success);
+      }
+      .cs-pe-chip.w {
+        color: var(--cs-warning);
+        border-color: color-mix(in srgb, var(--cs-warning) 40%, var(--cs-border));
+      }
+      .cs-pe-chip.in {
+        color: var(--cs-accent);
+      }
+      .cs-pe-chip.out {
+        color: var(--cs-success);
+      }
+      .cs-pe-arrow-chip {
+        display: inline-grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset-strong);
+        color: var(--cs-muted-fg);
+        border: 1px solid var(--cs-border);
+      }
+      .cs-pe-arrow-chip.in {
+        color: var(--cs-accent);
+      }
+      .cs-pe-arrow-chip.out {
+        color: var(--cs-success);
+      }
+      .cs-pe-arrow-chip svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      /* Detail pane. */
+      .cs-pe-detail-col {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 0;
+        background: var(--cs-bg);
+      }
+      .cs-pe-detail-head {
+        position: sticky;
+        top: 0;
+        padding: var(--cs-docs-space-4) var(--cs-docs-space-5) var(--cs-docs-space-3);
+        border-bottom: 1px solid var(--cs-border);
+        background: var(--cs-bg);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: start;
+        gap: var(--cs-docs-space-3);
+        z-index: 2;
+      }
+      .cs-pe-detail-head h1 {
+        margin: 0 0 2px;
+        font: 600 20px/1.2 var(--cs-font-mono);
+        letter-spacing: -0.01em;
+        color: var(--cs-fg);
+      }
+      .cs-pe-detail-head .meta {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+        flex-wrap: wrap;
+      }
+      .cs-pe-detail-head .meta code,
+      .cs-pe-detail-head .meta .src {
+        font-family: var(--cs-font-mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--cs-muted-fg);
+      }
+
+      .cs-pe-pill {
+        font-size: 9px;
+        padding: 2px 5px;
+        border-radius: var(--cs-docs-radius-xs);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .cs-pe-pill.read {
+        color: var(--cs-success);
+        background: color-mix(in srgb, var(--cs-success) 10%, transparent);
+      }
+      .cs-pe-pill.write {
+        color: var(--cs-warning);
+        background: color-mix(in srgb, var(--cs-warning) 10%, transparent);
+      }
+      .cs-pe-pill.audit {
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset-strong);
+      }
+      .cs-pe-pill.starter {
+        color: var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+      }
+      .cs-pe-pill.in-dir {
+        color: var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 10%, transparent);
+      }
+      .cs-pe-pill.out-dir {
+        color: var(--cs-success);
+        background: color-mix(in srgb, var(--cs-success) 10%, transparent);
+      }
+      .cs-pe-pill.reply {
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset-strong);
+      }
+
+      .cs-pe-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 12px;
+        background: var(--cs-fg);
+        color: var(--cs-bg);
+        border: 0;
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: var(--cs-docs-text-sm);
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .cs-pe-cta:hover {
+        background: color-mix(in srgb, var(--cs-fg) 85%, var(--cs-accent) 15%);
+      }
+      .cs-pe-cta.is-write {
+        background: var(--cs-warning);
+        color: var(--cs-bg);
+      }
+      .cs-pe-cta svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .cs-pe-detail-body {
+        overflow-y: auto;
+        padding: var(--cs-docs-space-4) var(--cs-docs-space-5) var(--cs-docs-space-6);
+      }
+      .cs-pe-desc {
+        color: var(--cs-fg);
+        max-width: 68ch;
+        font-size: var(--cs-docs-text-md);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-pe-intro-para {
+        max-width: 68ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+        font-size: var(--cs-docs-text-md);
+      }
+      .cs-pe-intro-para .label {
+        display: block;
+        font: 600 10px/1 var(--cs-font-sans);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cs-accent);
+        margin-bottom: 8px;
+      }
+
+      .cs-pe-section {
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-pe-section-label {
+        display: flex;
+        align-items: baseline;
+        gap: var(--cs-docs-space-2);
+        margin: 0 0 var(--cs-docs-space-2);
+      }
+      .cs-pe-section-label .l {
+        font: 600 10px/1 var(--cs-font-sans);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cs-muted-fg);
+      }
+      .cs-pe-section-label .hint {
+        color: var(--cs-subtle-fg);
+        font-size: var(--cs-docs-text-xs);
+      }
+
+      .cs-pe-code {
+        margin: 0;
+        padding: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-inset);
+        font: var(--cs-docs-text-sm) / 1.55 var(--cs-font-mono);
+        white-space: pre;
+        overflow-x: auto;
+        color: var(--cs-fg);
+      }
+      .cs-pe-schema .k {
+        color: var(--cs-fg);
+      }
+      .cs-pe-schema .t {
+        color: var(--cs-accent);
+      }
+      .cs-pe-schema .d {
+        color: var(--cs-muted-fg);
+        font-family: var(--cs-font-sans);
+        font-size: var(--cs-docs-text-xs);
+      }
+      .cs-pe-schema .r {
+        color: var(--cs-warning);
+        font-weight: 600;
+        font-family: var(--cs-font-sans);
+        font-size: var(--cs-docs-text-xs);
+        margin-left: 4px;
+      }
+      .cs-pe-example .io {
+        display: block;
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        margin-right: var(--cs-docs-space-2);
+        user-select: none;
+      }
+      .cs-pe-example .io.in {
+        color: var(--cs-accent);
+      }
+      .cs-pe-example .io.out {
+        color: var(--cs-success);
+      }
+
+      /* Try-it form. */
+      .cs-pe-args-form {
+        display: grid;
+        gap: var(--cs-docs-space-3);
+        padding: var(--cs-docs-space-4);
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+      }
+      .cs-pe-args-form .empty {
+        color: var(--cs-muted-fg);
+        font-style: italic;
+        margin: 0;
+      }
+      .cs-pe-field {
+        display: grid;
+        gap: 4px;
+      }
+      .cs-pe-field .name-row {
+        display: flex;
+        align-items: baseline;
+        gap: var(--cs-docs-space-2);
+      }
+      .cs-pe-field .fname {
+        font: 500 var(--cs-docs-text-sm) / 1 var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .cs-pe-field .type {
+        color: var(--cs-muted-fg);
+        font: var(--cs-docs-text-xs) / 1 var(--cs-font-mono);
+      }
+      .cs-pe-field .req {
+        color: var(--cs-warning);
+        font-size: var(--cs-docs-text-xs);
+        font-weight: 600;
+      }
+      .cs-pe-field .fhint {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs);
+        margin: 0;
+      }
+      .cs-pe-field input,
+      .cs-pe-field select,
+      .cs-pe-field textarea {
+        padding: 7px 10px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-xs);
+        font: var(--cs-docs-text-sm) / 1.4 var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .cs-pe-field input:focus-visible,
+      .cs-pe-field select:focus-visible,
+      .cs-pe-field textarea:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 1px;
+        border-color: var(--cs-accent);
+      }
+      .cs-pe-field textarea {
+        min-height: 68px;
+        resize: vertical;
+      }
+      .cs-pe-form-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3);
+        margin-top: var(--cs-docs-space-2);
+        padding-top: var(--cs-docs-space-3);
+        border-top: 1px dashed var(--cs-border);
+      }
+      .cs-pe-form-actions .hint {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-xs);
+        margin-right: auto;
+      }
+
+      /* Try-it result. */
+      .cs-pe-result {
+        margin-top: var(--cs-docs-space-3);
+        border: 1px solid var(--cs-border);
+        border-left: 3px solid var(--cs-success);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        overflow: hidden;
+      }
+      .cs-pe-result[data-state="error"] {
+        border-left-color: var(--cs-warning);
+      }
+      .cs-pe-result[data-state="loading"] {
+        border-left-color: var(--cs-accent);
+      }
+      .cs-pe-result .r-head {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        padding: 8px var(--cs-docs-space-3);
+        background: var(--cs-inset);
+        border-bottom: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .cs-pe-result .r-head strong {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+      .cs-pe-result .r-body {
+        padding: var(--cs-docs-space-3);
+        font: var(--cs-docs-text-sm) / 1.5 var(--cs-font-mono);
+        white-space: pre-wrap;
+        max-height: 340px;
+        overflow: auto;
+        color: var(--cs-fg);
+      }
+      .cs-pe-spin {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        border: 1.5px solid var(--cs-border);
+        border-top-color: var(--cs-accent);
+        border-radius: 50%;
+        animation: cs-pe-spin 700ms linear infinite;
+      }
+      @keyframes cs-pe-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cs-pe-spin {
+          animation: none;
+          border-top-color: transparent;
+          border-left-color: var(--cs-accent);
+        }
+      }
+
+      /* Tokens tab — the live swatch wall. */
+      .cs-pe-tokens-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--cs-docs-space-3);
+        padding: var(--cs-docs-space-3);
+      }
+      .cs-pe-swatch {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: var(--cs-docs-space-3);
+        align-items: center;
+        padding: var(--cs-docs-space-3);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        cursor: pointer;
+        text-align: left;
+        transition: border-color 120ms ease;
+        font-family: inherit;
+        color: inherit;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cs-pe-swatch {
+          transition: none;
+        }
+      }
+      .cs-pe-swatch:hover {
+        border-color: var(--cs-border-strong);
+      }
+      .cs-pe-swatch[aria-selected="true"] {
+        border-color: var(--cs-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 20%, transparent);
+      }
+      .cs-pe-swatch .chip {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--cs-docs-radius-sm);
+        border: 1px solid var(--cs-border);
+        display: grid;
+        place-items: center;
+        font: 600 var(--cs-docs-text-md) / 1 var(--cs-font-mono);
+        overflow: hidden;
+      }
+      .cs-pe-swatch .chip.text-chip,
+      .cs-pe-swatch .chip.font-chip {
+        background: var(--cs-inset);
+      }
+      .cs-pe-swatch .chip.font-chip {
+        font: 500 15px/1 var(--cs-font-mono);
+        letter-spacing: -0.01em;
+      }
+      .cs-pe-swatch .meta {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+      .cs-pe-swatch .meta .n {
+        font: 500 var(--cs-docs-text-sm) / 1.3 var(--cs-font-mono);
+        color: var(--cs-fg);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .cs-pe-swatch .meta .role {
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+      }
+      .cs-pe-swatch .meta .val {
+        font: var(--cs-docs-text-xs) / 1 var(--cs-font-mono);
+        color: var(--cs-subtle-fg);
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .cs-pe-token-sample {
+        display: grid;
+        gap: var(--cs-docs-space-2);
+        padding: var(--cs-docs-space-4);
+        border-radius: var(--cs-docs-radius-sm);
+        border: 1px solid var(--cs-border);
+        background: var(--cs-inset);
+      }
+      .cs-pe-token-sample .painted {
+        padding: var(--cs-docs-space-4);
+        border-radius: var(--cs-docs-radius-xs);
+      }
+      .cs-pe-token-sample .painted .r1 {
+        font: 600 var(--cs-docs-text-md) / 1.3 var(--cs-font-sans);
+        margin-bottom: 4px;
+      }
+      .cs-pe-token-sample .painted .r2 {
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-pe-chain {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        font: var(--cs-docs-text-sm) / 1 var(--cs-font-mono);
+      }
+      .cs-pe-chain .step {
+        padding: 2px 6px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset-strong);
+        color: var(--cs-fg);
+      }
+      .cs-pe-chain .arrow {
+        color: var(--cs-subtle-fg);
+      }
+      .cs-pe-chain .fallback {
+        color: var(--cs-muted-fg);
+      }
+
+      /* Contexts tab cards. */
+      .cs-pe-ctx-list {
+        padding: var(--cs-docs-space-3);
+        display: grid;
+        gap: var(--cs-docs-space-3);
+      }
+      .cs-pe-ctx-row {
+        display: grid;
+        gap: 6px;
+        padding: var(--cs-docs-space-3);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        color: inherit;
+        font-family: inherit;
+      }
+      .cs-pe-ctx-row:hover {
+        border-color: var(--cs-border-strong);
+      }
+      .cs-pe-ctx-row[aria-selected="true"] {
+        border-color: var(--cs-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 20%, transparent);
+      }
+      .cs-pe-ctx-row .n {
+        font: 600 var(--cs-docs-text-sm) / 1 var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .cs-pe-ctx-row .route {
+        font: var(--cs-docs-text-xs) / 1 var(--cs-font-mono);
+        color: var(--cs-muted-fg);
+      }
+      .cs-pe-ctx-row .caps {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+
+      .cs-pe-matrix {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-pe-matrix th,
+      .cs-pe-matrix td {
+        text-align: left;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .cs-pe-matrix th {
+        font: 600 10px/1 var(--cs-font-sans);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+      }
+      .cs-pe-matrix td {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+        vertical-align: top;
+      }
+      .cs-pe-matrix td.k {
+        color: var(--cs-muted-fg);
+        font-family: var(--cs-font-sans);
+        white-space: nowrap;
+        width: 42%;
+      }
+      .cs-pe-matrix .yes {
+        color: var(--cs-success);
+      }
+      .cs-pe-matrix .no {
+        color: var(--cs-subtle-fg);
+      }
+
+      /* Empty detail state. */
+      .cs-pe-empty-detail {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: var(--cs-docs-space-6);
+        color: var(--cs-muted-fg);
+      }
+      .cs-pe-empty-detail .big {
+        font-size: 36px;
+        margin-bottom: var(--cs-docs-space-3);
+        color: var(--cs-subtle-fg);
+      }
+      .cs-pe-empty-detail .hint {
+        font-size: var(--cs-docs-text-sm);
+        max-width: 48ch;
+        margin: 0 auto;
+      }
+      .cs-pe-empty-detail .cs-pe-kbd {
+        display: inline-block;
+        font: 500 11px/1 var(--cs-font-mono);
+        padding: 2px 6px;
+        border: 1px solid var(--cs-border);
+        border-bottom-width: 2px;
+        border-radius: var(--cs-docs-radius-xs);
+        background: var(--cs-inset);
+        color: var(--cs-fg);
+      }
+
+      /* Footer keyboard legend. */
+      .cs-pe-footer {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-4);
+        padding: 6px var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        background: var(--cs-inset);
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-muted-fg);
+        min-height: 30px;
+        flex-wrap: wrap;
+      }
+      .cs-pe-footer .legend {
+        display: flex;
+        gap: var(--cs-docs-space-3);
+        flex-wrap: wrap;
+      }
+      .cs-pe-footer .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .cs-pe-footer .legend .cs-pe-kbd {
+        font: 500 10px/1 var(--cs-font-mono);
+        padding: 1.5px 5px;
+        border: 1px solid var(--cs-border);
+        border-bottom-width: 2px;
+        border-radius: 3px;
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+      }
+      .cs-pe-footer .r {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+      }
+      .cs-pe-footer .gen {
+        /* WCAG 2.1 AA: --cs-subtle-fg is below 4.5:1. */
+        color: var(--cs-muted-fg);
+        margin-right: var(--cs-docs-space-3);
+      }
+
+      /* Primer slot shown when a write-verb is viewed on a read-only org. */
+      .cs-pe-primer-slot {
+        margin-top: var(--cs-docs-space-3);
+      }
+
+      /* Narrow: detail slides over. */
+      @media (max-width: 820px) {
+        .cs-pe-main {
+          grid-template-columns: 1fr;
+        }
+        .cs-pe-tokens-grid {
+          grid-template-columns: 1fr;
+        }
+        .cs-pe-detail-col {
+          position: fixed;
+          inset: 0;
+          z-index: 10;
+          transform: translateX(100%);
+          transition: transform 180ms ease;
+          border-left: 1px solid var(--cs-border);
+          box-shadow: var(--cs-docs-shadow-md);
+        }
+        .cs-pe-app[data-detail-open="true"] .cs-pe-detail-col {
+          transform: translateX(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cs-pe-detail-col {
+          transition: none;
+        }
+      }
+
+      /* Load / error states. */
+      .cs-pe-boot {
+        padding: var(--cs-docs-space-6);
+        color: var(--cs-muted-fg);
+        text-align: center;
+      }
+      .cs-pe-boot code {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+    </style>
+  </head>
+
+  <body class="cs-page cs-pe" data-page="primitives-explorer">
+    <!-- Top-nav (populated by nav.js). -->
+    <nav class="cs-topnav" data-cs-nav></nav>
+
+    <main class="cs-main">
+      <div class="cs-pe-app" id="cs-pe-app" data-detail-open="false">
+        <header class="cs-pe-header">
+          <div class="cs-pe-topbar">
+            <div class="cs-pe-brand">Dashboard SDK <small>primitives-explorer</small></div>
+            <div class="cs-pe-counts" id="cs-pe-counts" aria-live="polite"></div>
+          </div>
+          <nav class="cs-pe-tabs" role="tablist" aria-label="SDK sections" id="cs-pe-tabs">
+            <button class="cs-pe-tab" role="tab" data-tab="invoke" aria-selected="true">
+              Invoke <span class="cs-pe-tab-n" data-tab-n="invoke">0</span>
+            </button>
+            <button class="cs-pe-tab" role="tab" data-tab="kit" aria-selected="false">
+              Kit <span class="cs-pe-tab-n" data-tab-n="kit">0</span>
+            </button>
+            <button class="cs-pe-tab" role="tab" data-tab="classes" aria-selected="false">
+              Classes <span class="cs-pe-tab-n" data-tab-n="classes">0</span>
+            </button>
+            <button class="cs-pe-tab" role="tab" data-tab="tokens" aria-selected="false">
+              Tokens <span class="cs-pe-tab-n" data-tab-n="tokens">0</span>
+            </button>
+            <button class="cs-pe-tab" role="tab" data-tab="events" aria-selected="false">
+              Events <span class="cs-pe-tab-n" data-tab-n="events">0</span>
+            </button>
+            <button class="cs-pe-tab" role="tab" data-tab="contexts" aria-selected="false">
+              Contexts <span class="cs-pe-tab-n" data-tab-n="contexts">0</span>
+            </button>
+          </nav>
+        </header>
+
+        <section class="cs-pe-main" role="region" aria-label="primitives">
+          <aside class="cs-pe-list-col" aria-label="Primitive list">
+            <div class="cs-pe-filters" id="cs-pe-filters">
+              <label class="cs-pe-search" aria-label="Search primitives">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="m20 20-3.5-3.5"></path>
+                </svg>
+                <input
+                  id="cs-pe-q"
+                  type="search"
+                  placeholder="Search…"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <span class="cs-pe-kbd">/</span>
+              </label>
+              <div class="cs-pe-subfilters" id="cs-pe-subfilters"></div>
+            </div>
+            <div class="cs-pe-list" id="cs-pe-list" role="listbox" aria-label="Primitives">
+              <div class="cs-pe-boot" id="cs-pe-boot">
+                Loading <code>generated/primitives.json</code>…
+              </div>
+            </div>
+          </aside>
+
+          <article class="cs-pe-detail-col" aria-label="Primitive detail">
+            <div id="cs-pe-detail"></div>
+          </article>
+        </section>
+
+        <footer class="cs-pe-footer" role="contentinfo">
+          <div class="legend">
+            <span><span class="cs-pe-kbd">/</span> search</span>
+            <span><span class="cs-pe-kbd">↑</span><span class="cs-pe-kbd">↓</span> navigate</span>
+            <span><span class="cs-pe-kbd">↵</span> open</span>
+            <span><span class="cs-pe-kbd">Tab</span> next tab</span>
+            <span><span class="cs-pe-kbd">⌘↵</span> run</span>
+            <span><span class="cs-pe-kbd">Esc</span> clear</span>
+          </div>
+          <span class="gen">generated · html-bridge.ts + viewer.rs + doc-theme.ts</span>
+          <span class="r" id="cs-pe-footer-count"></span>
+        </footer>
+      </div>
+    <section id="file-tree-pane"><h2>File tree pane</h2><p>
+<a href="arc-i-dashboard-primitives/linking.html#file-tree">Build a file tree pane</a>:
+<code>kit.virtualList({tree:true})</code> shares list windowing; <code>files</code> supplies
+rows and <code>ui:file-nav</code> holds state. Row kinds <code>file</code>, <code>story</code>
+and <code>epic</code> use the host menu. <code>builtin:rename</code> and
+<code>builtin:delete</code> open the same native dialogs from menus or keyboard actions.
+</p></section>
+</main>
+
+    <script>
+      /* ============================================================
+       * primitives-explorer · live SDK reference
+       *
+       * At runtime: fetches generated/primitives.json (committed by
+       * scripts/generate-primitives-reference.mjs), renders a six-tab
+       * list-detail browser, wires live swatches to the viewer's
+       * `--cs-*` tokens, and gates "Try it" by `readOnlyDocsSafe`.
+       *
+       * Deep-link: #<tab>/<name> — e.g.
+       *   primitives-explorer.html#invoke/queryContext
+       *   primitives-explorer.html#tokens/--cs-accent
+       *   primitives-explorer.html#contexts/right-pane
+       * ============================================================ */
+      (function () {
+        "use strict";
+
+        var MANIFEST_URL = "./generated/primitives.json";
+
+        /** @type {{
+         *   schema: number,
+         *   generatedAt: string,
+         *   counts: {invoke: number, kit: number, classes: number, tokens: number, events: number, contexts: number},
+         *   invoke: Array<any>, kit: Array<any>, classes: Array<any>,
+         *   tokens: Array<any>, events: Array<any>, contexts: Array<any>,
+         * } | null} */
+        var MANIFEST = null;
+
+        // Tab definitions — categorization order + sub-filter shape.
+        var TAB_DEFS = {
+          invoke: {
+            key: "invoke",
+            label: "Invoke",
+            intro:
+              "Every verb your HTML can reach via `codesense.invoke(name, args)`. The verb-class chips mirror the bridge's audit lanes: READ (free), READ_ACTION (audited), METADATA / SPAWN / SEND (write-class), MANAGEMENT (close / stop). Try-it runs read-safe verbs in-place; write-class verbs offer the create-repo primer when you're on the read-only docs org.",
+            categories: [
+              ["READ", "Reads"],
+              ["READ_ACTION", "Read actions (audited)"],
+              ["METADATA", "Metadata (writes)"],
+              ["SPAWN", "Spawn (writes)"],
+              ["SEND", "Send (writes)"],
+              ["MANAGEMENT", "Management"],
+            ],
+            subFilter: "rw",
+            placeholder: "Search verbs…",
+          },
+          kit: {
+            key: "kit",
+            label: "Kit",
+            intro:
+              "Shortcuts bound onto `window.codesense` by the viewer shim. Each kit method is a thin wrapper over `invoke(cmd, args)` plus optional event-listener plumbing. Use these for intent-shaped calls instead of raw bridge names.",
+            categories: [
+              ["core", "Core"],
+              ["data-read", "Data reads"],
+              ["theme", "Theme"],
+              ["nav", "Navigation"],
+              ["ui", "UI"],
+              ["proxy", "Proxy"],
+            ],
+            subFilter: null,
+            placeholder: "Search kit…",
+          },
+          classes: {
+            key: "classes",
+            label: "Classes",
+            intro:
+              "Semantic `cs-*` classes the viewer applies on dashboard surfaces. Use them in your HTML and they theme themselves from the `--cs-*` tokens. Mix with your own classes freely; the viewer never overrides them.",
+            categories: [
+              ["layout", "Layout"],
+              ["sidebar", "Sidebar"],
+              ["cards", "Cards"],
+              ["tabs", "Tabs"],
+              ["focus", "Focus"],
+              ["prose", "Prose"],
+              ["terminal", "Terminal"],
+            ],
+            subFilter: null,
+            placeholder: "Search classes…",
+          },
+          tokens: {
+            key: "tokens",
+            label: "Tokens",
+            intro:
+              "Every `--cs-*` token the viewer injects into your document root. The swatches below are painted from the LIVE computed value — switch the viewer theme and watch the palette repaint. Use `var(--cs-xxx)` in your CSS; the browser handles the rest.",
+            categories: [],
+            subFilter: null,
+            placeholder: "Search tokens…",
+          },
+          events: {
+            key: "events",
+            label: "Events",
+            intro:
+              "Every `codesense:*` postMessage event that crosses the iframe boundary. Arrows show direction — → is parent → doc (host-pushed; subscribe or listen), ← is doc → parent (you post, or the shim does), ⇋ is a correlated reply.",
+            categories: [
+              ["parent-to-doc", "Parent → Doc"],
+              ["doc-to-parent", "Doc → Parent"],
+              ["reply", "Reply (correlated)"],
+            ],
+            subFilter: "dir",
+            placeholder: "Search events…",
+          },
+          contexts: {
+            key: "contexts",
+            label: "Contexts",
+            intro:
+              "Three live-dashboard mounting contexts (plus baseline). Each has a one-line detection snippet — your HTML can tell where it's mounted from the shape of its own `window.parent` state. Capabilities differ: baseline refuses all bridge calls; pane and message skip the Snapshot band; centre tabs honor Cmd+W.",
+            categories: [],
+            subFilter: null,
+            placeholder: "Search contexts…",
+          },
+        };
+
+        // Starter primitives — pinned above the first-class group in Invoke / Kit.
+        // Mirrors the generator's STARTERS set so the two surfaces don't drift.
+        var STARTER_PINS = {
+          invoke: ["queryContext", "openWorkspace"],
+          kit: ["codesense.invoke", "codesense.subscribeContext"],
+        };
+
+        var state = {
+          tab: "invoke",
+          q: "",
+          rw: "",
+          dir: "",
+          selected: null,
+          filtered: [],
+          readOnlyOrg: null, // true/false after we've learned
+        };
+
+        // ---------------- DOM helpers ----------------
+        function $(id) {
+          return document.getElementById(id);
+        }
+        function h(tag, attrs) {
+          var el = document.createElement(tag);
+          var kids = Array.prototype.slice.call(arguments, 2);
+          if (attrs)
+            for (var k in attrs) {
+              if (!Object.prototype.hasOwnProperty.call(attrs, k)) continue;
+              var v = attrs[k];
+              if (v === false || v == null) continue;
+              if (k === "class") el.className = v;
+              else if (k === "text") el.textContent = v;
+              else if (k === "html") el.innerHTML = v;
+              else if (k.indexOf("on") === 0 && typeof v === "function")
+                el.addEventListener(k.slice(2).toLowerCase(), v);
+              else el.setAttribute(k, v);
+            }
+          for (var i = 0; i < kids.length; i++) {
+            var kid = kids[i];
+            if (kid == null || kid === false) continue;
+            if (Array.isArray(kid)) {
+              for (var j = 0; j < kid.length; j++) {
+                var ck = kid[j];
+                if (ck == null || ck === false) continue;
+                el.appendChild(ck.nodeType ? ck : document.createTextNode(String(ck)));
+              }
+            } else {
+              el.appendChild(kid.nodeType ? kid : document.createTextNode(String(kid)));
+            }
+          }
+          return el;
+        }
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+
+        // ---------------- Live theme reads ----------------
+        function readToken(name) {
+          try {
+            var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+            return (v || "").trim();
+          } catch (_) {
+            return "";
+          }
+        }
+
+        // ---------------- Rows ----------------
+        function highlight(name) {
+          var q = state.q.trim().toLowerCase();
+          if (!q) return document.createTextNode(name);
+          var i = name.toLowerCase().indexOf(q);
+          if (i < 0) return document.createTextNode(name);
+          var frag = document.createDocumentFragment();
+          frag.appendChild(document.createTextNode(name.slice(0, i)));
+          var mark = document.createElement("mark");
+          mark.textContent = name.slice(i, i + q.length);
+          frag.appendChild(mark);
+          frag.appendChild(document.createTextNode(name.slice(i + q.length)));
+          return frag;
+        }
+
+        function invokeRow(p) {
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-row",
+              role: "option",
+              tabindex: "-1",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            h("span", { class: "name" }, highlight(p.name)),
+            p.write ? h("span", { class: "write", title: "This verb writes" }, "⚠ W") : null,
+            h(
+              "span",
+              {
+                class: "cs-pe-chip " + (p.write ? "w" : "r"),
+                title: p.category,
+              },
+              p.write ? "W" : "R",
+            ),
+          );
+        }
+        function kitRow(p) {
+          var abbr = (p.category || "")
+            .split("-")
+            .map(function (w) {
+              return (w[0] || "").toUpperCase();
+            })
+            .join("");
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-row",
+              role: "option",
+              tabindex: "-1",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            h("span", { class: "name" }, highlight(p.name)),
+            h("span", { class: "cs-pe-chip", title: p.category }, abbr || "·"),
+          );
+        }
+        function classRow(p) {
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-row",
+              role: "option",
+              tabindex: "-1",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            h("span", { class: "name" }, highlight("." + p.name)),
+            h(
+              "span",
+              { class: "cs-pe-chip", title: p.category },
+              (p.category[0] || "·").toUpperCase(),
+            ),
+          );
+        }
+        function eventRow(p) {
+          var isIn = p.direction === "parent-to-doc";
+          var isReply = p.direction === "reply";
+          var dirClass = isReply ? "" : isIn ? "in" : "out";
+          var arrowSvg = isReply
+            ? '<path d="M4 7h12l-3-3M20 17H8l3 3"/>'
+            : isIn
+              ? '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>'
+              : '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/>';
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-row",
+              role: "option",
+              tabindex: "-1",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            h("span", { class: "name" }, highlight(p.name)),
+            h("span", {
+              class: "cs-pe-arrow-chip " + dirClass,
+              title: isReply ? "Correlated reply" : isIn ? "Parent → Doc" : "Doc → Parent",
+              html:
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+                arrowSvg +
+                "</svg>",
+            }),
+          );
+        }
+
+        function tokenSwatch(p) {
+          var val = readToken(p.name) || "";
+          var isFont = p.swatchType === "font";
+          var isText = p.swatchType === "text";
+          var chip;
+          if (isFont) {
+            chip = h(
+              "div",
+              {
+                class: "chip font-chip",
+                style:
+                  "font-family: var(" +
+                  p.name +
+                  "); color: var(--cs-fg); background: var(--cs-inset);",
+              },
+              "Aa",
+            );
+          } else if (isText) {
+            chip = h(
+              "div",
+              {
+                class: "chip text-chip",
+                style: "color: var(" + p.name + "); background: var(--cs-inset);",
+              },
+              "Aa",
+            );
+          } else {
+            var isBorder = p.swatchType === "border";
+            var bg = isBorder ? "var(--cs-inset)" : "var(" + p.name + ")";
+            var border = isBorder ? "3px solid var(" + p.name + ")" : "1px solid var(--cs-border)";
+            chip = h("div", {
+              class: "chip",
+              style: "background: " + bg + "; border: " + border + ";",
+            });
+          }
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-swatch",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            chip,
+            h(
+              "div",
+              { class: "meta" },
+              h("div", { class: "n" }, p.name),
+              h("div", { class: "role" }, p.role),
+              h("div", { class: "val" }, val || "(unavailable)"),
+            ),
+          );
+        }
+
+        function contextRow(p) {
+          return h(
+            "button",
+            {
+              type: "button",
+              class: "cs-pe-ctx-row",
+              "data-name": p.name,
+              "aria-selected": p.name === state.selected ? "true" : "false",
+              onclick: function () {
+                select(p.name);
+              },
+            },
+            h("div", { class: "n" }, p.name),
+            h("div", { class: "route" }, p.route),
+            h(
+              "div",
+              { class: "caps" },
+              h(
+                "span",
+                {
+                  class: "cs-pe-pill " + (p.bridgeFull ? "read" : "write"),
+                },
+                p.bridgeFull ? "bridge: full" : "bridge: none",
+              ),
+              p.snapshotAvailable ? h("span", { class: "cs-pe-pill audit" }, "snapshot") : null,
+            ),
+          );
+        }
+
+        // ---------------- Filter / render ----------------
+        function dataForTab(tab) {
+          var m = MANIFEST || {};
+          return m[tab] || [];
+        }
+
+        function applyFilters() {
+          var def = TAB_DEFS[state.tab];
+          var q = state.q.trim().toLowerCase();
+          state.filtered = dataForTab(state.tab).filter(function (p) {
+            if (q) {
+              var hay = (
+                (p.name || "") +
+                " " +
+                (p.description || "") +
+                " " +
+                (p.role || "") +
+                " " +
+                (p.category || "") +
+                " " +
+                (p.direction || "")
+              ).toLowerCase();
+              if (hay.indexOf(q) < 0) return false;
+            }
+            if (def.subFilter === "rw") {
+              if (state.rw === "r" && p.write) return false;
+              if (state.rw === "w" && !p.write) return false;
+            }
+            if (def.subFilter === "dir") {
+              if (state.dir === "in" && p.direction !== "parent-to-doc") return false;
+              if (state.dir === "out" && p.direction !== "doc-to-parent") return false;
+              if (state.dir === "reply" && p.direction !== "reply") return false;
+            }
+            return true;
+          });
+        }
+
+        function renderSubFilters() {
+          var row = $("cs-pe-subfilters");
+          while (row.firstChild) row.removeChild(row.firstChild);
+          var def = TAB_DEFS[state.tab];
+          function setSegPressed(seg, attr, v) {
+            var btns = seg.querySelectorAll("button");
+            for (var i = 0; i < btns.length; i++) {
+              btns[i].setAttribute("aria-pressed", btns[i].dataset[attr] === v ? "true" : "false");
+            }
+          }
+          if (def.subFilter === "rw") {
+            var seg = h("div", {
+              class: "cs-pe-seg",
+              role: "group",
+              "aria-label": "Read/write filter",
+            });
+            [
+              ["", "All"],
+              ["r", "Reads"],
+              ["w", "Writes"],
+            ].forEach(function (pair) {
+              seg.appendChild(
+                h(
+                  "button",
+                  {
+                    type: "button",
+                    "data-rw": pair[0],
+                    "aria-pressed": state.rw === pair[0] ? "true" : "false",
+                    onclick: function () {
+                      state.rw = pair[0];
+                      applyFilters();
+                      renderList();
+                      setSegPressed(seg, "rw", pair[0]);
+                    },
+                  },
+                  pair[1],
+                ),
+              );
+            });
+            row.appendChild(seg);
+          } else if (def.subFilter === "dir") {
+            var dseg = h("div", {
+              class: "cs-pe-seg",
+              role: "group",
+              "aria-label": "Direction filter",
+            });
+            [
+              ["", "All"],
+              ["in", "Parent → Doc"],
+              ["out", "Doc → Parent"],
+              ["reply", "Reply"],
+            ].forEach(function (pair) {
+              dseg.appendChild(
+                h(
+                  "button",
+                  {
+                    type: "button",
+                    "data-dir": pair[0],
+                    "aria-pressed": state.dir === pair[0] ? "true" : "false",
+                    onclick: function () {
+                      state.dir = pair[0];
+                      applyFilters();
+                      renderList();
+                      setSegPressed(dseg, "dir", pair[0]);
+                    },
+                  },
+                  pair[1],
+                ),
+              );
+            });
+            row.appendChild(dseg);
+          }
+        }
+
+        function renderList() {
+          var list = $("cs-pe-list");
+          while (list.firstChild) list.removeChild(list.firstChild);
+
+          if (state.tab === "tokens") {
+            var grid = h("div", { class: "cs-pe-tokens-grid" });
+            for (var i = 0; i < state.filtered.length; i++)
+              grid.appendChild(tokenSwatch(state.filtered[i]));
+            list.appendChild(grid);
+            updateCounts();
+            return;
+          }
+          if (state.tab === "contexts") {
+            var cl = h("div", { class: "cs-pe-ctx-list" });
+            for (var j = 0; j < state.filtered.length; j++)
+              cl.appendChild(contextRow(state.filtered[j]));
+            list.appendChild(cl);
+            updateCounts();
+            return;
+          }
+
+          var def = TAB_DEFS[state.tab];
+          var byCat = {};
+          for (var k = 0; k < state.filtered.length; k++) {
+            var p = state.filtered[k];
+            var cat = state.tab === "events" ? p.direction : p.category || "other";
+            if (!byCat[cat]) byCat[cat] = [];
+            byCat[cat].push(p);
+          }
+
+          // Starter pins (invoke / kit).
+          var pins = STARTER_PINS[state.tab];
+          if (pins) {
+            var starters = state.filtered.filter(function (q) {
+              return pins.indexOf(q.name) >= 0;
+            });
+            if (starters.length) {
+              list.appendChild(
+                h(
+                  "div",
+                  { class: "cs-pe-group-head starter" },
+                  h(
+                    "span",
+                    { class: "label" },
+                    h("span", {
+                      html: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="11" height="11"><path d="M12 2l2.4 7.2H22l-6 4.5 2.3 7.3L12 16.9 5.7 21l2.3-7.3-6-4.5h7.6z"/></svg>',
+                    }),
+                    "Start here",
+                  ),
+                  h("span", { class: "count" }, String(starters.length)),
+                ),
+              );
+              for (var s = 0; s < starters.length; s++) {
+                list.appendChild(
+                  state.tab === "invoke" ? invokeRow(starters[s]) : kitRow(starters[s]),
+                );
+              }
+            }
+          }
+
+          var categories = def.categories.slice();
+          Object.keys(byCat).forEach(function (category) {
+            if (!categories.some(function (pair) { return pair[0] === category; })) {
+              categories.push([category, category]);
+            }
+          });
+          for (var c = 0; c < categories.length; c++) {
+            var pair = categories[c];
+            var catKey = pair[0];
+            var catLabel = pair[1];
+            var group = byCat[catKey];
+            if (!group || !group.length) continue;
+            list.appendChild(
+              h(
+                "div",
+                { class: "cs-pe-group-head" },
+                h("span", { class: "label" }, catLabel),
+                h("span", { class: "count" }, String(group.length)),
+              ),
+            );
+            for (var g = 0; g < group.length; g++) {
+              var row = group[g];
+              if (pins && pins.indexOf(row.name) >= 0) continue;
+              if (state.tab === "invoke") list.appendChild(invokeRow(row));
+              else if (state.tab === "kit") list.appendChild(kitRow(row));
+              else if (state.tab === "classes") list.appendChild(classRow(row));
+              else if (state.tab === "events") list.appendChild(eventRow(row));
+            }
+          }
+
+          updateCounts();
+        }
+
+        function updateCounts() {
+          if (!MANIFEST) return;
+          var cnt = MANIFEST.counts || {};
+          $("cs-pe-counts").innerHTML =
+            "<strong>" +
+            cnt.invoke +
+            "</strong> verbs · " +
+            "<strong>" +
+            cnt.kit +
+            "</strong> kit · " +
+            "<strong>" +
+            cnt.classes +
+            "</strong> classes · " +
+            "<strong>" +
+            cnt.tokens +
+            "</strong> tokens · " +
+            "<strong>" +
+            cnt.events +
+            "</strong> events · " +
+            "<strong>" +
+            cnt.contexts +
+            "</strong> contexts";
+          $("cs-pe-footer-count").textContent =
+            state.filtered.length + " of " + (dataForTab(state.tab) || []).length + " shown";
+          var tn = document.querySelectorAll("[data-tab-n]");
+          for (var i = 0; i < tn.length; i++)
+            tn[i].textContent = String(cnt[tn[i].dataset.tabN] || 0);
+        }
+
+        // ---------------- Detail ----------------
+        function schemaTree(schema) {
+          if (!schema || typeof schema !== "object") {
+            return h("div", { class: "cs-pe-code cs-pe-schema" }, "none");
+          }
+          var lines = [];
+          function typeOf(v) {
+            if (!v) return "any";
+            if (Array.isArray(v.type)) return v.type.join(" | ");
+            return v.type || "any";
+          }
+          function walk(node, indent) {
+            var pad = Array(indent + 1).join("  ");
+            if (node.type === "object") {
+              lines.push(
+                pad +
+                  '<span class="t">object</span>' +
+                  (node.description
+                    ? ' <span class="d">// ' + esc(node.description) + "</span>"
+                    : ""),
+              );
+              var req = {};
+              (node.required || []).forEach(function (r) {
+                req[r] = true;
+              });
+              var props = node.properties || {};
+              for (var k in props) {
+                if (!Object.prototype.hasOwnProperty.call(props, k)) continue;
+                var v = props[k];
+                var type = typeOf(v);
+                var def =
+                  v.default != null
+                    ? ' <span class="d">= ' + esc(JSON.stringify(v.default)) + "</span>"
+                    : "";
+                var enumv = Array.isArray(v.enum)
+                  ? ' <span class="d">∈ ' +
+                    esc(
+                      v.enum
+                        .map(function (e) {
+                          return JSON.stringify(e);
+                        })
+                        .join(" | "),
+                    ) +
+                    "</span>"
+                  : "";
+                var desc = v.description
+                  ? ' <span class="d">// ' + esc(v.description) + "</span>"
+                  : "";
+                var required = req[k] ? ' <span class="r">required</span>' : "";
+                lines.push(
+                  pad +
+                    '  <span class="k">' +
+                    esc(k) +
+                    '</span>: <span class="t">' +
+                    type +
+                    "</span>" +
+                    required +
+                    def +
+                    enumv +
+                    desc,
+                );
+                if (v.type === "object" && v.properties) walk(v, indent + 2);
+                if (v.type === "array" && v.items)
+                  walk(
+                    {
+                      type: v.items.type || "object",
+                      properties: v.items.properties,
+                      required: v.items.required,
+                    },
+                    indent + 2,
+                  );
+              }
+            } else if (node.type === "array") {
+              lines.push(
+                pad +
+                  '<span class="t">array</span>' +
+                  (node.description
+                    ? ' <span class="d">// ' + esc(node.description) + "</span>"
+                    : ""),
+              );
+              if (node.items) walk(node.items, indent + 1);
+            } else {
+              lines.push(
+                pad +
+                  '<span class="t">' +
+                  typeOf(node) +
+                  "</span>" +
+                  (node.description
+                    ? ' <span class="d">// ' + esc(node.description) + "</span>"
+                    : ""),
+              );
+            }
+          }
+          walk(schema, 0);
+          return h("div", { class: "cs-pe-code cs-pe-schema", html: lines.join("\n") });
+        }
+
+        function tabIntroEmpty() {
+          var def = TAB_DEFS[state.tab];
+          return h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h(
+              "div",
+              { class: "cs-pe-intro-para" },
+              h("span", { class: "label" }, "about this tab"),
+              def.intro,
+            ),
+            h(
+              "div",
+              { class: "cs-pe-empty-detail" },
+              h("div", { class: "big" }, "⌁"),
+              h(
+                "p",
+                { class: "hint" },
+                "Press ",
+                h("span", { class: "cs-pe-kbd" }, "/"),
+                " and start typing. ",
+                h("br"),
+                "Or deep-link ",
+                h(
+                  "span",
+                  { class: "cs-pe-kbd" },
+                  "primitives-explorer.html#" + state.tab + "/<name>",
+                ),
+                ".",
+              ),
+            ),
+          );
+        }
+
+        function renderDetail() {
+          var target = $("cs-pe-detail");
+          var sel = findByName(state.tab, state.selected);
+          while (target.firstChild) target.removeChild(target.firstChild);
+          if (!sel) {
+            target.appendChild(tabIntroEmpty());
+            return;
+          }
+          if (state.tab === "invoke") renderInvokeDetail(target, sel);
+          else if (state.tab === "kit") renderKitDetail(target, sel);
+          else if (state.tab === "classes") renderClassDetail(target, sel);
+          else if (state.tab === "tokens") renderTokenDetail(target, sel);
+          else if (state.tab === "events") renderEventDetail(target, sel);
+          else if (state.tab === "contexts") renderContextDetail(target, sel);
+        }
+
+        function findByName(tab, name) {
+          if (!name) return null;
+          var list = dataForTab(tab);
+          for (var i = 0; i < list.length; i++) if (list[i].name === name) return list[i];
+          return null;
+        }
+
+        // ---- Invoke detail: Try-it is live on `readOnlyDocsSafe:true`, otherwise
+        // shows the create-repo primer slot or jumps to mcp-explorer.
+        function renderInvokeDetail(target, p) {
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, p.name),
+              h(
+                "div",
+                { class: "meta" },
+                p.write
+                  ? h("span", { class: "cs-pe-pill write" }, "⚠ WRITE")
+                  : h("span", { class: "cs-pe-pill read" }, "read-only"),
+                h("span", { class: "cs-pe-pill audit" }, p.audited ? "audited" : "audit-exempt"),
+                p.readOnlyDocsSafe === false
+                  ? h(
+                      "span",
+                      { class: "cs-pe-pill audit", title: "readOnlyDocsSafe" },
+                      "docs-org blocks",
+                    )
+                  : null,
+                p.starter ? h("span", { class: "cs-pe-pill starter" }, "START HERE") : null,
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+                h("span", null, "·"),
+                h("code", null, p.category),
+              ),
+            ),
+            p.readOnlyDocsSafe
+              ? h(
+                  "button",
+                  {
+                    class: "cs-pe-cta",
+                    onclick: function () {
+                      tryInvoke(p);
+                    },
+                  },
+                  h("span", {
+                    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                  }),
+                  "Try it",
+                )
+              : h(
+                  "button",
+                  {
+                    class: "cs-pe-cta is-write",
+                    onclick: function () {
+                      jumpToMcpExplorer(p);
+                    },
+                  },
+                  h("span", {
+                    html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v7h-7"/><path d="M3 10V3h7"/></svg>',
+                  }),
+                  "Open in mcp-explorer",
+                ),
+          );
+
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.description),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Arguments"),
+                h("span", { class: "hint" }, "live JSON schema"),
+              ),
+              schemaTree(p.args),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Returns")),
+              schemaTree(p.returns),
+            ),
+          );
+
+          if (p.examples && p.examples.length) {
+            body.appendChild(
+              h(
+                "section",
+                { class: "cs-pe-section" },
+                h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Example")),
+                h(
+                  "pre",
+                  { class: "cs-pe-code cs-pe-example" },
+                  h("span", { class: "io in" }, "» args"),
+                  "\n",
+                  JSON.stringify(p.examples[0].args, null, 2),
+                  "\n\n",
+                  h("span", { class: "io out" }, "« result"),
+                  "\n",
+                  JSON.stringify(p.examples[0].result, null, 2),
+                ),
+              ),
+            );
+          }
+
+          if (p.readOnlyDocsSafe) {
+            body.appendChild(
+              h(
+                "section",
+                { class: "cs-pe-section" },
+                h(
+                  "div",
+                  { class: "cs-pe-section-label" },
+                  h("span", { class: "l" }, "Try it"),
+                  h(
+                    "span",
+                    { class: "hint" },
+                    "runs via window.codesense.invoke in the live viewer",
+                  ),
+                ),
+                invokeTryForm(p),
+              ),
+            );
+          } else {
+            // AC-9: on the docs org (no editable repo) the create-repo primer
+            // appears inline; with ≥1 editable repo the primer collapses and
+            // we hand off to mcp-explorer (which owns the arm-and-confirm UX).
+            var primerSection = h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Try it"),
+                h("span", { class: "hint" }, "writes — needs an editable context repo"),
+              ),
+              h(
+                "div",
+                { class: "cs-pe-args-form" },
+                h(
+                  "p",
+                  { class: "empty" },
+                  "This verb writes. On the read-only docs org CodeSense refuses it; " +
+                    "mcp-explorer owns the arm-and-confirm dialog for every write-class verb.",
+                ),
+                h("div", { class: "cs-pe-primer-slot" }),
+              ),
+            );
+            body.appendChild(primerSection);
+            // Mount the create-repo primer when the docs API is loaded.
+            setTimeout(function () {
+              mountPrimerIfNoRepo(primerSection.querySelector(".cs-pe-primer-slot"), function () {
+                // After the user creates an editable repo, upgrade to a live Try-it.
+                var replaced = invokeTryForm(p);
+                primerSection.replaceWith(
+                  h(
+                    "section",
+                    { class: "cs-pe-section" },
+                    h(
+                      "div",
+                      { class: "cs-pe-section-label" },
+                      h("span", { class: "l" }, "Try it"),
+                      h("span", { class: "hint" }, "editable repo detected — invokes against it"),
+                    ),
+                    replaced,
+                  ),
+                );
+              });
+            }, 0);
+          }
+
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        function structuredArgument(schema) {
+          if (!schema || typeof schema !== "object") return false;
+          var types = Array.isArray(schema.type) ? schema.type : [schema.type];
+          if (types.indexOf("array") >= 0 || types.indexOf("object") >= 0 || schema.properties || schema.items) return true;
+          return ["oneOf", "anyOf", "allOf"].some(function (keyword) {
+            return Array.isArray(schema[keyword]) && schema[keyword].some(structuredArgument);
+          });
+        }
+
+        function invokeTryForm(p) {
+          var schema = p.args || { properties: {} };
+          var props = schema.properties || {};
+          var names = Object.keys(props);
+          var form = h("form", {
+            class: "cs-pe-args-form",
+            id: "cs-pe-try-form",
+            onsubmit: function (e) {
+              e.preventDefault();
+              tryInvoke(p);
+            },
+          });
+          var complex = names.some(function (name) { return structuredArgument(props[name]); }) ||
+            ["oneOf", "anyOf", "allOf"].some(function (keyword) {
+              return Array.isArray(schema[keyword]) && schema[keyword].some(structuredArgument);
+            });
+          if (complex || (!names.length && schema.additionalProperties !== false)) {
+            form.appendChild(h("label", { class: "cs-pe-field" },
+              h("span", { class: "fname" }, "Arguments (JSON object)"),
+              h("textarea", { "data-json-args": "true", rows: "6", spellcheck: "false" }, "{}"),
+              h("span", { class: "fhint" }, "Enter the argument fields this method accepts."),
+            ));
+          } else if (!names.length) {
+            form.appendChild(h("p", { class: "empty" }, "(no arguments)"));
+          } else {
+            var required = {};
+            (schema.required || []).forEach(function (r) {
+              required[r] = true;
+            });
+            for (var i = 0; i < names.length; i++) {
+              var k = names[i];
+              var prop = props[k];
+              var type = prop.type || "any";
+              var ctl;
+              if (Array.isArray(prop.enum)) {
+                ctl = h(
+                  "select",
+                  { name: k },
+                  h("option", { value: "" }, "— choose —"),
+                  prop.enum.map(function (v) {
+                    return h("option", { value: v }, v);
+                  }),
+                );
+              } else if (prop.type === "boolean") {
+                ctl = h(
+                  "select",
+                  { name: k },
+                  h("option", { value: "" }, "— choose —"),
+                  h("option", { value: "true" }, "true"),
+                  h("option", { value: "false" }, "false"),
+                );
+              } else if (prop.type === "integer" || prop.type === "number") {
+                ctl = h("input", {
+                  name: k,
+                  type: "number",
+                  step: prop.type === "integer" ? "1" : "any",
+                  placeholder: prop.default != null ? String(prop.default) : "",
+                });
+              } else {
+                ctl = h("input", {
+                  name: k,
+                  type: "text",
+                  placeholder:
+                    prop.default != null
+                      ? String(prop.default)
+                      : prop.description
+                        ? prop.description.slice(0, 48)
+                        : "",
+                });
+              }
+              form.appendChild(
+                h(
+                  "div",
+                  { class: "cs-pe-field" },
+                  h(
+                    "div",
+                    { class: "name-row" },
+                    h("span", { class: "fname" }, k),
+                    h("span", { class: "type" }, type),
+                    required[k] ? h("span", { class: "req" }, "required") : null,
+                  ),
+                  ctl,
+                  prop.description ? h("p", { class: "fhint" }, prop.description) : null,
+                ),
+              );
+            }
+          }
+          form.appendChild(
+            h(
+              "div",
+              { class: "cs-pe-form-actions" },
+              h("span", { class: "hint" }, "read-only — invokes immediately"),
+              h(
+                "button",
+                { class: "cs-pe-cta", type: "submit" },
+                h("span", {
+                  html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+                }),
+                "Run → ⌘↵",
+              ),
+            ),
+            h("div", { id: "cs-pe-try-result" }),
+          );
+          return form;
+        }
+
+        function tryInvoke(p) {
+          var form = $("cs-pe-try-form");
+          var args = {};
+          var jsonEditor = form && form.querySelector("[data-json-args]");
+          if (jsonEditor) {
+            try {
+              args = JSON.parse(jsonEditor.value || "{}");
+              if (!args || typeof args !== "object" || Array.isArray(args)) {
+                throw new Error("Enter a JSON object containing the method's arguments.");
+              }
+            } catch (error) {
+              var invalidResult = $("cs-pe-try-result");
+              if (invalidResult) invalidResult.replaceChildren(h("p", { role: "alert" }, String(error.message || error)));
+              return;
+            }
+          } else if (form) {
+            var fd = new FormData(form);
+            fd.forEach(function (v, k) {
+              if (v === "" || v == null) return;
+              var prop = (p.args && p.args.properties ? p.args.properties[k] : null) || {};
+              if (prop.type === "integer") args[k] = parseInt(String(v), 10);
+              else if (prop.type === "number") args[k] = Number(v);
+              else if (prop.type === "boolean") args[k] = v === "true";
+              else args[k] = v;
+            });
+          }
+          var resultEl = $("cs-pe-try-result");
+          if (resultEl) {
+            resultEl.innerHTML = "";
+            resultEl.appendChild(
+              h(
+                "div",
+                { class: "cs-pe-result", "data-state": "loading" },
+                h(
+                  "div",
+                  { class: "r-head" },
+                  h("span", { class: "cs-pe-spin" }),
+                  " Invoking ",
+                  h("strong", null, p.name),
+                  " …",
+                ),
+              ),
+            );
+          }
+          var t0 = performance.now();
+          var cs = window.codesense;
+          var pending;
+          if (cs && typeof cs.invoke === "function") {
+            try {
+              pending = Promise.resolve(cs.invoke(p.name, args));
+            } catch (err) {
+              pending = Promise.reject(err);
+            }
+          } else {
+            // Mock preview: resolve with the example after a tiny delay.
+            pending = new Promise(function (res) {
+              setTimeout(function () {
+                res(p.examples && p.examples[0] ? p.examples[0].result : { ok: true });
+              }, 420);
+            });
+          }
+          pending.then(
+            function (out) {
+              finish(null, out, performance.now() - t0, !!(cs && cs.invoke));
+            },
+            function (err) {
+              finish(err, null, performance.now() - t0, !!(cs && cs.invoke));
+            },
+          );
+          function finish(err, out, ms, live) {
+            if (!resultEl) return;
+            resultEl.innerHTML = "";
+            resultEl.appendChild(
+              h(
+                "div",
+                { class: "cs-pe-result", "data-state": err ? "error" : "ok" },
+                h(
+                  "div",
+                  { class: "r-head" },
+                  h("strong", null, err ? "Error" : "Result"),
+                  " · ",
+                  h("span", null, Math.round(ms) + " ms"),
+                  h("span", { style: "margin-left:auto;" }, live ? "live" : "mock"),
+                ),
+                h(
+                  "div",
+                  { class: "r-body" },
+                  err ? String((err && err.message) || err) : JSON.stringify(out, null, 2),
+                ),
+              ),
+            );
+          }
+        }
+
+        function mountPrimerIfNoRepo(slot, onRepo) {
+          if (!slot) return;
+          var cs = window.codesense;
+          var docs = cs && cs.docs;
+          if (!docs || typeof docs.hasEditableRepo !== "function") {
+            // Not inside CodeSense (or primer not loaded yet) — fall back to a
+            // static CTA pointing at the Arc-A create flow.
+            slot.innerHTML =
+              '<div class="cs-docs-card" style="margin-top: 12px;">' +
+              '<p style="margin: 0; color: var(--cs-fg);">' +
+              "You need an editable context repo first. " +
+              '<a href="./arc-a-first-touch/create-a-context-repo.html">How to create one →</a>' +
+              "</p>" +
+              "</div>";
+            return;
+          }
+          docs
+            .hasEditableRepo()
+            .then(function (has) {
+              if (has) {
+                slot.innerHTML = "";
+                return;
+              }
+              if (typeof docs.mountInlineAffordance === "function") {
+                docs.mountInlineAffordance(slot, {
+                  onRetry: function () {
+                    if (onRepo) onRepo();
+                  },
+                });
+              } else {
+                slot.innerHTML =
+                  '<div class="cs-docs-card"><p>You need an editable context repo first.</p></div>';
+              }
+            })
+            .catch(function () {
+              /* ignore */
+            });
+        }
+
+        function jumpToMcpExplorer(p) {
+          window.location.href = "./mcp-explorer.html#tool/" + encodeURIComponent(p.name);
+        }
+
+        // ---- Kit detail
+        function renderKitDetail(target, p) {
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, p.name),
+              h(
+                "div",
+                { class: "meta" },
+                h("span", { class: "cs-pe-pill audit" }, p.category),
+                p.starter ? h("span", { class: "cs-pe-pill starter" }, "START HERE") : null,
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+              ),
+            ),
+          );
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.description),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Signature")),
+              h("pre", { class: "cs-pe-code" }, p.signature),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Wraps"),
+                h("span", { class: "hint" }, "the underlying postMessage call"),
+              ),
+              h("pre", { class: "cs-pe-code" }, p.wraps),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Example")),
+              h("pre", { class: "cs-pe-code cs-pe-example" }, p.example),
+            ),
+          );
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        // ---- Class detail
+        function renderClassDetail(target, p) {
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, "." + p.name),
+              h(
+                "div",
+                { class: "meta" },
+                h("span", { class: "cs-pe-pill audit" }, p.category),
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+              ),
+            ),
+          );
+          var tokenBtns = (p.tokensUsed || []).map(function (t) {
+            return h(
+              "button",
+              {
+                class: "cs-pe-pill audit",
+                style:
+                  "cursor:pointer; font-family:var(--cs-font-mono); font-size:11px; padding:4px 8px; text-transform:none; letter-spacing:0; border:1px solid var(--cs-border); background: var(--cs-inset-strong);",
+                onclick: function () {
+                  setTab("tokens");
+                  select(t);
+                },
+              },
+              t,
+            );
+          });
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.description),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Applied by")),
+              h("pre", { class: "cs-pe-code" }, p.appliedBy),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Tokens used"),
+                h("span", { class: "hint" }, "click to open in the Tokens tab"),
+              ),
+              h("div", { style: "display:flex; flex-wrap:wrap; gap:6px;" }, tokenBtns),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Example")),
+              h("pre", { class: "cs-pe-code cs-pe-example" }, p.example),
+            ),
+          );
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        // ---- Token detail — paints a live sample from the current theme.
+        function renderTokenDetail(target, p) {
+          var val = readToken(p.name) || "(unavailable)";
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, p.name),
+              h(
+                "div",
+                { class: "meta" },
+                h("span", { class: "cs-pe-pill audit" }, p.swatchType),
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+              ),
+            ),
+            h(
+              "button",
+              {
+                class: "cs-pe-cta",
+                onclick: function () {
+                  copyToken(p.name);
+                },
+              },
+              h("span", {
+                html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+              }),
+              "Copy var()",
+            ),
+          );
+          var sampleStyle =
+            p.swatchType === "fill"
+              ? "background: var(" +
+                p.name +
+                "); color: var(--cs-fg); border: 1px solid var(--cs-border);"
+              : p.swatchType === "text"
+                ? "background: var(--cs-surface); color: var(" +
+                  p.name +
+                  "); border: 1px solid var(--cs-border);"
+                : p.swatchType === "border"
+                  ? "background: var(--cs-surface); color: var(--cs-fg); border: 3px solid var(" +
+                    p.name +
+                    ");"
+                  : "background: var(--cs-surface); color: var(--cs-fg); border: 1px solid var(--cs-border); font-family: var(" +
+                    p.name +
+                    ");";
+          var chain = h("div", { class: "cs-pe-chain" }, h("span", { class: "step" }, p.name));
+          (p.fallbackChain || []).forEach(function (s) {
+            chain.appendChild(h("span", { class: "arrow" }, "←"));
+            chain.appendChild(h("span", { class: "step fallback" }, s));
+          });
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.role + "."),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Live value"),
+                h("span", { class: "hint" }, "computed from the current theme"),
+              ),
+              h(
+                "div",
+                { class: "cs-pe-token-sample" },
+                h(
+                  "div",
+                  { class: "painted", style: sampleStyle },
+                  h("div", { class: "r1" }, "Painted with " + p.name),
+                  h("div", { class: "r2" }, p.role + ". Current value: " + val),
+                ),
+              ),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Fallback chain"),
+                h("span", { class: "hint" }, "doc-theme.ts TOKEN_SOURCES, left to right"),
+              ),
+              chain,
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Usage")),
+              h(
+                "pre",
+                { class: "cs-pe-code cs-pe-example" },
+                "/* in your dashboard CSS */\nbody {\n  background: var(" +
+                  p.name +
+                  ');\n}\n\n// or read in JS:\nconst v = getComputedStyle(document.documentElement)\n  .getPropertyValue("' +
+                  p.name +
+                  '").trim();\n',
+              ),
+            ),
+          );
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        function copyToken(name) {
+          var text = "var(" + name + ")";
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            navigator.clipboard.writeText(text).catch(function () {});
+          }
+        }
+
+        // ---- Event detail
+        function renderEventDetail(target, p) {
+          var isIn = p.direction === "parent-to-doc";
+          var isReply = p.direction === "reply";
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, p.name),
+              h(
+                "div",
+                { class: "meta" },
+                h(
+                  "span",
+                  {
+                    class: "cs-pe-pill " + (isReply ? "reply" : isIn ? "in-dir" : "out-dir"),
+                  },
+                  isReply ? "Reply" : isIn ? "Parent → Doc" : "Doc → Parent",
+                ),
+                h("span", null, "·"),
+                h("span", null, p.timing),
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+              ),
+            ),
+          );
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.description),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Payload")),
+              h("pre", { class: "cs-pe-code" }, p.payload),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Example")),
+              h("pre", { class: "cs-pe-code cs-pe-example" }, p.example),
+            ),
+          );
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        // ---- Context detail
+        function renderContextDetail(target, p) {
+          var head = h(
+            "header",
+            { class: "cs-pe-detail-head" },
+            h(
+              "div",
+              null,
+              h("h1", null, p.name),
+              h(
+                "div",
+                { class: "meta" },
+                h(
+                  "span",
+                  { class: "cs-pe-pill " + (p.bridgeFull ? "read" : "write") },
+                  p.bridgeFull ? "bridge: full" : "bridge: none",
+                ),
+                h("span", null, "·"),
+                h("code", { class: "src" }, p.sourceRef),
+              ),
+            ),
+          );
+          var rows = Object.keys(p.features || {}).map(function (k) {
+            var v = p.features[k];
+            return h(
+              "tr",
+              null,
+              h("td", { class: "k" }, k),
+              h(
+                "td",
+                null,
+                typeof v === "boolean"
+                  ? v
+                    ? h("span", { class: "yes" }, "yes")
+                    : h("span", { class: "no" }, "no")
+                  : String(v),
+              ),
+            );
+          });
+          var body = h(
+            "div",
+            { class: "cs-pe-detail-body" },
+            h("p", { class: "cs-pe-desc" }, p.description),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h(
+                "div",
+                { class: "cs-pe-section-label" },
+                h("span", { class: "l" }, "Detection"),
+                h("span", { class: "hint" }, "the one-line check in your mount boot"),
+              ),
+              h("pre", { class: "cs-pe-code cs-pe-example" }, p.detection),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Route")),
+              h("pre", { class: "cs-pe-code" }, p.route),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Sandbox")),
+              h("pre", { class: "cs-pe-code" }, p.sandbox),
+            ),
+            h(
+              "section",
+              { class: "cs-pe-section" },
+              h("div", { class: "cs-pe-section-label" }, h("span", { class: "l" }, "Capabilities")),
+              h(
+                "table",
+                { class: "cs-pe-matrix" },
+                h(
+                  "thead",
+                  null,
+                  h("tr", null, h("th", null, "Aspect"), h("th", null, "This context")),
+                ),
+                h("tbody", null, rows),
+              ),
+            ),
+          );
+          target.appendChild(head);
+          target.appendChild(body);
+        }
+
+        // ---------------- Selection + deep-link ----------------
+        function select(name, opts) {
+          state.selected = name;
+          opts = opts || {};
+          var selectors = ".cs-pe-row, .cs-pe-swatch, .cs-pe-ctx-row";
+          var rows = document.querySelectorAll(selectors);
+          for (var i = 0; i < rows.length; i++) {
+            rows[i].setAttribute(
+              "aria-selected",
+              rows[i].getAttribute("data-name") === name ? "true" : "false",
+            );
+          }
+          if (opts.scroll !== false) {
+            var sel = document.querySelector('[aria-selected="true"][data-name]');
+            if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: "nearest" });
+          }
+          renderDetail();
+          if (opts.pushHash !== false) {
+            var next = name ? "#" + state.tab + "/" + name : "#" + state.tab;
+            if (location.hash !== next)
+              history.replaceState(null, "", location.pathname + location.search + next);
+          }
+          $("cs-pe-app").dataset.detailOpen = name ? "true" : "false";
+        }
+
+        function setTab(tab, opts) {
+          if (!TAB_DEFS[tab]) return;
+          opts = opts || {};
+          state.tab = tab;
+          state.rw = "";
+          state.dir = "";
+          state.selected = null;
+          state.q = "";
+          var qEl = $("cs-pe-q");
+          if (qEl) {
+            qEl.value = "";
+            qEl.placeholder = TAB_DEFS[tab].placeholder;
+          }
+          var btns = document.querySelectorAll("#cs-pe-tabs .cs-pe-tab");
+          for (var i = 0; i < btns.length; i++) {
+            btns[i].setAttribute(
+              "aria-selected",
+              btns[i].getAttribute("data-tab") === tab ? "true" : "false",
+            );
+          }
+          renderSubFilters();
+          applyFilters();
+          renderList();
+          renderDetail();
+          if (opts.pushHash !== false) {
+            var next = "#" + tab;
+            if (location.hash !== next)
+              history.replaceState(null, "", location.pathname + location.search + next);
+          }
+          $("cs-pe-app").dataset.detailOpen = "false";
+        }
+
+        function visibleRows() {
+          var sel =
+            state.tab === "tokens"
+              ? ".cs-pe-swatch"
+              : state.tab === "contexts"
+                ? ".cs-pe-ctx-row"
+                : ".cs-pe-row";
+          var rows = document.querySelectorAll(sel);
+          var out = [];
+          for (var i = 0; i < rows.length; i++) {
+            if (rows[i].offsetParent !== null) out.push(rows[i]);
+          }
+          return out;
+        }
+        function moveSelection(delta) {
+          var rows = visibleRows();
+          if (!rows.length) return;
+          var idx = -1;
+          for (var i = 0; i < rows.length; i++) {
+            if (rows[i].getAttribute("aria-selected") === "true") {
+              idx = i;
+              break;
+            }
+          }
+          var next = Math.max(0, Math.min(rows.length - 1, idx < 0 ? 0 : idx + delta));
+          select(rows[next].getAttribute("data-name"));
+        }
+        function cycleTab(delta) {
+          var order = ["invoke", "kit", "classes", "tokens", "events", "contexts"];
+          var i = order.indexOf(state.tab);
+          setTab(order[(i + delta + order.length) % order.length]);
+        }
+
+        function fromHash() {
+          var m = /^#([a-z]+)(?:\/(.+))?$/i.exec(location.hash || "");
+          if (m && TAB_DEFS[m[1]]) {
+            if (state.tab !== m[1]) setTab(m[1], { pushHash: false });
+            var name = m[2] && decodeURIComponent(m[2]);
+            if (name && findByName(m[1], name)) select(name, { pushHash: false });
+            return;
+          }
+          setTab("invoke", { pushHash: false });
+        }
+
+        // ---------------- Boot ----------------
+        function boot() {
+          // Tabs.
+          var btns = document.querySelectorAll("#cs-pe-tabs .cs-pe-tab");
+          for (var i = 0; i < btns.length; i++) {
+            (function (b) {
+              b.addEventListener("click", function () {
+                setTab(b.getAttribute("data-tab"));
+              });
+            })(btns[i]);
+          }
+          // Search.
+          var qEl = $("cs-pe-q");
+          qEl.addEventListener("input", function (e) {
+            state.q = e.target.value;
+            applyFilters();
+            renderList();
+          });
+          // Keyboard.
+          document.addEventListener("keydown", function (e) {
+            var inField =
+              document.activeElement &&
+              ["INPUT", "TEXTAREA", "SELECT"].indexOf(document.activeElement.tagName) >= 0;
+            if (e.key === "/" && !inField) {
+              e.preventDefault();
+              qEl.focus();
+              qEl.select();
+              return;
+            }
+            if (e.key === "Escape") {
+              if (document.activeElement === qEl) {
+                state.q = "";
+                qEl.value = "";
+                applyFilters();
+                renderList();
+                return;
+              }
+              if ($("cs-pe-app").dataset.detailOpen === "true") {
+                $("cs-pe-app").dataset.detailOpen = "false";
+                return;
+              }
+            }
+            if (e.key === "ArrowDown" && !inField) {
+              e.preventDefault();
+              moveSelection(1);
+              return;
+            }
+            if (e.key === "ArrowUp" && !inField) {
+              e.preventDefault();
+              moveSelection(-1);
+              return;
+            }
+            if (e.key === "Tab" && !inField && !e.shiftKey) {
+              e.preventDefault();
+              cycleTab(1);
+              return;
+            }
+            if (e.key === "Tab" && !inField && e.shiftKey) {
+              e.preventDefault();
+              cycleTab(-1);
+              return;
+            }
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault();
+              var form = $("cs-pe-try-form");
+              if (form && typeof form.requestSubmit === "function") form.requestSubmit();
+              return;
+            }
+          });
+
+          // Live theme listener (AC-6): when the viewer pushes a theme change,
+          // re-render the Tokens tab (swatch wall + any live token detail).
+          window.addEventListener("message", function (ev) {
+            if (!ev.data || ev.data.type !== "codesense:theme") return;
+            if (state.tab === "tokens") {
+              renderList();
+              renderDetail();
+            }
+          });
+          // Fallback: watch root inline-style mutations so theme-aware swaps
+          // outside the postMessage (e.g. file:// preview) still repaint.
+          var obs = new MutationObserver(function () {
+            if (state.tab === "tokens") {
+              renderList();
+              renderDetail();
+            }
+          });
+          obs.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["style", "class", "data-theme"],
+          });
+
+          // Hashchange — deep links from content pages / other dashboards.
+          window.addEventListener("hashchange", fromHash);
+
+          // Fetch the manifest + render.
+          fetch(MANIFEST_URL, { cache: "no-cache" })
+            .then(function (r) {
+              if (!r.ok) throw new Error("primitives.json: HTTP " + r.status);
+              return r.json();
+            })
+            .then(function (data) {
+              MANIFEST = data;
+              var boot = $("cs-pe-boot");
+              if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+              qEl.placeholder = TAB_DEFS[state.tab].placeholder;
+              fromHash();
+            })
+            .catch(function (err) {
+              var boot = $("cs-pe-boot");
+              if (boot) {
+                boot.innerHTML =
+                  "Failed to load <code>generated/primitives.json</code>.<br>" +
+                  '<small style="color: var(--cs-muted-fg);">' +
+                  esc(String((err && err.message) || err)) +
+                  "</small><br><br>" +
+                  "Run <code>npm run gen:docs</code> to generate it.";
+              }
+            });
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", boot);
+        } else {
+          boot();
+        }
+      })();
+    </script>
+  </body>
+</html>

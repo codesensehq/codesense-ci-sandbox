@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="cloud" />
+    <title>CodeSense — Remote workspace tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/remote-workspaces">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Remote workspace tools">
+        <span class="cs-docs-eyebrow">Arc D · Terminals and machines</span>
+        <h1>Remote workspace tools</h1>
+        <p class="lede">
+          Reference for the tools that prepare a workspace on a private machine, bring its committed work back to this Mac, and move a workspace between machines.
+        </p>
+      </section>
+      <section id="remote-workspaces" data-search="Prepare, fetch and move">
+        <h2>Prepare, fetch and move</h2>
+        <h3 id="tool-prepare_remote_workspace"><code>prepare_remote_workspace</code></h3>
+        <p>Prepares an owned remote Git repository and worktree on a configured private machine. Every field is required: <code>teamKey</code> (written <code>org:team</code>), <code>workspaceId</code>, a structured <code>sourceRepo</code>, a UUID <code>requestId</code>, <code>baseRef</code>, <code>branch</code>, and absolute <code>repoPath</code> and <code>worktreePath</code>. It reuses the verified desktop checkout's committed objects and returns the exact pinned commit, an opaque handle and the cwd for <code>open_remote_tab</code>. A locally available ref is a local snapshot, not latest-provider assurance. Repeat the same immutable request after an unknown outcome; never delete or reset partial work. Context hydration is a separate operation.</p>
+        <pre data-tool-example="prepare_remote_workspace"><code>{
+  &quot;tool&quot;: &quot;prepare_remote_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;workspaceId&quot;: &quot;&lt;workspace id&gt;&quot;,
+    &quot;sourceRepo&quot;: {
+      &quot;owner&quot;: &quot;acme&quot;,
+      &quot;repo&quot;: &quot;app&quot;
+    },
+    &quot;requestId&quot;: &quot;6f1c2e0a-8f55-4a3e-9d57-0b6a1b0f6c11&quot;,
+    &quot;baseRef&quot;: &quot;main&quot;,
+    &quot;branch&quot;: &quot;feature/example&quot;,
+    &quot;repoPath&quot;: &quot;/home/dev/repos/app&quot;,
+    &quot;worktreePath&quot;: &quot;/home/dev/worktrees/app-example&quot;
+  }
+}</code></pre>
+        <h3 id="tool-remote_workspace_fetch"><code>remote_workspace_fetch</code></h3>
+        <p>Brings the committed work of a workspace that lives on a machine into this Mac's local clone. Name it by <code>machineId</code> + <code>workspaceHandle</code>, or by <code>storyId</code> / <code>workspaceId</code> of an open workspace (add <code>teamKey</code> if several teams match). Commits arrive as <code>refs/remotes/codesense-machine-&lt;machineId&gt;/&lt;branch&gt;</code>; the local branch is created, or fast-forwarded only when safe. It never merges, rebases or force-updates a local branch, and uncommitted work stays on the machine. Pushing and pull requests stay with your own git or forge tools.</p>
+        <pre data-tool-example="remote_workspace_fetch"><code>{
+  &quot;tool&quot;: &quot;remote_workspace_fetch&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;workspaceHandle&quot;: &quot;&lt;workspaceHandle from the workspace record&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-move_workspace"><code>move_workspace</code></h3>
+        <p>Moves a team's workspace to another machine. Give <code>storyId</code> and <code>targetMachine</code> (from <code>list_machines</code>, or <code>local</code>); local targets also need <code>targetWorktreePath</code>. It reports running agents, uncommitted paths and unpushed commits, and refuses until you choose explicitly: <code>stopRunningAgents</code>, <code>carryUnpushed</code> or <code>discardUnpushed</code> (not both), <code>discardUncommitted</code>. Machine-to-machine carry is refused; move through this Mac. A source that changed stays intact with <code>cleanupPending:true</code>. It does not relaunch agents.</p>
+        <pre data-tool-example="move_workspace"><code>{
+  &quot;tool&quot;: &quot;move_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;storyId&quot;: &quot;DEMO-13&quot;,
+    &quot;targetMachine&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc D pages</a> ·
+        <a href="./machine-tools.html">Machine tools</a> ·
+        <a href="./terminal-servers.html">Terminal server tools</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc D · Terminals and machines</div>
+    </footer>
+  </body>
+</html>

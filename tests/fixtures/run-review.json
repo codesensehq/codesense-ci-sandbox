@@ -1,0 +1,96 @@
+[
+  {
+    "rev": 0,
+    "snapshot": [],
+    "topic": "runEndorsements",
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"\",\"run-1\"]"
+  },
+  {
+    "rev": 0,
+    "snapshot": [],
+    "topic": "runEvidence",
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"SW-A\",\"run-1\"]"
+  },
+  {
+    "removes": [],
+    "rev": 1,
+    "topic": "runEndorsements",
+    "upserts": [
+      {
+        "assertion": {
+          "channel": "review",
+          "claim": "Ready to review",
+          "disposition": "pending",
+          "id": 1,
+          "postedAt": "2026-10-21T20:00:00Z",
+          "runId": "run-1",
+          "sessionId": "worker"
+        },
+        "id": "assertion:1"
+      }
+    ],
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"\",\"run-1\"]"
+  },
+  {
+    "removes": [],
+    "rev": 1,
+    "topic": "runEvidence",
+    "upserts": [
+      {
+        "evidence": {
+          "authority": "currentStoreFallback",
+          "header": {
+            "endedAt": "2026-10-21T20:00:00Z",
+            "runId": "run-1",
+            "status": "success",
+            "storyId": "SW-A",
+            "summary": "Parser complete",
+            "trigger": {
+              "kind": "preEnvelope"
+            }
+          },
+          "run": {
+            "correlationId": "run-1",
+            "runId": "run-1",
+            "steps": []
+          }
+        },
+        "id": "evidence"
+      },
+      {
+        "id": "node:review",
+        "order": 0,
+        "result": {
+          "nodeId": "review",
+          "summary": "Parser complete"
+        }
+      }
+    ],
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"SW-A\",\"run-1\"]"
+  },
+  {
+    "removes": [],
+    "rev": 2,
+    "topic": "runEvidence",
+    "upserts": [
+      {
+        "id": "node:review",
+        "order": 0,
+        "result": {
+          "nodeId": "review",
+          "summary": "Hidden update"
+        }
+      }
+    ],
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"SW-A\",\"run-1\"]"
+  },
+  {
+    "removes": [
+      "assertion:1"
+    ],
+    "rev": 2,
+    "topic": "runEndorsements",
+    "upserts": [],
+    "viewKey": "runReview:[\"42\",\"acme/ctx:team\",\"\",\"run-1\"]"
+  }
+]

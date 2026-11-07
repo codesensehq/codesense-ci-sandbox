@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="bell-ring" />
+    <title>CodeSense — inbox_idle triggers</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-edge.is-trigger {
+        stroke: var(--cs-accent, var(--role-triager));
+        stroke-dasharray: 3 3;
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/triggers">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="inbox_idle — a trigger that wakes a sleeping worker"
+        id="hero"
+      >
+        <h1>Wake on idle.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A routine with event.kind: inbox_idle fires when a queue sits idle with unread mail, waking a session."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- queue with 2 pending -->
+            <g transform="translate(60 140)">
+              <rect
+                width="160"
+                height="80"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 6%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="80" y="20" text-anchor="middle" class="glyph-mbadge">
+                role: builder queue
+              </text>
+              <g class="glyph-node" transform="translate(14 28)">
+                <rect width="134" height="18" rx="3" />
+                <text x="67" y="13" text-anchor="middle">pending · msg #1</text>
+              </g>
+              <g class="glyph-node" transform="translate(14 52)">
+                <rect width="134" height="18" rx="3" />
+                <text x="67" y="13" text-anchor="middle">pending · msg #2</text>
+              </g>
+            </g>
+
+            <!-- routine box -->
+            <g transform="translate(260 150)">
+              <rect
+                width="140"
+                height="60"
+                rx="8"
+                fill="color-mix(in srgb, var(--cs-accent) 16%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+                style="stroke-dasharray: 4 3"
+              />
+              <text
+                x="70"
+                y="22"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 11px"
+              >
+                routine
+              </text>
+              <text x="70" y="38" text-anchor="middle" class="glyph-mbadge">event: inbox_idle</text>
+              <text x="70" y="52" text-anchor="middle" class="glyph-mbadge">idle with mail</text>
+            </g>
+
+            <!-- builder session (asleep -> awake) -->
+            <g class="glyph-node" data-role="builder" transform="translate(440 150)">
+              <rect width="150" height="60" rx="8" />
+              <text x="75" y="26" text-anchor="middle">amelia-builder</text>
+              <text x="75" y="42" text-anchor="middle" class="sub">idle → woken → claims</text>
+            </g>
+
+            <!-- edges -->
+            <path class="glyph-edge is-trigger" d="M220 180 L 260 180" />
+            <text x="240" y="170" text-anchor="middle" class="glyph-mbadge">fires</text>
+            <path class="glyph-edge" d="M400 180 L 440 180" />
+            <text x="420" y="170" text-anchor="middle" class="glyph-mbadge">mode: wake</text>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              No central scheduler — the queue's silence is the signal.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What inbox_idle is" id="why">
+        <p>
+          You don't want workers polling. You don't want a central scheduler. You want a sleeping
+          agent to wake exactly when there's work on its queue — nothing before, nothing after.
+          <strong>inbox_idle</strong> is the trigger that does that: a routine declares
+          <code>event.kind: inbox_idle</code>, and CodeSense fires it when a session sits idle at
+          its prompt with unread mail. With <code>mode: wake</code> only the routine's own agent's
+          sessions fire it, and CodeSense types its task into the one with the mail — the Manager,
+          say — and the loop in <code>manage-team</code> picks the work up. No second agent does
+          the waking, and a worker's mail never wakes the Manager.
+        </p>
+      </section>
+
+      <section data-search="A real inbox_idle routine from the seed" id="example">
+        <h2>Worked example — <code>manager-wake</code></h2>
+        <p>
+          The seed <code>examples/agents/manager/routines/manager-wake/routine.yml</code> lives
+          under the Manager agent and wakes it when mail waits. Short, declarative, no polling.
+        </p>
+        <pre><code>id: manager-wake
+name: Wake the manager
+owner: codesense
+mode: wake
+task: |
+  You have unread mail. Call read_messages with your session id, then
+  claim_role_messages for the manager role, and carry on with /manage-team.
+  If there is nothing for you, say so in one line and wait.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: inbox_idle
+policy:
+  max_runtime: 5m
+runs_on: each_mac
+revision: 1</code></pre>
+      </section>
+
+      <section data-search="How the trigger composes with cron" id="shape">
+        <h2>Two shapes of trigger</h2>
+        <ol>
+          <li>
+            <strong>event-driven</strong> — <code>triggers: [{event: {kind: inbox_idle}}]</code>
+            fires as a reaction. Zero cost when the queue is quiet; immediate when work lands. Use
+            this for anything the inbox can notify.
+          </li>
+          <li>
+            <strong>cron-driven</strong> —
+            <code>triggers: [{schedule: {cron: "0 * * * *"}}]</code> fires on a wall-clock
+            cadence. Pair with event-driven when you need a liveness backstop. The seed
+            <code>manager-ensure</code> wakes the Manager every hour to check its queue
+            (starting one if none runs); <code>manager-wake</code> uses the event to wake it when
+            mail waits.
+          </li>
+        </ol>
+        <p>
+          Both routines consult the same queue state via the same MCP tools; one is reactive, one is
+          a safety net. You get a system that's quiet when nothing's happening, instant when
+          something is, and self-healing when a machine was asleep.
+        </p>
+      </section>
+
+      <section
+        data-search="Try this now — list routines that would fire on your inbox"
+        id="try-this-now"
+      >
+        <h2>Try this now</h2>
+        <p>
+          List the routines wired to <code>inbox_idle</code> in your editable context repo. This is
+          a read-only enumeration; it does not fire anything.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "routine_list", "args": {"agent": "manager"}}'
+          label="List the Manager's routines"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Enumerate one agent's routines
+codesense.invoke('routine_list', { agent: 'manager' })
+
+// Watch for firings in real time (routines console dashboard uses this)
+codesense.subscribeContext({ topic: 'routines.runs' }, (run) => { … })
+
+// Fire one manually, through its own overlap rule
+codesense.invoke('routine_run_now', { id: 'manager-wake' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./queues.html">← Queues</a> · Next: <a href="./patterns.html">Patterns →</a> · Edge
+        cases &amp; reference → <a href="../schema-browser.html#schema/routine-yml">routine.yml</a> ·
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Triggers</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

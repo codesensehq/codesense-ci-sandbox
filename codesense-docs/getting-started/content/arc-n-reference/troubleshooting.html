@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="life-buoy" />
+    <title>CodeSense — Troubleshooting</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/troubleshooting"] .cs-main {
+        max-width: 1040px;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] h1 {
+        font-size: clamp(28px, 3.6vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 66ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        padding: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-inset);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 170px;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] figure.hero figcaption {
+        padding: 10px 14px;
+        border-top: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] p,
+      body[data-page="arc-n-reference/troubleshooting"] li {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-5);
+        font-size: 13px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl th,
+      body[data-page="arc-n-reference/troubleshooting"] .tbl td {
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 55%, transparent);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl thead th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl td.arc {
+        font-family: var(--cs-font-mono);
+        font-size: 11.5px;
+        color: var(--cs-muted-fg);
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .tbl td.cmd code {
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .pill {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .pill--a {
+        background: var(--cs-accent-soft);
+        color: var(--cs-accent);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .pill--c {
+        background: color-mix(in oklab, #f0a93b 20%, transparent);
+        color: #f0a93b;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .pill--d {
+        background: color-mix(in oklab, var(--cs-success) 18%, transparent);
+        color: var(--cs-success);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .pill--g {
+        /* WCAG 2.1 AA: small pill text brightened so it clears
+         * 4.5:1 on the dark surface the pill sits on. */
+        background: color-mix(in oklab, #a08cff 22%, transparent);
+        color: color-mix(in oklab, #a08cff 65%, #ffffff);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep a {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms,
+          box-shadow 160ms,
+          border-color 160ms;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep a:hover,
+      body[data-page="arc-n-reference/troubleshooting"] .deep a:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep .arc-tag {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep .title {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .deep .hook {
+        font-size: 13px;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/troubleshooting"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/troubleshooting">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Troubleshooting index" id="hero">
+        <span class="cs-docs-eyebrow">Arc N · Troubleshooting</span>
+        <h1>Something broke. Here's where to look.</h1>
+        <p class="lede">
+          This page is a <strong>router</strong>: a symptom-to-arc index that gets you to the right
+          per-arc troubleshooting page in one click. The real diagnostic steps live there — Arc A
+          for identity and first-launch, Arc C for workspaces and worktrees, Arc D for terminals and
+          machines, Arc G for routines. Start with the symptom in the table, then follow the link.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 160"
+            role="img"
+            aria-label="A symptom chip flows into a router that fans out to four per-arc troubleshooting destinations."
+          >
+            <title>Troubleshooting routing</title>
+            <desc>
+              Left: a chip labelled "symptom". Center: a routing node. Right: four destination cards
+              for Arc A, C, D, and G.
+            </desc>
+            <style>
+              .t-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+              }
+              .t-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+              }
+              .t-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .t-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .t-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.3;
+                fill: none;
+              }
+            </style>
+            <defs>
+              <marker
+                id="t-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <g transform="translate(20 68)">
+              <rect class="t-ins" width="100" height="30" rx="6" />
+              <text class="t-txt" x="50" y="19" text-anchor="middle">symptom</text>
+            </g>
+
+            <g transform="translate(170 60)">
+              <rect class="t-surf" width="110" height="46" rx="8" />
+              <text class="t-txt" x="55" y="22" text-anchor="middle">index</text>
+              <text class="t-mut" x="55" y="38" text-anchor="middle">(this page)</text>
+            </g>
+            <path class="t-acc" d="M120 83 L170 83" marker-end="url(#t-arrow)" />
+
+            <path class="t-acc" d="M280 72 L380 32" marker-end="url(#t-arrow)" />
+            <path class="t-acc" d="M280 78 L380 72" marker-end="url(#t-arrow)" />
+            <path class="t-acc" d="M280 88 L380 110" marker-end="url(#t-arrow)" />
+            <path class="t-acc" d="M280 94 L380 148" marker-end="url(#t-arrow)" />
+            <g transform="translate(380 18)">
+              <rect class="t-surf" width="200" height="28" rx="6" />
+              <text class="t-txt" x="12" y="18">Arc A · updates &amp; identity</text>
+            </g>
+            <g transform="translate(380 58)">
+              <rect class="t-surf" width="200" height="28" rx="6" />
+              <text class="t-txt" x="12" y="18">Arc C · workspaces &amp; worktrees</text>
+            </g>
+            <g transform="translate(380 96)">
+              <rect class="t-surf" width="200" height="28" rx="6" />
+              <text class="t-txt" x="12" y="18">Arc D · terminals &amp; machines</text>
+            </g>
+            <g transform="translate(380 134)">
+              <rect class="t-surf" width="200" height="28" rx="6" />
+              <text class="t-txt" x="12" y="18">Arc G · routines</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            One index · four per-arc destinations · the deep fix lives there.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="unknown team Inbox too many open files EMFILE ENFILE macOS" id="open-file-limit">
+        <h2>“Unknown team …” and Inbox failing at launch</h2>
+        <p>
+          If teams disappear or the Inbox fails while many agent sessions reconnect, look for
+          <code>Too many open files (os error 24)</code> or <code>os error 23</code> in the logs.
+          macOS apps opened from Finder or <code>open</code> can inherit a soft limit of only
+          256 file descriptors. PTYs, MCP connections, pipes and files share that process budget.
+        </p>
+        <p>
+          Update CodeSense and restart it when your work is ready. The app, session server and
+          MCP bridge now raise their own soft limit before startup I/O, up to 10,240 or the hard
+          limit, whichever is lower. The startup diagnostic reads
+          <code>open-file limit: soft 256 -&gt; 10240, hard …</code>; macOS may accept a smaller
+          value. Existing higher limits stay higher. Existing server processes need a restart
+          to run the new startup code.
+        </p>
+        <p>
+          Registry reads briefly retry descriptor exhaustion. If the error persists, release
+          unused sessions and choose <strong>Retry</strong> in the context-repo load error.
+          You do not need to repair <code>teams.yml</code> for this transient failure.
+          Until you can update, quit CodeSense when ready and start its executable from a shell
+          with <code>ulimit -n 10240</code> set first; changing a shell's limit does not change
+          an already running app.
+        </p>
+      </section>
+
+      <section data-search="Top common issues" id="top">
+        <h2>Top common issues</h2>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Symptom</th>
+              <th>Where to look first</th>
+              <th>Owning arc</th>
+              <th>Quick command</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>The app stops responding, or an MCP call reports a runtime stall or time limit.</td>
+              <td>
+                See <a href="app-unresponsive.html">App unresponsive and MCP timeouts</a> for
+                recovery steps, the absolute backstop, and self-capture logs.
+              </td>
+              <td class="arc"><span class="pill">Arc N</span></td>
+              <td class="cmd"><code>list_sessions</code></td>
+            </tr>
+            <tr>
+              <td>An update doesn't install, or you want to remove CodeSense.</td>
+              <td>
+                See <a href="updates-and-uninstall.html">Updates, network calls and removing
+                CodeSense</a>.
+              </td>
+              <td class="arc"><span class="pill">Arc N</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>You want to send feedback or report a problem from inside CodeSense.</td>
+              <td>
+                The in-app feedback sender is off in this build. There is no feedback form, and the
+                <a href="../mcp-explorer.html#tool/feedback_send">feedback_send</a> MCP tool refuses
+                every call and sends nothing.
+              </td>
+              <td class="arc"><span class="pill">Arc N</span></td>
+              <td class="cmd"><code>feedback_send</code></td>
+            </tr>
+            <tr>
+              <td>You can't tell which org or team you're in; the switcher looks empty.</td>
+              <td>
+                Open the identity menu at its context repo section (<strong>Switch Context
+                Repo</strong>). It lists your context repos and ends with
+                <strong>Connect a context repo…</strong> and <strong>Create a new context
+                repo…</strong>. The CodeSense docs org is read-only.
+              </td>
+              <td class="arc"><span class="pill pill--a">Arc A</span></td>
+              <td class="cmd"><code>⌘⇧G</code></td>
+            </tr>
+            <tr>
+              <td>A story workspace won't open, or opens blank.</td>
+              <td>
+                Worktree setup failed or hasn't finished. <code>get_sync_status</code> lists each
+                story worktree with <code>setupComplete</code>. Open the story again: a later open
+                reattaches to the worktree. If the repo has no clone on this Mac, see the next row.
+              </td>
+              <td class="arc"><span class="pill pill--c">Arc C</span></td>
+              <td class="cmd"><code>get_sync_status</code></td>
+            </tr>
+            <tr>
+              <td>"No local clone attached".</td>
+              <td>
+                The story's repo is in your team, but CodeSense doesn't know where its clone is on
+                this Mac. Choose <strong>Attach local clone</strong>, then
+                <strong>Browse for clone directory</strong> or <strong>Clone for me</strong>.
+              </td>
+              <td class="arc"><span class="pill pill--c">Arc C</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>A story doesn't show up, or can't launch.</td>
+              <td>
+                Check its frontmatter: an explicit <code>type</code> (<code>story</code>,
+                <code>bug</code> or <code>spike</code>), a <code>source_repo</code> your team
+                lists, and quotes around any value containing <code>: </code>. Ask an agent to run
+                <code>validate_story</code> on the file.
+              </td>
+              <td class="arc"><span class="pill pill--c">Arc H</span></td>
+              <td class="cmd"><code>validate_story</code></td>
+            </tr>
+            <tr>
+              <td>
+                Skills, settings and hooks shipped under <code>{team}/install/</code> are not
+                being delivered.
+              </td>
+              <td>
+                Your context repo predates the install-tier retirement. Opening the repo folds
+                <code>{team}/install/</code> into <code>{team}/content/</code> on load — review
+                the <code>git status</code> deltas and commit them. If conflicts stopped the fold,
+                the manifest error names the retired location and the heal command re-runs
+                ignoring the <code>.folded</code> marker.
+              </td>
+              <td class="arc"><span class="pill pill--c">Arc C</span></td>
+              <td class="cmd"><code>heal_install_tree</code></td>
+            </tr>
+            <tr>
+              <td>A worktree shows modified files you never edited.</td>
+              <td>
+                Usually a teammate changed the team copy and this workspace still has the old one.
+                Nothing updates a workspace on its own: call <code>hydrate_worktree</code> for those
+                paths, or <code>preview_reverse_sync_worktree</code> to see what differs.
+              </td>
+              <td class="arc"><span class="pill pill--c">Arc C</span></td>
+              <td class="cmd"><code>hydrate_worktree</code></td>
+            </tr>
+            <tr>
+              <td>A terminal is dead, grey, or stuck "reconnecting".</td>
+              <td>
+                PTY lost its host-agent bridge. See Arc D's reconnect flow and the machine column on
+                the terminal tab.
+              </td>
+              <td class="arc"><span class="pill pill--d">Arc D</span></td>
+              <td class="cmd"><code>⌘T</code> new tab</td>
+            </tr>
+            <tr>
+              <td>Can't open a terminal on a remote machine.</td>
+              <td>
+                Open <strong>Machines</strong> and check the machine's state. "Terminal server not
+                installed" offers <strong>Install</strong>; an out-of-date one offers
+                <strong>Update terminal server…</strong>. Then use
+                <strong>New Terminal On…</strong>.
+              </td>
+              <td class="arc"><span class="pill pill--d">Arc D</span></td>
+              <td class="cmd"><code>⌘⇧N</code> picker</td>
+            </tr>
+            <tr>
+              <td>An agent says "CodeSense is not running".</td>
+              <td>
+                Its MCP bridge can't reach the app. Open CodeSense. After an app restart the bridge
+                reconnects on its own for about 30 seconds; after that, restart the agent session.
+              </td>
+              <td class="arc"><span class="pill pill--a">Arc E</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>Claude Code or Codex isn't offered.</td>
+              <td>
+                CodeSense looks for <code>claude</code> (2.0 or newer) and <code>codex</code> (0.140
+                or newer). Install or update the CLI. Git 2.44 or newer is the only thing CodeSense
+                needs to start.
+              </td>
+              <td class="arc"><span class="pill pill--a">Arc E</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>A page action fails with <code>denied: write budget</code>.</td>
+              <td>
+                The runaway guard stopped a burst of writes from the page. Reload the page; have the
+                page batch fewer writes per click.
+              </td>
+              <td class="arc"><span class="pill pill--a">Arc I</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>A routine isn't firing on <code>inbox_idle</code>.</td>
+              <td>
+                Check routine enabled flag, inbox role spelling, and the routines-console dashboard
+                for the last-fired timestamp.
+              </td>
+              <td class="arc"><span class="pill pill--g">Arc G</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>A routine fires but the agent never produces output.</td>
+              <td>
+                Agent permissions. Open the agent definition; verify
+                <code>permissions.claude.allow</code> covers the needed verbs.
+              </td>
+              <td class="arc"><span class="pill pill--g">Arc G</span></td>
+              <td class="cmd">—</td>
+            </tr>
+            <tr>
+              <td>A chord doesn't fire where you expect it to.</td>
+              <td>
+                Scope mismatch. The chord may be bound at a wider scope than where you're pressing
+                it.
+              </td>
+              <td class="arc"><span class="pill pill--a">Arc N</span></td>
+              <td class="cmd"><a href="./keyboard-shortcuts.html">shortcuts</a></td>
+            </tr>
+            <tr>
+              <td>A YAML file won't parse; the status spine looks wrong.</td>
+              <td>Paste the file into the schema browser's validator.</td>
+              <td class="arc"><span class="pill pill--a">Arc N</span></td>
+              <td class="cmd"><a href="../schema-browser.html">validator</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Per-arc troubleshooting pages" id="deep">
+        <h2>Per-arc troubleshooting pages</h2>
+        <p>
+          Each page below is written for one arc's failure modes, with symptom cards, severity
+          colouring, and the exact command to run. Jump in from here.
+        </p>
+
+        <div class="deep">
+          <a href="../arc-a-first-touch/update-the-docs.html">
+            <span class="arc-tag">Arc A</span>
+            <span class="title">Updates &amp; first-launch</span>
+            <span class="hook"
+              >Install re-trigger, docs org reinstall, identity switcher stuck.</span
+            >
+          </a>
+          <a href="../arc-c-workspaces-and-worktrees/troubleshooting.html">
+            <span class="arc-tag">Arc C</span>
+            <span class="title">Workspaces &amp; worktrees</span>
+            <span class="hook"
+              >Hydration failures, dirty worktrees, stuck layouts, lingering tray tiles.</span
+            >
+          </a>
+          <a href="../arc-d-terminals-and-machines/troubleshooting.html">
+            <span class="arc-tag">Arc D</span>
+            <span class="title">Terminals &amp; machines</span>
+            <span class="hook"
+              >Dead PTYs, remote reconnect, host-agent bundle checks, admitted bindings.</span
+            >
+          </a>
+          <a href="../arc-g-routines/troubleshooting.html">
+            <span class="arc-tag">Arc G</span>
+            <span class="title">Routines</span>
+            <span class="hook"
+              >Triggers that don't fire, idle agents, cron drift, permission bites.</span
+            >
+          </a>
+        </div>
+      </section>
+
+      <section data-search="When the index doesn't match" id="fallback">
+        <h2>When nothing in the table matches</h2>
+        <p>
+          Ask an agent launched from CodeSense to look. The
+          <a href="../mcp-explorer.html#tool/get_sync_status">get_sync_status</a> and
+          <a href="../mcp-explorer.html#tool/get_publish_set">get_publish_set</a> MCP tools dump
+          CodeSense's view of your story worktrees, context operations and unpublished changes,
+          so an agent (or you) can reason about it directly.
+        </p>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html">schema browser</a>
+        ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+        ·
+        <a href="./index.html">back to Arc N</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · Troubleshooting</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

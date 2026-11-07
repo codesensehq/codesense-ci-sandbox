@@ -1,0 +1,25 @@
+/* SPDX-License-Identifier: MIT */
+.file-viewer-toolbar {
+  container: file-viewer / inline-size;
+}
+
+.file-viewer-summary {
+  container: file-summary / inline-size;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+@container file-viewer (max-width: 600px) {
+  .viewer-header-label {
+    display: none;
+  }
+}
+
+@container file-summary (max-width: 40px) {
+  .file-viewer-summary > * {
+    visibility: hidden;
+  }
+}

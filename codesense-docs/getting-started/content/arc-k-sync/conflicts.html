@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-merge" />
+    <title>CodeSense — Conflicts</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/conflicts"] .cs-main {
+        max-width: 960px;
+      }
+      body[data-page="arc-k-sync/conflicts"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/conflicts"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/conflicts"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/conflicts"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/conflicts"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/conflicts"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/conflicts"] figure.hero svg {
+        display: block;
+        width: 100%;
+        max-width: 820px;
+        margin: 0 auto;
+        height: auto;
+      }
+      body[data-page="arc-k-sync/conflicts"] figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        text-align: center;
+      }
+      body[data-page="arc-k-sync/conflicts"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/conflicts"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 820px;
+      }
+      body[data-page="arc-k-sync/conflicts"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/conflicts"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/conflicts"] .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/conflicts"] .sidecol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        max-width: 820px;
+        margin: 10px 0 14px;
+      }
+      body[data-page="arc-k-sync/conflicts"] .sidecol pre {
+        margin: 0;
+        max-width: none;
+      }
+      body[data-page="arc-k-sync/conflicts"] .sidecol .label {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        margin: 0 0 4px 2px;
+      }
+      body[data-page="arc-k-sync/conflicts"] .diff-add {
+        color: #4bb8a9;
+      }
+      body[data-page="arc-k-sync/conflicts"] .diff-del {
+        color: #e85a71;
+      }
+      body[data-page="arc-k-sync/conflicts"] details {
+        max-width: 820px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/conflicts"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/conflicts"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/conflicts"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/conflicts"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/conflicts">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Conflicts conflict card Use mine Use theirs Keep both" id="hero">
+        <h1>Conflicts — one card per file</h1>
+        <p class="lede">
+          A conflict is what happens when both sides moved: you (or an agent) edited a file in
+          team content, and a teammate pushed a different edit to the same file. The agent doing
+          the pull stops on it, and the status button shows a third count. Each conflicted file
+          gets a <strong>card</strong>: you pick a side, hand it to an agent, or compare first.
+          CodeSense writes the side you chose; the agent finishes the merge or rebase.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 820 230"
+            role="img"
+            aria-label="Three columns — mine, theirs, settled — with the conflict card in the middle."
+          >
+            <title>The conflict card — pick a side, or hand it to an agent</title>
+            <desc>
+              Three vertical panes. Left: your edit. Right: GitHub's edit. Middle: the conflict card.
+              Bottom: the settled file, staged for the agent to finish the merge.
+            </desc>
+            <style>
+              .cf-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .cf-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .cf-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .cf-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .cf-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .cf-dash {
+                stroke-dasharray: 4 4;
+              }
+              .cf-add {
+                fill: color-mix(in oklab, #4bb8a9 40%, transparent);
+              }
+              .cf-del {
+                fill: color-mix(in oklab, #e85a71 40%, transparent);
+              }
+            </style>
+            <defs>
+              <marker
+                id="cf-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- local pane -->
+            <g transform="translate(20 30)">
+              <rect class="cf-ins" width="200" height="110" rx="8" />
+              <text class="cf-mut" x="100" y="18" text-anchor="middle">mine</text>
+              <rect class="cf-ins" x="12" y="30" width="176" height="12" rx="2" />
+              <rect class="cf-add" x="12" y="48" width="140" height="12" rx="2" />
+              <rect class="cf-ins" x="12" y="66" width="176" height="12" rx="2" />
+              <rect class="cf-ins" x="12" y="84" width="176" height="12" rx="2" />
+            </g>
+
+            <!-- remote pane -->
+            <g transform="translate(600 30)">
+              <rect class="cf-ins" width="200" height="110" rx="8" />
+              <text class="cf-mut" x="100" y="18" text-anchor="middle">theirs</text>
+              <rect class="cf-ins" x="12" y="30" width="176" height="12" rx="2" />
+              <rect class="cf-ins" x="12" y="48" width="176" height="12" rx="2" />
+              <rect class="cf-del" x="12" y="66" width="110" height="12" rx="2" />
+              <rect class="cf-ins" x="12" y="84" width="176" height="12" rx="2" />
+            </g>
+
+            <!-- middle chip -->
+            <g transform="translate(320 54)">
+              <rect class="cf-surf" width="180" height="60" rx="12" />
+              <text class="cf-txt" x="90" y="26" text-anchor="middle">conflict card</text>
+              <text class="cf-mut" x="90" y="44" text-anchor="middle">mine · theirs · both</text>
+            </g>
+            <path class="cf-acc" d="M224 86 L318 86" marker-end="url(#cf-arrow)" />
+            <path class="cf-acc" d="M598 86 L502 86" marker-end="url(#cf-arrow)" />
+
+            <!-- merged pane -->
+            <g transform="translate(300 170)">
+              <rect class="cf-ins" width="220" height="42" rx="8" />
+              <text class="cf-mut" x="110" y="18" text-anchor="middle">
+                settled · staged
+              </text>
+              <rect class="cf-add" x="12" y="26" width="80" height="10" rx="2" />
+              <rect class="cf-del" x="100" y="26" width="60" height="10" rx="2" />
+              <rect class="cf-ins" x="168" y="26" width="40" height="10" rx="2" />
+            </g>
+            <path class="cf-acc cf-dash" d="M410 118 L410 168" marker-end="url(#cf-arrow)" />
+          </svg>
+          <figcaption id="hero-cap">
+            Both sides moved · you pick on the card · the agent finishes the merge
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="What the conflict card offers" id="why">
+        <h2>What the card offers</h2>
+        <p>
+          Click the status button when it shows a conflict and a card opens for each file, saying
+          who changed each side and when. The choices:
+        </p>
+        <ul>
+          <li><strong>Use mine</strong> — keep your version of the file.</li>
+          <li><strong>Use theirs</strong> — take the version from GitHub.</li>
+          <li>
+            <strong>Keep both</strong> — keep yours, and save GitHub's beside it as
+            <code>‹name› (GitHub).‹ext›</code> so you can merge them by hand later.
+          </li>
+          <li>
+            <strong>Hand to ‹agent›</strong> — ask one of the team's agents, through its inbox, to
+            merge the two edits. Use this when both sides matter, for example two people tuning the
+            same agent's prompt.
+          </li>
+          <li><strong>Compare</strong> — open the file's changes before you decide.</li>
+        </ul>
+        <p>
+          Settling a file writes the side you chose and stages it. The agent doing the sync
+          finishes the merge or rebase, then reports with <code>report_context_sync</code>.
+        </p>
+      </section>
+
+      <section data-search="A worked conflict round-trip" id="worked">
+        <h2>A worked round-trip</h2>
+        <p>
+          You've been tuning <code>config/agents/reviewer/agent.yaml</code> to speak less. Your
+          teammate was tuning the same file to speak <em>more</em>, and pushed first. When an agent
+          pulls the context repo for you, git stops on that file.
+        </p>
+
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>See it.</strong> The status button shows a conflict count. Click it; the card
+            for <code>agent.yaml</code> names your edit and your teammate's.
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>Compare.</strong> The two sides differ in one place:
+            <div class="sidecol">
+              <div>
+                <p class="label">MINE</p>
+                <pre><code>defaultPrompt: |
+  Be concise. Keep responses
+  under three lines unless
+  the user asks for depth.</code></pre>
+              </div>
+              <div>
+                <p class="label">THEIRS</p>
+                <pre><code>defaultPrompt: |
+  Be expansive. Teach from
+  first principles; show
+  your work at every step.</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>Decide.</strong> Your tuning wins this round: <strong>Use mine</strong>. If you
+            wanted parts of both, <strong>Hand to ‹agent›</strong> would ask an agent to write the
+            merged file instead.
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="step-n">4</span>
+          <div>
+            <strong>The agent finishes.</strong> The file is written and staged. The agent
+            completes the merge or rebase, pushes, and calls <code>report_context_sync</code>. The
+            conflict count goes away.
+          </div>
+        </div>
+      </section>
+
+      <section data-search="What CodeSense never does in a conflict" id="never">
+        <h2>What CodeSense never does</h2>
+        <ul>
+          <li>Never picks a side for you.</li>
+          <li>
+            Never commits, continues the merge or pushes. Settling a file is a file write and a
+            stage; the agent doing the sync does the rest.
+          </li>
+          <li>
+            Never hides a stalled merge. A merge or rebase left untouched for 10 minutes shows as
+            failed on the status button.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Local vs remote conflict resolution" id="local-vs-remote">
+        <h2>Local vs remote</h2>
+        <p>
+          The conflict lives in the context repo's clone, usually on your Mac, so the card is on
+          this Mac's status button. Workspaces on remote machines don't hold a git copy of team
+          content; their edits come back with <code>reverse_sync_worktree</code>, which shows a
+          preview first. See <a href="./reverse-sync.html">reverse sync</a> and
+          <a href="./publishing.html">publishing</a>.
+        </p>
+      </section>
+
+      <section data-search="Conflicts via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="margin-top: 8px">
+            An agent reads the same conflicts the card shows, and reports while it works:
+          </p>
+          <pre><code>// Branch, ahead/behind, and conflicts: [{path, mine, theirs, lastWriter}]. Read-only.
+context_repo_status {}
+// While the merge is open, and when it's done.
+report_context_sync { state: 'syncing', progress: 'Merging 1 conflict' }
+report_context_sync { state: 'ok' }</code></pre>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/context_repo_status">context_repo_status</a>
+        ·
+        <a href="../mcp-explorer.html#tool/report_context_sync">report_context_sync</a>
+        ·
+        <a href="./publishing.html">next: publishing →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Conflicts</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

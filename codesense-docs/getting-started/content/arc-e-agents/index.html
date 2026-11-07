@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="bot" />
+    <title>CodeSense — Agents</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      /* ─── Arc-E local tokens — role chroma matches arc-F so the two arcs
+             read with the same color grammar whenever a role is named. ──── */
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 9px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arce-prim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--cs-docs-sp-3, 12px);
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arce-prim-card {
+        padding: var(--cs-docs-sp-4, 16px);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+      }
+      .arce-prim-card h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-prim-card p {
+        margin: 0;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+
+      .arce-toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arce-toc a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arce-toc a:hover,
+      .arce-toc a:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arce-toc a strong {
+        display: block;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-toc a span {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc E — what an agent is in CodeSense" id="hero">
+        <h1>An agent is a small file.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="agent.yaml plus a few content paths plus a runtime equals a reusable worker. One agent definition launches many sessions on many machines."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Left: the definition. -->
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 13px">
+              The definition — one file in your context repo
+            </text>
+            <g transform="translate(24 56)">
+              <rect
+                width="220"
+                height="240"
+                rx="10"
+                fill="var(--cs-inset-strong, var(--cs-inset))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="26" class="glyph-mbadge" style="font-size: 12px">
+                config/agents/docs-helper/
+              </text>
+              <text x="14" y="46" style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                agent.yaml
+              </text>
+              <text x="30" y="64" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                id: docs-helper
+              </text>
+              <text x="30" y="80" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                runtime: claude
+              </text>
+              <text x="30" y="96" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                launch: headless
+              </text>
+              <text x="30" y="112" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                startup:
+              </text>
+              <text x="42" y="128" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - CLAUDE.md
+              </text>
+              <text x="42" y="144" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - .claude/skills/triage/
+              </text>
+              <text x="30" y="162" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                mcp:
+              </text>
+              <text x="42" y="178" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                servers: [slack]
+              </text>
+              <text x="30" y="196" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                permissions:
+              </text>
+              <text x="42" y="212" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                claude: {deny: [Write]}
+              </text>
+              <text x="14" y="232" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                SKILL.md ← .claude/skills/triage/
+              </text>
+            </g>
+
+            <!-- Middle arrow -->
+            <path class="glyph-edge" d="M254 170 L 310 170" />
+            <text x="258" y="160" class="glyph-mbadge">launch</text>
+
+            <!-- Right: four live sessions on different machines/tabs. -->
+            <text x="320" y="36" class="glyph-mbadge" style="font-size: 13px">
+              Many sessions on many machines
+            </text>
+            <g class="glyph-node" data-role="builder" transform="translate(320 56)">
+              <rect width="140" height="46" rx="6" />
+              <text x="70" y="20" text-anchor="middle">session · laptop</text>
+              <text x="70" y="34" text-anchor="middle" class="sub">tab, foreground</text>
+            </g>
+            <g class="glyph-node" data-role="triager" transform="translate(480 56)">
+              <rect width="140" height="46" rx="6" />
+              <text x="70" y="20" text-anchor="middle">session · remote-01</text>
+              <text x="70" y="34" text-anchor="middle" class="sub">headless, routine</text>
+            </g>
+            <g class="glyph-node" data-role="reviewer" transform="translate(320 112)">
+              <rect width="140" height="46" rx="6" />
+              <text x="70" y="20" text-anchor="middle">session · remote-02</text>
+              <text x="70" y="34" text-anchor="middle" class="sub">tab, foreground</text>
+            </g>
+            <g class="glyph-node" data-role="analyst" transform="translate(480 112)">
+              <rect width="140" height="46" rx="6" />
+              <text x="70" y="20" text-anchor="middle">session · laptop</text>
+              <text x="70" y="34" text-anchor="middle" class="sub">headless, routine</text>
+            </g>
+
+            <!-- Context resolver band -->
+            <g transform="translate(320 180)">
+              <rect
+                width="300"
+                height="120"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="20" class="glyph-mbadge" style="font-size: 12px">
+                What each session sees
+              </text>
+              <text x="12" y="40" style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-ui)">
+                The runtime's own instruction file
+              </text>
+              <text x="12" y="54" class="glyph-mbadge">CLAUDE.md (claude) or AGENTS.md (codex)</text>
+              <text x="12" y="76" style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-ui)">
+                The skills and commands you listed
+              </text>
+              <text x="12" y="90" class="glyph-mbadge">resolved through the team chain</text>
+              <text x="12" y="110" style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-ui)">
+                The CodeSense MCP tools — always, never listed
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What an agent is in CodeSense" id="why">
+        <p>
+          You've got a job you want a Claude or Codex to do over and over —
+          triage inbound, build the next story, review a PR, keep a dashboard
+          fresh. CodeSense has no agent library and nothing to install. An
+          <strong>agent</strong> is a small file in your team's context repo at
+          <code>config/agents/&lt;id&gt;/agent.yaml</code> that says
+          <em>which runtime</em>, <em>what it starts with</em>, <em>which MCP
+          servers it can reach</em>, and <em>what it may do</em>. Launch it from
+          a story, a routine or an agent's <code>open_workspace</code> call, on
+          This Mac or a remote machine, in a terminal tab or headless. Every
+          launch starts a session with the same posture; a routine in
+          <code>wake</code> mode hands its task to a live session instead.
+        </p>
+      </section>
+
+      <section data-search="The starters — Claude, Codex and their unattended twins" id="starters">
+        <h2>The starters</h2>
+        <p>
+          CodeSense ships read-only agents everyone has:
+          <code>builtin/claude</code> (<strong>Claude</strong>) and
+          <code>builtin/codex</code> (<strong>Codex</strong>), plus their
+          unattended twins <code>builtin/claude-unattended</code> and
+          <code>builtin/codex-unattended</code>, which run without asking for
+          permission and are what a headless launch that names no agent runs.
+          They live in the app, not in your context repo. Each one runs its
+          CLI with its defaults and your own login — no extra args, no MCP
+          server beyond the bridge, the CLI's own permission config, no
+          default prompt. Each starts with what CodeSense needs plus the team's
+          root <code>CLAUDE.md</code> or <code>AGENTS.md</code> when the team
+          has one. You can't edit them ("built-in agent — Copy to Mine to
+          customize"); to customize one, copy it and change the copy.
+        </p>
+      </section>
+
+      <section data-search="The four moving parts" id="primitives">
+        <h2>Four moving parts, one file</h2>
+        <div class="arce-prim-grid">
+          <div class="arce-prim-card">
+            <h3>Runtime</h3>
+            <p>
+              <code>claude</code> or <code>codex</code>. The CLI that runs when
+              you launch. Each user runs the agent with their own CLI login;
+              nothing in <code>agent.yaml</code> binds an account.
+            </p>
+          </div>
+          <div class="arce-prim-card">
+            <h3>Startup</h3>
+            <p>
+              An ordered list of content paths. The team's
+              <code>CLAUDE.md</code>, the skills the agent needs, the slash
+              commands its default prompt uses. Each is a file or a directory;
+              there are no <code>skill:</code> or <code>command:</code> keys.
+            </p>
+          </div>
+          <div class="arce-prim-card">
+            <h3>MCP servers</h3>
+            <p>
+              Which servers from the team's MCP config the agent gets. The
+              CodeSense bridge is always there — never list it. Default: none
+              beyond the bridge.
+            </p>
+          </div>
+          <div class="arce-prim-card">
+            <h3>Permissions</h3>
+            <p>
+              The runtime's own permission config, enforced by the CLI and
+              passed through verbatim. Claude takes
+              <code>{allow, ask, deny, …}</code>; Codex takes
+              <code>{approvalPolicy, sandboxMode}</code>.
+            </p>
+          </div>
+        </div>
+        <p>
+          The same file also takes <code>args</code> (appended to the CLI's argv),
+          <code>launch</code> (<code>foreground</code> or <code>headless</code>),
+          <code>context</code> (the content sets a workspace gets),
+          <code>default_prompt</code>, <code>avatar</code>, <code>allowWake</code> and
+          <code>resumeAfterRestart</code>. See <a href="./agent-yaml.html">agent.yaml</a>
+          for every field.
+        </p>
+      </section>
+
+      <section data-search="Pages in this arc" id="toc">
+        <h2>Pages in this arc</h2>
+        <div class="arce-toc">
+          <a href="./agent-design.html"><strong>Agent design</strong>
+            <span>Start here: discover the work, shape a team, preview and prove it.</span></a>
+          <a href="./agent-yaml.html"
+            ><strong>agent.yaml</strong>
+            <span>Every field, with source refs.</span></a
+          >
+          <a href="./claude-md-agents-md.html"
+            ><strong>CLAUDE.md &amp; AGENTS.md</strong>
+            <span>How instructions get injected; the team chain.</span></a
+          >
+          <a href="./skills.html"
+            ><strong>Skills</strong>
+            <span>SKILL.md, startup composition, auto-trigger.</span></a
+          >
+          <a href="./context-field.html"
+            ><strong>The context resolver</strong>
+            <span>What the agent sees, step by step.</span></a
+          >
+          <a href="./designing-for-a-role.html"
+            ><strong>Designing for a role</strong>
+            <span>Triager, Builder, Reviewer, Scout, Resolver, Analyst.</span></a
+          >
+          <a href="./remote-agents.html"
+            ><strong>Remote agents</strong>
+            <span>Startup on a remote Unix account.</span></a
+          >
+          <a href="./bundled-example.html"
+            ><strong>Bundled example</strong>
+            <span>Walk the shipped <code>docs-helper</code> agent.</span></a
+          >
+          <a href="./user-recipes.html"
+            ><strong>User recipes</strong>
+            <span>CodeSense setup, machine setup, manager.</span></a
+          >
+          <a href="./mcp-only-agents.html"
+            ><strong>MCP-only agents</strong>
+            <span>Agents using only the CodeSense MCP.</span></a
+          >
+          <a href="./tasks.html"
+            ><strong>Task records</strong>
+            <span>Every session's goal, type, targets and outcome, readable with task_list and task_read.</span></a
+          >
+          <a href="./notify-hook.html"
+            ><strong>Notify hook</strong>
+            <span>CodeSense installs the Claude status hook with itself; nothing in workspaces, no team file.</span></a
+          >
+          <a href="./line-attribution.html"
+            ><strong>Line attribution</strong>
+            <span>Which agent session wrote each committed line; automatic verified setup and per-repo controls.</span></a
+          >
+        </div>
+      </section>
+
+      <section data-search="Try this now — list the agents in your context repo" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          See every agent the active team already has. Read-only call; nothing
+          changes. The starters show up alongside any team agents and your
+          own Only-me ones.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_list", "args": {"scope": "all"}}'
+          label="List the agents in this team"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            Every lifecycle action on an agent has a matching MCP tool. The
+            four you'll reach for most:
+          </p>
+          <pre><code>// List agents the team can see — starters, team agents, your Only-me ones.
+codesense.invoke('agent_list', { scope: 'all' })
+
+// Preview a definition. Returns manifest.errors + warnings + resolved paths.
+codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions })
+
+// Create it, team-scoped by default. Pass scope: "personal" + org for Only me.
+codesense.invoke('agent_create', { name, runtime, startup, dryRun: false })
+
+// Update it. Pass the revision you last read as baseRevision; a conflict
+// reply means something else changed it since you read it.
+codesense.invoke('agent_update', { id, baseRevision, startup, permissions })</code></pre>
+          <p>
+            See <a href="../mcp-explorer.html">mcp-explorer</a> for the full
+            tool catalog and
+            <a href="../schema-browser.html#schema/agent-yaml">schema-browser →
+            agent.yaml</a> for every field.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a> ·
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+      <p><a href="./agent-accounts.html">Agent accounts</a> — which Claude or Codex login a launch uses, why one is refused, and the account tools.</p>
+      <p><a href="./spend-caps.html">Spend caps</a> — set daily and weekly limits, review pending raises, and understand automatic wake holds.</p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Agents</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

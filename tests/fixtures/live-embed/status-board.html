@@ -1,0 +1,41 @@
+<div id="app" class="cs-app"></div>
+<style>
+#app{font:14px/1.4 system-ui;padding:12px;color:var(--cs-fg,#ddd)}
+.h{font-size:18px;font-weight:600;margin:0 0 4px}
+.sub{opacity:.7;margin:0 0 12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.st{border:1px solid var(--cs-border,#333);border-radius:10px;padding:8px;text-align:center}
+.st b{display:block;font-size:22px}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:0 0 14px;background:var(--cs-border,#333)}
+.bar span{display:block}
+ul{list-style:none;padding:0;margin:0}
+li{padding:6px 0;border-top:1px solid var(--cs-border,#333);cursor:pointer}
+li small{opacity:.6;margin-left:6px}
+</style>
+<script>
+(function(){
+  var cs=window.codesense, root=document.getElementById('app');
+  root.textContent='Loading Sprint 1…';
+  var Q={where:{kinds:['story','bug','spike']},filters:[{key:'sprint',op:'eq',value:'1'}],select:['status','priority'],sort:['-mtime'],limit:400};
+  function el(t,c,txt){var e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e;}
+  function render(res){
+    var rows=(res&&res.rows)||[], n={done:0,review:0,'in-progress':0,todo:0,other:0};
+    rows.forEach(function(r){var s=r.fields.status; if(s in n) n[s]++; else n.other++;});
+    root.replaceChildren();
+    root.append(el('p','h','Sprint 1 — live status'), el('p','sub',rows.length+' stories · updates live as stories change'));
+    var st=el('div','stats');
+    [['Done','done'],['Review','review'],['In progress','in-progress'],['To do','todo']].forEach(function(p){var c=el('div','st');c.append(el('b',null,String(n[p[1]])),el('span',null,p[0]));st.append(c);});
+    root.append(st);
+    var bar=el('div','bar'), tot=rows.length||1;
+    [['done','#3fb950'],['review','#a371f7'],['in-progress','#d29922'],['todo','#6e7681']].forEach(function(p){var s=el('span');s.style.width=(100*n[p[0]]/tot)+'%';s.style.background=p[1];bar.append(s);});
+    root.append(bar, el('p','sub','In progress now'));
+    var ul=el('ul');
+    rows.filter(function(r){return r.fields.status==='in-progress'||r.fields.status==='review';}).slice(0,12).forEach(function(r){
+      var li=el('li',null,String(r.title||r.id)); li.append(el('small',null,r.fields.status));
+      li.onclick=function(){cs.openFile({path:r.relPath});}; ul.append(li);});
+    root.append(ul);
+    if(cs.ready) cs.ready();
+  }
+  cs.subscribeContext(Q,function(res,err){ if(err){root.textContent='Couldn’t load stories: '+(err.message||err); if(cs.ready)cs.ready(); return;} render(res); });
+})();
+</script>

@@ -1,0 +1,5 @@
+id: solo-founder-planner
+name: Solo founder planner
+icon: builtin-funny:tie-cat
+# Replace null with the full key returned by agent_create before saving.
+defaultHandler: null

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Commands, chords and menus</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/commands-and-menus">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Commands, chords and menus">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Commands, chords and menus</h1>
+        <p class="lede">
+          Declare commands once, register handlers in the page, and let the host deliver chords,
+          palette actions and native menus.
+        </p>
+      </section>
+      <section id="declare" data-search="Declare and register">
+        <h2>Declare and register</h2>
+        <pre><code>&lt;meta name=&quot;codesense:commands&quot; content=&#x27;[{&quot;id&quot;:&quot;toggle-filter&quot;,&quot;label&quot;:&quot;Toggle running sessions&quot;,&quot;scope&quot;:&quot;slot-focused&quot;,&quot;defaultChord&quot;:&quot;CmdOrCtrl+Alt+L&quot;,&quot;humanOnly&quot;:false}]&#x27;&gt;
+&lt;script&gt;
+const cs = window.codesense;
+cs.onCommand(command =&gt; {
+  if (command.id === &#x27;toggle-filter&#x27;) toggleFilter();
+});
+cs.ready();
+cs.commands.register([&#x27;toggle-filter&#x27;]).catch(showError);
+&lt;/script&gt;</code></pre>
+        <p>
+          Install handlers before calling <code>ready()</code> or <code>subscribe()</code>.
+          Registration activates only declared ids. Delivery is queued until explicit readiness
+          or an admitted subscription marks the frame live. Subscription admission can release
+          commands before its initial snapshot resolves; the shim's automatic transport handshake
+          does not count. Each dispatch has a
+          <code>dispatchId</code> and is delivered at most once.
+        </p>
+      </section>
+      <section id="scope" data-search="Scope and rebinding">
+        <h2>Scope and rebinding</h2>
+        <p>
+          <code>global</code> commands are available globally, <code>slot-visible</code> requires a
+          visible slot, and <code>slot-focused</code> requires focus in its slot for the keyboard
+          shortcut. <code>defaultChord</code> is the initial binding, not a guarantee: reserved or
+          conflicting shortcuts may be unbound. The person can rebind or clear it in Settings →
+          Shortcuts. Use the
+          <a href="../generated/pane-declarations.md">generated declaration contract</a> for
+          accepted scopes and fields.
+        </p>
+        <p>
+          <code>humanOnly:true</code> permits the person's palette/chord and page command invocation
+          but refuses agent <code>command_run</code>. For an agent-verifiable command, leave it
+          false. Agents discover the full dashboard/command id with <code>command_list</code> and
+          pass that exact id to <code>command_run</code>. The host reveals a hidden target before
+          delivering. On a dock team rebind the SDK holds calls, adopts the new grant and resyncs
+          topics; handle <code>onSlotContext</code> to drop your own old-team state.
+        </p>
+      </section>
+      <section id="rows" data-search="Native row menus">
+        <h2>Native row menus</h2>
+        <pre><code>const row = document.createElement(&#x27;li&#x27;);
+row.dataset.codesenseRow = JSON.stringify({kind: &#x27;agent&#x27;, sessionId: session.id});
+row.textContent = session.displayName;
+// A right click asks the host for the native agent menu. Keep normal text selection.
+</code></pre>
+        <p>
+          <code>data-codesense-row</code> identifies a row to the native menu builder. Story/file
+          paths are relative to the bound team's content root. Use the
+          <a href="../generated/page-sdk.md">SDK's ContextMenuRow</a> union for row shapes. Unknown
+          or unresolved rows fall back to the dashboard menu. Text fields and selected text get
+          native text menus first.
+        </p>
+        <p>
+          For a custom button menu call <code>showMenu({anchorRect, anchorId, row, items})</code>;
+          <code>anchorRect</code> is the button's bounding rect and <code>anchorId</code> lets focus
+          return to it. Page-local item ids return to your handler. The host owns
+          <code>builtin:reload-pane</code>, <code>builtin:open-as-tab</code>,
+          <code>builtin:edit-source</code>, <code>builtin:stop</code>,
+          <code>builtin:close-tab</code> and <code>builtin:set-role</code>; use only actions
+          applicable to that row or dashboard. Built-ins retain their native validation and
+          confirmation. See the
+          <a href="../examples/dashboards/live-list-with-command.html"
+            >golden live sessions example</a
+          >
+          for a native row menu without a copied implementation.
+        </p>
+      </section>
+      <section id="quick-view" data-search="Agent quick view terminal popover keyboard focus">
+        <h2>Peek at an agent's terminal</h2>
+        <p>
+          Ask the host for <code>agent-quick-send</code> to open a themed quick view beside an
+          agent row. The host owns the frame, terminal and positioning above the workspace bar.
+          <strong>Open tab</strong> opens the agent's CLI tab. A terminal already visible in the
+          CLI stays there; the quick view offers <strong>Show in CLI</strong> instead.
+        </p>
+        <pre><code>const button = document.querySelector('#peek');
+button.addEventListener('click', () =&gt; {
+  const { x, y, width, height } = button.getBoundingClientRect();
+  window.codesense.showPopover({
+    kind: 'agent-quick-send',
+    anchorId: button.id,
+    anchorRect: { x, y, width, height },
+    row: { kind: 'agent', sessionId: session.sessionId }
+  });
+});</code></pre>
+        <p>
+          Typing goes straight to the agent's terminal. Escape inside it goes to the CLI;
+          Escape on the header controls closes the quick view. ⌘W and Close return focus to
+          the invoking button. An outside click closes it where the person clicked. The
+          resize corner remembers the size and also accepts arrow keys.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

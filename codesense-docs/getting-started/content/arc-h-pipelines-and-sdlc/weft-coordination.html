@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-branch" />
+    <title>CodeSense — Weft coordination tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-h-pipelines-and-sdlc/weft-coordination">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Weft coordination tools">
+        <span class="cs-docs-eyebrow">Arc H · Pipelines and SDLC</span>
+        <h1>Weft coordination tools</h1>
+        <p class="lede">
+          Reference for the Weft coordination tools (<code>wv_*</code>): the Weft queue, dispatch briefs, approvals, Tier-2 windows, the decision and attention ledger, and the audit and posture controls.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>Each entry says what the tool does, how it differs from its neighbours, and shows one call with the wire names the server expects. Results are described only where the served description names them. These tools are mechanisms: which of them to use, and in what order, is the agent's decision.</p>
+        <p>Where a tool takes <code>sessionId</code>, the verified MCP connection supplies identity; a supplied <code>sessionId</code> must name the caller itself, and an unbound caller is refused.</p>
+      </section>
+      <section id="queue" data-search="Queue">
+        <h2>Queue</h2>
+        <p>The Weft queue holds work items as rows that move through <code>pending</code>, <code>claimed</code> and <code>dispatched</code>. Resolved rows are pruned and never appear in a listing.</p>
+        <h3 id="tool-wv_enqueue"><code>wv_enqueue</code></h3>
+        <p>Adds a <code>pending</code> row to the Weft queue for an agent to claim; triage may write it. Pass <code>source</code>, and optionally <code>scope</code>, <code>refs</code>, <code>note</code> and <code>dedupeKey</code>. With a <code>dedupeKey</code>, a second enqueue while a live row with that key exists is a no-op that returns the existing id, so a trigger can call it on every pulse. Returns <code>{id}</code>; row ids are not stable across prunes.</p>
+        <pre data-tool-example="wv_enqueue"><code>{
+  &quot;tool&quot;: &quot;wv_enqueue&quot;,
+  &quot;arguments&quot;: {
+    &quot;source&quot;: &quot;triage&quot;,
+    &quot;scope&quot;: &quot;sprint-1&quot;,
+    &quot;note&quot;: &quot;Review request for DEMO-13&quot;,
+    &quot;dedupeKey&quot;: &quot;review:DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_queue_list"><code>wv_queue_list</code></h3>
+        <p>Lists the non-resolved queue rows (<code>pending</code>, <code>claimed</code>, <code>dispatched</code>), optionally filtered by <code>scope</code>. Read-only. Returns <code>[{id, source, state, claimedBy, scope, created, updated, refs, note}]</code>. Use it to look at the queue; use <code>wv_claim_queue</code> to take a row.</p>
+        <pre data-tool-example="wv_queue_list"><code>{
+  &quot;tool&quot;: &quot;wv_queue_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;scope&quot;: &quot;sprint-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_claim_queue"><code>wv_claim_queue</code></h3>
+        <p>Claims one pending queue row and evaluates the keep/delegate tripwire in one step. Both verdicts stamp the verified owner as <code>claimedBy</code>. Optional evidence (<code>scope</code>, <code>touchedPaths</code>, <code>addedLines</code>, <code>persistent</code>, <code>requiresDiffRead</code>) feeds the tripwire; with no evidence it keeps the item. The store follows the caller's captured team, and callers without one, or unbound callers, are refused. <code>delegateRunId</code> is correlation only and never grants ownership. Returns <code>{claimed:true, id, verdict, firedRow, claimedBy, delegateRunId}</code> or <code>{claimed:false}</code>; losing a concurrent claim reports <code>claimLost</code>.</p>
+        <pre data-tool-example="wv_claim_queue"><code>{
+  &quot;tool&quot;: &quot;wv_claim_queue&quot;,
+  &quot;arguments&quot;: {
+    &quot;scope&quot;: &quot;sprint-1&quot;,
+    &quot;touchedPaths&quot;: [
+      {
+        &quot;path&quot;: &quot;docs/guide.md&quot;
+      }
+    ],
+    &quot;addedLines&quot;: 12
+  }
+}</code></pre>
+        <h3 id="tool-wv_mark_dispatched"><code>wv_mark_dispatched</code></h3>
+        <p>Marks a claimed row dispatched once a worker is running; only the verified owner of the row can do this, and unbound callers are refused. The order is claim, write the brief with <code>wv_write_dispatch</code>, spawn the worker, then this call with <code>queueId</code>, <code>storyId</code> (the brief key) and <code>dispatchHandle</code>. Returns <code>{dispatched:true, queueId, dispatchedAt}</code>, <code>{dispatched:false, error:stateConflict}</code>, or a validation message when the brief is missing.</p>
+        <pre data-tool-example="wv_mark_dispatched"><code>{
+  &quot;tool&quot;: &quot;wv_mark_dispatched&quot;,
+  &quot;arguments&quot;: {
+    &quot;queueId&quot;: 7,
+    &quot;storyId&quot;: &quot;DEMO-13&quot;,
+    &quot;dispatchHandle&quot;: &quot;worker-handle-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_resolve_queue"><code>wv_resolve_queue</code></h3>
+        <p>Resolves a claimed or dispatched row owned by your verified routine, queue-role identity or plain session (never another owner): prunes it and writes its compact key-ledger record atomically. Pass <code>dispatchId</code> to also run the success-signal and controller-verified preflight, which returns <code>verifyFirst</code> if unmet. Returns <code>{pruned:true}</code> or <code>{pruned:false, error:ownerMismatch|invalidState}</code>. <code>wv_close_task</code> is the stricter variant that always requires both conditions.</p>
+        <pre data-tool-example="wv_resolve_queue"><code>{
+  &quot;tool&quot;: &quot;wv_resolve_queue&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 7,
+    &quot;dispatchId&quot;: &quot;dispatch-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_close_task"><code>wv_close_task</code></h3>
+        <p>Closes a task only when it is accepted (the worker's <code>signal_done</code> succeeded) and controller-verified (<code>wv_verify_done</code> passed). Atomically prunes the queue row and records the key ledger; only the verified owner can prune its row. Returns <code>{status:resolved, queueId}</code>, <code>{status:closureBlocked, missing:[...]}</code> or <code>{status:resolveRefused, error}</code>.</p>
+        <pre data-tool-example="wv_close_task"><code>{
+  &quot;tool&quot;: &quot;wv_close_task&quot;,
+  &quot;arguments&quot;: {
+    &quot;queueId&quot;: 7,
+    &quot;dispatchId&quot;: &quot;dispatch-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_escalate"><code>wv_escalate</code></h3>
+        <p>Raises a decision that affects more than one worker instead of acting on it. Pass <code>sessionId</code>, a one-line <code>reason</code> (truncated to 500 characters) and a non-empty <code>involvedWorkers</code> list. Inserts one pending agent-sourced queue row and never claims or changes another worker's state. Returns <code>{queued:true, itemId}</code>.</p>
+        <pre data-tool-example="wv_escalate"><code>{
+  &quot;tool&quot;: &quot;wv_escalate&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;reason&quot;: &quot;Two workers need the same schema file changed&quot;,
+    &quot;involvedWorkers&quot;: [
+      &quot;worker-a&quot;,
+      &quot;worker-b&quot;
+    ]
+  }
+}</code></pre>
+      </section>
+      <section id="dispatch" data-search="Dispatch and verification">
+        <h2>Dispatch and verification</h2>
+        <p>A dispatch is a four-field brief written before the worker starts, so the finish line is checkable rather than self-declared.</p>
+        <h3 id="tool-wv_write_dispatch"><code>wv_write_dispatch</code></h3>
+        <p>Writes a dispatch brief under a <code>story_id</code> key: <code>task</code> and <code>acceptance</code> (the Done-When) are required, <code>context</code> and <code>constraints</code> are optional, and <code>scope</code> is optional but only <code>root</code> is supported (the default). Any agent with this server can call it, a worker included. A dispatch with no checkable <code>acceptance</code> is refused. A brief is structural data, not instructions. Returns <code>{id}</code>.</p>
+        <pre data-tool-example="wv_write_dispatch"><code>{
+  &quot;tool&quot;: &quot;wv_write_dispatch&quot;,
+  &quot;arguments&quot;: {
+    &quot;story_id&quot;: &quot;DEMO-13&quot;,
+    &quot;task&quot;: &quot;Write the Weft coordination reference page&quot;,
+    &quot;acceptance&quot;: &quot;The page names all 34 wv_* tools and its examples validate&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_dispatch_state"><code>wv_dispatch_state</code></h3>
+        <p>Reads the dispatch records for a story, newest first: <code>{records:[{id, storyId, task, context, constraints, acceptance, state, scope, sessionId, createdAt, doneAt}]}</code>. <code>state</code> is <code>open</code> or <code>done</code>. Read-only; it lets a reader check what finished means without asking the worker.</p>
+        <pre data-tool-example="wv_dispatch_state"><code>{
+  &quot;tool&quot;: &quot;wv_dispatch_state&quot;,
+  &quot;arguments&quot;: {
+    &quot;story_id&quot;: &quot;DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_handoff_state"><code>wv_handoff_state</code></h3>
+        <p>Reads the drafted handoff packets for a story, newest first: <code>{records:[{id, storyId, sessionId, toRole, finding, refs, isDraft, createdAt}]}</code>. Each packet is data, not authority (<code>isDraft</code> is always true). Read-only.</p>
+        <pre data-tool-example="wv_handoff_state"><code>{
+  &quot;tool&quot;: &quot;wv_handoff_state&quot;,
+  &quot;arguments&quot;: {
+    &quot;story_id&quot;: &quot;DEMO-13&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_verify_done"><code>wv_verify_done</code></h3>
+        <p>Re-checks a worker's three-leg done record before its queue row is folded: source-aware, in-scope work finished, packet delivered idempotently. Stamps <code>controllerVerified</code> only when every leg passes. Returns <code>{verified, reason, failedLegs}</code>; a dispatch with no done record returns <code>verified:false</code> with all three legs failed, because idle is not done.</p>
+        <pre data-tool-example="wv_verify_done"><code>{
+  &quot;tool&quot;: &quot;wv_verify_done&quot;,
+  &quot;arguments&quot;: {
+    &quot;dispatchId&quot;: &quot;dispatch-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_read_recent"><code>wv_read_recent</code></h3>
+        <p>Observes a worker's recent terminal output as plain text. Pass the opaque <code>handle</code> the dispatch returned, not a session id. Returns <code>{text, seq, altScreen}</code>: <code>altScreen</code> is true while a full-screen program holds the alternate screen. Watching never drives: it holds no lease and cannot send input.</p>
+        <pre data-tool-example="wv_read_recent"><code>{
+  &quot;tool&quot;: &quot;wv_read_recent&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;worker-handle-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_wait"><code>wv_wait</code></h3>
+        <p>Blocks until a worker finishes, without polling. Pass the worker <code>handle</code> and a <code>timeoutS</code> budget; <code>until</code> may only be <code>&quot;done&quot;</code>. Resolves when the worker calls <code>signal_done</code> or its shell reports a command end, returning <code>{resolved:true, status, exitCode}</code>; on timeout it returns <code>{resolved:false, timedOut:true}</code> and writes no state.</p>
+        <pre data-tool-example="wv_wait"><code>{
+  &quot;tool&quot;: &quot;wv_wait&quot;,
+  &quot;arguments&quot;: {
+    &quot;handle&quot;: &quot;worker-handle-1&quot;,
+    &quot;timeoutS&quot;: 600,
+    &quot;until&quot;: &quot;done&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="peers" data-search="Peer reads">
+        <h2>Peer reads</h2>
+        <p>Bounded read access to a peer worker. Both tools are authorised only when your dispatch lists the peer under <code>peers:</code>.</p>
+        <h3 id="tool-wv_coord_read"><code>wv_coord_read</code></h3>
+        <p>Reads a peer's <code>wv_coord</code> contract body. Pass <code>sessionId</code> and <code>contract</code>. Returns <code>{body}</code>, <code>{error:&quot;not-authorized&quot;}</code> when your dispatch does not list the owner, or <code>{error:&quot;not-found&quot;}</code>. Coord is state, never a message or an approval.</p>
+        <pre data-tool-example="wv_coord_read"><code>{
+  &quot;tool&quot;: &quot;wv_coord_read&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;contract&quot;: &quot;api-shape&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_peer_read_file"><code>wv_peer_read_file</code></h3>
+        <p>Reads one file from a peer's worktree. Pass <code>sessionId</code>, <code>peerName</code> and <code>relPath</code> (relative to the peer's root). A path containing <code>..</code> returns <code>{error:&quot;path-traversal&quot;}</code>; files over 256 KB return <code>{error:&quot;too-large&quot;, sizeBytes}</code>. Success returns <code>{contentUtf8}</code>; other results are <code>binary</code>, <code>not-found</code> and <code>peer-not-found</code> errors.</p>
+        <pre data-tool-example="wv_peer_read_file"><code>{
+  &quot;tool&quot;: &quot;wv_peer_read_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;peerName&quot;: &quot;worker-a&quot;,
+    &quot;relPath&quot;: &quot;docs/guide.md&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="approvals" data-search="Approvals and assertions">
+        <h2>Approvals and assertions</h2>
+        <p>The endorsement gate: an agent assertion counts for nothing until the owning human ratifies it.</p>
+        <h3 id="tool-wv_classify_action"><code>wv_classify_action</code></h3>
+        <p>Returns the endorsement tier (T1, T2 or T3, with reasons) a proposed action would enter, without writing any row. Call it before <code>wv_write_approval</code> to branch on the tier. Inputs are <code>claim</code>, <code>preferredTier</code> and the risk signals <code>irreversible</code>, <code>blastRadius</code> and <code>confidence</code>.</p>
+        <pre data-tool-example="wv_classify_action"><code>{
+  &quot;tool&quot;: &quot;wv_classify_action&quot;,
+  &quot;arguments&quot;: {
+    &quot;claim&quot;: &quot;Delete the stale branch&quot;,
+    &quot;preferredTier&quot;: &quot;T2&quot;,
+    &quot;irreversible&quot;: true,
+    &quot;blastRadius&quot;: &quot;low&quot;,
+    &quot;confidence&quot;: &quot;high&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_write_approval"><code>wv_write_approval</code></h3>
+        <p>Opens an endorsement for a Tier-2 or Tier-3 action. <code>tier</code> is your preferred tier; the picker may force T3 when two of the three risk signals hold, and the chosen tier is what is stored and returned. Pass <code>sessionId</code> whenever the chosen tier could be T3. Returns <code>{id, tier, disposition}</code>.</p>
+        <pre data-tool-example="wv_write_approval"><code>{
+  &quot;tool&quot;: &quot;wv_write_approval&quot;,
+  &quot;arguments&quot;: {
+    &quot;tier&quot;: &quot;T2&quot;,
+    &quot;claim&quot;: &quot;Delete the stale branch&quot;,
+    &quot;irreversible&quot;: false,
+    &quot;blastRadius&quot;: &quot;low&quot;,
+    &quot;confidence&quot;: &quot;high&quot;,
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_settle_approval"><code>wv_settle_approval</code></h3>
+        <p>Resolves a pending approval to <code>ratified</code> or <code>revoked</code> by id. It is the reply path for both T2 (window expiry) and T3 (owner approval). Idempotent: settling an already-settled or unknown id is a no-op. Returns <code>{settled}</code>.</p>
+        <pre data-tool-example="wv_settle_approval"><code>{
+  &quot;tool&quot;: &quot;wv_settle_approval&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 3,
+    &quot;disposition&quot;: &quot;ratified&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_post_assertion"><code>wv_post_assertion</code></h3>
+        <p>Posts an agent assertion through the endorsement gate as a pending row that counts as nothing until the owning human ratifies it in the app. Inputs: <code>sessionId</code>, <code>claim</code>, <code>channel</code>, and an optional <code>runId</code> that must belong to the caller. The text in <code>claim</code> is scrubbed and size-bounded, and run provenance comes from the trusted session, not from arguments. Returns <code>{id}</code>.</p>
+        <pre data-tool-example="wv_post_assertion"><code>{
+  &quot;tool&quot;: &quot;wv_post_assertion&quot;,
+  &quot;arguments&quot;: {
+    &quot;sessionId&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;,
+    &quot;claim&quot;: &quot;Release notes are ready for review&quot;,
+    &quot;channel&quot;: &quot;releases&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="t2-windows" data-search="Tier-2 windows">
+        <h2>Tier-2 windows</h2>
+        <p>A Tier-2 approval carries a revocation window. The clock freezes while the owner is away.</p>
+        <h3 id="tool-wv_open_t2_window"><code>wv_open_t2_window</code></h3>
+        <p>Arms the lazy-consent window on a pending T2 approval. It records <code>surfacedSession</code> (the session the item was shown to the owner in; the window may auto-close only when later checked in this same session), the open time on the server clock, and <code>durationS</code>, the present-time budget. It is rejected if the id is not a pending T2, <code>surfacedSession</code> is blank, or <code>durationS</code> is not positive. Returns <code>{opened:true}</code>.</p>
+        <pre data-tool-example="wv_open_t2_window"><code>{
+  &quot;tool&quot;: &quot;wv_open_t2_window&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 3,
+    &quot;surfacedSession&quot;: &quot;&lt;surfacing session id&gt;&quot;,
+    &quot;durationS&quot;: 3600
+  }
+}</code></pre>
+        <h3 id="tool-wv_check_t2_window"><code>wv_check_t2_window</code></h3>
+        <p>Evaluates a window at the server clock without changing it. A spent budget reports <code>lapsed</code> only when <code>checkSession</code> matches the surfacing session; otherwise <code>expiredWrongSession</code>. Returns <code>{state, elapsedS, remainingS}</code> where state is <code>notOpen</code>, <code>open</code>, <code>paused</code>, <code>expiredWrongSession</code> or <code>lapsed</code>.</p>
+        <pre data-tool-example="wv_check_t2_window"><code>{
+  &quot;tool&quot;: &quot;wv_check_t2_window&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 3,
+    &quot;checkSession&quot;: &quot;&lt;surfacing session id&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_close_t2_window"><code>wv_close_t2_window</code></h3>
+        <p>Auto-ratifies a T2 approval whose window has lapsed, only when <code>checkSession</code> matches the surfacing session. A paused, open, wrong-session, revoked or already-settled window is a no-op, and an owner's explicit reply is never overwritten. Returns <code>{ratified}</code>.</p>
+        <pre data-tool-example="wv_close_t2_window"><code>{
+  &quot;tool&quot;: &quot;wv_close_t2_window&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 3,
+    &quot;checkSession&quot;: &quot;&lt;surfacing session id&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_pause_t2_windows"><code>wv_pause_t2_windows</code></h3>
+        <p>Freezes the clock of every live T2 window at the server time. Idempotent: an already-paused window is skipped. Returns <code>{paused: &lt;count&gt;}</code>. <code>wv_set_posture</code> calls this on the move to away.</p>
+        <pre data-tool-example="wv_pause_t2_windows"><code>{
+  &quot;tool&quot;: &quot;wv_pause_t2_windows&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-wv_resume_t2_windows"><code>wv_resume_t2_windows</code></h3>
+        <p>The counterpart of the pause: banks each paused span into the window's accumulated pause, then restarts the clocks. Idempotent. Returns <code>{resumed: &lt;count&gt;}</code>.</p>
+        <pre data-tool-example="wv_resume_t2_windows"><code>{
+  &quot;tool&quot;: &quot;wv_resume_t2_windows&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+      </section>
+      <section id="ledger" data-search="Decisions, attention and watches">
+        <h2>Decisions, attention and watches</h2>
+        <p>The Weft ledger: standing decisions, items waiting on a human, per-source read watermarks and per-scope watches.</p>
+        <h3 id="tool-wv_write_decision"><code>wv_write_decision</code></h3>
+        <p>Writes a bounded standing decision. Required: <code>date</code>, <code>decision</code>, <code>constrains</code> (the one artifact it binds) and <code>endsWhen</code> (the retirement condition; a blank one is refused). The stored owner is the verified caller. Returns <code>{id}</code>.</p>
+        <pre data-tool-example="wv_write_decision"><code>{
+  &quot;tool&quot;: &quot;wv_write_decision&quot;,
+  &quot;arguments&quot;: {
+    &quot;date&quot;: &quot;2026-10-23&quot;,
+    &quot;decision&quot;: &quot;Docs pages describe mechanisms only&quot;,
+    &quot;constrains&quot;: &quot;codesense-docs reference pages&quot;,
+    &quot;endsWhen&quot;: &quot;The docs policy is replaced&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_retire_decision"><code>wv_retire_decision</code></h3>
+        <p>Marks a standing decision <code>superseded</code> by id so the triage intent-check stops matching it. Idempotent: an already-superseded or unknown id is a no-op. Returns <code>{retired}</code>.</p>
+        <pre data-tool-example="wv_retire_decision"><code>{
+  &quot;tool&quot;: &quot;wv_retire_decision&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: 12
+  }
+}</code></pre>
+        <h3 id="tool-wv_list_overdue_harvests"><code>wv_list_overdue_harvests</code></h3>
+        <p>Lists active decisions still <code>pending</code> (no drafted artifact) whose <code>date</code> is more than 24 hours before <code>nowUnix</code> (epoch seconds). An agent reads them to draft the missing artifact. Read-only. Returns <code>[{id, date, decision, constrains, endsWhen, owner, source}]</code>.</p>
+        <pre data-tool-example="wv_list_overdue_harvests"><code>{
+  &quot;tool&quot;: &quot;wv_list_overdue_harvests&quot;,
+  &quot;arguments&quot;: {
+    &quot;nowUnix&quot;: 1792800000
+  }
+}</code></pre>
+        <h3 id="tool-wv_upsert_attention"><code>wv_upsert_attention</code></h3>
+        <p>Writes an item that needs a human response into the attention ledger the Board reads. Omit <code>id</code> to create (a non-blank <code>summary</code> is required; <code>state</code> defaults to <code>needs-you</code>); pass <code>id</code> to update <code>state</code> (<code>needs-you</code>, <code>waiting</code> or <code>done-unacked</code>). Returns <code>{id}</code>.</p>
+        <pre data-tool-example="wv_upsert_attention"><code>{
+  &quot;tool&quot;: &quot;wv_upsert_attention&quot;,
+  &quot;arguments&quot;: {
+    &quot;summary&quot;: &quot;Approve the release notes&quot;,
+    &quot;state&quot;: &quot;needs-you&quot;,
+    &quot;source&quot;: &quot;github&quot;,
+    &quot;reference&quot;: &quot;owner/repo#123&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_upsert_watermark"><code>wv_upsert_watermark</code></h3>
+        <p>Advances the read watermark for a <code>(source, scope)</code> key; <code>source</code> is <code>slack</code>, <code>jira</code>, <code>github</code>, <code>local</code> or <code>agent</code>. A second call on the same key advances <code>lastHandled</code> rather than inserting a duplicate. Returns <code>{ok:true}</code>.</p>
+        <pre data-tool-example="wv_upsert_watermark"><code>{
+  &quot;tool&quot;: &quot;wv_upsert_watermark&quot;,
+  &quot;arguments&quot;: {
+    &quot;source&quot;: &quot;github&quot;,
+    &quot;scope&quot;: &quot;sprint-1&quot;,
+    &quot;lastHandled&quot;: &quot;comment-4812&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_scope_state"><code>wv_scope_state</code></h3>
+        <p>Reads a scope's ledger row plus its non-closed watches, so a restarting agent can resume without re-interrogating the previous session. Read-only. Returns <code>{scope, watches}</code>; <code>scope</code> is null when unknown.</p>
+        <pre data-tool-example="wv_scope_state"><code>{
+  &quot;tool&quot;: &quot;wv_scope_state&quot;,
+  &quot;arguments&quot;: {
+    &quot;scope&quot;: &quot;sprint-1&quot;
+  }
+}</code></pre>
+        <h3 id="tool-wv_watch_list"><code>wv_watch_list</code></h3>
+        <p>Lists the watches a scope claims, <code>{watches:[{scope, kind, ref, lifecycle, updatedAt}]}</code>, where lifecycle is <code>open</code>, <code>quiet</code> or <code>closed</code>. Closed watches are omitted unless <code>includeClosed</code> is true. Read-only.</p>
+        <pre data-tool-example="wv_watch_list"><code>{
+  &quot;tool&quot;: &quot;wv_watch_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;scope&quot;: &quot;sprint-1&quot;,
+    &quot;includeClosed&quot;: false
+  }
+}</code></pre>
+      </section>
+      <section id="audit-posture" data-search="Audit and posture">
+        <h2>Audit and posture</h2>
+        <h3 id="tool-wv_audit_query"><code>wv_audit_query</code></h3>
+        <p>Reads the append-only write-audit trail, newest first, as <code>[{id, tableName, operation, rowId, writtenAt}]</code>. All filters are optional and ANDed: <code>tableName</code>, <code>operation</code> (<code>append</code> or <code>mutate</code>), <code>sinceId</code>/<code>beforeId</code> cursors, <code>afterAt</code> (epoch seconds). <code>limit</code> is clamped to 1–500 (default 100). Read-only, visible to all profiles.</p>
+        <pre data-tool-example="wv_audit_query"><code>{
+  &quot;tool&quot;: &quot;wv_audit_query&quot;,
+  &quot;arguments&quot;: {
+    &quot;tableName&quot;: &quot;wv_queue&quot;,
+    &quot;limit&quot;: 50
+  }
+}</code></pre>
+        <h3 id="tool-wv_audit_prune"><code>wv_audit_prune</code></h3>
+        <p>Deletes audit rows with <code>writtenAt</code> before <code>cutoffSecs</code> (epoch seconds) and returns <code>{pruned:&lt;count&gt;}</code>. It is the only maintenance mutation on the trail, and it writes no audit row of its own.</p>
+        <pre data-tool-example="wv_audit_prune"><code>{
+  &quot;tool&quot;: &quot;wv_audit_prune&quot;,
+  &quot;arguments&quot;: {
+    &quot;cutoffSecs&quot;: 1790000000
+  }
+}</code></pre>
+        <h3 id="tool-wv_read_posture"><code>wv_read_posture</code></h3>
+        <p>Returns the scope's posture, <code>{posture:&quot;normal&quot;|&quot;away&quot;, windows:[{subclass, startMin, endMin}]}</code>. A fresh store reads <code>normal</code> with no windows; a corrupt stored value falls back to <code>normal</code>.</p>
+        <pre data-tool-example="wv_read_posture"><code>{
+  &quot;tool&quot;: &quot;wv_read_posture&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-wv_set_posture"><code>wv_set_posture</code></h3>
+        <p>Persists the posture, <code>normal</code> or <code>away</code>, with optional <code>windows</code>. When the value changes it triggers the matching Tier-2 pause or resume; setting the current value skips only the Tier-2 pause or resume; <code>windows</code> is always replaced, and an omitted <code>windows</code> becomes an empty list, so repeating <code>{posture:&quot;away&quot;}</code> clears any stored windows. Posture widens or narrows initiation and never grants authority. Returns <code>{posture, changed, directive, windowsAffected}</code>.</p>
+        <pre data-tool-example="wv_set_posture"><code>{
+  &quot;tool&quot;: &quot;wv_set_posture&quot;,
+  &quot;arguments&quot;: {
+    &quot;posture&quot;: &quot;away&quot;
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc H pages</a> ·
+        <a href="./runs-and-stories.html">Runs and stories</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc H · Pipelines and SDLC</div>
+    </footer>
+  </body>
+</html>

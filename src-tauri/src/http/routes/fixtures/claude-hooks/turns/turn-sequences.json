@@ -1,0 +1,82 @@
+{
+  "_comment": "Hook order observed from real `claude` 2.1.280 turns (interactive and -p). Each step: the hook, the terminal-status-update the receiver emits for it, and the agent state the frontend resolves. A silent turn has no event between UserPromptSubmit and Stop.",
+  "tab_session_id": "shell-turn-fixture",
+  "turns": {
+    "silent-turn": [
+      {
+        "hook": "UserPromptSubmit",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "UserPromptSubmit"
+        },
+        "agent_state": "thinking"
+      },
+      {
+        "hook": "Stop",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "done",
+          "hook_event": "Stop"
+        },
+        "agent_state": "done"
+      }
+    ],
+    "tool-turn": [
+      {
+        "hook": "UserPromptSubmit",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "UserPromptSubmit"
+        },
+        "agent_state": "thinking"
+      },
+      {
+        "hook": "PreToolUse",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "PreToolUse"
+        },
+        "agent_state": "working"
+      },
+      {
+        "hook": "PostToolUse",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "PostToolUse"
+        },
+        "agent_state": "thinking"
+      },
+      {
+        "hook": "PreToolUse",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "PreToolUse"
+        },
+        "agent_state": "working"
+      },
+      {
+        "hook": "PostToolUse",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "running",
+          "hook_event": "PostToolUse"
+        },
+        "agent_state": "thinking"
+      },
+      {
+        "hook": "Stop",
+        "emitted": {
+          "tab_session_id": "shell-turn-fixture",
+          "status": "done",
+          "hook_event": "Stop"
+        },
+        "agent_state": "done"
+      }
+    ]
+  }
+}

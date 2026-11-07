@@ -1,0 +1,31 @@
+{
+  "phase": 1,
+  "name": "Idea",
+  "group": "Plan",
+  "describedBy": "./phases.yml#phase-1",
+  "pipeline": {
+    "nodes": [],
+    "edges": []
+  },
+  "agentDag": {
+    "sessions": [
+      {
+        "id": "s-fake-1-mary",
+        "agent": "mary-analyst",
+        "status": "running",
+        "startedAt": "2026-10-02T09:12:00Z",
+        "endedAt": null,
+        "story": null
+      }
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch"],
+    "focus": "fake-triage-dispatch-001"
+  },
+  "sprint": {
+    "active": null,
+    "stories": []
+  },
+  "note": "Phase 1 — the human asks for a kill switch; Mary reads it and starts the forge. No stories yet, no sprint selected. The DAG shows one running analyst session."
+}

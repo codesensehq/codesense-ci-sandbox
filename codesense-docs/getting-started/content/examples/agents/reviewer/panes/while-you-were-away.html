@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="codesense:icon" content="book-open-check">
+  <meta name="codesense:theme" content="auto">
+  <title>While you were away</title>
+  <style>
+    :root { color-scheme: var(--cs-color-scheme, light dark); }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px 16px; background: var(--cs-bg, Canvas); color: var(--cs-fg, CanvasText); font: 13px/1.55 var(--cs-font-sans, system-ui, sans-serif); overflow-wrap: anywhere; }
+    h1 { margin: 0 0 8px; font-size: 18px; line-height: 1.3; font-weight: 650; }
+    h2 { margin: 0 0 10px; font-size: 14px; font-weight: 650; }
+    p { margin: 0 0 10px; }
+    section, details { margin-top: 24px; }
+    section { padding-top: 16px; border-top: 1px solid var(--cs-border, GrayText); }
+    #window, #freshness, #status, .muted { color: var(--cs-muted-fg, GrayText); font-size: 12px; }
+    #freshness.stale, #freshness.stale button { color: var(--cs-warning, #916000); }
+    #error { color: var(--cs-danger, #bd3434); }
+    #actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    button, a { font: inherit; color: var(--cs-link, LinkText); text-underline-offset: 3px; }
+    button { background: transparent; border: 1px solid var(--cs-border, GrayText); border-radius: 5px; padding: 5px 9px; cursor: pointer; }
+    button:hover, a:hover { background: var(--cs-surface, ButtonFace); }
+    button[aria-pressed="true"] { color: var(--cs-success, #207344); }
+    button:disabled { cursor: default; opacity: .55; }
+    :focus-visible { outline: 2px solid var(--cs-accent, Highlight); outline-offset: 3px; }
+    ::selection { background: var(--cs-accent, Highlight); color: var(--cs-accent-fg, HighlightText); }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .claims > li + li { margin-top: 16px; }
+    .evidence { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+    .evidence a, .evidence button { border: 1px solid var(--cs-border, GrayText); border-radius: 4px; padding: 2px 6px; font-size: 12px; text-decoration: none; }
+    #freshness button { border: 0; padding: 0; text-decoration: underline; }
+    #earlier li + li { margin-top: 8px; }
+    summary { cursor: pointer; font-weight: 600; }
+    #receipts { display: grid; gap: 6px; margin-top: 10px; font-size: 12px; font-variant-numeric: tabular-nums; }
+    #receipts li { display: flex; gap: 12px; flex-wrap: wrap; }
+    pre { margin: 10px 0; white-space: pre-wrap; font: 12px/1.5 ui-monospace, monospace; max-height: 24rem; overflow: auto; }
+    html, pre { scrollbar-width: thin; scrollbar-color: var(--cs-border, GrayText) transparent; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>While you were away</h1>
+    <p id="window"></p>
+    <p id="freshness">No review written yet.</p>
+    <p id="status" role="status">Loading the latest review…</p>
+    <p id="error" role="alert" hidden></p>
+    <div id="actions">
+      <button id="generate" type="button">Generate review</button>
+      <button id="acted" type="button" aria-pressed="false" disabled>Acted on this</button>
+      <button id="retry" type="button">Reload</button>
+    </div>
+  </header>
+  <main id="review" aria-label="Latest review"></main>
+  <details id="evidence-panel" hidden>
+    <summary id="evidence-label">Evidence</summary>
+    <pre id="evidence-detail"></pre>
+  </details>
+  <section aria-labelledby="earlier-heading">
+    <h2 id="earlier-heading">Earlier reviews</h2>
+    <ul id="earlier"><li class="muted">No earlier reviews yet.</li></ul>
+  </section>
+  <details open>
+    <summary>Last 14 days</summary>
+    <ul id="receipts"><li class="muted">No reviews in this window.</li></ul>
+  </details>
+  <script>
+    const PERSON = 'sam';
+    const ORG = 'acme/team-context';
+    const TEAM = 'web';
+    const TIME_ZONE = 'America/Los_Angeles';
+    const KEY = `${ORG}/${TEAM}/while-you-were-away`;
+    const TITLES = ['What moved', 'Decisions and why', 'Waiting on you', 'Risks', 'Diffs worth reading'];
+    const historyQuery = {
+      where: { orgs: [ORG], teams: [TEAM], layers: ['team'], pathPrefix: `reviews/${PERSON}/` },
+      sort: ['-fileName'], limit: 200,
+    };
+    const byId = (id) => document.getElementById(id);
+    let review = null;
+    let history = [];
+    let visible = false;
+    let sequence = 0;
+    let changedCount = 0;
+    let opening = false;
+    let actedBusy = false;
+    let refreshing = false;
+    let offStale = () => {};
+    const openedHere = new Set();
+
+    function element(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+    function showError(error) {
+      byId('error').hidden = false;
+      byId('error').textContent = `${error.message || error} Reload to try again.`;
+    }
+    async function allRows(query, first) {
+      const rows = [];
+      let page = first || await codesense.queryContext(query);
+      while (page) {
+        rows.push(...page.rows);
+        if (!page.nextCursor) break;
+        page = await codesense.queryContext({ ...query, cursor: page.nextCursor });
+      }
+      return rows;
+    }
+    function currentFile() {
+      return review && history.find((row) => row.relPath === review.review_path
+        && row.fields.generated_at === review.generated_at);
+    }
+    function ago(at) {
+      const secs = Math.max(0, Math.round((Date.now() - Date.parse(at)) / 1000));
+      if (secs < 5) return 'just now';
+      if (secs < 60) return `${secs}s ago`;
+      const mins = Math.floor(secs / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      return hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
+    }
+    function citationReference(citation) {
+      return citation.source === 'run' || citation.source === 'advance' ? citation.run_id : citation.id;
+    }
+    function renderFreshness() {
+      const line = byId('freshness');
+      line.replaceChildren();
+      line.classList.toggle('stale', changedCount > 0);
+      if (!review) { line.textContent = 'No review written yet.'; return; }
+      if (changedCount) {
+        line.append(document.createTextNode(`${changedCount} ${changedCount === 1 ? 'change' : 'changes'} since this was written · `));
+        const button = element('button', 'Regenerate');
+        button.id = 'regenerate'; button.type = 'button'; button.disabled = refreshing;
+        button.onclick = regenerate;
+        line.append(button);
+      } else {
+        line.textContent = `Built from ${review.event_count} events · ${review.from_sha.slice(0, 7)}..${review.to_sha.slice(0, 7)} · written ${ago(review.generated_at)}`;
+      }
+    }
+    async function openEvidence(citation) {
+      try {
+        let data;
+        if (citation.source === 'run' || (citation.source === 'advance' && citation.run_id)) {
+          data = await codesense.run({ runId: citation.run_id });
+        }
+        else if (citation.source === 'message') {
+          const result = await codesense.updates({ limit: 500 });
+          data = result.updates.find((row) => row.id === citation.id);
+        } else {
+          const result = await codesense.inbox({ scope: 'all', limit: 500 });
+          data = result.messages.find((row) => row.messageId === citation.id);
+        }
+        byId('evidence-label').textContent = `${citation.source} ${citationReference(citation)}`;
+        byId('evidence-detail').textContent = data ? JSON.stringify(data, null, 2)
+          : 'This record is no longer in the retained history.';
+        byId('evidence-panel').hidden = false;
+        byId('evidence-panel').open = true;
+      } catch (error) { showError(error); }
+    }
+    function evidenceChip(citation) {
+      if (citation.source === 'commit') {
+        const link = element('a', `commit ${citation.sha.slice(0, 7)}`);
+        link.href = `https://github.com/${citation.org}/commit/${citation.sha}`;
+        link.title = citation.sha;
+        return link;
+      }
+      if (citation.source === 'story' || (citation.source === 'advance' && !citation.run_id)) {
+        const link = element('a', citation.path);
+        link.href = citation.path;
+        return link;
+      }
+      const label = `${citation.source} ${citationReference(citation)}`;
+      const button = element('button', label);
+      button.type = 'button'; button.onclick = () => openEvidence(citation);
+      return button;
+    }
+    function renderReview() {
+      byId('review').replaceChildren();
+      byId('window').textContent = review
+        ? `${new Date(review.window.since).toLocaleString()} – ${new Date(review.window.until).toLocaleString()} · Generated ${new Date(review.generated_at).toLocaleString()}` : '';
+      if (!review) return;
+      if (!review.event_count) {
+        byId('review').textContent = 'No recorded changes in this window.';
+        return;
+      }
+      for (const title of TITLES) {
+        const section = review.sections.find((s) => s.title === title);
+        if (!section || !section.claims.length) continue;
+        const block = element('section'); block.append(element('h2', title));
+        const list = element('ul', undefined, 'claims');
+        for (const claim of section.claims) {
+          const row = element('li'); row.append(element('p', claim.text));
+          const citations = element('div', undefined, 'evidence');
+          for (const citation of claim.citations) citations.append(evidenceChip(citation));
+          row.append(citations); list.append(row);
+        }
+        block.append(list); byId('review').append(block);
+      }
+    }
+    function renderHistory() {
+      const earlier = byId('earlier'); earlier.replaceChildren();
+      const receipts = byId('receipts'); receipts.replaceChildren();
+      const day = new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE,
+        year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      const oldest = new Date(`${day}T00:00:00Z`);
+      oldest.setUTCDate(oldest.getUTCDate() - 13);
+      const cutoff = oldest.toISOString().slice(0, 10);
+      for (const row of history) {
+        const date = row.fileName.replace(/\.md$/, '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+        if (!review || row.relPath !== review.review_path) {
+          const item = element('li'); const open = element('button', date);
+          open.type = 'button'; open.onclick = () => codesense.openFile({ path: row.path }).catch(showError);
+          item.append(open); earlier.append(item);
+        }
+        if (date >= cutoff && date <= day) {
+          const item = element('li');
+          item.append(element('span', date), element('span', `Opened ${row.fields.opened_at ? 'yes' : 'no'}`),
+            element('span', `Acted ${row.fields.acted_at ? 'yes' : 'no'}`));
+          receipts.append(item);
+        }
+      }
+      if (!earlier.childNodes.length) earlier.append(element('li', 'No earlier reviews yet.', 'muted'));
+      if (!receipts.childNodes.length) receipts.append(element('li', 'No reviews in this window.', 'muted'));
+      const file = currentFile();
+      byId('acted').disabled = !file || actedBusy;
+      byId('acted').setAttribute('aria-pressed', String(!!file?.fields.acted_at));
+    }
+    async function updateHistory(first) {
+      history = await allRows(historyQuery, first);
+      renderHistory();
+      await recordOpened();
+    }
+    async function recordOpened() {
+      const file = currentFile();
+      if (!visible || !file || file.fields.opened_at || openedHere.has(file.path) || opening) return;
+      opening = true;
+      try {
+        const at = new Date().toISOString();
+        await codesense.setField({ path: file.path, fields: { opened_at: at } });
+        openedHere.add(file.path); file.fields.opened_at = at;
+        renderHistory();
+      } catch (error) { showError(error); }
+      finally { opening = false; }
+    }
+    async function toggleActed() {
+      const file = currentFile();
+      if (!file || actedBusy) return;
+      actedBusy = true; renderHistory();
+      try {
+        const at = file.fields.acted_at ? null : new Date().toISOString();
+        await codesense.setField({ path: file.path, fields: { acted_at: at } });
+        file.fields.acted_at = at; renderHistory();
+      } catch (error) { showError(error); }
+      finally { actedBusy = false; renderHistory(); }
+    }
+    async function regenerate() {
+      if (refreshing) return;
+      refreshing = true; byId('generate').disabled = true; renderFreshness();
+      try {
+        const result = await codesense.routineRefresh({ key: KEY, variables: { person: PERSON } });
+        byId('status').textContent = `Review refresh: ${result.outcome}${result.reason ? ` (${result.reason})` : ''}`;
+      } catch (error) { showError(error); }
+      finally { refreshing = false; byId('generate').disabled = false; renderFreshness(); }
+    }
+    async function load() {
+      const ticket = ++sequence;
+      byId('error').hidden = true;
+      try {
+        const result = await codesense.routineResult({ key: KEY });
+        if (ticket !== sequence) return;
+        const payload = result.snapshot?.payload;
+        review = result.schema_compatible && payload?.person === PERSON ? payload : null;
+        byId('status').textContent = result.active_attempt ? 'Collecting a new review…'
+          : result.snapshot && !result.schema_compatible ? 'The review format changed. Generate a new review.'
+          : result.latest_attempt && result.latest_attempt.phase !== 'succeeded'
+            ? `Latest attempt: ${result.latest_attempt.phase}. ${result.latest_attempt.reason || 'The last successful review is kept.'}`
+            : review ? '' : 'Generate your first review to see what changed.';
+        changedCount = 0; offStale(); offStale = () => {};
+        renderReview(); renderFreshness();
+        await updateHistory();
+        if (!review || ticket !== sequence) return;
+        const generatedAt = review.generated_at;
+        const query = { where: { orgs: [ORG], teams: [TEAM], layers: ['team'] },
+          filters: [{ key: 'mtime', op: 'range', min: Date.parse(generatedAt) + 1 }], limit: 200 };
+        offStale = codesense.subscribeContext(query, (result, error) => {
+          if (error) { showError(error); return; }
+          allRows(query, result).then((rows) => {
+            if (review?.generated_at !== generatedAt) return;
+            changedCount = rows.filter((r) => !r.relPath.startsWith('reviews/')).length;
+            renderFreshness();
+          }).catch(showError);
+        });
+      } catch (error) { if (ticket === sequence) showError(error); }
+    }
+    byId('generate').onclick = regenerate;
+    byId('acted').onclick = toggleActed;
+    byId('retry').onclick = load;
+    const offHistory = codesense.subscribeContext(historyQuery, (result, error) => {
+      if (error) showError(error); else updateHistory(result).catch(showError);
+    });
+    const offResult = codesense.onRoutineResult(() => { void load(); });
+    const offVisibility = codesense.onVisibility((value) => {
+      visible = value;
+      if (visible) { renderFreshness(); void recordOpened(); }
+    });
+    const clock = setInterval(renderFreshness, 60000);
+    window.addEventListener('pagehide', () => {
+      offHistory(); offResult(); offVisibility(); offStale(); clearInterval(clock);
+    }, { once: true });
+    void load();
+    codesense.ready?.();
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+.
+./feat-demo-sprint-2-hardening
+./feat-demo-sprint-2-hardening/logs
+./feat-demo-sprint-2-hardening/working_logs
+./feat-demo-sprint-2-hardening/working_logs/old-<sha>
+./feat-demo-sprint-2-hardening/working_logs/old-<sha>/.archived_at
+./feat-demo-sprint-2-hardening/working_logs/old-<sha>/blobs
+./feat-demo-sprint-2-hardening/working_logs/old-<sha>/blobs/<blob>
+./feat-demo-sprint-2-hardening/working_logs/old-<sha>/checkpoints.jsonl

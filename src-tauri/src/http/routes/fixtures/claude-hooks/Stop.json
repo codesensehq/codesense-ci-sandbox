@@ -1,0 +1,12 @@
+{
+  "background_tasks": [],
+  "cwd": "/tmp/claude-hook-capture",
+  "hook_event_name": "Stop",
+  "last_assistant_message": "ok",
+  "permission_mode": "default",
+  "prompt_id": "c1a0de00-0000-4000-9000-000000000301",
+  "session_crons": [],
+  "session_id": "c1a0de00-0000-4000-a000-000000000307",
+  "stop_hook_active": false,
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000307.jsonl"
+}

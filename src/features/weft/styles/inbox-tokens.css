@@ -1,0 +1,162 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * SW-IB1-A1 — Inbox tokens.
+ *
+ * Spacing, radii, motion, and pane-geometry CSS custom properties consumed by
+ * every v0.0.19 inbox surface (push pane, human inbox, shared cells, compose
+ * box, toolbar). This file carries NO palette entries — color roles continue
+ * to reference the existing CodeSense CSS variables (`--background`,
+ * `--popover`, `--muted`, `--accent`, `--border`, `--ring`, `--focus`,
+ * `--foreground`, `--muted-foreground`, `--destructive`). See
+ * `_bmad-output/v019-inbox-polish/ux/DESIGN.md` § frontmatter `spacing` /
+ * `rounded` / `motion` for the authoritative mapping.
+ *
+ * Spacing scale is bimodal by design — tight groups land on `--ib-space-1`
+ * / `--ib-space-2`; separation jumps to `--ib-space-5` / `--ib-space-6`.
+ * Values between are forbidden (see DESIGN § Layout & Spacing).
+ */
+
+:root {
+  /* Spacing scale (DESIGN § spacing). ib-space-0 … ib-space-7. */
+  --ib-space-0: 2px; /* hairline inset, dot-to-text */
+  --ib-space-1: 4px; /* icon gap, control cluster gap */
+  --ib-space-2: 6px; /* avatar-to-text, dot row */
+  --ib-space-3: 8px; /* cell edge pad, inline cluster */
+  --ib-space-4: 12px; /* cell vertical pad, cell gutter */
+  --ib-space-5: 16px; /* pane edge pad, section separation */
+  --ib-space-6: 20px; /* header-to-list, empty-state inset */
+  --ib-space-7: 24px; /* compose box top pad */
+
+  /* Radii (DESIGN § rounded). Orthogonal by role:
+     sm = controls, md = editable surfaces, lg = reserved, full = identity. */
+  --ib-radius-sm: 4px; /* icon buttons, chips, status pills, send button */
+  --ib-radius-md: 6px; /* compose textarea, code blocks */
+  --ib-radius-lg: 8px; /* reserved for detail-view card (not shipped v0.0.19) */
+  --ib-radius-full: 9999px; /* avatars, unread dot, machine-badge pill */
+
+  /* Motion (DESIGN § motion). One authored moment (pane); the rest utility. */
+  --ib-motion-tap: 80ms; /* icon-button press, cell click flash */
+  --ib-motion-pane: 160ms; /* push-pane slide-in — THE authored moment */
+  --ib-motion-list: 120ms; /* list-to-detail swap at narrow width */
+  --ib-motion-fade: 200ms; /* empty-state fade; unread-dot fade on mark-read */
+
+  --ib-ease-tap: cubic-bezier(0.4, 0, 0.6, 1);
+  --ib-ease-pane: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ib-ease-list: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ib-ease-fade: ease-out;
+
+  /* Pane sizing (DESIGN § spacing). `--tab-inbox-width` itself is written
+     per-tab from the agent-inbox-rail-store at mount; the default/min/
+     breakpoints live here. */
+  --tab-inbox-width-default: 420px;
+  --tab-inbox-width-min: 280px;
+  --tab-inbox-breakpoint-collapse: 420px;
+  --human-inbox-breakpoint-collapse: 480px;
+
+  /* Pane geometry (DESIGN § spacing). Row/cell heights for the shared
+     chrome: tile caption, push/human pane headers, activity row, cell. */
+  --tile-caption-height: 32px;
+  --pane-header-height-push: 44px;
+  --pane-header-height-human: 48px;
+  --pane-activity-row-height: 36px;
+  --cell-min-height: 68px;
+  --cell-max-height: 86px;
+}
+
+/*
+ * Reduced motion collapses every authored duration to 0; transforms are
+ * replaced by instant swaps at the component layer (DESIGN § motion
+ * `reduced-motion`). We keep the easing variables intact so transitions
+ * remain readable in devtools — only the duration goes to zero.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ib-motion-tap: 0ms;
+    --ib-motion-pane: 0ms;
+    --ib-motion-list: 0ms;
+    --ib-motion-fade: 0ms;
+  }
+}
+
+/*
+ * NOTE: the aggressive mid-word `word-break` value (the one DESIGN forbids,
+ * see DESIGN § dont #3) is banned in the inbox stylesheets. It fractures
+ * legible words. For long-token wrapping use
+ * `overflow-wrap: anywhere; word-break: normal` (see inbox-html.css).
+ * Downstream stories should NOT introduce the banned value.
+ */
+
+/*
+ * Inbox lenses + rollup palette. Every role maps onto an existing CodeSense
+ * colour where one exists; the few the app had no name for (the role-queue
+ * violet, the terminal-typed surface, the outgoing bubble, lifelines) are
+ * declared here once per theme so both themes stay in step.
+ */
+:root {
+  --ibx-bg: var(--background);
+  --ibx-card: var(--card);
+  --ibx-muted: var(--muted);
+  --ibx-raise: var(--theme-compat-ibx-raise);
+  /* SW-VE-16: a dedicated "elevation step" surface for a control that must LIFT above
+   * `--ibx-muted` (the toolbar / sunken-track background). Ranked ABOVE `--ibx-muted` in
+   * both themes so an `aria-pressed` or hover state reads as a lift rather than a sunk hole.
+   * `--ibx-raise` collides with `--ibx-muted` in light theme and can't serve this role. */
+  --ibx-lifted: var(--theme-compat-ibx-lifted);
+  --ibx-border: var(--border);
+  --ibx-hair: var(--theme-compat-ibx-hair);
+  --ibx-fg: var(--foreground);
+  --ibx-fg2: var(--theme-compat-ibx-fg2);
+  --ibx-mfg: var(--muted-foreground);
+  --ibx-faint: var(--theme-compat-ibx-faint);
+  --ibx-disabled: var(--theme-compat-ibx-disabled);
+  --ibx-accent: var(--accent);
+  --ibx-accent-ink: var(--accent-foreground);
+  --ibx-accent-wash: var(--theme-compat-ibx-accent-wash);
+  --ibx-accent-line: var(--theme-compat-ibx-accent-line);
+  --ibx-green: var(--cs-status-added);
+  --ibx-amber: var(--cs-status-modified);
+  --ibx-role: var(--theme-compat-ibx-role);
+  --ibx-role-ink: var(--theme-compat-ibx-role-ink);
+  --ibx-role-on: var(--theme-compat-ibx-role-on);
+  --ibx-role-wash: var(--theme-compat-ibx-role-wash);
+  --ibx-role-line: var(--theme-compat-ibx-role-line);
+  --ibx-term: var(--theme-compat-ibx-term);
+  --ibx-term-fg: var(--theme-compat-ibx-term-fg);
+  --ibx-term-line: var(--theme-compat-ibx-term-line);
+  --ibx-prompt: var(--theme-compat-ibx-prompt);
+  --ibx-mtag: var(--theme-compat-ibx-mtag);
+  --ibx-out-bg: var(--theme-compat-ibx-out-bg);
+  --ibx-out-line: var(--theme-compat-ibx-out-line);
+  --ibx-lifeline: var(--theme-compat-ibx-lifeline);
+  --ibx-shadow: var(--theme-compat-ibx-shadow);
+  --ibx-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ibx-mono: "Geist Mono", "MesloLGS NF", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ibx-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --ibx-raise: var(--theme-compat-ibx-raise);
+  /* SW-VE-16: lifted sits ABOVE `--ibx-muted` (#1c2128) in dark, so an active segment on
+   * a sunken track reads correctly. */
+  --ibx-lifted: var(--theme-compat-ibx-lifted);
+  --ibx-hair: var(--theme-compat-ibx-hair);
+  --ibx-fg2: var(--theme-compat-ibx-fg2);
+  --ibx-faint: var(--theme-compat-ibx-faint);
+  --ibx-disabled: var(--theme-compat-ibx-disabled);
+  --ibx-accent-wash: var(--theme-compat-ibx-accent-wash);
+  --ibx-accent-line: var(--theme-compat-ibx-accent-line);
+  --ibx-role: var(--theme-compat-ibx-role);
+  --ibx-role-ink: var(--theme-compat-ibx-role-ink);
+  --ibx-role-on: var(--theme-compat-ibx-role-on);
+  --ibx-role-wash: var(--theme-compat-ibx-role-wash);
+  --ibx-role-line: var(--theme-compat-ibx-role-line);
+  --ibx-term: var(--theme-compat-ibx-term);
+  --ibx-term-fg: var(--theme-compat-ibx-term-fg);
+  --ibx-term-line: var(--theme-compat-ibx-term-line);
+  --ibx-prompt: var(--theme-compat-ibx-prompt);
+  --ibx-mtag: var(--theme-compat-ibx-mtag);
+  --ibx-out-bg: var(--theme-compat-ibx-out-bg);
+  --ibx-out-line: var(--theme-compat-ibx-out-line);
+  --ibx-lifeline: var(--theme-compat-ibx-lifeline);
+  --ibx-shadow: var(--theme-compat-ibx-shadow);
+}

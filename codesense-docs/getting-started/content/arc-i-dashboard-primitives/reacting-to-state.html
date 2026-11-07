@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="radio" />
+    <title>CodeSense — Reacting to state</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/reacting-to-state">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Reacting to state subscribeContext event helpers" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · State</span>
+        <h1>You don't poll. The host nudges.</h1>
+        <p class="lede">
+          CodeSense dashboards are read-models over long-lived state: orgs, teams, worktrees,
+          sessions, inbox threads, routine runs. Instead of polling, you register a listener
+          for the <strong>kind of change you care about</strong>, and the host sends a nudge
+          event the moment that state moves. Your handler re-reads via
+          <code>invoke</code> and re-renders. That's the whole loop.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="A loop: host changes state, a nudge arrow goes to the doc, the doc calls invoke and re-renders, back to the host."
+          >
+            <title>Nudge loop</title>
+
+            <defs>
+              <marker id="rs-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <g transform="translate(60 70)">
+              <rect class="i-surf" width="140" height="80" rx="8" />
+              <text class="i-txt" x="70" y="34" text-anchor="middle">host state</text>
+              <text class="i-mut" x="70" y="54" text-anchor="middle">orgs · worktrees · inbox</text>
+            </g>
+
+            <g transform="translate(440 70)">
+              <rect class="i-surf" width="140" height="80" rx="8" />
+              <text class="i-txt" x="70" y="30" text-anchor="middle">your doc</text>
+              <text class="i-mut" x="70" y="48" text-anchor="middle">handler()</text>
+              <text class="i-mut" x="70" y="64" text-anchor="middle">render()</text>
+            </g>
+
+            <!-- nudge -->
+            <path class="i-acc" d="M200 90 L440 90" marker-end="url(#rs-arrow)" />
+            <text class="i-mut" x="320" y="78" text-anchor="middle">codesense:context-changed</text>
+
+            <!-- re-read -->
+            <path class="i-acc" d="M440 130 L200 130" marker-end="url(#rs-arrow)" />
+            <text class="i-mut" x="320" y="150" text-anchor="middle">invoke(verb) → fresh data</text>
+
+            <text class="i-mut" x="320" y="20" text-anchor="middle">one listener per concern</text>
+          </svg>
+          <figcaption id="hero-cap">
+            state moves → nudge → re-read → re-render
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== The two shapes =============== -->
+      <section data-search="Two patterns subscribeContext typed on helpers" id="shapes">
+        <h2>Two shapes to subscribe</h2>
+        <p>
+          The bridge exposes two subscription idioms. Pick the one that matches your dashboard:
+        </p>
+        <ol class="steps">
+          <li>
+            <h3><code>subscribeContext</code> — one listener for "anything moved"</h3>
+            <p>
+              Use when you want to re-read on any change to the context index — stories, agents,
+              teams, routines, worktrees. The handler is called <em>once immediately</em> with
+              initial rows, then again every time
+              <code>codesense:context-changed</code> fires upstream.
+            </p>
+            <pre tabindex="0"><code>codesense.subscribeContext({ text: "DEMO" }, (rows) =&gt; {
+  renderStoryBoard(rows);
+});
+
+// Returned handle lets you unsubscribe:
+const off = codesense.subscribeContext({}, reload);
+// later:
+off();</code></pre>
+            <p>
+              The filter object narrows the <strong>initial payload</strong> only — you still
+              get a nudge for every context change. The pattern pays off because the handler
+              re-reads via a verb anyway, and you want tight scope on the first paint.
+            </p>
+          </li>
+          <li>
+            <h3>Typed <code>on*</code> helpers — one listener per concern</h3>
+            <p>
+              Fine-grained listeners wrap a single event name. Prefer these when a specific
+              change kicks a specific re-read — they keep the handler small and the intent
+              obvious:
+            </p>
+            <pre tabindex="0"><code>codesense.onAgentsChanged(() =&gt;
+  codesense.agents().then(renderRoster));
+
+codesense.onInboxChanged(() =&gt;
+  codesense.inbox({}).then(renderThreads));
+
+codesense.onRoutineResult(() =&gt;
+  codesense.routineResult({ id: "rt-nightly" }).then(renderStatus));
+
+codesense.onWorktreesChanged(() =&gt;
+  codesense.worktrees().then(renderWorktrees));
+
+codesense.subscribe("sessions", {
+  onChange: (snapshot, delta) =&gt; renderSessions(snapshot.snapshot)
+});</code></pre>
+            <p>
+              <code>onAgentsChanged</code> follows saved-agent rows in the shared hub.
+              A save, an external <code>agent.yaml</code> edit, or a git pull updates
+              <code>agents()</code> even when that agent has no running session. The callback's
+              <code>agents()</code> read uses the cached projection. By default, hidden pages make no reads;
+              they catch up when shown. The rich <code>agent({key})</code> call stays a fresh
+              read of resolved startup and login state. Keep the cleanup function and call it on teardown:
+            </p>
+            <pre tabindex="0"><code>const stopAgents = codesense.onAgentsChanged(async () =&gt; {
+  renderRoster(await codesense.agents());
+});
+codesense.onTeardown(stopAgents);</code></pre>
+            <p>
+              Sessions use one cached Rust projection shared by native UI and MCP. A subscription
+              returns <code>{topic, viewKey, rev, snapshot}</code>, followed by
+              <code>codesense:delta {topic, viewKey, rev, upserts, removes, requestId?}</code>.
+              Rows have stable ids. Revision gaps resync automatically. By default, hidden frames receive
+              one stale marker, make no reads and resync when shown. The host can inject
+              <code>firstPaint</code> with the same snapshot shape. Use <code>ui:&lt;slotId&gt;</code>
+              and <code>setUiState(topic, patch, requestId)</code> for shared selection and folds;
+              <code>prefs()</code> stays page-private. Change helpers follow the same hidden-delivery policy as subscription data.
+            </p>
+            <p>
+              <code>codesense.setBadge</code> publishes a count; <code>setBadge(null)</code>
+              clears it. By default, hidden panes pause and catch up on show.
+            </p>
+            <h3 id="live-badge">Keep a badge fresh while hidden</h3>
+            <p>
+              <strong>Architecture:</strong> declare
+              <code>&lt;meta name="codesense:badge" content="live"&gt;</code> in the pane's head.
+              The host passes the resolved declaration to the page shim, so a manifest's
+              <code>badge: live</code> works too. Its existing subscriptions deliver their own
+              data and invalidations while hidden;
+              <code>subscribe</code> and <code>page</code> remain available. This adds no topic,
+              store or watcher. Keep the subscription cleanup on teardown.
+            </p>
+            <p>
+              <strong>Policy:</strong> opt-in is off by default. Use it only for an attention
+              badge, as the built-in Inbox does. The host coalesces delivery to one flush
+              per frame every 2 seconds, keeping the 4 most recently shown hidden frames live.
+              The oldest-shown frames become stale until shown again or capacity opens. The cost is
+              retaining those frames' existing subscriptions and doing badge work at each
+              flush; there is no timer polling when nothing changes.
+            </p>
+            <pre tabindex="0"><code>&lt;meta name="codesense:badge" content="live"&gt;
+&lt;script&gt;
+const cs = window.codesense;
+let visible = false;
+cs.onVisibility(shown =&gt; {
+  visible = shown;
+  if (shown) refreshFullInbox();
+});
+// Architecture: reuse the Inbox read; hidden updates only publish the badge.
+cs.onInboxChanged(async () =&gt; {
+  if (visible) return refreshFullInbox();
+  const inbox = await cs.inbox({scope: "to-human", limit: 500});
+  const count = inbox.conversations.filter(thread =&gt; thread.unread).length;
+  cs.setBadge(count ? {count} : null);
+});
+&lt;/script&gt;</code></pre>
+            <p>
+              <strong>Architecture:</strong> the built-in Inbox coalesces its callbacks before
+              reading its existing Inbox view, then computes only the unread conversation
+              count while hidden. It leaves list, thread and composer rendering until show.
+              Private cross-team Inbox copies use their existing <code>inboxRollup()</code>
+              read instead. A live-badge pane's closed-edge count updates without opening it.
+            </p>
+          </li>
+          <li>
+            <h3>Follow the left nav — <code>onNavSelectionChange</code></h3>
+            <p>
+              A dashboard or right pane can follow what the left nav has selected: the open
+              file and the folder the nav is drilled into, each with the story or epic it is.
+              The selection is always your page's own team, and a path outside that team's
+              content reads as <code>null</code>. Nothing is sent until you ask, so the call
+              costs nothing for pages that don't.
+            </p>
+            <pre tabindex="0"><code>// Feature-detect: an older CodeSense has no nav selection.
+if (typeof codesense.onNavSelectionChange === "function") {
+  const off = codesense.onNavSelectionChange((sel) =&gt; {
+    // sel: { org, team, file, drill } | null
+    highlightStory(sel?.file?.kind === "story" ? sel.file.id : null);
+    scopeToEpic(sel?.drill?.epic?.id ?? sel?.file?.epic ?? null);
+  });
+  // off() when done: the last unsubscribe stops the host's work.
+}
+
+// One-shot read (resolves null rather than wait past 5 s):
+const sel = (await codesense.getNavSelection?.()) ?? null;</code></pre>
+            <p>
+              To select a file in the nav from your page, call
+              <code>codesense.openFile({ path })</code>: it opens the file and expands its
+              folders. The Pipeline pane in a team's <code>panes/</code> is a working example.
+            </p>
+          </li>
+          <li>
+            <h3>Remember your own settings — <code>prefs</code> / <code>setPrefs</code></h3>
+            <p>
+              A dashboard's <code>localStorage</code> doesn't survive a restart (its frame gets a
+              new origin each launch). Keep view settings with <code>prefs</code> instead: one
+              small object per dashboard, in your own app state, never shared with the team. A
+              team copy and a private copy of the same dashboard each keep their own.
+            </p>
+            <pre tabindex="0"><code>// Keep persistent settings with the host across frame remounts.
+const { details = "off" } = codesense.prefs ? await codesense.prefs() : {};
+await codesense.setPrefs?.({ details: "compact" }); // null removes a key</code></pre>
+            <p>
+              Story overviews come from the index, not from reading each file: add
+              <code>"summary"</code> to a query's <code>select</code> and every story, bug, spike
+              and epic row carries <code>summary</code> — the text under its first configured
+              summary heading (<em>Purpose</em>, then <em>Story</em>, by default).
+            </p>
+            <pre tabindex="0"><code>codesense.subscribeContext(
+  { where: { kinds: ["story"] }, select: ["status", "summary"] },
+  // summary is plain text; an older CodeSense omits the key.
+  (r) =&gt; render(r.rows.map((row) =&gt; [row.id, row.summary ?? null])),
+);</code></pre>
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Raw postMessage escape hatch =============== -->
+      <section data-search="Raw postMessage window event listener codesense" id="raw">
+        <h2>If the helper doesn't cover your event</h2>
+        <p>
+          The <code>on*</code> helpers are convenience wrappers over
+          <code>window.addEventListener("message", …)</code>. If an event ships before the
+          wrapper does — or you need to inspect the payload — listen directly:
+        </p>
+        <pre tabindex="0"><code>window.addEventListener("message", (e) =&gt; {
+  const msg = e.data;
+  if (!msg || typeof msg.type !== "string") return;
+
+  if (msg.type === "codesense:theme") {
+    applyTheme(msg.theme);
+  }
+  if (msg.type === "codesense:visibility") {
+    msg.visible ? resumeAnimations() : pauseAnimations();
+  }
+  if (msg.type === "codesense:restore-scroll") {
+    window.scrollTo(0, msg.y);
+  }
+});</code></pre>
+        <p>
+          Posted messages the shim recognises are listed in the explorer's
+          <a href="../primitives-explorer.html#events">events tab</a>. Every event there has a
+          direction (<code>parent-to-doc</code>, <code>doc-to-parent</code>,
+          <code>reply</code>), a payload shape, and a timing note.
+        </p>
+      </section>
+
+      <!-- =============== Lifecycle =============== -->
+      <section data-search="Subscription lifecycle unsubscribe cleanup" id="lifecycle">
+        <h2>Lifecycle — register, unsubscribe, clean up</h2>
+        <p>
+          Every subscriber returns a handle with an <code>unsubscribe()</code> method. The
+          viewer drops subscriptions automatically when the iframe is torn down (close the tab,
+          close the pane, replace the inbox message); you only need to unsubscribe explicitly
+          if your dashboard swaps views in-place:
+        </p>
+        <pre tabindex="0"><code>const subs = [];
+
+function mountOrgsView() {
+  const h1 = codesense.subscribeContext({ scope: "orgs" }, renderOrgs);
+  const h2 = codesense.onAgentsChanged(renderRoster);
+  subs.push(h1, h2);
+}
+
+function unmount() {
+  while (subs.length) subs.pop().unsubscribe();
+}</code></pre>
+        <p>
+          A listener registered after the frame hides keeps working — <code>onVisibility</code>
+          exists for the opposite reason: <strong>pausing expensive renders</strong> while the
+          doc is off-screen. Reach for it when your handler re-ranks or re-sorts a large list:
+        </p>
+        <pre tabindex="0"><code>let visible = true;
+codesense.onVisibility((v) =&gt; (visible = v));
+
+codesense.subscribeContext({}, (rows) =&gt; {
+  if (!visible) return;        // skip the expensive sort while hidden
+  renderBigList(rows);
+});</code></pre>
+      </section>
+
+      <!-- =============== A worked example =============== -->
+      <section data-search="Worked example live worktrees count" id="worked">
+        <h2>A worked example — a live worktree counter</h2>
+        <p>
+          Six lines of logic. Opens as a centre tab or a right pane; shows the number of
+          managed worktrees; updates the moment a new one lands:
+        </p>
+        <pre tabindex="0"><code>&lt;div id="count"&gt;…&lt;/div&gt;
+&lt;script&gt;
+  function reload() {
+    codesense.invoke("worktrees", {}).then((wts) =&gt; {
+      document.getElementById("count").textContent =
+        wts.length + " worktree" + (wts.length === 1 ? "" : "s");
+    });
+  }
+  reload();
+  codesense.onWorktreesChanged(reload);
+&lt;/script&gt;</code></pre>
+        <p>
+          Materialise a new worktree in another tab, come back — the counter has already
+          ticked. Nothing in your doc polled; the host notified.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now live worktree subscribe" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Trigger a read that would feed a subscription — the exact call <code>reload()</code>
+          above would make. If you were to copy the worked example into
+          <code>dashboards/</code> and open it, the counter you'd see would come from this
+          verb:
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="Call worktrees()"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP agents subscribe to context" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            Agents don't subscribe through the browser bridge; they poll MCP tools at an
+            interval chosen by the routine (or run on inbox-idle triggers that only fire when
+            something actually changed). The <em>same read</em> is reachable from both sides:
+          </p>
+          <pre tabindex="0"><code># Dashboard: nudged by the host, re-read on demand
+codesense.onWorktreesChanged(() =&gt; codesense.worktrees().then(render));
+
+# Agent: polled by a routine, same shape
+list_worktrees {}  // MCP tool</code></pre>
+          <p>
+            See the <a href="../primitives-explorer.html#events">events tab</a> for every
+            parent-to-doc event and the kit method that wraps it.
+          </p>
+        </details>
+      </section>
+
+      <section id="live-configuration" data-search="Live preferences prefs profile workspaceConfig settings shortcuts policy mainDoc">
+        <h2>Configuration is live too</h2>
+        <p>
+          The app owns three configuration topics in the same LiveHub as live lists. Open Settings,
+          shortcut bindings, slot choices and the team main-document convention follow snapshots and
+          versioned field deltas. There is no reload, read-on-mount refresh or polling interval.
+        </p>
+        <table>
+          <thead><tr><th>Topic</th><th>Owner and storage</th><th>What publishes</th></tr></thead>
+          <tbody>
+            <tr><td><code>prefs</code></td><td>Global viewer settings and shortcuts in app-state;
+              dashboard policy and workspace choices in the current principal's app-state section.</td>
+              <td><code>save_app_state</code> (including dashboard-policy saves), or a file edit to
+                <code>app-state.json</code> in the app's data directory.</td></tr>
+            <tr><td><code>profile</code></td><td>Current principal and org's private
+              <code>config/profile.json</code>.</td><td><code>write_dashboard_profile</code> or an
+              edit to that file through the existing scratch watcher.</td></tr>
+            <tr><td><code>workspaceConfig</code></td><td>App-owned mainDoc configuration in
+              <code>~/.codesense/workspace-config.json</code>.</td><td><code>save_workspace_config</code>
+              or an edit to that file.</td></tr>
+          </tbody>
+        </table>
+        <p>
+          These are native app-owned views. A pane grant cannot choose another principal or org by
+          supplying a view key. Global settings and shortcuts stay global when profiles change.
+          Hidden native consumers release their subscriptions, then catch up from their revision on
+          reveal; an expired revision gets a fresh snapshot. External edits enter the existing shared
+          watcher, with unrelated root writes rejected before debounce.
+        </p>
+        <h3>Example: patch one preference</h3>
+        <p>
+          A native integration uses the normal app-state writer with a field patch and its captured
+          principal. This preserves newer fields written by someone else. This is a native command
+          example, not an additional pane or MCP verb:
+        </p>
+        <pre><code>await invoke("save_app_state", {
+  expectedPrincipal: currentPrincipal,
+  patch: true,
+  state: JSON.stringify({ viewer: { settings: { editorLineWrap: "on" } } })
+});
+// The visible Settings control and editor follow the prefs delta.
+// Global settings are never nested inside localProfileWorkspacesV1.</code></pre>
+        <p>
+          For an outside file edit, read the current JSON and change only the intended fields;
+          preserve its other global and principal sections. Profile slot writers likewise patch only
+          the changed slot, and workspace-config writers patch only the changed repo's mainDoc.
+          See the <a href="../generated/live-hub.md">generated topic reference</a> for the exact
+          producer inventory.
+        </p>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#kit/codesense.subscribeContext">subscribeContext</a>
+        ·
+        <a href="../primitives-explorer.html#events/codesense:context-changed">context-changed</a>
+        ·
+        <a href="../primitives-explorer.html#events">every event</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Reacting to state</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

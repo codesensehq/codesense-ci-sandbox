@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="book-a" />
+    <title>CodeSense — Glossary</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/glossary"] .cs-main {
+        max-width: 1040px;
+      }
+      body[data-page="arc-n-reference/glossary"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/glossary"] h1 {
+        font-size: clamp(28px, 3.6vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/glossary"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 66ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/glossary"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/glossary"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        padding: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-inset);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/glossary"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 110px;
+      }
+      body[data-page="arc-n-reference/glossary"] figure.hero figcaption {
+        padding: 10px 14px;
+        border-top: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/glossary"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/glossary"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-n-reference/glossary"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      /* Alphabet index */
+      body[data-page="arc-n-reference/glossary"] .alpha {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: var(--cs-docs-space-3) 0;
+        padding: 6px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/glossary"] .alpha a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 26px;
+        padding: 0 6px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--cs-muted-fg);
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      body[data-page="arc-n-reference/glossary"] .alpha a:hover,
+      body[data-page="arc-n-reference/glossary"] .alpha a:focus-visible {
+        background: var(--cs-accent-soft);
+        color: var(--cs-accent);
+      }
+      body[data-page="arc-n-reference/glossary"] .alpha a[aria-disabled="true"] {
+        opacity: 0.35;
+        pointer-events: none;
+      }
+      body[data-page="arc-n-reference/glossary"] .gl-filter {
+        margin: var(--cs-docs-space-3) 0;
+      }
+      body[data-page="arc-n-reference/glossary"] .gl-filter input {
+        width: 100%;
+        max-width: 420px;
+        padding: 8px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+        color: var(--cs-fg);
+        font-size: 13px;
+      }
+      body[data-page="arc-n-reference/glossary"] .gl-letter {
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        padding-top: var(--cs-docs-space-3);
+        border-top: 1px solid var(--cs-border);
+      }
+      body[data-page="arc-n-reference/glossary"] .gl-letter h3 {
+        font-family: var(--cs-font-mono);
+        font-size: 14px;
+        color: var(--cs-muted-fg);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin: 0 0 6px;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin: 0;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl > div {
+        padding: 10px 0;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl > div:last-child {
+        border-bottom: 0;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dt {
+        font-weight: 600;
+        font-size: 14.5px;
+        color: var(--cs-fg);
+        margin: 0 0 4px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dt .taught {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 400;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dt .taught a {
+        color: inherit;
+        text-decoration: none;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dt .taught a:hover {
+        color: var(--cs-accent);
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dd {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--cs-fg);
+        max-width: 72ch;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl dd + dd {
+        margin-top: 4px;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+      }
+      body[data-page="arc-n-reference/glossary"] .gl-letter.gl-hidden {
+        display: none;
+      }
+      body[data-page="arc-n-reference/glossary"] dl.gl > div.gl-hidden {
+        display: none;
+      }
+      body[data-page="arc-n-reference/glossary"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/glossary"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/glossary">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Glossary of CodeSense terms" id="hero">
+        <span class="cs-docs-eyebrow">Arc N · Glossary</span>
+        <h1>Every term the docs org uses, one place to look it up.</h1>
+        <p class="lede">
+          CodeSense names things precisely because the shapes matter — an <strong>org</strong> holds
+          <strong>teams</strong>, a <strong>team</strong> hosts a <strong>context repo</strong>, a
+          <strong>worktree</strong> is a prepared checkout of a source repo, and so on. Click a definition to
+          jump to the arc that teaches it in context. Filter the box below to jump straight to a
+          term, or use the alphabet rail to skim.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 90"
+            role="img"
+            aria-label="A horizontal row of CodeSense noun chips arranged alphabetically."
+          >
+            <title>Glossary chips</title>
+            <desc>
+              A horizontal row of nouns: agent, branch, context repo, inbox, machine, org, routine,
+              team, worktree.
+            </desc>
+            <style>
+              .g-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+              }
+              .g-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px ui-monospace,
+                  SFMono-Regular,
+                  monospace;
+              }
+            </style>
+            <g>
+              <rect class="g-ins" x="10" y="30" width="56" height="24" rx="4" />
+              <text class="g-txt" x="38" y="46" text-anchor="middle">agent</text>
+              <rect class="g-ins" x="72" y="30" width="56" height="24" rx="4" />
+              <text class="g-txt" x="100" y="46" text-anchor="middle">branch</text>
+              <rect class="g-ins" x="134" y="30" width="96" height="24" rx="4" />
+              <text class="g-txt" x="182" y="46" text-anchor="middle">context repo</text>
+              <rect class="g-ins" x="236" y="30" width="48" height="24" rx="4" />
+              <text class="g-txt" x="260" y="46" text-anchor="middle">inbox</text>
+              <rect class="g-ins" x="290" y="30" width="60" height="24" rx="4" />
+              <text class="g-txt" x="320" y="46" text-anchor="middle">machine</text>
+              <rect class="g-ins" x="356" y="30" width="40" height="24" rx="4" />
+              <text class="g-txt" x="376" y="46" text-anchor="middle">org</text>
+              <rect class="g-ins" x="402" y="30" width="56" height="24" rx="4" />
+              <text class="g-txt" x="430" y="46" text-anchor="middle">routine</text>
+              <rect class="g-ins" x="464" y="30" width="48" height="24" rx="4" />
+              <text class="g-txt" x="488" y="46" text-anchor="middle">team</text>
+              <rect class="g-ins" x="518" y="30" width="68" height="24" rx="4" />
+              <text class="g-txt" x="552" y="46" text-anchor="middle">worktree</text>
+            </g>
+          </svg>
+          <figcaption id="hero-cap">
+            Nouns. Alphabetical. Each one links to the arc that teaches it.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="Glossary filter and alphabet index" id="toolbar">
+        <div class="gl-filter">
+          <label>
+            <span class="cs-visually-hidden">Filter terms</span>
+            <input
+              id="gl-filter"
+              type="search"
+              placeholder="Filter terms…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+        </div>
+        <nav class="alpha" aria-label="Alphabet index" id="gl-alpha"></nav>
+      </section>
+
+      <section data-search="Glossary entries alphabetical" id="entries">
+        <div class="gl-letter" id="letter-A" data-letter="A">
+          <h3>A</h3>
+          <dl class="gl">
+            <div data-term="agent">
+              <dt>
+                Agent
+                <span class="taught">
+                  taught by <a href="../arc-e-agents/index.html">Arc E</a>
+                </span>
+              </dt>
+              <dd>
+                An <strong>agent</strong> is a saved definition of a worker: which runtime
+                (<code>claude</code>, <code>codex</code> or <code>opencode</code>), what it starts with, which MCP servers it can
+                reach and what it may do. Each launch is a session, in a terminal tab or headless, on This Mac
+                or a machine. A session works in a workspace, calls CodeSense MCP tools and sends inbox
+                messages. CodeSense ships starters for Claude, Codex and OpenCode.
+              </dd>
+              <dd>
+                Lives on disk as <code>config/agents/&lt;id&gt;/agent.yaml</code>. See the schema row in the
+                <a href="../schema-browser.html#schema/agent-yaml">schema browser</a>.
+              </dd>
+            </div>
+            <div data-term="agents.md">
+              <dt>
+                AGENTS.md
+                <span class="taught">
+                  taught by <a href="../arc-e-agents/claude-md-agents-md.html">Arc E</a>
+                </span>
+              </dt>
+              <dd>
+                A conventional instruction file at the root of a source repo (or team workspace),
+                read by agents at startup. Hosts repo-wide rules, pitfalls, and preferred commands.
+                Paired with <code>CLAUDE.md</code> for Claude-specific guidance.
+              </dd>
+            </div>
+            <div data-term="arc">
+              <dt>
+                Arc
+                <span class="taught"> taught by <a href="../README.html">home</a> </span>
+              </dt>
+              <dd>
+                A thematic grouping of pages in the docs org. Arcs A–N cover first touch, the model,
+                workspaces, terminals, agents, inboxes, routines, pipelines, sync, the factory, and
+                this reference catalog. Arcs are a navigational idiom, not a runtime concept.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-B" data-letter="B">
+          <h3>B</h3>
+          <dl class="gl">
+            <div data-term="branch">
+              <dt>
+                Branch
+                <span class="taught">
+                  taught by <a href="../arc-c-workspaces-and-worktrees/index.html">Arc C</a>
+                </span>
+              </dt>
+              <dd>
+                The branch a story's worktree is on: the story's <code>branch</code> field when it has one,
+                otherwise the repo's branch prefix plus the story id (<code>feat/LL-214</code> by default).
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-C" data-letter="C">
+          <h3>C</h3>
+          <dl class="gl">
+            <div data-term="claude.md">
+              <dt>
+                CLAUDE.md
+                <span class="taught">
+                  taught by <a href="../arc-e-agents/claude-md-agents-md.html">Arc E</a>
+                </span>
+              </dt>
+              <dd>
+                Claude-specific instructions file read at agent startup. Private to the user when
+                placed in <code>~/.claude/</code>; shared with teammates when checked into a repo.
+              </dd>
+            </div>
+            <div data-term="context-field">
+              <dt>
+                Context field
+                <span class="taught">
+                  taught by <a href="../arc-e-agents/context-field.html">Arc E</a>
+                </span>
+              </dt>
+              <dd>
+                The <strong>context field</strong> is the set of files an agent's workspace gets at
+                launch: its <code>startup</code> paths and its <code>context</code> sets, resolved through
+                the target repo's tier, your private space and the team chain. More arrives only when an agent
+                calls <code>hydrate_worktree</code> or <code>hydrate_story</code>.
+              </dd>
+            </div>
+            <div data-term="context-repo">
+              <dt>
+                Context repo
+                <span class="taught">
+                  taught by <a href="../arc-a-first-touch/create-a-context-repo.html">Arc A</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>context repo</strong> is a plain git repo you own that holds a team's CodeSense
+                content: agents, routines, epics, stories, planning docs and dashboards. CodeSense reads and
+                writes files there and never commits, pushes or merges: you or your agents do.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-D" data-letter="D">
+          <h3>D</h3>
+          <dl class="gl">
+            <div data-term="dashboard">
+              <dt>
+                Dashboard
+                <span class="taught">
+                  taught by <a href="../factory-playbook.html">factory-playbook</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>dashboard</strong> is an HTML file in a context repo. CodeSense opens it as a live
+                page that reads stories, sessions, inbox and routine results through
+                <code>window.codesense</code>, and can act on them. An agent can write one with
+                <code>create_dashboard</code>.
+              </dd>
+            </div>
+            <div data-term="depends_on">
+              <dt>
+                depends_on
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                A frontmatter field in a story's markdown header listing the story IDs it waits on.
+                The pipeline graph reads <code>depends_on</code> to compute the DAG and the sprint
+                plan to compute the critical path.
+              </dd>
+            </div>
+            <div data-term="docs-org">
+              <dt>
+                Docs org
+                <span class="taught">
+                  taught by <a href="../arc-a-first-touch/first-launch.html">Arc A</a>
+                </span>
+              </dt>
+              <dd>
+                The <strong>docs org</strong> is the read-only CodeSense docs context repo every
+                install ships with. It's the training manual you're reading now. Writes refuse
+                gracefully; copy an example into your own context repo to edit.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-E" data-letter="E">
+          <h3>E</h3>
+          <dl class="gl">
+            <div data-term="epic">
+              <dt>
+                Epic
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                A directory of related story markdown files, anchored by a top-level
+                <code>README.md</code> (or <code>index.md</code>). The pipeline graph groups by
+                epic; the sprint plan picks a subset.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-F" data-letter="F">
+          <h3>F</h3>
+          <dl class="gl">
+            <div data-term="factory">
+              <dt>
+                Factory
+                <span class="taught">
+                  taught by <a href="../arc-l-factory/index.html">Arc L</a>
+                </span>
+              </dt>
+              <dd>
+                The <strong>factory</strong> is the end-to-end SDLC CodeSense teaches: fourteen
+                phases from idea to retrospective, each with one agent, one skill, one inbox role,
+                one trigger, and one dashboard. The
+                <a href="../factory-playbook.html">factory playbook</a> renders the 14 rows.
+              </dd>
+            </div>
+            <div data-term="frontmatter">
+              <dt>
+                Frontmatter
+                <span class="taught">
+                  taught by <a href="./yaml-schemas.html">Arc N · schemas</a>
+                </span>
+              </dt>
+              <dd>
+                The metadata at the top of a story: a YAML header delimited by <code>---</code> in a
+                markdown file, or <code>&lt;meta name="cs:…"&gt;</code> tags in an HTML file. CodeSense reads
+                <code>type</code>, <code>status</code>, <code>depends_on</code>, <code>source_repo</code>,
+                <code>supporting_docs</code> and any custom key from it.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-G" data-letter="G">
+          <h3>G</h3>
+          <dl class="gl">
+            <div data-term="generator">
+              <dt>
+                Generator
+                <span class="taught">
+                  taught by <a href="../architecture.html">architecture</a>
+                </span>
+              </dt>
+              <dd>
+                A build-time script that reads a source of truth (menu.rs, handler.rs, viewer types)
+                and emits JSON into <code>generated/</code>. Dashboards and docs read the JSON. CI
+                fails if the committed JSON drifts from a re-run.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-H" data-letter="H">
+          <h3>H</h3>
+          <dl class="gl">
+            <div data-term="host-agent">
+              <dt>
+                Terminal server
+                <span class="taught">
+                  taught by <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>
+                </span>
+              </dt>
+              <dd>
+                The process CodeSense runs on each machine, this Mac or a remote one over SSH, that holds
+                its terminal sessions. Sessions keep running after the app quits and reattach when it opens
+                again.
+              </dd>
+            </div>
+            <div data-term="hydration">
+              <dt>
+                Hydration
+                <span class="taught">
+                  taught by <a href="../arc-k-sync/hydration.html">Arc K</a>
+                </span>
+              </dt>
+              <dd>
+                Copying team content into a workspace. It happens when an agent starts there (it
+                gets what its definition's <code>context</code> declares) and when an agent calls
+                <code>hydrate_worktree</code> (exact paths or whole folders) or
+                <code>hydrate_story</code> (a story's epic folder, widened by an optional policy:
+                <code>referenceDepth</code>, <code>ancestryLevels</code>,
+                <code>siblingBreadth</code>, <code>maxMembers</code>). Never in the background, and
+                you never run <code>git pull</code>.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-I" data-letter="I">
+          <h3>I</h3>
+          <dl class="gl">
+            <div data-term="inbox">
+              <dt>
+                Inbox
+                <span class="taught">
+                  taught by <a href="../arc-f-inboxes-and-triage/index.html">Arc F</a>
+                </span>
+              </dt>
+              <dd>
+                An <strong>inbox</strong> holds messages agents and people send each other with
+                <code>send_message</code>, as plain text, Markdown or HTML (an HTML message to you is a live
+                page with buttons). Your Inbox shows conversations and role queues, and its badge
+                counts all unread human mail of either kind, excluding archived mail; <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">I</span>
+                docks it beside the terminal. Roles have inboxes too: a routine with a
+                <code>role_pending</code> trigger fires when a message waits for its role.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-L" data-letter="L">
+          <h3>L</h3>
+          <dl class="gl">
+            <div data-term="local">
+              <dt>
+                Local (vs. remote)
+                <span class="taught">
+                  taught by <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>
+                </span>
+              </dt>
+              <dd>
+                "Local" means the Mac this install is running on (<strong>This Mac</strong>). "Remote" means a
+                machine you reach over SSH with your own account. Workspaces, terminals, agents and routines
+                work on both; where a feature is This Mac only, the page says so.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-M" data-letter="M">
+          <h3>M</h3>
+          <dl class="gl">
+            <div data-term="machine">
+              <dt>
+                Machine
+                <span class="taught">
+                  taught by <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>machine</strong> is where work runs: This Mac, or a remote machine you added over
+                SSH. Terminals, agents and routines carry a machine so you always see where a process is
+                running. Open <strong>Machines</strong> from the context repo menu or with
+                <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⌥</span><span class="cs-docs-kbd">C</span>.
+              </dd>
+            </div>
+            <div data-term="mcp">
+              <dt>
+                MCP
+                <span class="taught">
+                  taught by <a href="../mcp-explorer.html">MCP explorer</a>
+                </span>
+              </dt>
+              <dd>
+                Model Context Protocol. The tool-call shape CodeSense exposes to agents: a few hundred tools, and
+                every UI action has one, so an agent can do it without "seeing" the UI. The
+                <a href="../mcp-explorer.html">MCP explorer</a> lists them with signatures and examples.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-O" data-letter="O">
+          <h3>O</h3>
+          <dl class="gl">
+            <div data-term="org">
+              <dt>
+                Org
+                <span class="taught">
+                  taught by <a href="../arc-b-model/index.html">Arc B</a>
+                </span>
+              </dt>
+              <dd>
+                An <strong>org</strong> is the outermost unit of the model: a slug, a display name,
+                a remote URL, people, and <em>teams</em>. The docs org is one; your personal context
+                repo is another. Switch between them with <kbd>⌘⇧G</kbd>.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-P" data-letter="P">
+          <h3>P</h3>
+          <dl class="gl">
+            <div data-term="pane">
+              <dt>
+                Overlay
+                <span class="taught">
+                  taught by <a href="../arc-c-workspaces-and-worktrees/index.html">Arc C</a>
+                </span>
+              </dt>
+              <dd>
+                In a CLI workspace, the diff, code editor, Story HUD and docked Inbox float over the
+                terminal tile: <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">D</span>,
+                <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">C</span>,
+                <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">H</span> and
+                <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">I</span>. They work on remote
+                worktrees too. Terminal tiles take focus with <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⌥</span>
+                + arrow keys; <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">L</span>
+                cycles the terminal layout.
+              </dd>
+            </div>
+            <div data-term="parent-team">
+              <dt>
+                Parent team
+                <span class="taught">
+                  taught by <a href="../arc-b-model/index.html">Arc B</a>
+                </span>
+              </dt>
+              <dd>
+                A team's optional ancestor. Along the <em>team chain</em> a parent can share its
+                <code>content/</code> and <code>panes/</code> with its children, and the closest team
+                wins; agents and routines stay with the team that defines them. Chains cannot cycle
+                and max out at depth 64.
+              </dd>
+            </div>
+            <div data-term="pipeline">
+              <dt>
+                Pipeline
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                The DAG CodeSense builds from story frontmatter: nodes are stories (actionable
+                types), edges are <code>depends_on</code> entries. The pipeline-graph dashboard
+                renders it; the sprint plan picks a traversal.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-R" data-letter="R">
+          <h3>R</h3>
+          <dl class="gl">
+            <div data-term="remote">
+              <dt>
+                Remote
+                <span class="taught">
+                  taught by <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>
+                </span>
+              </dt>
+              <dd>
+                A machine other than this Mac, reached over SSH with your own account. Workspaces, terminals,
+                agents and routines run there; its terminal server keeps sessions running when the app quits,
+                and its usage comes back to this Mac.
+              </dd>
+            </div>
+            <div data-term="role">
+              <dt>
+                Role
+                <span class="taught">
+                  taught by <a href="../arc-f-inboxes-and-triage/index.html">Arc F</a>
+                </span>
+              </dt>
+              <dd>
+                A named participant in the factory: triager, builder, reviewer, scout, resolver,
+                analyst, pm, architect, tea, qa, designer. Each role owns an inbox; routines target
+                roles.
+              </dd>
+            </div>
+            <div data-term="routine">
+              <dt>
+                Routine
+                <span class="taught">
+                  taught by <a href="../arc-g-routines/index.html">Arc G</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>routine</strong> runs an agent's task on a trigger: a schedule (cron) or an event
+                (<code>agent_done</code>, <code>inbox_idle</code>, <code>role_pending</code>). In
+                <code>fresh</code> mode it starts a new session; in <code>wake</code> mode it hands the task to
+                a live one. Lives as <code>config/agents/&lt;agent&gt;/routines/&lt;id&gt;/routine.yml</code>;
+                shown under <strong>Agents</strong> → <strong>Schedule</strong>. Up to 25 can be enabled.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-S" data-letter="S">
+          <h3>S</h3>
+          <dl class="gl">
+            <div data-term="skill">
+              <dt>
+                Skill
+                <span class="taught">
+                  taught by <a href="../arc-e-agents/skills.html">Arc E</a>
+                </span>
+              </dt>
+              <dd>
+                A reusable, named capability an agent can invoke by slash command, at
+                <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Skills are written once in a team's content
+                and inherited down the team chain. Examples: <code>bmad-build</code>,
+                <code>update-codesense-docs</code>.
+              </dd>
+            </div>
+            <div data-term="source-repo">
+              <dt>
+                Source repo
+                <span class="taught">
+                  taught by <a href="../arc-c-workspaces-and-worktrees/index.html">Arc C</a>
+                </span>
+              </dt>
+              <dd>
+                The git repo your code lives in. Separate from the context repo, which holds planning. A team
+                lists its source repos; a story names one in <code>source_repo</code>
+                (<code>owner/repo</code>), and its worktree is made from your clone of it.
+              </dd>
+            </div>
+            <div data-term="sprint">
+              <dt>
+                Sprint
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                A time-boxed slice of the pipeline: a chosen subset of stories, their statuses, and
+                a critical path. The sprint-analysis dashboard tracks progress; the
+                <code>bmad-sprint-planning</code> skill generates and updates it.
+              </dd>
+            </div>
+            <div data-term="story">
+              <dt>
+                Story
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                A single-file unit of work: a markdown file with frontmatter, or an HTML file with
+                <code>cs:</code> meta tags, inside an epic folder. By default its <code>status</code> is one of
+                <code>planning</code>, <code>todo</code>, <code>in-progress</code>, <code>blocked</code>,
+                <code>review</code>, <code>qa</code>, <code>done</code>, and anyone can change it. Agents work
+                on a story in its own worktree; the pipeline graph treats it as a node.
+              </dd>
+            </div>
+            <div data-term="supporting-docs">
+              <dt>
+                supporting_docs
+                <span class="taught">
+                  taught by <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H</a>
+                </span>
+              </dt>
+              <dd>
+                A frontmatter list of relative paths (same-directory only) attached to a story:
+                research notes, spikes, retros. They surface in the story HUD and travel with the
+                story's worktree.
+              </dd>
+            </div>
+            <div data-term="sync">
+              <dt>
+                Sync
+                <span class="taught"> taught by <a href="../arc-k-sync/index.html">Arc K</a> </span>
+              </dt>
+              <dd>
+                How files move between a context repo and a workspace: hydration copies team content in;
+                reverse sync, after a preview, sends edits made in a worktree back. Neither runs git: commits,
+                pushes and pulls are yours or your agents'.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-T" data-letter="T">
+          <h3>T</h3>
+          <dl class="gl">
+            <div data-term="tag-schema">
+              <dt>
+                Tag schema
+                <span class="taught">
+                  taught by <a href="./yaml-schemas.html">Arc N · schemas</a>
+                </span>
+              </dt>
+              <dd>
+                A team-authored registry of tag categories and allowed values, stored under
+                <code>org.yml</code>'s <code>tag_schema</code>. Dashboards use it to colour and
+                filter tagged items. An empty dict is a valid default.
+              </dd>
+            </div>
+            <div data-term="team">
+              <dt>
+                Team
+                <span class="taught">
+                  taught by <a href="../arc-b-model/index.html">Arc B</a>
+                </span>
+              </dt>
+              <dd>
+                A named group inside a context repo, listed in <code>teams.yml</code>, with its own content,
+                source repos and an optional parent team. A parent can share content and panes down the
+                team chain, and the closest team wins.
+              </dd>
+            </div>
+            <div data-term="team-chain">
+              <dt>
+                Team chain
+                <span class="taught">
+                  taught by <a href="../arc-b-model/index.html">Arc B</a>
+                </span>
+              </dt>
+              <dd>
+                The ordered list <code>[self, parent, grandparent, …, root]</code> that resolves
+                inheritance. A parentless team's chain is <code>[self]</code>. Cycles and depth &gt;
+                64 are rejected at load.
+              </dd>
+            </div>
+            <div data-term="trigger">
+              <dt>
+                Trigger
+                <span class="taught">
+                  taught by <a href="../arc-g-routines/index.html">Arc G</a>
+                </span>
+              </dt>
+              <dd>
+                What fires a routine: a <code>schedule</code> (a cron in a time zone) or an
+                <code>event</code>: <code>agent_done</code> (an agent finished), <code>inbox_idle</code> (an
+                agent sits idle with unread mail) or <code>role_pending</code> (a message waits for a role).
+                A routine with no trigger is manual.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-V" data-letter="V">
+          <h3>V</h3>
+          <dl class="gl">
+            <div data-term="viewer">
+              <dt>
+                Viewer
+                <span class="taught">
+                  taught by <a href="./file-extensions.html">Arc N · extensions</a>
+                </span>
+              </dt>
+              <dd>
+                The subsystem that renders a file when you click it in the tree: markdown viewer,
+                html viewer, excalidraw canvas, image viewer, code viewer. The viewer is selected by
+                extension.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="gl-letter" id="letter-W" data-letter="W">
+          <h3>W</h3>
+          <dl class="gl">
+            <div data-term="worktree">
+              <dt>
+                Worktree
+                <span class="taught">
+                  taught by <a href="../arc-c-workspaces-and-worktrees/index.html">Arc C</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>worktree</strong> is a git worktree of a source repo for one story, on the story's
+                own branch, at <code>../{repo}-wt/{slug}</code> beside your clone by default. The first open
+                creates it; later opens reattach. Context copied in is hidden from git. It stays until you
+                remove it.
+              </dd>
+            </div>
+            <div data-term="workspace">
+              <dt>
+                Workspace
+                <span class="taught">
+                  taught by <a href="../arc-c-workspaces-and-worktrees/index.html">Arc C</a>
+                </span>
+              </dt>
+              <dd>
+                A <strong>workspace</strong> is where you work on one story or task: its terminal tabs and
+                tiles, its worktree when it has one, and the overlays over them. The workspace bar holds the
+                ones you're switching between.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html">schema browser</a>
+        ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+        ·
+        <a href="./index.html">back to Arc N</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · Glossary</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      // =========================================================================
+      // glossary.html — alphabet index + live filter. No external deps.
+      // =========================================================================
+      (function () {
+        var alphaRoot = document.getElementById("gl-alpha");
+        var filterInput = document.getElementById("gl-filter");
+        var letters = Array.prototype.slice.call(document.querySelectorAll(".gl-letter"));
+        var terms = Array.prototype.slice.call(document.querySelectorAll("dl.gl > div[data-term]"));
+
+        // Build the alphabet rail. Letters that have no entries are disabled.
+        var ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        var present = new Set(
+          letters.map(function (l) {
+            return l.dataset.letter;
+          }),
+        );
+        var frag = document.createDocumentFragment();
+        ALPHA.forEach(function (ch) {
+          var a = document.createElement("a");
+          a.textContent = ch;
+          if (present.has(ch)) {
+            a.href = "#letter-" + ch;
+          } else {
+            a.setAttribute("aria-disabled", "true");
+            a.href = "#";
+          }
+          frag.appendChild(a);
+        });
+        alphaRoot.appendChild(frag);
+
+        filterInput.addEventListener("input", function () {
+          var q = (filterInput.value || "").trim().toLowerCase();
+          var anyVisibleByLetter = Object.create(null);
+          terms.forEach(function (t) {
+            var text = t.textContent.toLowerCase();
+            var match = !q || text.indexOf(q) >= 0;
+            t.classList.toggle("gl-hidden", !match);
+            if (match) {
+              var letter = t.closest(".gl-letter");
+              if (letter) anyVisibleByLetter[letter.id] = true;
+            }
+          });
+          letters.forEach(function (l) {
+            l.classList.toggle("gl-hidden", !anyVisibleByLetter[l.id]);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

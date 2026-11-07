@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Conformance scheme-only palette</title>
+    <style>
+      .cs-btn {
+        border-color: var(--cs-border-control);
+      }
+    </style>
+  </head>
+  <body class="cs-app">
+    <main>
+      <h1 class="cs-h3">Sessions</h1>
+      <button id="refresh" class="cs-btn">Refresh</button>
+      <p id="status" role="status" aria-live="polite"></p>
+      <ul id="rows"></ul>
+    </main>
+    <script>
+      const root = document.documentElement;
+      const initial = [...document.styleSheets].find((sheet) => sheet.href?.endsWith("/tokens.css"))
+        .cssRules[0].style;
+      root.style.setProperty("--scheme-bg", initial.getPropertyValue("--cs-bg"));
+      root.style.setProperty("--scheme-fg", initial.getPropertyValue("--cs-fg"));
+    </script>
+    <style>
+      body.cs-app {
+        background: var(--scheme-bg);
+        color: var(--scheme-fg);
+      }
+    </style>
+    <script>
+      window.FLAW = "";
+    </script>
+    <script src="pane.js"></script>
+  </body>
+</html>

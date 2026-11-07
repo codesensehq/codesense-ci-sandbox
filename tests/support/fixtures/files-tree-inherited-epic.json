@@ -1,0 +1,14 @@
+{
+  "id": "/content/docs/folder",
+  "path": "/content/docs/folder",
+  "name": "folder",
+  "kind": "epic",
+  "isDirectory": true,
+  "relativePath": "docs/folder",
+  "root": "/content",
+  "epicFilePath": "/parent/content/docs/folder/README.md",
+  "storyId": "P-1",
+  "title": "Parent roadmap",
+  "status": "review",
+  "storyCount": 1
+}

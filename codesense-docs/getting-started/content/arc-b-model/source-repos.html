@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-branch" />
+    <title>CodeSense — Source repos</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 960px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-b-model/"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 14px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page^="arc-b-model/"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page^="arc-b-model/"] .step__n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] .shot {
+        margin: 8px 0 0;
+        padding: 10px 12px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/source-repos">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Source repos — code repos bound to a team" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Source repos</span>
+        </p>
+        <h1>Code lives in source repos. Context binds them to a team.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          A context repo tells CodeSense <em>what</em> to work on; a <strong>source
+          repo</strong> is the code it works on. Each team lists the source repos it works
+          in, and can keep <strong>repo content</strong> for each one: files that an
+          agent's launch picks up only in that repo, ahead of everything else. One team
+          can hold many source repos; one source repo can be bound in several teams, each
+          with its own repo content keyed by <code>(team, host, owner, repo)</code>.
+        </p>
+      </section>
+
+      <!-- =============== Where source repos live =============== -->
+      <section data-search="Where source repos live on disk" id="on-disk">
+        <h2>Where they live on disk</h2>
+        <p>
+          A team's list of source repos is in the org's <code>teams.yml</code>, so it's
+          shared with the team. Where each repo lives on your machine is yours alone: you
+          bind a team's repo to a <strong>local clone</strong>, a git checkout you made
+          with your own git. CodeSense never clones for you, and never commits, pushes or
+          merges in it.
+        </p>
+        <p>
+          Story worktrees go beside the clone, at <code>../&lt;repo&gt;-wt/&lt;slug&gt;</code>,
+          on the branch the story's frontmatter names (<code>branch</code>, else the older
+          <code>branch_name</code> or <code>dev_branch</code>), or <code>feat/</code> plus the story file's name (without
+          <code>.md</code>) when it names none. The
+          first open of a story's workspace creates its worktree; later opens reattach it.
+          Arc C covers worktrees in depth. A clone CodeSense made for you in an earlier
+          version lives under <code>~/.codesense/users/&lt;id&gt;/sources/</code> and keeps
+          working.
+        </p>
+      </section>
+
+      <!-- =============== Add + attach flow =============== -->
+      <section data-search="Add a source repo and attach it to a team" id="add-attach">
+        <h2>Add a repo, then attach it</h2>
+        <p>
+          There are two moves here: <strong>add</strong> puts a repo on the team's list;
+          <strong>attach</strong> binds it to your local clone, so worktrees, terminals and
+          editor actions find its code. Open the <strong>Source repos</strong> tab from
+          <strong>Go → Source Repos</strong>
+          (<span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⌥</span><span class="cs-docs-kbd">R</span>).
+        </p>
+
+        <div class="step">
+          <span class="step__n">1</span>
+          <div>
+            <h3 style="margin: 2px 0 6px; font-size: 16px">Add the source repo</h3>
+            <p>
+              Under <strong>Add a source repo</strong>, choose <strong>Local folder</strong>
+              and <strong>Choose folder…</strong> to pick a clone you already have, then
+              <strong>Attach folder</strong>: the repo is added and the clone bound in one
+              step. Or choose <strong>From a URL</strong>, paste the repository URL or
+              <code>owner/repo</code>, and press <strong>Add repo</strong> to track it on the
+              team. A folder is tracked as the repo its <code>upstream</code> remote names,
+              else its <code>origin</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="step__n">2</span>
+          <div>
+            <h3 style="margin: 2px 0 6px; font-size: 16px">Attach your clone</h3>
+            <p>
+              A repo added by URL shows as <strong>Not attached — no working copy
+              yet</strong> under <strong>Tracked repos</strong>. Clone it with git, then
+              press <strong>Attach local clone</strong> on its row and choose
+              <strong>Browse for clone directory</strong>. The repo's own content folder is
+              <code>&lt;team&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/</code>
+              in the context repo, for example
+              <code>billing/repos/github.com/ledgerline/api/content/</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <span class="step__n">3</span>
+          <div>
+            <h3 style="margin: 2px 0 6px; font-size: 16px">Confirm the repo content resolves</h3>
+            <p>
+              Drop a tiny file in
+              <code>&lt;team&gt;/repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/.claude/skills/hello/SKILL.md</code>,
+              then preview an agent whose <code>context</code> includes
+              <code>.claude/skills</code> with <code>agent_preview</code> and that
+              <code>repo</code>. The skill is listed from the repo tier. Launch the agent in
+              a worktree of that repo and the file is copied in with the rest of its
+              context. A launch in any other repo never sees it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Why repo content, not just team content? =============== -->
+      <section data-search="Why repo content and not just team content" id="why">
+        <h2>Why repo content, not just team content?</h2>
+        <ul>
+          <li>
+            <strong>Repo content is the "kit for this codebase."</strong> Repo-specific
+            lint skills, a <code>CLAUDE.md</code> tuned to one codebase, notes that only
+            make sense with that repo open. It wins over your private space and the whole
+            team chain, but only for launches in that repo.
+          </li>
+          <li>
+            <strong>Team content is the shared-truth layer.</strong> Specs, stories, team
+            decisions, skills every repo should get. Both live in the context repo and are
+            pushed and pulled with it.
+          </li>
+          <li>
+            <strong>Neither moves on its own.</strong> A launch copies what the agent's
+            <code>context</code> asks for, once. To pick up a later edit, an agent calls
+            <code>hydrate_worktree</code>; to send a worktree edit back, it calls
+            <code>reverse_sync_worktree</code>. A per-repo override on the agent can add or
+            remove paths for this repo only.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to add and attach a source repo via MCP" id="via-mcp">
+        <details open>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            An agent walks the same shape with four tools:
+          </p>
+          <ul>
+            <li><code>list_source_repos</code>: the team's repos, the legal
+              <code>source_repo</code> values, and each repo's clone
+              (<code>attached</code>, <code>missing</code> or <code>unattached</code>, with
+              <code>localPath</code>).</li>
+            <li><code>add_source_repo</code>: add a repo to a team by <code>url</code>, or
+              by <code>path</code> to bind an existing clone at the same time.</li>
+            <li><code>attach_source_repo_path</code>: bind (or rebind) a local clone to a
+              repo the team already tracks.</li>
+            <li><code>remove_source_repo</code>: stop tracking a repo. The clone stays on
+              disk.</li>
+          </ul>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schemas are in <a href="../mcp-explorer.html#arc/B">mcp-explorer</a>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./content-layers.html">← Content layers</a> ·
+        <a href="./private-and-all-orgs.html">Private &amp; All-orgs →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Source repos</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

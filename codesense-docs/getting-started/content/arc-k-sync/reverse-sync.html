@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="corner-up-left" />
+    <title>CodeSense — Reverse sync</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/reverse-sync"] .cs-main {
+        max-width: 920px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] p {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] figure.hero svg {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+        height: auto;
+        max-height: 240px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        text-align: center;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] table {
+        width: 100%;
+        max-width: 760px;
+        margin: 14px 0;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] th,
+      body[data-page="arc-k-sync/reverse-sync"] td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] th {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        font-size: 12px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--cs-border-strong);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] pre {
+        margin: 10px 0;
+        padding: 12px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+        max-width: 760px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .step:first-of-type {
+        border-top: 0;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] details {
+        max-width: 760px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+        margin: 10px 0;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] details[open] {
+        background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+      }
+      body[data-page="arc-k-sync/reverse-sync"] summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/reverse-sync"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/reverse-sync">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Reverse sync worktree to context" id="hero">
+        <h1>Reverse sync — worktree into context</h1>
+        <p class="lede">
+          Reverse sync is the direction <strong>out</strong>: an agent publishes the context files
+          it edited in a workspace back to team content. It happens only when an agent calls
+          <code>reverse_sync_worktree</code>, and nothing else ever takes a workspace's edits. No
+          <code>git add</code>, no commit; other workspaces see the change only when they hydrate
+          it.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 720 220"
+            role="img"
+            aria-label="Worktree on the left with one modified file; a preview-then-publish step in the middle; team content on the right."
+          >
+            <title>Reverse sync — a locally edited file is published back to team content</title>
+            <desc>
+              Left: a worktree folder with one highlighted modified file. Middle: a chip labelled
+              "preview, then publish". Right: the tiers a publish can write to; the file lands in
+              team content by default. An arrow flows left to right.
+            </desc>
+            <style>
+              .rs-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .rs-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .rs-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .rs-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .rs-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .rs-dash {
+                stroke-dasharray: 4 4;
+              }
+              .rs-doc {
+                fill: color-mix(in oklab, var(--cs-accent, #7aa2ff) 20%, transparent);
+                stroke: var(--cs-border, #262c38);
+              }
+              .rs-doc-hot {
+                fill: color-mix(in oklab, var(--cs-accent, #7aa2ff) 70%, transparent);
+              }
+            </style>
+            <defs>
+              <marker
+                id="rs-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Left: worktree -->
+            <g transform="translate(40 60)">
+              <rect class="rs-ins" width="200" height="110" rx="8" />
+              <text class="rs-mut" x="100" y="18" text-anchor="middle">worktree</text>
+              <rect class="rs-doc" x="14" y="32" width="172" height="14" rx="3" />
+              <rect class="rs-doc-hot" x="14" y="54" width="172" height="14" rx="3" />
+              <text class="rs-mut" x="100" y="66" text-anchor="middle">modified</text>
+              <rect class="rs-doc" x="14" y="80" width="172" height="14" rx="3" />
+            </g>
+
+            <!-- Middle: preview + publish chip -->
+            <g transform="translate(280 72)">
+              <rect class="rs-surf" width="160" height="80" rx="12" />
+              <text class="rs-txt" x="80" y="34" text-anchor="middle">preview, then publish</text>
+              <text class="rs-mut" x="80" y="52" text-anchor="middle">reverse_sync_worktree</text>
+              <text class="rs-mut" x="80" y="68" text-anchor="middle">conflicts never written</text>
+            </g>
+
+            <!-- Right: context stack -->
+            <g transform="translate(480 30)">
+              <rect class="rs-surf" width="200" height="30" rx="4" />
+              <text class="rs-mut" x="100" y="20" text-anchor="middle">Personal (to: personal)</text>
+              <rect class="rs-surf" x="0" y="36" width="200" height="30" rx="4" />
+              <text class="rs-mut" x="100" y="56" text-anchor="middle">Repo tier (to: repo)</text>
+              <rect
+                class="rs-surf"
+                x="0"
+                y="72"
+                width="200"
+                height="30"
+                rx="4"
+                fill="color-mix(in oklab, var(--cs-accent, #7aa2ff) 20%, var(--cs-surface, #161b22))"
+              />
+              <text class="rs-txt" x="100" y="92" text-anchor="middle">
+                Team content ← default
+              </text>
+              <rect class="rs-surf" x="0" y="108" width="200" height="30" rx="4" />
+              <text class="rs-mut" x="100" y="128" text-anchor="middle">Other workspaces: on hydrate</text>
+            </g>
+
+            <path class="rs-acc" d="M248 112 L278 112" marker-end="url(#rs-arrow)" />
+            <path class="rs-acc" d="M444 112 L478 112" marker-end="url(#rs-arrow)" />
+          </svg>
+          <figcaption id="hero-cap">
+            One modified file · preview first · published only when an agent asks
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="What reverse_sync_worktree publishes" id="what">
+        <h2>What a publish does</h2>
+        <p>
+          <code>reverse_sync_worktree</code> compares the workspace with what CodeSense copied into
+          it, and writes the differences to team content:
+        </p>
+        <ul>
+          <li>
+            A file CodeSense copied in and you edited goes back to the team file it came from.
+          </li>
+          <li>
+            A new file under the workspace's declared context goes to team content, or to the tier
+            <code>to</code> names: <code>team</code>, <code>repo</code> or <code>personal</code>.
+          </li>
+          <li>
+            A team file that changed since it was copied is a <strong>conflict</strong>. It is never
+            written; it comes back in <code>conflicts</code> for you to resolve.
+          </li>
+          <li>
+            Team content is never deleted unless you pass <code>includeDeletes: true</code>. Without
+            it, files you removed in the workspace come back in <code>withheldRemovals</code>.
+          </li>
+          <li>Files the repo tracks, symlinks and files over 4 MiB are skipped.</li>
+        </ul>
+        <p>
+          <code>preview_reverse_sync_worktree</code> takes the same inputs and writes nothing.
+          Call it first. No <code>git</code> command runs. The change is in your context repo on this Mac;
+          committing and pushing it is a separate step that you or an agent do with git. See
+          <a href="./agent-driven-git.html">agent-driven git</a>.
+        </p>
+      </section>
+
+      <section data-search="Which tier a file goes to" id="layers">
+        <h2>Where the file goes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Goes to</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A file CodeSense copied in</td>
+              <td>The team file it came from</td>
+              <td>The managed record says where it came from.</td>
+            </tr>
+            <tr>
+              <td>A new spec, story or skill</td>
+              <td>Team content (default), or the tier <code>to</code> names</td>
+              <td>Pass <code>to: "repo"</code> for files only this repo's agents should get.</td>
+            </tr>
+            <tr>
+              <td>Source code</td>
+              <td>— (source repo)</td>
+              <td>
+                Source code goes through the branch's PR. A publish never writes a file the repo
+                tracks.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="A worked moment publishing a skill" id="worked">
+        <h2>A worked moment</h2>
+        <p>
+          A Builder's agent wrote a new skill in its worktree and the team should get it. Three
+          calls and no <code>git add</code> in sight.
+        </p>
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>Edit lands.</strong> The agent writes
+            <code>.claude/skills/release-notes/SKILL.md</code> inside its worktree.
+            <code>.claude/skills</code> is in its declared context, so the file is a candidate.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>Preview.</strong> The agent calls <code>preview_reverse_sync_worktree</code> with
+            <code>paths</code> set to that file. The preview says <code>add</code>, its team path and
+            its size, and shows no conflicts.
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>Publish.</strong> You say yes; the agent calls
+            <code>reverse_sync_worktree</code> with the same inputs. The file is in team content.
+            Other workspaces get it when their agent next starts or calls
+            <code>hydrate_worktree</code>.
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Walking back a publish" id="undo">
+        <h2>Walking it back</h2>
+        <p>
+          A publish writes team content, and team content is a git tree: until someone commits
+          and pushes it, the change is only in your local context repo, so <code>git</code> there
+          can undo it. To throw away a
+          workspace's edit instead, call <code>hydrate_worktree</code> with that path and
+          <code>overwriteModified: true</code>; it replaces your copy with the team's version.
+        </p>
+      </section>
+
+      <section data-search="Local vs remote reverse sync" id="local-vs-remote">
+        <h2>Local vs remote</h2>
+        <p>
+          The same call works for a workspace on a machine: pass
+          <code>target: {kind: "remote", machineId, workspaceHandle}</code>. CodeSense reads the
+          changed files from the machine in one batch and writes team content on this Mac. The
+          commit and push happen in the context repo on this Mac, with git.
+        </p>
+      </section>
+
+      <section data-search="Reverse sync via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <pre><code>const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
+const paths = ['.claude/skills/release-notes/SKILL.md']
+
+// 1. See exactly what would be written. Writes nothing.
+codesense.invoke('preview_reverse_sync_worktree', { target, paths })
+
+// 2. Publish, after the user agrees.
+codesense.invoke('reverse_sync_worktree', { target, paths })</code></pre>
+          <p style="margin-top: 8px">
+            To build this into a skill of your own, see
+            <a href="./write-your-own-sync-skill.html">write your own sync skill</a>.
+          </p>
+        </details>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/preview_reverse_sync_worktree"
+          >preview_reverse_sync_worktree</a
+        >
+        ·
+        <a href="../mcp-explorer.html#tool/reverse_sync_worktree">reverse_sync_worktree</a>
+        ·
+        <a href="./when-to-sync.html">next: when to sync →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Reverse sync</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

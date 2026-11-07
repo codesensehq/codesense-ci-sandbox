@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Create a context repo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/create-repo-primer.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      /* Arc-A content shell (duplicated per-page by design; see sibling notes). */
+      .cs-docs-arcA {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      .cs-docs-arcA h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      .cs-docs-arcA .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA h3 {
+        font-size: var(--cs-docs-text-lg);
+        margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      .cs-docs-arcA ol,
+      .cs-docs-arcA ul {
+        padding-left: 1.1em;
+      }
+      .cs-docs-arcA li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__hero {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        padding: var(--cs-docs-space-5);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-arcA__placeholder {
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        text-align: center;
+        padding: 20px;
+      }
+      .cs-docs-arcA__hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      .cs-docs-arcA__step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .cs-docs-arcA__step:first-of-type {
+        border-top: 0;
+      }
+      .cs-docs-arcA__step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .cs-docs-arcA__step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .cs-docs-arcA__step p {
+        margin: 0 0 10px;
+        line-height: 1.55;
+      }
+      .cs-docs-arcA__shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      details.cs-docs-arcA__mcp {
+        margin-top: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px 16px;
+      }
+      details.cs-docs-arcA__mcp summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+      details.cs-docs-arcA__mcp pre {
+        margin: 10px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .cs-docs-arcA__ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      .cs-docs-arcA__ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-a-first-touch/create-a-context-repo">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-arcA">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Create a context repo from scratch" id="hero">
+        <h1>Create a context repo</h1>
+        <p class="lede">
+          You don't have one yet. Make one: CodeSense creates a new folder, starts a git repo in it,
+          writes the few files a context repo needs, and switches to it. You or your agents run git
+          from there; CodeSense never commits or pushes.
+        </p>
+      </section>
+
+      <!-- =============== What & why =============== -->
+      <section data-search="Why start from the CodeSense example" id="why">
+        <h2>Start from the CodeSense example</h2>
+        <p>
+          The form's <strong>Start from the CodeSense example</strong> option is off by default.
+          Turn it on and the new repo starts as an editable copy of these docs: the agents,
+          routines, examples and dashboards you can open here, in a form you can change. Leave it
+          off and the repo starts empty. Either way the read-only CodeSense Docs stay one switch
+          away to compare against.
+        </p>
+      </section>
+
+      <!-- =============== Steps =============== -->
+      <section data-search="Create a context repo in three steps" id="steps">
+        <h2>Create one in three steps</h2>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">1</span>
+          <div>
+            <h3>Open the create form</h3>
+            <p>
+              Open the context repo menu: the <code>context repo / team</code> name at the top
+              left, or <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">G</span>.
+              At the bottom of its context repos, choose
+              <strong>Create a new context repo…</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">2</span>
+          <div>
+            <h3>Name it, then Create and connect</h3>
+            <p>
+              Type a <strong>Name</strong>. The <strong>Location</strong> follows it as
+              <code>~/CodeSense/&lt;name&gt;</code> until you type another path or use
+              <strong>Choose…</strong>. The folder must not exist yet: CodeSense never writes into
+              an existing folder. Choose <strong>Create and connect</strong>.
+            </p>
+            <p>
+              The new folder holds <code>org.yml</code>, <code>people.yml</code> and
+              <code>teams.yml</code> and a git repo on an unborn <code>main</code>: no commit, no
+              remote, no author set. The repo's id comes from the name (<code>Acme Billing</code>
+              becomes <code>acme-billing</code>); a name already in use is refused.
+            </p>
+          </div>
+        </div>
+
+        <div class="cs-docs-arcA__step">
+          <span class="cs-docs-arcA__step-n">3</span>
+          <div>
+            <h3>You land in the new repo</h3>
+            <p>
+              CodeSense switches to it. A new, empty repo has no teams yet, so it asks you to
+              <strong>Create a team</strong>. From now on CodeSense opens the context repo you
+              used last, and the menu lists it next to the CodeSense Docs.
+            </p>
+            <p>
+              If the folder was created but couldn't be connected, the error names the folder.
+              Use <a href="./connect-a-context-repo.html">Connect a context repo…</a> with it to
+              retry.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to create a context repo via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="cs-docs-arcA__mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            A local agent can create one, then add its first team, with the same services the app
+            uses. <code>destinationPath</code> is an absolute new folder. The MCP tool has no
+            example option: it always starts empty.
+          </p>
+          <pre><code>create_local_organization({
+  displayName: "Acme Billing",
+  destinationPath: "/Users/you/CodeSense/acme-billing",
+})
+commit_registry_edit_local({
+  orgSlug: "acme-billing",
+  edit: { type: "CreateTeam", team_name: "billing" },
+})</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema:
+            <a href="../mcp-explorer.html#tool/create_local_organization">create_local_organization</a>.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference link =============== -->
+      <p class="cs-docs-arcA__ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml schema</a>
+        ·
+        <a href="../mcp-explorer.html#tool/create_local_organization">create_local_organization</a>
+        ·
+        <a href="./connect-a-context-repo.html">Connect a context repo</a>
+      </p>
+    </main>
+
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc A · Create</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      // Mount the inline create-repo primer when the bridge is live. Mirrors the
+      // behaviour of create.html so the "Create one now" affordance works on
+      // either entry point.
+      document.addEventListener("DOMContentLoaded", function () {
+        var host = document.querySelector("[data-create-repo-primer]");
+        if (host && window.codesense && window.codesense.docs) {
+          window.codesense.docs.mountInlineAffordance(host, {
+            onRetry: function () {
+              var btn = document.querySelector("cs-try-this button");
+              if (btn && typeof btn.focus === "function") btn.focus();
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

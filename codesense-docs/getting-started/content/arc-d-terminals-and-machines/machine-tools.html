@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="server" />
+    <title>CodeSense — Machine tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/machine-tools">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Machine tools">
+        <span class="cs-docs-eyebrow">Arc D · Terminals and machines</span>
+        <h1>Machine tools</h1>
+        <p class="lede">
+          Reference for the tools that discover, test, save, connect and manage machine declarations: from <code>list_ssh_sources</code> to <code>resolve_machine_identity</code>.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>For what a machine is and the kinds of machine, see the Machines page linked below. This page covers the tools. <code>list_machines</code> returns the machine ids these tools take as <code>machineId</code>.</p>
+        <p>Each entry gives what the tool does, how it differs from its neighbours, and one call using the wire names the server expects.</p>
+      </section>
+      <section id="discover-test" data-search="Discover and test">
+        <h2>Discover and test</h2>
+        <h3 id="tool-list_ssh_sources"><code>list_ssh_sources</code></h3>
+        <p>Discovers SSH config hosts on this Mac and the agent's public identities. It never reads private-key bytes. Use it to find a host and a sign-in method before building a draft for <code>test_machine_connection</code> or <code>save_machine</code>.</p>
+        <pre data-tool-example="list_ssh_sources"><code>{
+  &quot;tool&quot;: &quot;list_ssh_sources&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-test_machine_connection"><code>test_machine_connection</code></h3>
+        <p>Tests an explicit machine draft without saving it. Observe the host fingerprint first, then pass <code>trustedHostKeyFp</code> explicitly only after trust is authorized. <code>mode</code> defaults to <code>private-account</code>, the only mode that opens terminal tabs. A saved legacy machine tested with <code>private-account</code> is converted in place (same id, host key and settings) before its private setup.</p>
+        <pre data-tool-example="test_machine_connection"><code>{
+  &quot;tool&quot;: &quot;test_machine_connection&quot;,
+  &quot;arguments&quot;: {
+    &quot;input&quot;: {
+      &quot;label&quot;: &quot;build-box-01&quot;,
+      &quot;host&quot;: &quot;build-box-01.example.com&quot;,
+      &quot;port&quot;: 22,
+      &quot;username&quot;: &quot;dev&quot;,
+      &quot;signIn&quot;: {
+        &quot;method&quot;: &quot;agent&quot;
+      }
+    }
+  }
+}</code></pre>
+        <h3 id="tool-capture_machine_passphrase"><code>capture_machine_passphrase</code></h3>
+        <p>Opens the secure local passphrase dialog for a <code>keyPath</code>. It returns only a credential reference or <code>cancelled</code>; no passphrase crosses MCP. The reference is what a <code>keychainPassphrase</code> sign-in carries in <code>credentialRef</code>.</p>
+        <pre data-tool-example="capture_machine_passphrase"><code>{
+  &quot;tool&quot;: &quot;capture_machine_passphrase&quot;,
+  &quot;arguments&quot;: {
+    &quot;keyPath&quot;: &quot;~/.ssh/id_ed25519&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="declare" data-search="Save, share and remove">
+        <h2>Save, share and remove</h2>
+        <h3 id="tool-save_machine"><code>save_machine</code></h3>
+        <p>Saves a personal or team machine declaration using existing authorization. <code>input</code> is the draft, <code>share</code> is <code>{kind:&quot;personal&quot;}</code> or <code>{kind:&quot;team&quot;, orgSlug, team}</code>, and <code>connect</code> validates setup (use <code>connect_machine</code> for actual runtime admission). <code>mode</code> defaults to <code>private-account</code>; saving a legacy machine with that mode converts it in place. Auto-connect stays off.</p>
+        <pre data-tool-example="save_machine"><code>{
+  &quot;tool&quot;: &quot;save_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;input&quot;: {
+      &quot;label&quot;: &quot;build-box-01&quot;,
+      &quot;host&quot;: &quot;build-box-01.example.com&quot;,
+      &quot;port&quot;: 22,
+      &quot;username&quot;: &quot;dev&quot;,
+      &quot;signIn&quot;: {
+        &quot;method&quot;: &quot;agent&quot;
+      }
+    },
+    &quot;share&quot;: {
+      &quot;kind&quot;: &quot;personal&quot;
+    },
+    &quot;connect&quot;: false
+  }
+}</code></pre>
+        <h3 id="tool-unshare_machine"><code>unshare_machine</code></h3>
+        <p>Moves an authorized shared declaration back to personal scope.</p>
+        <pre data-tool-example="unshare_machine"><code>{
+  &quot;tool&quot;: &quot;unshare_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-remove_machine"><code>remove_machine</code></h3>
+        <p>Removes an authorized machine declaration and its local binding.</p>
+        <pre data-tool-example="remove_machine"><code>{
+  &quot;tool&quot;: &quot;remove_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="connection" data-search="Connect and disconnect">
+        <h2>Connect and disconnect</h2>
+        <h3 id="tool-connect_machine"><code>connect_machine</code></h3>
+        <p>Connects a saved machine through the connection manager and returns the real admission and setup status. Where <code>save_machine</code> only validates, this is the call that connects.</p>
+        <pre data-tool-example="connect_machine"><code>{
+  &quot;tool&quot;: &quot;connect_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-retry_machine"><code>retry_machine</code></h3>
+        <p>Retries a saved machine's connection through its existing manager. It does not enroll or trust anything automatically.</p>
+        <pre data-tool-example="retry_machine"><code>{
+  &quot;tool&quot;: &quot;retry_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-disconnect_machine"><code>disconnect_machine</code></h3>
+        <p>Disconnects the current app from a machine without killing its remote terminal processes.</p>
+        <pre data-tool-example="disconnect_machine"><code>{
+  &quot;tool&quot;: &quot;disconnect_machine&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="preferences" data-search="Per-profile settings">
+        <h2>Per-profile settings</h2>
+        <h3 id="tool-set_machine_auto_connect"><code>set_machine_auto_connect</code></h3>
+        <p>Opts a personal machine into background reconnect, or turns it off. It does not grant trust or enrollment. The default is off.</p>
+        <pre data-tool-example="set_machine_auto_connect"><code>{
+  &quot;tool&quot;: &quot;set_machine_auto_connect&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;autoConnect&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-set_machine_hidden"><code>set_machine_hidden</code></h3>
+        <p>Sets the current profile's visibility preference for a machine.</p>
+        <pre data-tool-example="set_machine_hidden"><code>{
+  &quot;tool&quot;: &quot;set_machine_hidden&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;hidden&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-set_machine_remote_mcp_control"><code>set_machine_remote_mcp_control</code></h3>
+        <p>Sets this desktop profile's permission for remote agents on a private machine to use CodeSense. The default is off, a remote caller cannot grant it, and enabling it is an explicit personal trust decision.</p>
+        <pre data-tool-example="set_machine_remote_mcp_control"><code>{
+  &quot;tool&quot;: &quot;set_machine_remote_mcp_control&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;enabled&quot;: false
+  }
+}</code></pre>
+      </section>
+      <section id="identity" data-search="Identity changes">
+        <h2>Identity changes</h2>
+        <h3 id="tool-resolve_machine_identity"><code>resolve_machine_identity</code></h3>
+        <p>Reports or keeps refusing a machine identity change. <code>list_machines</code> returns <code>declaration.identityChange</code> with the accepted and declared fingerprints and a <code>revision</code> to pass here. <code>accept:false</code> keeps refusing. <code>accept:true</code> is a human-only action: agents cannot confirm it and must ask the person to review and confirm in Machines.</p>
+        <pre data-tool-example="resolve_machine_identity"><code>{
+  &quot;tool&quot;: &quot;resolve_machine_identity&quot;,
+  &quot;arguments&quot;: {
+    &quot;machineId&quot;: &quot;&lt;machineId from list_machines&gt;&quot;,
+    &quot;revision&quot;: &quot;&lt;revision from declaration.identityChange&gt;&quot;,
+    &quot;accept&quot;: false
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc D pages</a> ·
+        <a href="./machines.html">What a machine is</a> ·
+        <a href="./terminal-servers.html">Terminal server tools</a> ·
+        <a href="./remote-workspaces.html">Remote workspace tools</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc D · Terminals and machines</div>
+    </footer>
+  </body>
+</html>

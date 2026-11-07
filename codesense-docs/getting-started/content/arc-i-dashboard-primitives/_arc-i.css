@@ -1,0 +1,276 @@
+/* =============================================================================
+ * _arc-i.css — Arc I dashboard primitives
+ *
+ * Page-scoped tokens + patterns for the 7 content pages under
+ * arc-i-dashboard-primitives/ (index.html keeps its own inline hero styles).
+ * Layers on top of ./../_shared/cs-docs.css. Scoped to
+ * `body[data-page^="arc-i-dashboard-primitives/"]`.
+ * ============================================================================= */
+
+body[data-page^="arc-i-dashboard-primitives/"] .cs-main {
+  max-width: 1080px;
+  padding-bottom: var(--cs-docs-space-7);
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] .cs-main::before {
+  content: "";
+  position: fixed;
+  inset: var(--cs-docs-nav-height) 0 0 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+    transparent 1.4px
+  );
+  background-size: 48px 48px;
+  opacity: 0.22;
+  mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] .cs-main > * {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] .cs-docs-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--cs-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cs-muted-fg);
+  padding: 3px 7px;
+  border: 1px solid var(--cs-border);
+  border-radius: 6px;
+  margin: 20px 0 12px;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] h1 {
+  font-size: clamp(28px, 3.8vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0 0 var(--cs-docs-space-3);
+  max-width: 26ch;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] h2 {
+  font-size: var(--cs-docs-text-xl);
+  margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+  font-weight: 600;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] h3 {
+  font-size: 17px;
+  margin: var(--cs-docs-space-5) 0 var(--cs-docs-space-2);
+  font-weight: 600;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] .lede {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--cs-muted-fg);
+  max-width: 64ch;
+  margin: 0 0 var(--cs-docs-space-5);
+}
+body[data-page^="arc-i-dashboard-primitives/"] .lede strong {
+  color: var(--cs-fg);
+  font-weight: 500;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] p {
+  max-width: 68ch;
+  line-height: 1.6;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] ul,
+body[data-page^="arc-i-dashboard-primitives/"] ol {
+  max-width: 68ch;
+}
+body[data-page^="arc-i-dashboard-primitives/"] li {
+  margin: 8px 0;
+  line-height: 1.55;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] pre {
+  background: var(--cs-inset);
+  padding: 12px 14px;
+  border-radius: var(--cs-docs-radius-sm);
+  overflow: auto;
+  font-size: 12.5px;
+  border: 1px solid var(--cs-border);
+  line-height: 1.5;
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] code {
+  font-family: var(--cs-font-mono);
+}
+
+body[data-page^="arc-i-dashboard-primitives/"] :not(pre) > code {
+  padding: 1px 5px;
+  background: var(--cs-inset);
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+
+/* Hero figure — every page carries one. */
+body[data-page^="arc-i-dashboard-primitives/"] figure.hero {
+  margin: 0 0 var(--cs-docs-space-6);
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius-lg);
+  background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+  padding: var(--cs-docs-space-5);
+  overflow: hidden;
+}
+body[data-page^="arc-i-dashboard-primitives/"] figure.hero svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+}
+body[data-page^="arc-i-dashboard-primitives/"] figure.hero figcaption {
+  margin-top: var(--cs-docs-space-3);
+  font-size: var(--cs-docs-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cs-faint-fg);
+}
+
+/* Numbered step list — tutorial pattern. */
+body[data-page^="arc-i-dashboard-primitives/"] .steps {
+  list-style: none;
+  padding: 0;
+  counter-reset: step;
+  margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+}
+body[data-page^="arc-i-dashboard-primitives/"] .steps > li {
+  counter-increment: step;
+  padding: 18px 20px 20px 56px;
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  background: var(--cs-surface);
+  margin: 12px 0;
+  position: relative;
+  max-width: 920px;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--cs-accent) 15%, transparent);
+  color: var(--cs-accent);
+  border-radius: 50%;
+  font: 600 13px/1 var(--cs-font-mono);
+}
+body[data-page^="arc-i-dashboard-primitives/"] .steps > li h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .steps > li p {
+  margin: 6px 0;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .steps > li pre {
+  margin: 10px 0 4px;
+}
+
+/* Diff-table used for pane shapes & similar comparisons. */
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp {
+  width: 100%;
+  max-width: 920px;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 10px 0 20px;
+}
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp th,
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--cs-border);
+  vertical-align: top;
+}
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp th {
+  font-weight: 600;
+  color: var(--cs-muted-fg);
+  background: var(--cs-inset);
+}
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp code {
+  font-size: 12px;
+}
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp .yes {
+  color: var(--cs-success);
+  font-weight: 600;
+}
+body[data-page^="arc-i-dashboard-primitives/"] table.cmp .no {
+  color: var(--cs-faint-fg);
+}
+
+/* MCP collapsible. */
+body[data-page^="arc-i-dashboard-primitives/"] details.mcp {
+  border: 1px solid var(--cs-border);
+  border-radius: var(--cs-docs-radius);
+  background: var(--cs-surface);
+  padding: 12px 16px;
+  margin: var(--cs-docs-space-3) 0;
+}
+body[data-page^="arc-i-dashboard-primitives/"] details.mcp[open] {
+  background: color-mix(in oklab, var(--cs-surface) 85%, var(--cs-inset));
+}
+body[data-page^="arc-i-dashboard-primitives/"] details.mcp summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+body[data-page^="arc-i-dashboard-primitives/"] details.mcp pre {
+  margin-top: 10px;
+}
+
+/* Reference link band at the bottom of every page. */
+body[data-page^="arc-i-dashboard-primitives/"] .ref {
+  display: block;
+  margin: var(--cs-docs-space-6) 0 0;
+  padding-top: var(--cs-docs-space-4);
+  border-top: 1px solid var(--cs-border);
+  color: var(--cs-muted-fg);
+  font-size: var(--cs-docs-text-sm);
+}
+body[data-page^="arc-i-dashboard-primitives/"] .ref a {
+  color: var(--cs-accent);
+}
+
+/* Shared SVG stroke conventions for arc-I hero visuals. */
+body[data-page^="arc-i-dashboard-primitives/"] .i-surf {
+  fill: var(--cs-surface, #161b22);
+  stroke: var(--cs-border, #262c38);
+  stroke-width: 1;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .i-ins {
+  fill: var(--cs-inset, #11161e);
+  stroke: var(--cs-border, #262c38);
+  stroke-width: 1;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .i-acc {
+  stroke: var(--cs-accent, #7aa2ff);
+  stroke-width: 1.5;
+  fill: none;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .i-txt {
+  fill: var(--cs-fg, #e6edf3);
+  font: 500 11px -apple-system, system-ui, sans-serif;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .i-mut {
+  fill: var(--cs-muted-fg, #a3abbb);
+  font: 10px -apple-system, system-ui, sans-serif;
+}
+body[data-page^="arc-i-dashboard-primitives/"] .i-dot {
+  fill: var(--cs-accent, #7aa2ff);
+  opacity: 0.9;
+}

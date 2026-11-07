@@ -1,0 +1,19 @@
+src-tauri/src/commands/dashboard_launch/persistence.rs
+  s_c68e0980509078::t_1a20967b98e4ba 303-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fa11ed00fa11ed00fa11ed00fa11ed00fa11ed00",
+  "prompts": {},
+  "sessions": {
+    "s_c68e0980509078": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_c68e0980509078",
+        "model": "unknown"
+      },
+      "human_author": "Fixture <fixture@example.invalid>"
+    }
+  }
+}

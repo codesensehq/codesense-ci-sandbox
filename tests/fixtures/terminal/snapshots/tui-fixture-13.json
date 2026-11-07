@@ -1,0 +1,12 @@
+{
+ "fixture": "tui-fixture",
+ "rest_from": 13,
+ "snapshot": {
+  "cols": 100,
+  "rows": 30,
+  "seq": 3967,
+  "resize_gen": 1,
+  "scrollback": 5000,
+  "vt": "\u001b[1mtui-fixture 100x30 frame 6\u001b[73C\u001b[0m|\r\n----------------------------------------------------------------------------------------------------\r\ncursor parse 画面\r\n端末 grid scroll offset 表示 margin scroll\r\nregion index jolt scroll\r\n表示 端末 delta\r\nparse query grid node 漢字 query\r\ndelta 漢字 echo 画面\r\nmargin delta query bravo index height\r\nnode bravo cursor cursor line echo jolt bravo\r\ndelta offset parse grid node\r\nkernel alpha index node\r\n画面 jolt line scroll 表示 index\r\nregion echo offset kernel parse 表示\r\ntile echo 幅広\r\nline kernel alpha 画面\r\nnode cursor height 幅広 width region cursor query\r\nwidth delta grid index region echo\r\nheight tile delta\r\nparse scroll height offset width 漢字\r\njolt bravo jolt\r\nframe line index cursor\r\nwidth 画面 region scroll\r\nscroll 表示 frame delta scroll parse query\r\ntile bravo kernel 漢字 line parse\r\n画面 index 漢字 offset height kernel\r\nmargin cursor 幅広 tile delta\r\njolt margin 漢字\r\n----------------------------------------------------------------------------------------------------\r\n[100x30] resized\u001b[?25l\u001b[30;17H"
+ }
+}

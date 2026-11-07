@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="user" />
+    <title>CodeSense — Private &amp; All-orgs</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-b-model/"] .twocol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 10px 0 18px;
+      }
+      body[data-page^="arc-b-model/"] .twocol .cs-docs-card {
+        padding: 16px;
+      }
+      body[data-page^="arc-b-model/"] .twocol h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+      body[data-page^="arc-b-model/"] .twocol p {
+        margin: 0 0 8px;
+        color: var(--cs-muted-fg);
+        line-height: 1.55;
+      }
+      body[data-page^="arc-b-model/"] .twocol code {
+        font-size: 12px;
+      }
+      @media (max-width: 720px) {
+        body[data-page^="arc-b-model/"] .twocol {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/private-and-all-orgs">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Private per-org space and the all-orgs folder" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Private &amp; All-orgs</span>
+        </p>
+        <h1>Only you — scoped to one org or carried everywhere.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Two layers belong to you alone. The <strong>Private</strong> space is per-org:
+          a place to try things, keep shortcuts, or stash notes for one org without
+          shipping anything to teammates. The <strong>All-orgs</strong> folder is
+          cross-org: the one place that resolves identically in every org you open,
+          limited to inert items on purpose. Both are local-only and never pushed.
+        </p>
+      </section>
+
+      <!-- =============== Side-by-side =============== -->
+      <section data-search="Private vs All-orgs — compared" id="compare">
+        <h2>Side by side</h2>
+        <div class="twocol">
+          <div class="cs-docs-card">
+            <h3>Private · per org</h3>
+            <p>
+              <code>~/.codesense/users/&lt;you&gt;/scratch/orgs/&lt;org&gt;/</code>
+            </p>
+            <p>
+              Shaped exactly like a team dir — <code>content/</code>, <code>config/</code>,
+              <code>notes/</code>, <code>libraries/</code>, <code>panes/</code>. Anything
+              you file here appears when this org is active and vanishes when you switch
+              orgs. The resolver overlays it at the head of this team's resolution chain,
+              so a private file wins over the team's at the same logical path.
+            </p>
+            <p><strong>Who sees it:</strong> only you, only in this org.</p>
+            <p><strong>Synced?</strong> Never. CodeSense initializes a local git repo
+              under <code>scratch/</code> for history but never adds a remote.</p>
+            <p><strong>Accepts:</strong> any kind — agents, routines, skills, notes,
+              panes, canvas libraries.</p>
+          </div>
+          <div class="cs-docs-card">
+            <h3>All-orgs · carry everywhere</h3>
+            <p>
+              <code>~/.codesense/users/&lt;you&gt;/scratch/all-orgs/</code>
+            </p>
+            <p>
+              A tiny folder that resolves in every org you open. Reserved for items that
+              don't carry org-specific state: a skill you want in both your work and
+              side-project orgs, a prompt you reuse everywhere, a snippet, a template.
+            </p>
+            <p><strong>Who sees it:</strong> only you, in every org you open.</p>
+            <p><strong>Synced?</strong> Never — it's part of the same local scratch
+              repo as Private.</p>
+            <p>
+              <strong>Accepts:</strong> inert kinds only. CodeSense refuses to file an
+              agent or routine here and points you at the per-org Private space
+              instead:
+              <em>"cannot go in all-orgs: only skills, prompts, snippets and templates
+              apply in every org."</em>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== How they overlay =============== -->
+      <section data-search="How Private and All-orgs overlay the team chain" id="overlay">
+        <h2>How they overlay the team chain</h2>
+        <p>
+          When an agent launches, each file its <code>context</code> asks for is looked up
+          in this order, and the closest copy wins:
+        </p>
+        <ol>
+          <li>Your team's content for that repo (<code>repos/&lt;host&gt;/&lt;owner&gt;/&lt;repo&gt;/content/</code>), for a launch in that repo.</li>
+          <li>Your <strong>Private</strong> content for this org.</li>
+          <li>The <strong>All-orgs</strong> folder (next, but only for inert kinds).</li>
+          <li>Your active team's own content.</li>
+          <li>Each parent team in order, up to the chain depth cap.</li>
+        </ol>
+        <p>
+          The practical result: file a personal override for one org under Private and
+          only you see it; file an inert skill under All-orgs and you carry it to every
+          org on your machine. If a Private file and an All-orgs file name the same
+          logical path, Private wins — "closer to home" is the whole rule.
+        </p>
+        <p>
+          Two exceptions let the team win. Switch off <strong>Use my private
+          items in ‹Team›</strong> in the team switcher and that team takes no private or all-orgs files at all.
+          Or, on a single private file that replaces a team file, choose
+          <strong>Use team's</strong> and that one path comes from the team again.
+        </p>
+      </section>
+
+      <!-- =============== Promoting =============== -->
+      <section data-search="How to promote a private skill into a team" id="promote">
+        <h2>Promoting a private file to the team</h2>
+        <p>
+          A common move: you prototyped a skill in your Private space, it earned its
+          keep, now you want everyone on the team to pick it up on their next pull.
+        </p>
+        <ol>
+          <li>
+            Find the file in <strong>Private</strong> (the button in the title bar), or
+            on its <strong>From private</strong> badge in a worktree's file tree.
+          </li>
+          <li>
+            From its <strong>⋯</strong> menu (or right-click in the file tree), choose
+            <strong>Share with ‹Team›…</strong>. CodeSense moves it to the same place in
+            <code>&lt;team&gt;/content/</code>, asking first only if the team already has
+            a file there. Nothing is committed.
+          </li>
+          <li>
+            The file is now a change in the team's context repo. Commit and push it, or
+            ask an agent to: CodeSense never commits, pushes or merges for you (see
+            <a href="../arc-k-sync/agent-driven-git.html">agent-driven git</a>).
+            Teammates get it on their next pull.
+          </li>
+        </ol>
+        <p>
+          The same menu has <strong>Copy to another org…</strong>, <strong>Use in all
+          orgs</strong> (inert kinds only), <strong>Only this org</strong> for an
+          All-orgs item, and <strong>Remove…</strong>. For the inverse, a team file's
+          <strong>⋯</strong> menu in the left nav offers <strong>Move to…</strong> and
+          <strong>Copy to…</strong>, and Private is one of the places it can go.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — see the scratch roots" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Ask the page bridge which layer this page comes from. A page in your private space
+          answers <code>private</code>; this one answers <code>team</code>. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Which layer is this page in?"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to inspect scratch roots via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            <code>describe_setup</code> reports your private space next to the orgs:
+          </p>
+          <pre><code>describe_setup {}
+// → data.scratch: {
+//     orgs: [{ counts: { notes, overlayFiles, panes, routines, agents }, offTeams, … }],
+//     allOrgs: { skills, prompts, snippets, templates, notApplied },
+//   }</code></pre>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            In an <code>agent_preview</code> result, files from these roots are tagged with
+            the personal tier rather than a team.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./source-repos.html">← Source repos</a> ·
+        <a href="./worked-example.html">Worked example →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/teams-yml">teams.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Private &amp; All-orgs</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

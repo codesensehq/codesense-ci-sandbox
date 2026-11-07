@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Parallelism</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1080px;
+      }
+      .arcC-hero {
+        display: block;
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .arcC-hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+      }
+      .arcC-hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      /* The 5-worktree layout grid — core visual for AC-3. */
+      .arcC-layout {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: var(--cs-docs-space-2);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      @media (max-width: 820px) {
+        .arcC-layout {
+          grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+      }
+      .arcC-wt {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .arcC-wt__head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .arcC-wt__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .arcC-wt__id {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--cs-fg);
+      }
+      .arcC-wt__title {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 2px 0 0;
+      }
+      .arcC-wt__meta {
+        font-size: 11.5px;
+        color: var(--cs-muted-fg);
+        line-height: 1.45;
+      }
+      .arcC-wt__path {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-muted-fg);
+        word-break: break-all;
+      }
+      .arcC-wt__status {
+        display: inline-block;
+        font-family: var(--cs-font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+      }
+      .arcC-wt__status--ready {
+        color: #4fd4bb;
+        border-color: color-mix(in oklab, #4fd4bb 60%, var(--cs-border));
+      }
+      .arcC-wt__status--building {
+        color: var(--cs-accent);
+        border-color: color-mix(in oklab, var(--cs-accent) 60%, var(--cs-border));
+      }
+      /* Lane labels for the "what parallel buys you" section. */
+      .arcC-lanes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      .arcC-lane {
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      .arcC-lane h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+      .arcC-lane p {
+        margin: 0;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      .arcC-shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 10px 12px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/parallelism">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Five stories, five worktrees, five agents" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Parallelism</span>
+        </p>
+        <h1>Five stories, five worktrees, five agents</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          A worktree per story is the whole point. When the sibling stories in an epic don't depend
+          on each other, nothing stops you from building them at the same time — one worktree per
+          story, one agent per worktree, five tabs across the top of the CodeSense window. The
+          seeded <code>per-agent-kill-switch</code> epic is laid out exactly for this:
+          <code>DEMO-1</code> is the shared foundation, <code>DEMO-2</code> through
+          <code>DEMO-5</code> fan out off it.
+        </p>
+
+        <figure class="arcC-hero" aria-labelledby="layout-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 240"
+            role="img"
+            aria-label="A five-column layout: DEMO-1 at the top as the foundation, DEMO-2 through DEMO-5 fanning out below as parallel siblings. Each column shows a worktree folder, a branch slug, and an agent avatar."
+          >
+            <title>Arc C — five parallel worktrees fan out off DEMO-1</title>
+            <desc>
+              DEMO-1 is the shared foundation. Four parallel siblings — DEMO-2 ui-toggle,
+              DEMO-3 mcp-command, DEMO-4 persistence, DEMO-5 dag-rerender — each have their
+              own worktree folder and attached agent.
+            </desc>
+            <style>
+              .arcCp-surface {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .arcCp-accent {
+                fill: var(--cs-accent, #7aa2ff);
+              }
+              .arcCp-text {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcCp-muted {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcCp-foundation {
+                fill: color-mix(
+                  in oklab,
+                  var(--cs-accent, #7aa2ff) 20%,
+                  var(--cs-surface, #161b22)
+                );
+                stroke: color-mix(
+                  in oklab,
+                  var(--cs-accent, #7aa2ff) 60%,
+                  var(--cs-border, #262c38)
+                );
+                stroke-width: 1.4;
+              }
+              .arcCp-edge {
+                stroke: color-mix(
+                  in oklab,
+                  var(--cs-accent, #7aa2ff) 55%,
+                  var(--cs-muted-fg, #a3abbb)
+                );
+                stroke-width: 1.2;
+                fill: none;
+              }
+              .arcCp-agent {
+                fill: color-mix(in oklab, #f6b454 25%, var(--cs-surface, #161b22));
+                stroke: #f6b454;
+                stroke-width: 1;
+              }
+            </style>
+
+            <!-- Foundation story (centered top) -->
+            <g transform="translate(260 20)">
+              <rect class="arcCp-foundation" width="120" height="52" rx="6" />
+              <rect class="arcCp-accent" x="0" y="0" width="120" height="3" rx="2" />
+              <text class="arcCp-text" x="60" y="24" text-anchor="middle">DEMO-1</text>
+              <text class="arcCp-muted" x="60" y="40" text-anchor="middle">
+                foundation · host kill ladder
+              </text>
+            </g>
+
+            <!-- Fan-out edges from foundation to each sibling worktree -->
+            <path class="arcCp-edge" d="M320 72 L72 130" />
+            <path class="arcCp-edge" d="M320 72 L198 130" />
+            <path class="arcCp-edge" d="M320 72 L442 130" />
+            <path class="arcCp-edge" d="M320 72 L568 130" />
+
+            <!-- Four sibling worktrees -->
+            <g transform="translate(12 130)">
+              <path class="arcCp-surface" d="M0 10 L18 10 L24 16 L120 16 L120 86 L0 86 Z" />
+              <text class="arcCp-text" x="10" y="34">DEMO-2</text>
+              <text class="arcCp-muted" x="10" y="48">ui-toggle</text>
+              <text class="arcCp-muted" x="10" y="62">feat/demo-2</text>
+              <circle class="arcCp-agent" cx="105" cy="75" r="7" />
+              <text class="arcCp-muted" x="10" y="80">agent · ready</text>
+            </g>
+            <g transform="translate(138 130)">
+              <path class="arcCp-surface" d="M0 10 L18 10 L24 16 L120 16 L120 86 L0 86 Z" />
+              <text class="arcCp-text" x="10" y="34">DEMO-3</text>
+              <text class="arcCp-muted" x="10" y="48">mcp-command</text>
+              <text class="arcCp-muted" x="10" y="62">feat/demo-3</text>
+              <circle class="arcCp-agent" cx="105" cy="75" r="7" />
+              <text class="arcCp-muted" x="10" y="80">agent · building</text>
+            </g>
+            <g transform="translate(264 130)">
+              <path class="arcCp-surface" d="M0 10 L18 10 L24 16 L120 16 L120 86 L0 86 Z" />
+              <text class="arcCp-text" x="10" y="34">DEMO-1 live</text>
+              <text class="arcCp-muted" x="10" y="48">(foundation wt)</text>
+              <text class="arcCp-muted" x="10" y="62">feat/demo-1</text>
+              <circle class="arcCp-agent" cx="105" cy="75" r="7" />
+              <text class="arcCp-muted" x="10" y="80">agent · ready</text>
+            </g>
+            <g transform="translate(390 130)">
+              <path class="arcCp-surface" d="M0 10 L18 10 L24 16 L120 16 L120 86 L0 86 Z" />
+              <text class="arcCp-text" x="10" y="34">DEMO-4</text>
+              <text class="arcCp-muted" x="10" y="48">persistence</text>
+              <text class="arcCp-muted" x="10" y="62">feat/demo-4</text>
+              <circle class="arcCp-agent" cx="105" cy="75" r="7" />
+              <text class="arcCp-muted" x="10" y="80">agent · ready</text>
+            </g>
+            <g transform="translate(516 130)">
+              <path class="arcCp-surface" d="M0 10 L18 10 L24 16 L120 16 L120 86 L0 86 Z" />
+              <text class="arcCp-text" x="10" y="34">DEMO-5</text>
+              <text class="arcCp-muted" x="10" y="48">dag-rerender</text>
+              <text class="arcCp-muted" x="10" y="62">feat/demo-5</text>
+              <circle class="arcCp-agent" cx="105" cy="75" r="7" />
+              <text class="arcCp-muted" x="10" y="80">agent · ready</text>
+            </g>
+
+            <text class="arcCp-muted" x="320" y="228" text-anchor="middle">
+              DEMO-2..5 depend on DEMO-1 only · they build in parallel
+            </text>
+          </svg>
+          <figcaption id="layout-cap">The sample seed epic laid out five-wide</figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== What this buys you =============== -->
+      <section data-search="What parallelism buys you" id="why">
+        <h2>Why five tabs instead of one</h2>
+        <p>
+          You could serialize this epic: finish DEMO-1, then DEMO-2, then the rest. The agent
+          would never trip on itself and every build would start from a known tree. But nothing says
+          those four siblings have to wait for each other — their
+          <code>depends_on</code> frontmatter already says they don't. Giving each one its own
+          worktree means CodeSense can keep four Builder agents hot at the same time, one story
+          each, with four isolated branches that merge in whatever order they finish.
+        </p>
+      </section>
+
+      <!-- =============== The 5-worktree layout (seeded cards) =============== -->
+      <section data-search="Five worktree layout from the seed epic" id="layout">
+        <h2>What <code>list_worktrees</code> returns</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Open the seeded epic and let the five siblings each get a worktree. The
+          <code>list_worktrees</code> dashboard pane shows exactly this grid — one card per managed
+          worktree, each row linking out to its tab.
+        </p>
+        <div class="arcC-layout" role="list">
+          <article class="arcC-wt" role="listitem">
+            <div class="arcC-wt__head">
+              <span class="arcC-wt__dot" style="background: var(--cs-accent)"></span>
+              <span class="arcC-wt__id">DEMO-1</span>
+            </div>
+            <p class="arcC-wt__title">Foundation</p>
+            <p class="arcC-wt__meta">host kill ladder + MCP wrapper</p>
+            <p class="arcC-wt__path">../sample-source-repo-wt/feat-DEMO-1-foundation/</p>
+            <span class="arcC-wt__status arcC-wt__status--ready">ready</span>
+          </article>
+          <article class="arcC-wt" role="listitem">
+            <div class="arcC-wt__head">
+              <span
+                class="arcC-wt__dot"
+                style="background: color-mix(in oklab, var(--cs-accent) 60%, #b48bff)"
+              ></span>
+              <span class="arcC-wt__id">DEMO-2</span>
+            </div>
+            <p class="arcC-wt__title">UI toggle</p>
+            <p class="arcC-wt__meta">DAG node kill button + confirm modal</p>
+            <p class="arcC-wt__path">../sample-source-repo-wt/feat-DEMO-2-ui-toggle/</p>
+            <span class="arcC-wt__status arcC-wt__status--building">building</span>
+          </article>
+          <article class="arcC-wt" role="listitem">
+            <div class="arcC-wt__head">
+              <span class="arcC-wt__dot" style="background: #4fd4bb"></span>
+              <span class="arcC-wt__id">DEMO-3</span>
+            </div>
+            <p class="arcC-wt__title">MCP command</p>
+            <p class="arcC-wt__meta">expose <code>kill_agent</code> publicly</p>
+            <p class="arcC-wt__path">../sample-source-repo-wt/feat-DEMO-3-mcp-command/</p>
+            <span class="arcC-wt__status arcC-wt__status--ready">ready</span>
+          </article>
+          <article class="arcC-wt" role="listitem">
+            <div class="arcC-wt__head">
+              <span class="arcC-wt__dot" style="background: #f6b454"></span>
+              <span class="arcC-wt__id">DEMO-4</span>
+            </div>
+            <p class="arcC-wt__title">Persistence</p>
+            <p class="arcC-wt__meta">remember killed agents across relaunches</p>
+            <p class="arcC-wt__path">../sample-source-repo-wt/feat-DEMO-4-persistence/</p>
+            <span class="arcC-wt__status arcC-wt__status--ready">ready</span>
+          </article>
+          <article class="arcC-wt" role="listitem">
+            <div class="arcC-wt__head">
+              <span class="arcC-wt__dot" style="background: #b48bff"></span>
+              <span class="arcC-wt__id">DEMO-5</span>
+            </div>
+            <p class="arcC-wt__title">DAG rerender</p>
+            <p class="arcC-wt__meta">transition node through "stopping" without reload</p>
+            <p class="arcC-wt__path">../sample-source-repo-wt/feat-DEMO-5-dag-rerender/</p>
+            <span class="arcC-wt__status arcC-wt__status--ready">ready</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- =============== What parallel buys you =============== -->
+      <section data-search="Isolation and lanes of work" id="lanes">
+        <h2>What isolation gets you</h2>
+        <div class="arcC-lanes" role="list">
+          <article class="arcC-lane" role="listitem">
+            <h3>Independent branches</h3>
+            <p>
+              <code>feat/demo-2</code> and <code>feat/demo-3</code> never see each other's
+              uncommitted work. A failed build in one worktree can't poison another.
+            </p>
+          </article>
+          <article class="arcC-lane" role="listitem">
+            <h3>Independent dependencies</h3>
+            <p>
+              Each worktree runs its own <code>pnpm install</code> inside its own
+              <code>node_modules</code>. One story can bump a dev dep without stalling the others —
+              the merge handles the final version.
+            </p>
+          </article>
+          <article class="arcC-lane" role="listitem">
+            <h3>Independent terminals</h3>
+            <p>
+              A terminal tab is bound to a workspace. Five open workspaces mean five sets of tabs
+              that remember what you were running (Arc D covers the mapping).
+            </p>
+          </article>
+          <article class="arcC-lane" role="listitem">
+            <h3>Independent inboxes</h3>
+            <p>
+              Each story thread lives in its own inbox lane. Decisions escalate against a single
+              story without pulling in the others' context.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- =============== Where the ceiling is =============== -->
+      <section data-search="Parallel ceiling and when siblings aren't siblings" id="ceiling">
+        <h2>The ceilings</h2>
+        <ul>
+          <li>
+            <strong>CPU and disk.</strong> Five parallel installs plus five test runs stress a
+            laptop. The <code>agent-dag</code> dashboard will show the hot ones; back off by
+            closing the busiest Builder's tab (<code>close_terminal_tab</code>).
+          </li>
+          <li>
+            <strong>Not-really-sibling stories.</strong> If <code>depends_on</code> contains more
+            than DEMO-1, that story has to wait. The story graph (Arc I) draws the
+            braid; <code>validate_story</code> flags a <code>depends_on</code> id that doesn't resolve.
+          </li>
+          <li>
+            <strong>Shared files that shouldn't be shared.</strong> If two parallel stories edit the
+            same file, they'll conflict at merge. That's fine when the conflict is semantic; it's a
+            smell when a sibling grabbed a file that belongs upstream in the foundation. Pull that
+            change back into DEMO-1 and re-fan.
+          </li>
+          <li>
+            <strong>Review bandwidth.</strong> Five simultaneous PRs still want five reviews. Keep
+            the Reviewer inbox tended or the merge queue backs up.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list the five parallel worktrees" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          List every managed worktree on this Mac. Once you've opened the seeded epic's five
+          stories, you'll see them all here — the five-column layout the factory lives on.
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="List my worktrees"
+          confirm=""
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to open five worktrees in parallel via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            An orchestrator fans out five <code>open_workspace</code> calls in parallel. Each one
+            settles independently — <code>opened</code> or <code>alreadyLive</code> — and the
+            Builder loop picks up every <code>ready</code> worktree the next time
+            <code>inbox_idle</code> fires.
+          </p>
+          <pre><code>// Fan out — one call per sibling, concurrent is fine
+await Promise.all(['DEMO-2','DEMO-3','DEMO-4','DEMO-5']
+  .map(id => codesense.invoke('open_workspace', { target: id })))
+
+// Inspect the fleet
+codesense.invoke('list_worktrees', {})
+// → [{ story_id: 'DEMO-1', path: '../sample-source-repo-wt/feat-DEMO-1-foundation', status: 'ready', ... }, ...]</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See
+            <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> and
+            <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> for the live
+            schemas.
+          </p>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> ·
+        <a href="./git-is-yours.html">git is yours →</a> ·
+        <a href="./troubleshooting.html">troubleshooting</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Parallelism</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

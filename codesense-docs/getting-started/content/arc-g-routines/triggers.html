@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="bell-ring" />
+    <title>CodeSense — Routine triggers</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --rtn-event: #1f6e8a;
+        --rtn-cron: #a56a16;
+        --rtn-manual: #4a5a74;
+        --rtn-bundle: #6b50e8;
+        --rtn-eachmac: #2a8a5e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --rtn-event: #6cc2d8;
+          --rtn-cron: #e0ac55;
+          --rtn-manual: #8ea3c6;
+          --rtn-bundle: #a898ff;
+          --rtn-eachmac: #4ec28a;
+        }
+      }
+      .arcg-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcg-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcg-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .trigger-card {
+        margin-top: 20px;
+        padding: 18px 20px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-left: 4px solid var(--rtn-color, var(--cs-muted-fg));
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .trigger-card[data-t="event"] {
+        --rtn-color: var(--rtn-event);
+      }
+      .trigger-card[data-t="cron"] {
+        --rtn-color: var(--rtn-cron);
+      }
+      .trigger-card[data-t="manual"] {
+        --rtn-color: var(--rtn-manual);
+      }
+      .trigger-card[data-t="bundle"] {
+        --rtn-color: var(--rtn-bundle);
+      }
+      .trigger-card[data-t="eachmac"] {
+        --rtn-color: var(--rtn-eachmac);
+      }
+      .trigger-card h3 {
+        margin-top: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .trigger-card h3 .kind {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--rtn-color) 20%, var(--cs-surface));
+        color: var(--cs-fg);
+      }
+      .trigger-card p.whenwhy {
+        margin: 6px 0 10px;
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm, 13px);
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        margin: 0;
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .arcg-node rect {
+        fill: color-mix(in srgb, var(--rtn-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--rtn-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .arcg-node[data-t="event"] {
+        --rtn-color: var(--rtn-event);
+      }
+      .arcg-node[data-t="cron"] {
+        --rtn-color: var(--rtn-cron);
+      }
+      .arcg-node[data-t="manual"] {
+        --rtn-color: var(--rtn-manual);
+      }
+      .arcg-node[data-t="bundle"] {
+        --rtn-color: var(--rtn-bundle);
+      }
+      .arcg-node[data-t="eachmac"] {
+        --rtn-color: var(--rtn-eachmac);
+      }
+      .arcg-node text {
+        fill: var(--cs-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .arcg-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-g-routines/triggers">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Routine triggers — schedule, events, manual" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="G">Arc G · Routines</span>
+        </p>
+        <h1>Pick your trigger.</h1>
+        <figure class="cs-docs-card arcg-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Each trigger shape fires a routine for a different reason: a queue going quiet, a wall-clock tick, a human click, another agent finishing, or a per-Mac fan-out. role_pending (mail for a role) is covered below."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="32" class="arcg-mbadge" style="font-size: 14px">
+              Same routine shape. Different reasons to fire it.
+            </text>
+
+            <!-- trigger shapes across the top -->
+            <g class="arcg-node" data-t="event" transform="translate(32 70)">
+              <rect width="110" height="48" rx="8" />
+              <text x="55" y="22" text-anchor="middle">inbox_idle</text>
+              <text
+                x="55"
+                y="36"
+                text-anchor="middle"
+                style="font-size: 9px; fill: var(--cs-muted-fg)"
+              >
+                queue goes quiet
+              </text>
+            </g>
+            <g class="arcg-node" data-t="cron" transform="translate(154 70)">
+              <rect width="110" height="48" rx="8" />
+              <text x="55" y="22" text-anchor="middle">cron</text>
+              <text
+                x="55"
+                y="36"
+                text-anchor="middle"
+                style="font-size: 9px; fill: var(--cs-muted-fg)"
+              >
+                wall-clock tick
+              </text>
+            </g>
+            <g class="arcg-node" data-t="manual" transform="translate(276 70)">
+              <rect width="110" height="48" rx="8" />
+              <text x="55" y="22" text-anchor="middle">manual</text>
+              <text
+                x="55"
+                y="36"
+                text-anchor="middle"
+                style="font-size: 9px; fill: var(--cs-muted-fg)"
+              >
+                human clicks run
+              </text>
+            </g>
+            <g class="arcg-node" data-t="bundle" transform="translate(398 70)">
+              <rect width="110" height="48" rx="8" />
+              <text x="55" y="22" text-anchor="middle">agent_done</text>
+              <text
+                x="55"
+                y="36"
+                text-anchor="middle"
+                style="font-size: 9px; fill: var(--cs-muted-fg)"
+              >
+                another agent finished
+              </text>
+            </g>
+            <g class="arcg-node" data-t="eachmac" transform="translate(520 70)">
+              <rect width="90" height="48" rx="8" />
+              <text x="45" y="22" text-anchor="middle">each_mac</text>
+              <text
+                x="45"
+                y="36"
+                text-anchor="middle"
+                style="font-size: 9px; fill: var(--cs-muted-fg)"
+              >
+                scope modifier
+              </text>
+            </g>
+
+            <!-- Routine box center -->
+            <g transform="translate(220 180)">
+              <rect
+                width="200"
+                height="72"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 14%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+                style="stroke-dasharray: 4 3"
+              />
+              <text
+                x="100"
+                y="26"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 12px"
+              >
+                routine.yml
+              </text>
+              <text x="100" y="48" text-anchor="middle" class="arcg-mbadge">
+                triggers → task → session
+              </text>
+              <text x="100" y="62" text-anchor="middle" class="arcg-mbadge">
+                wakes or starts its agent
+              </text>
+            </g>
+
+            <!-- edges -->
+            <path class="arcg-edge" d="M86 118 L 240 180" />
+            <path class="arcg-edge" d="M210 118 L 280 180" />
+            <path class="arcg-edge" d="M330 118 L 330 180" />
+            <path class="arcg-edge" d="M450 118 L 380 180" />
+            <path class="arcg-edge" d="M560 118 L 420 180" />
+
+            <text x="320" y="296" text-anchor="middle" class="arcg-mbadge" style="font-size: 13px">
+              No central scheduler. Each trigger is a separate reason the engine lets the clock tick
+              through.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="How triggers compose" id="why">
+        <p>
+          A routine's <code>triggers:</code> list says when it fires; with none it is manual only.
+          Each entry is a <code>schedule</code> (cron and time zone) or an <code>event</code> of
+          kind <code>inbox_idle</code>, <code>role_pending</code>,
+          <code>agent_done</code> or <code>metadata_change</code>.
+          You can list several in one routine — "fire on inbox_idle, and also every hour as a
+          safety net." Whatever fires it, the routine's <code>mode</code> decides what happens:
+          <strong>wake</strong> types the task into its agent's running session, <strong>start a
+          new</strong> (<code>fresh</code>) starts a new one. <code>runs_on: each_mac</code> is not a
+          trigger but a scope for per-Mac recipes. Metadata triggers run personally or once for the team. Each example below is a
+          drop-into-your-repo copy, under the agent it runs.
+        </p>
+      </section>
+
+      <section data-search="inbox_idle trigger with a worked example" id="t-event">
+        <h2>1 · <code>inbox_idle</code></h2>
+        <article class="trigger-card" data-t="event">
+          <h3><span class="kind">event · inbox_idle</span> Wake the agent when mail waits</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> a session sits idle at its prompt with unread mail (at most
+            once every 30 seconds per routine). With <code>mode: wake</code> only the routine's own
+            agent's sessions count, and the one with the mail is woken: a worker's mail never
+            wakes the Manager. With <code>mode: fresh</code> any session launched in the team
+            counts. <strong>Why:</strong> a Claude agent with an inbox waiter is woken by new mail at
+            once, but one that leaves its mail unread, or an agent with no waiter, sits idle with it;
+            this is the nudge for those. After 3 wakes that leave the same mail unread, the runner stops
+            repeating that mail and records the reason in routine run history. Inspect it with
+            <code>routine_runs</code> then <code>routine_run</code>. <strong>Trigger context</strong> (fresh runs only):
+            <code>{{trigger.sessions}}</code>, <code>{{trigger.count}}</code>.
+          </p>
+          <pre><code># config/agents/manager/routines/manager-wake/routine.yml
+id: manager-wake
+name: Wake the manager
+owner: codesense
+mode: wake
+task: |
+  You have unread mail. Call read_messages with your session id, then
+  claim_role_messages for the manager role, and carry on with /manage-team.
+  If there is nothing for you, say so in one line and wait.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: inbox_idle
+policy:
+  max_runtime: 5m
+runs_on: each_mac
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="metadata trigger command routine chaining trigger cookbook" id="cookbook">
+        <h2>Copyable trigger recipes</h2>
+        <p>The <a href="./trigger-cookbook.html">trigger cookbook</a> gives a full MCP dry run,
+          complete routine.yml, validation and result-reading instructions for schedule, metadata
+          trigger, inbox_idle, agent_done, role_pending and after chaining. See
+          <a href="./command-routines.html">command routines</a> for the metadata → command → agent chain.</p>
+        <p>Alongside metadataTriggers and schedules, <code>events</code> accepts inbox_idle, agent_done and role_pending through
+          <code>routine_create</code> and <code>routine_update</code>. Preview creation with
+          <code>dryRun:true</code>. For role_pending, omit <code>role</code> to watch every
+          queue in reach, or set <code>role:"reviewer"</code> to watch just reviewer mail.
+        </p>
+      </section>
+      <section data-search="metadata field value transition trigger" id="t-metadata">
+        <h2>When a field changes</h2>
+        <p>In the routine editor, add a metadata trigger, choose a document kind and optional folder,
+          then a field and the value it changes to. For example: when a story's status becomes
+          in-progress. Set From to planning to require that exact transition. Custom frontmatter
+          and HTML <code>cs:*</code> fields use the same selection and equality as
+          <code>query_context</code>. List fields say “gains”: gaining blocked in tags fires once.</p>
+        <p>With <code>routine_create</code>, set <code>when: ""</code> for triggers without a schedule:</p>
+        <pre><code>{"metadataTriggers":[{
+  "selection":{"where":{"kinds":["story"],"pathPrefix":"stories/"}},
+  "target":{"key":"status","op":"eq","value":"in-progress"}
+}]}</code></pre>
+        <p>For planning → in-progress, add
+          <code>"previous":{"key":"status","op":"eq","value":"planning"}</code> beside target.
+          A custom boolean target can be <code>{"key":"review_requested","op":"eq","value":true}</code>.
+          Text compares exactly; a JSON number compares numerically. The editor sends text.
+          <code>routine_get</code> returns the conditions. On update, omit
+          <code>metadataTriggers</code> to preserve them, send the whole replacement list to edit,
+          or send <code>[]</code> to remove them. Schedules and other events remain.</p>
+        <p>First discovery, restart, enabling and editing establish a baseline: documents already
+          matching do not replay. Only a later observed entry fires. Unrelated edits do not fire;
+          leaving and re-entering can. New or moved files without an observed previous value do not
+          fire. Debounced saves may settle into one change; changes while observation was stopped
+          are not replayed. The routine watches its synced team or personal files even with another
+          team displayed.</p>
+        <p>Normal overlap and placement policies apply, without the agent-done five-minute throttle.
+          Wake prompts stay static. Read <code>routine_context</code> with your
+          <code>sessionId</code> and the wake header's <code>runId</code>:
+          <code>trigger_payload</code> identifies org, team, path, story ID, field,
+          previous_present, previous_value and new_value; <code>coalesced_payloads</code> retains
+          every merged change. Fresh tasks may also use supported <code>{{trigger.*}}</code> fields.</p>
+      </section>
+
+      <section data-search="cron trigger with a worked example" id="t-cron">
+        <h2>2 · <code>cron</code></h2>
+        <article class="trigger-card" data-t="cron">
+          <h3><span class="kind">schedule · cron</span> Keep a manager on the queue</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> on a wall-clock cadence: a 5-field cron in an IANA zone
+            (<code>tz</code>); nothing more often than every 5 minutes. <strong>Why:</strong> for
+            liveness backstops, synthesis passes, nightly sweeps. As a wake on
+            <code>machine: any</code>, this one checks in with the Manager wherever it runs, and
+            starts one when none is running. A Manager on a machine that is offline still counts
+            as running: that fire is <em>undelivered (machine_offline)</em> and no second Manager starts
+            while that machine stays offline.
+            <strong>Choose limits for the work:</strong> a light check like this one can wake every
+            15 minutes for weeks; there is no lifetime cap. A wake that starts heavy work should set
+            <code>min_gap</code> (and maybe <code>max_wakes_per_day</code> or
+            <code>max_wakes</code>) under <code>policy</code>, so it never rewakes or piles up.
+          </p>
+          <pre><code># config/agents/manager/routines/manager-ensure/routine.yml
+id: manager-ensure
+name: Keep a manager on the queue
+owner: codesense
+mode: wake
+task: |
+  Check the manager queue. Call role_state with role "manager".
+  If anything is pending, claim it with claim_role_messages and carry on
+  with /manage-team. If nothing is pending, say "manager queue empty" in
+  one line and wait.
+where:
+  kind: team_workspace
+  machine: any
+triggers:
+  - schedule:
+      cron: "0 * * * *"
+      tz: UTC
+policy:
+  max_runtime: 5m
+  overlap: skip
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="manual trigger with a worked example" id="t-manual">
+        <h2>3 · <code>manual</code></h2>
+        <article class="trigger-card" data-t="manual">
+          <h3><span class="kind">manual</span> Human-gated release cut</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> only when someone presses <em>Run now</em> on the routine, a
+            dashboard's Refresh calls <code>routineRefresh</code>, or an agent calls
+            <code>routine_run_now</code>. <strong>Why:</strong> for operations you keep in human
+            hands — a release cut, a destructive sweep, an expensive one-shot. No
+            <code>triggers:</code> at all.
+          </p>
+          <pre><code># config/agents/amelia-builder/routines/ship-release/routine.yml
+id: ship-release
+name: Cut a release
+owner: you
+mode: fresh
+task: |
+  Confirm main is green, cut the release, and tag the merge commit.
+  Call signal_done with the tag name.
+where:
+  kind: team_workspace
+policy:
+  max_runtime: 30m
+  visible: true
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="agent_done trigger with a worked example" id="t-bundle">
+        <h2>4 · <code>agent_done</code></h2>
+        <article class="trigger-card" data-t="bundle">
+          <h3><span class="kind">event · agent_done</span> Review after the Builder finishes</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> an agent finishes (<code>signal_done</code>);
+            <code>from_agent</code> narrows it to one. <strong>Why:</strong> to chain agents without a
+            dispatcher. The routine shows under the agent it runs (the Reviewer), with an "after
+            amelia-builder" note. <strong>Trigger context</strong> (fresh runs only):
+            <code>{{trigger.session_id}}</code>, <code>{{trigger.status}}</code>,
+            <code>{{trigger.summary}}</code>, <code>{{trigger.agent}}</code>.
+          </p>
+          <pre><code># config/agents/winston-reviewer/routines/review-after-build/routine.yml
+id: review-after-build
+name: Review what the Builder shipped
+owner: you
+mode: fresh
+task: |
+  The Builder finished: {{trigger.status}} — {{trigger.summary}}.
+  If it opened a PR, review it with bmad-code-review and post the review.
+  Call signal_done with the verdict.
+where:
+  kind: team_workspace
+triggers:
+  - event:
+      kind: agent_done
+      from_agent: amelia-builder
+policy:
+  max_runtime: 30m
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="role_pending trigger with a worked example" id="t-role">
+        <h2>5 · <code>role_pending</code></h2>
+        <article class="trigger-card" data-t="event">
+          <h3><span class="kind">event · role_pending</span> Start a builder for each queued task</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> a message is queued for a role inbox the routine can reach
+            (its own team's for a team routine; every team in the org for an Only me one). It
+            watches the builder queue in this example. Omit <code>role</code> for every
+            queue in reach. It fires once per message, and never on a message its own run queued.
+            <strong>Why:</strong> nothing claims a role message on its own; this lets a routine
+            start an agent that claims it. <strong>Trigger context:</strong>
+            <code>{{trigger.role}}</code>, <code>{{trigger.message_id}}</code>,
+            <code>{{trigger.org}}</code>, <code>{{trigger.team}}</code>.
+          </p>
+          <pre><code># config/agents/amelia-builder/routines/build-on-request/routine.yml
+id: build-on-request
+name: Build what lands in the builder queue
+owner: you
+mode: fresh
+task: |
+  A message is waiting for the {{trigger.role}} role. Claim it with
+  claim_role_messages, do the work it asks for, then call signal_done.
+where:
+  kind: team_workspace
+triggers:
+  - event:
+      kind: role_pending
+      role: builder
+policy:
+  max_runtime: 60m
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="each_mac scope with a worked example" id="t-eachmac">
+        <h2>6 · <code>each_mac</code></h2>
+        <article class="trigger-card" data-t="eachmac">
+          <h3><span class="kind">runs_on · each_mac</span> One per teammate's Mac</h3>
+          <p class="whenwhy">
+            <strong>When:</strong> paired with any trigger above as a scope. <strong>Why:</strong>
+            sessions and inboxes are per Mac, so a recipe each teammate turns on for their own Mac
+            ("Run on my Mac", or <code>routine_set_enabled</code>) wakes or starts that Mac's own
+            agent. So an <code>each_mac</code> routine must use <code>machine: local</code> (or leave it out),
+            except that a <code>fresh</code> one may use <code>any</code> (each Mac starts its own);
+            a machine id is refused in either mode, since every teammate's Mac would wake or start
+            the same agent there.
+          </p>
+          <pre><code># config/agents/winston-reviewer/routines/reviewer-wake/routine.yml
+id: reviewer-wake
+name: Wake the reviewer
+owner: you
+mode: wake
+task: |
+  You have unread mail. Claim one message for the reviewer role with
+  claim_role_messages, review it with bmad-code-review, then ack it.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: inbox_idle
+policy:
+  max_runtime: 30m
+runs_on: each_mac
+revision: 1</code></pre>
+        </article>
+      </section>
+
+      <section data-search="Try this now — list routines by trigger shape" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          List the routines you can see, each with its triggers. Read-only; nothing fires.
+        </p>
+        <cs-try-this
+          verb="routines"
+          args="{}"
+          label="List routines"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Every routine you can see (each says its triggers in words)
+routine_list {}
+
+// Fire a routine right now, through its own overlap rule
+routine_run_now { id: 'manager-wake' }
+
+// Its recent runs
+routine_runs { id: 'manager-wake' }</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./routine-yml.html">← routine.yml</a> · Next: <a href="./tasks.html">Tasks →</a> ·
+        Edge cases &amp; reference → <a href="../schema-browser.html#schema/routine-yml">routine.yml</a> ·
+        <a href="../mcp-explorer.html#tool/routine_run_now">routine_run_now</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc G · Triggers</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

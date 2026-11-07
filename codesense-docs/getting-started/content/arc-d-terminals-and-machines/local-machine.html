@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="laptop" />
+    <title>CodeSense — Local machine</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/local-machine">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Local machine — this Mac — terminal and host-agent" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Local</span>
+        </p>
+        <h1>This Mac — the terminal you already know</h1>
+      </section>
+
+      <section data-search="Why local" id="why">
+        <p>
+          Your Mac is where CodeSense starts. The app runs here, your local workspace and
+          your <code>~/.codesense</code> folder live here, and the fastest workflows happen here: terminals are native PTYs,
+          files are watched with fsevents, and the keychain is right there. Everything
+          you learn on the local machine translates to remote with one or two caveats —
+          enumerated in the <a href="./parity-matrix.html">parity matrix</a>.
+        </p>
+      </section>
+
+      <section data-search="Anatomy of a local terminal tab" id="anatomy">
+        <h2>Anatomy of a local terminal tab</h2>
+        <ol>
+          <li>
+            <strong>You open a tab</strong> — <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">T</span>
+            or <em>Workspace → New terminal</em>, or <code>open_terminal_tab</code>
+            over MCP. The tab is scoped to the current workspace: its cwd is the
+            workspace's hydrated worktree.
+          </li>
+          <li>
+            <strong>CodeSense forks a native PTY</strong> — your login shell, in that
+            cwd, with the environment you'd expect (<code>PATH</code>, <code>HOME</code>,
+            <code>SHELL</code>). No SSH involved.
+          </li>
+          <li>
+            <strong>You type, run agents, read scrollback</strong> — plain shell.
+            <code>claude</code> and <code>codex</code> work exactly as they would in
+            Terminal.app, except CodeSense's MCP server is wired in so agents can
+            see your context repo.
+          </li>
+          <li>
+            <strong>Scrollback is captured</strong> — the emulator keeps a bounded
+            scrollback so <code>read_terminal_tab</code> can snapshot it for an agent
+            without re-running anything.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="The host-agent — only runs locally" id="host-agent">
+        <h2>The host-agent</h2>
+        <p>
+          The host-agent is a background process that runs on the Mac you run
+          CodeSense on. It brokers resources no other process can — notably,
+          exposing CodeSense's MCP server to agent CLIs you launch yourself in your own
+          Terminal.app, and holding the file watchers for your context repos.
+        </p>
+        <p>
+          Two things to know about it:
+        </p>
+        <ul>
+          <li>
+            <strong>There is exactly one.</strong> It lives alongside your profile
+            directory. It never runs on a remote machine — remote work gets its
+            parity from the terminal server (next page), not from a second host-agent.
+          </li>
+          <li>
+            <strong>If it's wedged,</strong> quit CodeSense and relaunch it first. If that
+            doesn't help, <em>Restart terminal server</em> (or
+            <code>restart_terminal_server</code>) starts it fresh, and it ends every terminal
+            and agent running on it.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="What's special about the Mac you run CodeSense on" id="account">
+        <h2>What's special about the Mac you run CodeSense on</h2>
+        <p>
+          The Mac that runs CodeSense owns your profile directory
+          (<code>~/.codesense/users/&lt;principal&gt;/</code>). It holds:
+        </p>
+        <ul>
+          <li>Your machine bindings (never synced).</li>
+          <li>Your issued passphrase handles (keychain-backed).</li>
+          <li>The worktrees CodeSense created for the context repos you've opened.</li>
+          <li>The sample source repo CodeSense ships with (one per profile).</li>
+        </ul>
+        <p>
+          If you move Macs, CodeSense's onboarding helps you re-create the profile and
+          re-enroll your keys; your team's content syncs back down over the normal
+          publish/pull path.
+        </p>
+      </section>
+
+      <section data-search="Try this now — open a local terminal tab" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>Open a fresh terminal tab in your current workspace.</p>
+        <cs-try-this
+          verb="open_terminal_tab"
+          args='{"launch":"shell"}'
+          label="Open a local terminal tab"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to open a local tab via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>codesense.invoke('open_terminal_tab', {
+  requestId: crypto.randomUUID(),
+  workspaceId: '&lt;current workspace&gt;',
+  launch: 'shell',   // or 'claude' / 'codex' / an agentKey
+  headed: true,
+})</code></pre>
+          <p>
+            Omit <code>machineId</code> and the tab opens on this Mac. Supply a
+            <code>machineId</code> and it goes remote — same shape, different host.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./machines.html">← Machines</a> ·
+        <a href="./remote-private-account.html">Remote (private account) →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_terminal_tab">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Local</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

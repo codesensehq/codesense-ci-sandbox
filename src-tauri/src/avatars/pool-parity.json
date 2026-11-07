@@ -1,0 +1,101 @@
+[
+  {
+    "agentKey": "alderco/codesense/dev-worker-claude",
+    "displayName": "Calm Otter",
+    "handle": "calm-otter",
+    "expect": "builtin-funny:coffee-bot"
+  },
+  {
+    "agentKey": "builtin/claude",
+    "displayName": "Brave Fox",
+    "handle": "brave-fox",
+    "expect": "builtin-funny:given-up-engineer"
+  },
+  {
+    "agentKey": "acme/emea/reviewer",
+    "handle": "h-1",
+    "expect": "builtin-funny:hoodie-hacker"
+  },
+  {
+    "displayName": "Agent juniper",
+    "handle": "juniper",
+    "expect": "builtin-funny:tanktop-philosopher"
+  },
+  {
+    "displayName": "Zoë Müller",
+    "handle": "zoe",
+    "expect": "builtin-funny:tie-cat"
+  },
+  {
+    "displayName": "日本語エージェント",
+    "handle": "jp",
+    "expect": "builtin-funny:sysadmin-goblin"
+  },
+  {
+    "displayName": "Emoji 🦊 Agent",
+    "handle": "fox",
+    "expect": "builtin-funny:hardhat-raccoon"
+  },
+  {
+    "displayName": "",
+    "handle": "empty-name",
+    "expect": "builtin-funny:tanktop-philosopher"
+  },
+  {
+    "handle": "bare-handle",
+    "expect": "builtin-funny:sysadmin-goblin"
+  },
+  {
+    "handle": "a",
+    "expect": "builtin-funny:given-up-engineer"
+  },
+  {
+    "handle": "worker-0123456789-abcdef",
+    "expect": "builtin-funny:skeptical-goat"
+  },
+  {
+    "agentKey": "x",
+    "displayName": "ignored",
+    "handle": "ignored",
+    "expect": "builtin-funny:sysadmin-goblin"
+  },
+  {
+    "displayName": "Same Name",
+    "handle": "one",
+    "expect": "builtin-funny:tie-cat"
+  },
+  {
+    "displayName": "Same Name",
+    "handle": "two",
+    "expect": "builtin-funny:tie-cat"
+  },
+  {
+    "viaInbox": true,
+    "displayName": "  Calm Otter  ",
+    "handle": "calm-otter",
+    "expect": "builtin-funny:fine-dog"
+  },
+  {
+    "viaInbox": true,
+    "displayName": "   ",
+    "handle": " spaced-handle ",
+    "expect": "builtin-funny:tie-cat"
+  },
+  {
+    "viaInbox": true,
+    "displayName": "Zoë Müller",
+    "handle": "zoe",
+    "expect": "builtin-funny:tie-cat"
+  },
+  {
+    "viaInbox": true,
+    "displayName": "",
+    "handle": "ghost",
+    "expect": "builtin-funny:given-up-engineer"
+  },
+  {
+    "viaInbox": true,
+    "handle": "only-handle",
+    "expect": "builtin-funny:science-alien"
+  }
+]

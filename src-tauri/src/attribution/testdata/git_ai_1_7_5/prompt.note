@@ -1,0 +1,19 @@
+y.txt
+  s_21290233d804c6::t_296f3cc6adb647 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b37075f2c3ab79a9ff7f8b527162be056f94e04",
+  "prompts": {},
+  "sessions": {
+    "s_21290233d804c6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "33333333-2222-4333-8444-555555555555",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Fixture <fixture@example.com>"
+    }
+  }
+}

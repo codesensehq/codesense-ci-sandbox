@@ -1,0 +1,365 @@
+{
+  "$defs": {
+    "Budget": {
+      "additionalProperties": false,
+      "properties": {
+        "per_day": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "per_week": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ClaudePermissions": {
+      "additionalProperties": true,
+      "description": "Claude's own `permissions` settings, kept verbatim: CodeSense never parses a\nrule or a mode, the CLI enforces them. Every key Claude documents for that\nblock is accepted, under its snake_case name or Claude's own camelCase one\n(`defaultMode`), so a block pasted from a Claude settings file works as is.",
+      "properties": {
+        "additional_directories": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "allow": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ask": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "default_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deny": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "disable_bypass_permissions_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "CodexPermissions": {
+      "additionalProperties": true,
+      "description": "Codex's own approval and sandbox settings, kept verbatim, under their\nsnake_case `config.toml` names or camelCase spellings.",
+      "properties": {
+        "approval_policy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "HermesPermissions": {
+      "additionalProperties": true,
+      "description": "Hermes approval mode and native pre_tool_call deny expressions.",
+      "properties": {
+        "approval": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deny": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "toolsets": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "LaunchMode": {
+      "description": "How a launch runs the agent unless the launcher or routine overrides it.",
+      "enum": [
+        "foreground",
+        "headless"
+      ],
+      "type": "string"
+    },
+    "McpAccess": {
+      "additionalProperties": true,
+      "description": "Which MCP servers the agent can reach, by `.mcp.json` server key. The\nCodeSense bridge is always present and never listed.",
+      "properties": {
+        "bridge_tools": {
+          "description": "Codex bridge tool names, unqualified and exact. Omitted/null allows all;\nan empty list allows none. A by-name call through `codesense_call_tool`\nrequires both the wrapper and its target in this list.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "servers": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "OpenCodePermissions": {
+      "additionalProperties": true,
+      "description": "OpenCode's permission rules, keyed by tool pattern and kept verbatim. The launch\ncomposer adds a rule only where the agent has set none for that key: a foreground\nlaunch falls back to `\"*\": \"ask\"`, a headless one to `\"*\": \"deny\"` with the read-only\ntools, CodeSense's tools and `external_directory: deny` allowed or set, and an\nescalating agent (`--auto` or an all-allow map) gets `\"*\": \"allow\"` headless instead.",
+      "properties": {
+        "permission": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "Permissions": {
+      "additionalProperties": true,
+      "description": "The runtime's native permission config, keyed by runtime. Only the block\nfor the agent's own runtime applies; the other one is carried untouched so\nswitching runtime loses nothing.",
+      "properties": {
+        "claude": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClaudePermissions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "codex": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CodexPermissions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hermes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HermesPermissions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "opencode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpenCodePermissions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "One agent definition, exactly as stored in `agent.yaml`.",
+  "properties": {
+    "allowWake": {
+      "description": "A routine may wake a running session of this\nagent even while it skips permission checks (bypass or unattended).\nOff by default; it means nothing for an agent that keeps its checks.",
+      "type": "boolean"
+    },
+    "archived_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "args": {
+      "description": "Appended to the runtime's argv; never a raw command line.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "avatar": {
+      "description": "The face its sessions wear when a launch names none: `pack:id`, or a\ncolour or emoji. Display only.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "budget_usd": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Budget"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "context": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "properties": {
+                  "dest": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      ],
+      "description": "The bulk content sets a workspace gets for this agent.\nAbsent means the runtime's default, resolved at launch and never\nwritten back ([`super::context::default_context`]); `[]` means none."
+    },
+    "created_by": {
+      "default": "",
+      "description": "The local user id that created it. Attribution only, never a permission:\nany teammate may edit a team agent.",
+      "type": "string"
+    },
+    "default_prompt": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "env": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Environment variables every launch sets on the runtime's process, by\nname. CodeSense's own launch variables are always CodeSense's, and any\nother variable CodeSense sets for the launch wins over one here of the\nsame name. Every value is a string. Anyone who can read the agent sees\nthem: not for secrets.",
+      "type": "object"
+    },
+    "id": {
+      "description": "Immutable once created.",
+      "type": "string"
+    },
+    "launch": {
+      "$ref": "#/$defs/LaunchMode",
+      "default": "foreground"
+    },
+    "mcp": {
+      "$ref": "#/$defs/McpAccess",
+      "default": {
+        "servers": []
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "permissions": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Permissions"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "resumeAfterRestart": {
+      "description": "After a terminal server update ends its session, the\nsession is relaunched as this same Agent, in its workspace and tab,\nwith a resume brief CodeSense builds from what it knows (never a CLI\nsession id). Off by default.",
+      "type": "boolean"
+    },
+    "revision": {
+      "default": 0,
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "role": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "runtime": {
+      "enum": [
+        "claude",
+        "codex",
+        "opencode",
+        "hermes"
+      ],
+      "type": "string"
+    },
+    "startup": {
+      "description": "Ordered content-relative paths, stored normalized by every save. Kept as\nwritten on read so one bad hand edit is a typed validation error, not\nan unreadable definition.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "runtime"
+  ],
+  "title": "Agent",
+  "type": "object"
+}

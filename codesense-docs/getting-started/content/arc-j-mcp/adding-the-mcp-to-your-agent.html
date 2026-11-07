@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="plug" />
+    <title>CodeSense — Adding the MCP to your agent</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/adding-the-mcp-to-your-agent"] .cs-main {
+        max-width: 900px;
+      }
+      body[data-page="arc-j-mcp/adding-the-mcp-to-your-agent"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/adding-the-mcp-to-your-agent"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 60ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      .arcj-cross {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .arcj-cross a {
+        display: block;
+        padding: 16px 18px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arcj-cross a:hover,
+      .arcj-cross a:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arcj-cross a strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+      .arcj-cross a span {
+        display: block;
+        font-size: 12.5px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+      .arcj-already {
+        padding: 14px 16px;
+        border-left: 3px solid var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 7%, var(--cs-surface));
+        border-radius: 0 10px 10px 0;
+        margin: 14px 0;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/adding-the-mcp-to-your-agent">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Adding the CodeSense MCP to your own agent — one line for Claude Code or Codex"
+        id="hero"
+      >
+        <h1>One command. Your agent has every CodeSense tool.</h1>
+        <p class="lede">
+          Everything in this arc applies to any MCP client — Claude Code, Codex, or your own. The
+          bridge is already set up for agents CodeSense launches. For agents you start yourself in
+          another terminal, you add it once.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A terminal on the left runs claude mcp add; an arrow lands on the right at the CodeSense bridge binary, which talks to the running app."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-a"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <g transform="translate(30 90)">
+              <rect
+                width="280"
+                height="170"
+                rx="12"
+                fill="var(--cs-inset)"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                $ in your terminal
+              </text>
+              <text
+                x="14"
+                y="54"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                claude mcp add
+              </text>
+              <text
+                x="14"
+                y="72"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                --scope user
+              </text>
+              <text
+                x="14"
+                y="90"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                codesense --
+              </text>
+              <text
+                x="14"
+                y="108"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                $HOME/.codesense/
+              </text>
+              <text
+                x="14"
+                y="126"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                bin/codesense-bridge
+              </text>
+              <text x="14" y="152" style="fill: var(--cs-muted-fg); font-size: 10px">
+                every project on this Mac gets it
+              </text>
+            </g>
+
+            <path
+              d="M314 180 L 360 180"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.5"
+              fill="none"
+              marker-end="url(#arcj-arrow-a)"
+            />
+
+            <g transform="translate(370 110)">
+              <rect
+                width="240"
+                height="140"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="14"
+                y="24"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                ~/.codesense/bin/
+              </text>
+              <text
+                x="14"
+                y="40"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                codesense-bridge
+              </text>
+              <text x="14" y="66" style="fill: var(--cs-muted-fg); font-size: 11px">
+                stdio MCP server
+              </text>
+              <text x="14" y="86" style="fill: var(--cs-muted-fg); font-size: 11px">
+                → local socket
+              </text>
+              <text x="14" y="102" style="fill: var(--cs-muted-fg); font-size: 11px">
+                → the running app
+              </text>
+              <text
+                x="14"
+                y="124"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                no network · no token · no args
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Agents CodeSense launches already have the bridge wired" id="already">
+        <h2>You might already be done</h2>
+        <div class="arcj-already">
+          <strong>Agents CodeSense launches don't need setup.</strong>
+          Every agent you start from a tab, from the agents panel, from a routine or from a remote
+          CodeSense machine already has the bridge wired. Everything in this arc works out of the
+          box.
+          <br /><br />
+          This page is for agents you start <strong>yourself</strong> in your own terminal — your
+          personal Claude Code, your Codex, or any other MCP client. Add CodeSense once and they get
+          the same tools.
+        </div>
+      </section>
+
+      <section data-search="The recipes — Claude Code and Codex and generic MCP" id="recipes">
+        <h2>The one-line setup lives in Setting up agents</h2>
+        <p>
+          The complete walkthrough — exact command for every CLI, troubleshooting, naming, scoping,
+          how the socket works — lives with the other agent setup recipes, authored once and
+          referenced from everywhere:
+        </p>
+        <div class="arcj-cross">
+          <a href="../setting-up-agents/add-codesense-mcp.md">
+            <strong>Add the CodeSense MCP to your agents</strong>
+            <span>
+              Claude Code · Codex · any MCP client. The canonical recipe, with trouble-shooting and
+              scope flags.
+            </span>
+          </a>
+          <a href="../setting-up-agents/codesense-setup-agent.md">
+            <strong>The CodeSense setup agent</strong>
+            <span>
+              A ready-made agent that reads your current setup and suggests fixes — all through MCP.
+            </span>
+          </a>
+          <a href="../setting-up-agents/machine-setup-agent.md">
+            <strong>The machine setup agent</strong>
+            <span>
+              Walks a new Mac through what CodeSense needs — login, shared socket, remote-access.
+            </span>
+          </a>
+          <a href="../setting-up-agents/manager-agent.md">
+            <strong>The manager agent</strong>
+            <span> A long-running orchestrator you talk to for setup &amp; team onboarding. </span>
+          </a>
+        </div>
+      </section>
+
+      <section data-search="The short answer for Claude Code" id="short">
+        <h2>The short answer</h2>
+        <p>If you just want the Claude Code command, here it is:</p>
+        <pre><code>claude mcp add --scope user codesense -- "$HOME/.codesense/bin/codesense-bridge"</code></pre>
+        <p>
+          Then restart your <code>claude</code> session. The tools in this arc are now in your
+          <code>/mcp</code> list. The full page covers Codex, scoping, and what to do if the bridge
+          isn't there yet.
+        </p>
+      </section>
+
+      <section data-search="How it fits with the rest of Arc J" id="fits">
+        <h2>How it fits</h2>
+        <p>
+          Once the MCP is wired, your own agent follows the same funnel as any CodeSense-launched
+          one:
+          <code>codesense_overview</code> first, then search, then schema, then call. Same four
+          meta-tools, same full tool list, same contracts. The agent doesn't need to know
+          whether it's running inside CodeSense or in your personal shell.
+        </p>
+      </section>
+
+      <section data-search="Try this now — check your setup" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Run <code>who_am_i</code>. If the bridge is reachable it comes back with your handle and
+          the active team — proof the MCP is live. Read-only; nothing writes.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "who_am_i", "args": {}}'
+          label="Confirm the bridge is live"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>
+            The setup itself is a shell command — one of the only things in CodeSense that isn't an
+            MCP call, because the agent has to exist to <em>run</em> MCP. Once set up, every tool in
+            <a href="../mcp-explorer.html">mcp-explorer</a> is reachable from your own terminal.
+          </p>
+          <pre><code># Claude Code
+claude mcp add --scope user codesense -- "$HOME/.codesense/bin/codesense-bridge"
+
+# Codex — see the full recipe for the exact command on your version.
+# Any MCP client — point stdio at ~/.codesense/bin/codesense-bridge.</code></pre>
+          <p>
+            Full recipe:
+            <a href="../setting-up-agents/add-codesense-mcp.md"
+              >setting-up-agents/add-codesense-mcp.md</a
+            >.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./writing-an-mcp-agent.html">Writing an MCP agent</a> · Edge cases &amp; reference
+        →
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · Adding the MCP to your agent</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

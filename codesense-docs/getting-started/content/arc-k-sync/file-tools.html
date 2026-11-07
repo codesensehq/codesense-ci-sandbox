@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file-text" />
+    <title>CodeSense — Content file tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/file-tools">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Content file tools">
+        <span class="cs-docs-eyebrow">Arc K · Sync</span>
+        <h1>Content file tools</h1>
+        <p class="lede">
+          Reference for the tools that create, read, move, delete, list and search context content files, and refresh the frontmatter cache.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p>Paths are absolute context-layer paths. Edits here change team content only; copies already in worktrees are not touched, because nothing syncs a worktree on its own. Use <code>hydrate_worktree</code> to update a worktree.</p>
+      </section>
+      <section id="files" data-search="Create, read, move and delete">
+        <h2>Create, read, move and delete</h2>
+        <h3 id="tool-create_content_file"><code>create_content_file</code></h3>
+        <p>Creates a content file at an absolute own-team content <code>path</code>; <code>content</code> defaults to empty. <code>onCollision</code> is <code>fail</code> (the default) or <code>keep-both</code>, which picks the first available numbered sibling. Returns <code>{path}</code>, the path actually created. It is the MCP twin of <code>files.create</code>.</p>
+        <pre data-tool-example="create_content_file"><code>{
+  &quot;tool&quot;: &quot;create_content_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/notes/plan.md&quot;,
+    &quot;content&quot;: &quot;# Plan\n&quot;,
+    &quot;onCollision&quot;: &quot;fail&quot;
+  }
+}</code></pre>
+        <h3 id="tool-read_content_file"><code>read_content_file</code></h3>
+        <p>Reads a content file by <code>path</code>. Reads use the calling session's team, so an ancestor file must be shared with that child. Returns <code>{text?, bytesUrl?, size, truncated, sha256}</code>; <code>maxBytes</code> is capped at 1.5 MB, and <code>bytesUrl</code> streams large or binary files through <code>/viewer</code>. The MCP twin of <code>files.read</code>.</p>
+        <pre data-tool-example="read_content_file"><code>{
+  &quot;tool&quot;: &quot;read_content_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/notes/plan.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-move_content_file"><code>move_content_file</code></h3>
+        <p>Renames or moves a context-layer content file or directory in team content, keeping content and frontmatter (including <code>story_id</code>). It is one explicit two-path call, not a delete plus create. Returns <code>{fromPath, toPath}</code>.</p>
+        <pre data-tool-example="move_content_file"><code>{
+  &quot;tool&quot;: &quot;move_content_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;fromPath&quot;: &quot;/abs/context/_team/engineering/content/notes/plan.md&quot;,
+    &quot;toPath&quot;: &quot;/abs/context/_team/engineering/content/notes/roadmap.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-delete_content_file"><code>delete_content_file</code></h3>
+        <p>Deletes a context-layer content file or directory in team content. It is git-backed, so deleting a committed file can be undone with git. Returns <code>{deletedPath}</code>. To remove an item from a named context by <code>logicalName</code>, see <code>remove_from_context</code>.</p>
+        <pre data-tool-example="delete_content_file"><code>{
+  &quot;tool&quot;: &quot;delete_content_file&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/notes/old-plan.md&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="find" data-search="List and search">
+        <h2>List and search</h2>
+        <h3 id="tool-list_context_content"><code>list_context_content</code></h3>
+        <p>Lists the content items in one context by its stable id (<code>personal:&lt;org&gt;</code>, <code>all-orgs</code>, <code>team:&lt;org&gt;:&lt;team&gt;</code> or <code>team-repo:&lt;org&gt;:&lt;team&gt;:&lt;owner&gt;/&lt;repo&gt;</code>), scoped to the active org. Each item has a <code>logicalName</code>, which feeds <code>move_between_contexts</code>, <code>copy_between_contexts</code> and <code>remove_from_context</code>, and a <code>path</code>. An empty context returns an empty list. Without <code>context</code> it navigates files by <code>scope</code>, <code>team</code>, <code>storyId</code>, <code>agentId</code> and <code>dir</code>, like <code>files.list</code>.</p>
+        <pre data-tool-example="list_context_content"><code>{
+  &quot;tool&quot;: &quot;list_context_content&quot;,
+  &quot;arguments&quot;: {
+    &quot;context&quot;: &quot;team:acme:engineering&quot;
+  }
+}</code></pre>
+        <h3 id="tool-query_context"><code>query_context</code></h3>
+        <p>Finds context files by metadata across synced orgs: <code>where</code>, <code>filters</code>, <code>match</code>, <code>relationships</code>, <code>text</code>, <code>sort</code>, <code>select</code>, <code>groupBy</code>, <code>limit</code> and <code>cursor</code>, all optional. Returns rows with <code>id</code>, <code>path</code>, <code>org</code>, <code>team</code>, <code>layer</code>, <code>kind</code>, <code>title</code> and <code>fields</code>. Private items come back only for the one org you name. Text results rank by title, then heading, then body coverage. The full filter and ranking rules are in the served description. For listing one context's items by <code>logicalName</code>, use <code>list_context_content</code>.</p>
+        <pre data-tool-example="query_context"><code>{
+  &quot;tool&quot;: &quot;query_context&quot;,
+  &quot;arguments&quot;: {
+    &quot;where&quot;: {
+      &quot;orgs&quot;: [
+        &quot;codesense/docs&quot;
+      ]
+    },
+    &quot;text&quot;: &quot;refresh_frontmatter_cache&quot;,
+    &quot;limit&quot;: 5
+  }
+}</code></pre>
+        <h3 id="tool-refresh_frontmatter_cache"><code>refresh_frontmatter_cache</code></h3>
+        <p>Refreshes the frontmatter cache for a context-layer file after a non-CodeSense writer (such as an agent's own filesystem write) changed it; otherwise <code>open_workspace</code> can miss a story that is physically present. It is not needed when writing through CodeSense's own file APIs. Returns <code>{path, team, refreshed, storyId, previousStoryId?}</code>.</p>
+        <pre data-tool-example="refresh_frontmatter_cache"><code>{
+  &quot;tool&quot;: &quot;refresh_frontmatter_cache&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/stories/DEMO-1.md&quot;
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc K pages</a> ·
+        <a href="./moving-between-contexts.html">Moving between contexts</a> ·
+        <a href="./layer-tools.html">Legacy sense_sync tools</a> ·
+        <a href="../arc-i-dashboard-primitives/getting-data-into-a-dashboard.html">Getting data into a dashboard</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc K · Sync</div>
+    </footer>
+  </body>
+</html>

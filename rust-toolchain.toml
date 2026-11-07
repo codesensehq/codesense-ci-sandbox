@@ -1,0 +1,7 @@
+# Pin the Rust toolchain so cargo resolves it unambiguously — local builds,
+# CI, and `tauri build` all use the same channel without anyone needing to
+# pass `+<toolchain>` (which fails when the cargo on PATH isn't the rustup
+# proxy). Mirrors CI (.github/workflows: rustup stable + rustfmt, clippy).
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]

@@ -1,0 +1,17 @@
+{
+  "cwd": "/tmp/claude-hook-capture",
+  "duration_ms": 710,
+  "error": "Exit code 1\nls: nope-missing-xyz: No such file or directory",
+  "hook_event_name": "PostToolUseFailure",
+  "is_interrupt": false,
+  "permission_mode": "default",
+  "prompt_id": "c1a0de00-0000-4000-9000-000000000301",
+  "session_id": "c1a0de00-0000-4000-a000-000000000307",
+  "tool_input": {
+    "command": "ls nope-missing-xyz",
+    "description": "List nope-missing-xyz"
+  },
+  "tool_name": "Bash",
+  "tool_use_id": "toolu_01Fixture020000000000000",
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000307.jsonl"
+}

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="arrows-right-left" />
+    <title>CodeSense — Move a workspace to another machine</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      .mwx-hero {
+        padding: 24px 28px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      p.mwx-hero {
+        margin: 0;
+        font-size: 15px;
+        color: var(--cs-muted-fg);
+      }
+      code.mwx-verb {
+        font-family: var(--cs-font-mono);
+        background: var(--cs-code-bg);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      .mwx-steps {
+        margin-top: 16px;
+      }
+      .mwx-steps li {
+        margin-bottom: 10px;
+      }
+      .mwx-notes {
+        border-left: 3px solid var(--cs-emphasis-border);
+        padding: 10px 14px;
+        background: var(--cs-emphasis-bg);
+        border-radius: 0 6px 6px 0;
+        margin: 16px 0;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/move-workspace">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Move a workspace to another machine with move_workspace" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Move a workspace</span>
+        </p>
+        <h1>Move a workspace to another machine</h1>
+        <p class="mwx-hero">
+          A workspace stays on the machine it was created on: every open, every launch and
+          every terminal tab lands there. If the work belongs somewhere else (a bigger remote
+          box, a Linux-only build, agents that should keep running while your laptop sleeps),
+          an agent moves it with the <code class="mwx-verb">move_workspace</code> MCP tool.
+          The branch moves with it; uncommitted work is discarded only when you say so.
+        </p>
+      </section>
+
+      <h2>When to use it</h2>
+      <ul>
+        <li>You started a story on This Mac and realised the build only works on your Linux dev box.</li>
+        <li>You want long-running agents to keep running on a remote machine while you close your laptop.</li>
+        <li>You're trialling a story on a small VM and want to promote it to a bigger one without losing branch state.</li>
+      </ul>
+
+      <h2>Preconditions</h2>
+      <ul>
+        <li>The target machine is connected (or <code>"local"</code> for This Mac).</li>
+        <li>The target machine's terminal server is up and <code>remoteMcpControl</code> is enabled.</li>
+        <li>The source worktree is clean, OR you pass <code>discardUncommitted: true</code> to explicitly discard local changes.</li>
+      </ul>
+
+      <h2>What's preserved</h2>
+      <ul>
+        <li>The committed branch and its base ref.</li>
+        <li>The workspace record — its id, the agents attached to it, its layout.</li>
+      </ul>
+
+      <h2>What's not preserved</h2>
+      <ul>
+        <li>Session history on the source machine (terminal tabs there go dead; the move does not try to replay them).</li>
+        <li>Uncommitted changes on the source worktree, unless you commit them first (the bundle path builds from committed objects only).</li>
+        <li>Any machine-local state outside the worktree.</li>
+      </ul>
+
+      <h2>How it runs — the three steps</h2>
+      <ol class="mwx-steps">
+        <li>
+          <strong>Prepare the target.</strong> On a remote target, this reuses the
+          same bundle-fetch-upload-worktree-create path <code>prepare_remote_workspace</code>
+          uses. On This Mac, it reuses the same local worktree-from-clone primitive
+          an initial local-workspace open does.
+        </li>
+        <li>
+          <strong>Swap the location pointer.</strong> Once the target holds a usable
+          worktree, the workspace record's <code>location.machineId</code> flips to
+          the target. From this point every refusal site in the UI and the backend
+          agrees the workspace lives on the target.
+        </li>
+        <li>
+          <strong>Clean up the source.</strong> The source worktree is removed via
+          <code>git worktree remove --force</code> (local) or the terminal server's
+          <code>remove_worktree</code> call (remote). A source that is already gone counts as clean; retries
+          are safe.
+        </li>
+      </ol>
+
+      <section class="mwx-notes">
+        <strong>Partial-failure behaviour.</strong> A crash before step 2 rolls
+        the move back — the workspace stays on the source and any target-side
+        state is accepted as orphan (future re-moves reconcile it). A crash after
+        step 2 rolls <em>forward</em> — the boot reaper reads the durable
+        <code>MoveIntent</code> file, finishes step 3, and emits a cleared event
+        to drop the "moving" banner. There is no explicit cancel; a stuck move
+        either resumes or rolls back on the next launch.
+      </section>
+
+      <h2>Invoke it</h2>
+      <p>
+        Ask your agent to move the workspace. It calls <code>move_workspace</code> with the
+        story id and a machine id from <code>list_machines</code> (or <code>"local"</code>
+        for This Mac):
+      </p>
+      <pre><code>move_workspace({
+  storyId: "DEMO-X",
+  targetMachine: "aws-dev-box",
+  discardUncommitted: false
+})
+→ { moved: true, from: null, to: "aws-dev-box", handle, cwd, cleanupPending?: false }</code></pre>
+
+      <h2>Non-goals</h2>
+      <ul>
+        <li>Multi-machine workspaces (one workspace holding worktrees on several machines).</li>
+        <li>Automatic re-home when a machine goes offline — explicit user action only.</li>
+        <li>Replaying session history on the target machine.</li>
+      </ul>
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc C index</a> &middot; See also →
+        <a href="../arc-d-terminals-and-machines/index.html">Arc D — terminals and machines</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Move a workspace</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

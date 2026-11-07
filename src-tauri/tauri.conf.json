@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "CodeSense",
+  "version": "0.1.0",
+  "identifier": "ai.codesense",
+  "build": {
+    "beforeDevCommand": "bash scripts/build-bridge.sh && bash scripts/build-session-server.sh && pnpm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "node scripts/generate-mcp-reference.mjs --check --build-script --allow-stale-export && bash scripts/build-bridge.sh --release && bash scripts/build-session-server.sh --release && pnpm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "CodeSense",
+        "hiddenTitle": true,
+        "visible": false,
+        "width": 1024,
+        "height": 768,
+        "acceptFirstMouse": true,
+        "titleBarStyle": "Overlay"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "createUpdaterArtifacts": true,
+    "externalBin": [
+      "binaries/codesense-bridge",
+      "binaries/codesense-session-server"
+    ],
+    "resources": {
+      "resources/starship": "resources/starship",
+      "resources/git-ai": "resources/git-ai",
+      "resources/starship-compact.toml": "resources/starship-compact.toml",
+      "resources/starship-minimal.toml": "resources/starship-minimal.toml",
+      "resources/starship-full.toml": "resources/starship-full.toml",
+      "resources/starship-twoline.toml": "resources/starship-twoline.toml",
+      "resources/wireframes/wireframe-starter.excalidrawlib": "resources/wireframes/wireframe-starter.excalidrawlib",
+      "resources/shell-integration/codesense-shell-init.zsh": "resources/shell-integration/codesense-shell-init.zsh",
+      "resources/shell-integration/codesense-shell-init.bash": "resources/shell-integration/codesense-shell-init.bash",
+      "resources/shell-integration/codesense-shell-init.fish": "resources/shell-integration/codesense-shell-init.fish",
+      "resources/emulator/NOTICE.md": "resources/emulator/NOTICE.md",
+      "resources/emoji/NOTICE.md": "resources/emoji/NOTICE.md",
+      "../THIRD_PARTY_NOTICES.md": "resources/THIRD_PARTY_NOTICES.md",
+      "resources/codesense-docs.tar.gz": "resources/codesense-docs.tar.gz",
+      "resources/sample-source-repo.tar.gz": "resources/sample-source-repo.tar.gz",
+      "binaries/codesense-emulator.cjs": "resources/emulator/codesense-emulator.cjs"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "files": {
+        "MacOS/codesense-emulator": "binaries/codesense-emulator"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJCQTdDN0U1MzY3MDkwMUIKUldRYmtIQTI1Y2VudTFtY2haZDlJL2xyU3A5MHc4N2RYZDl4UklxZUpydWxjaGYzSVNYRTZDQ0kK",
+      "endpoints": []
+    }
+  }
+}

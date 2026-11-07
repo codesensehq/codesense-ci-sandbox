@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="phone-call" />
+    <title>CodeSense — codesense_call_tool</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-j-mcp/calling-by-name"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-j-mcp/calling-by-name"] h1 {
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 20px 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-j-mcp/calling-by-name"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 62ch;
+        margin: 0 0 var(--cs-docs-space-5);
+        color: var(--cs-fg);
+      }
+      .arcj-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg, 14px);
+      }
+      .arcj-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      pre {
+        margin: 10px 0;
+        padding: 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow-x: auto;
+        font-size: 12.5px;
+      }
+      .arcj-pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 14px 0;
+      }
+      .arcj-pair .box {
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+      }
+      .arcj-pair .box h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .arcj-pair .box.recommended {
+        border-color: var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 7%, var(--cs-surface));
+      }
+      .arcj-pair .box.recommended h3::before {
+        content: "✓ ";
+        color: var(--cs-accent);
+      }
+      .arcj-pair pre {
+        margin: 0;
+      }
+      .arcj-note {
+        padding: 14px 16px;
+        border-left: 3px solid var(--cs-accent);
+        background: color-mix(in srgb, var(--cs-accent) 7%, var(--cs-surface));
+        border-radius: 0 10px 10px 0;
+        margin: 14px 0;
+        font-size: 14px;
+      }
+      @media (max-width: 720px) {
+        .arcj-pair {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-j-mcp/calling-by-name">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="codesense_call_tool — invoke any tool by name, escape hatch for hosts that cant dispatch outside tools list"
+        id="hero"
+      >
+        <h1>Any tool, by name.</h1>
+        <p class="lede">
+          Every CodeSense tool is in <code>tools/list</code>, so most hosts just call it by name.
+          If yours can only dispatch from a fixed manifest, wrap the call in
+          <code>codesense_call_tool</code>.
+        </p>
+        <figure class="arcj-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Two call paths. Direct: the agent invokes add_source_repo by name through its host. Indirect: the agent invokes codesense_call_tool with name and arguments. Both reach the same server-side handler."
+          >
+            <defs>
+              <marker
+                id="arcj-arrow-c"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Row 1: direct -->
+            <text
+              x="20"
+              y="38"
+              style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+            >
+              DIRECT — hosts that can dispatch any tool name
+            </text>
+            <g transform="translate(20 50)">
+              <rect
+                width="200"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 14%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="100"
+                y="24"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                add_source_repo
+              </text>
+              <text
+                x="100"
+                y="42"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                { org, team, url }
+              </text>
+            </g>
+            <path
+              d="M224 78 L 280 78"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-c)"
+            />
+
+            <!-- Row 2: wrapped -->
+            <text
+              x="20"
+              y="156"
+              style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+            >
+              WRAPPED — hosts that only dispatch from tools/list
+            </text>
+            <g transform="translate(20 168)">
+              <rect
+                width="200"
+                height="56"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 14%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="100"
+                y="24"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                codesense_call_tool
+              </text>
+              <text
+                x="100"
+                y="42"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                { name, arguments }
+              </text>
+            </g>
+            <path
+              d="M224 196 L 280 196"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-c)"
+            />
+
+            <!-- Central handler -->
+            <g transform="translate(284 110)">
+              <rect
+                width="160"
+                height="110"
+                rx="12"
+                fill="color-mix(in srgb, var(--cs-fg) 5%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="80" y="30" text-anchor="middle" style="fill: var(--cs-fg); font-size: 12px">
+                CodeSense MCP
+              </text>
+              <text
+                x="80"
+                y="48"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 11px"
+              >
+                dispatcher
+              </text>
+              <text
+                x="80"
+                y="78"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                permissions &amp;
+              </text>
+              <text
+                x="80"
+                y="92"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px; font-family: var(--cs-font-mono)"
+              >
+                schema validation
+              </text>
+            </g>
+            <path
+              d="M444 164 L 490 134"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-c)"
+            />
+
+            <!-- Handler -->
+            <g transform="translate(494 90)">
+              <rect
+                width="130"
+                height="80"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 12%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text
+                x="65"
+                y="30"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
+              >
+                add_source_repo
+              </text>
+              <text
+                x="65"
+                y="48"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                handler.rs
+              </text>
+              <text
+                x="65"
+                y="64"
+                text-anchor="middle"
+                style="fill: var(--cs-muted-fg); font-size: 10px"
+              >
+                runs the write
+              </text>
+            </g>
+
+            <!-- Reply arrow -->
+            <path
+              d="M494 240 L 290 240 L 240 240"
+              stroke="var(--cs-muted-fg)"
+              stroke-width="1.3"
+              fill="none"
+              marker-end="url(#arcj-arrow-c)"
+            />
+            <text x="320" y="230" style="fill: var(--cs-muted-fg); font-size: 11px">
+              same { status, data } reply, both paths
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Every tool is listed — what the wrapper is for" id="every-tool-listed">
+        <h2>Every tool is listed</h2>
+        <p>
+          <code>tools/list</code> advertises every CodeSense tool, a few hundred in all. Some hosts
+          (Claude Code, for one) load tool schemas lazily, so the agent sees names first and reads
+          a schema when it needs one. The wrapper isn't a way around a permission boundary; it's for
+          hosts that can't call a tool outside a fixed manifest.
+        </p>
+        <p>
+          Permissions still apply. A host that denies
+          <code>mcp__codesense__send_message</code> blocks that tool whether the agent calls it
+          directly or wraps it in <code>codesense_call_tool</code>. The dispatcher re-validates
+          every call against the host's allow / deny rules.
+        </p>
+      </section>
+
+      <section
+        data-search="Direct vs wrapped — pick the direct path when the host allows"
+        id="direct-vs-wrapped"
+      >
+        <h2>Two ways to call</h2>
+        <div class="arcj-pair">
+          <div class="box recommended">
+            <h3>Direct — recommended</h3>
+            <pre><code>codesense.invoke('add_source_repo', {
+  org: 'acme',
+  team: 'default',
+  url:  'acme/sample'
+})</code></pre>
+          </div>
+          <div class="box">
+            <h3>Wrapped — escape hatch</h3>
+            <pre><code>codesense.invoke('codesense_call_tool', {
+  name: 'add_source_repo',
+  arguments: {
+    org: 'acme',
+    team: 'default',
+    url:  'acme/sample'
+  }
+})</code></pre>
+          </div>
+        </div>
+        <p>
+          Both reach the same handler, both return the same
+          <code>{ status, data }</code>. Prefer the direct path — one fewer layer, one fewer place
+          to typo, cleaner logs.
+        </p>
+      </section>
+
+      <section
+        data-search="When to use codesense_call_tool — the rare host that cant dispatch outside tools list"
+        id="when-wrapper"
+      >
+        <h2>When to use the wrapper</h2>
+        <ul>
+          <li>
+            <strong>A host that only dispatches from <code>tools/list</code>.</strong> Some strict
+            MCP clients refuse any tool name they didn't see on connect, or pin the list they saw
+            when the agent was built. The wrapper is always there, so the call goes through.
+          </li>
+          <li>
+            <strong>Agent frameworks with a fixed tool manifest.</strong>
+            Hard-coded tool shapes at build time. The wrapper lets one manifest entry reach every
+            CodeSense verb.
+          </li>
+          <li>
+            <strong>Routing layers.</strong> A proxy that logs tool names can present a stable
+            surface — one tool, many targets.
+          </li>
+        </ul>
+        <div class="arcj-note">
+          <strong>Rule of thumb.</strong> If your host dispatched
+          <code>codesense_get_tool_schema</code> successfully, it can dispatch any tool by name. The
+          wrapper only earns its keep when direct dispatch fails.
+        </div>
+      </section>
+
+      <section data-search="The contract — call_tool shape" id="contract">
+        <h2>Contract</h2>
+        <p>
+          <strong>Input:</strong>
+          <code>{ name: string, arguments?: object }</code>. <code>arguments</code> defaults to
+          <code>{}</code>.
+        </p>
+        <p>
+          <strong>Returns:</strong> the inner tool's result verbatim — whatever
+          <code>add_source_repo</code> would have returned if called directly.
+        </p>
+        <p>
+          <strong>Can't invoke itself.</strong>
+          <code>codesense_call_tool { name: "codesense_call_tool" }</code>
+          returns an error. Prevents infinite indirection.
+        </p>
+      </section>
+
+      <section data-search="Example — one call, same shape, both paths" id="example">
+        <h2>Worked example — same call, both ways</h2>
+        <p>
+          Create an agent two ways. Both return
+          <code>{ status: "ok", data: { id, revision, …} }</code>.
+        </p>
+        <pre><code>// Direct — in-app, Claude Code, Codex.
+codesense.invoke('agent_create', {
+  name: 'Docs reader',
+  runtime: 'claude',
+  startup: ['CLAUDE.md'],
+  dryRun: true
+})
+
+// Wrapped — hosts that need it.
+codesense.invoke('codesense_call_tool', {
+  name: 'agent_create',
+  arguments: {
+    name: 'Docs reader',
+    runtime: 'claude',
+    startup: ['CLAUDE.md'],
+    dryRun: true
+  }
+})</code></pre>
+      </section>
+
+      <section data-search="Try this now — call_tool a read" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Call a tool through <code>codesense_call_tool</code>. We pick
+          <code>who_am_i</code> — read-only, no args, no side effects.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "codesense_call_tool", "args": {"name": "who_am_i", "arguments": {}}}'
+          label="Call who_am_i via the wrapper"
+          dry-run="false"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Simplest form.
+codesense.invoke('codesense_call_tool', { name: 'who_am_i' })
+
+// Full form.
+codesense.invoke('codesense_call_tool', {
+  name: 'send_message',
+  arguments: { to: 'role:builder', body: 'wake up' }
+})
+
+// Prefer direct dispatch when the host allows it.
+codesense.invoke('send_message', { to: 'role:builder', body: 'wake up' })</code></pre>
+          <p>
+            Deep-link into the explorer:
+            <a href="../mcp-explorer.html#tool/codesense_call_tool"
+              >mcp-explorer#tool/codesense_call_tool</a
+            >.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc J index</a> · Previous:
+        <a href="./reading-a-schema.html">codesense_get_tool_schema</a> · Next:
+        <a href="./writing-an-mcp-agent.html">Writing an MCP agent</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc J · codesense_call_tool</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

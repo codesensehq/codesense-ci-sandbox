@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="inbox" />
+    <title>CodeSense — Inboxes, triage, workers</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      /* ─── Arc-F local tokens — match the inbox-flows role chroma so every
+             glyph on every page reads with the same color grammar. ──────── */
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+        --role-human: var(--cs-fg);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node[data-role="inbox"] {
+        --role-color: var(--cs-muted-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 9px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-edge.is-trigger {
+        stroke: var(--cs-accent, var(--role-triager));
+        stroke-dasharray: 3 3;
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+        font-family: var(--cs-font-ui);
+      }
+
+      /* Card grid for the primitives tour. */
+      .arcf-prim-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--cs-docs-sp-3, 12px);
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arcf-prim-card {
+        padding: var(--cs-docs-sp-4, 16px);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+      }
+      .arcf-prim-card h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-prim-card p {
+        margin: 0;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      .arcf-prim-card .arcf-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-muted-fg);
+        margin-top: 10px;
+      }
+      .arcf-prim-card .arcf-chip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--role-color, var(--cs-muted-fg));
+      }
+
+      /* Page-TOC on arc-F pages — a lightweight left rail. */
+      .arcf-toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: var(--cs-docs-sp-4, 16px);
+      }
+      .arcf-toc a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        text-decoration: none;
+        color: var(--cs-fg);
+      }
+      .arcf-toc a:hover,
+      .arcf-toc a:focus-visible {
+        border-color: var(--cs-accent);
+      }
+      .arcf-toc a strong {
+        display: block;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arcf-toc a span {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc F — inboxes, triage, workers, flexibility" id="hero">
+        <h1>Inboxes, triage, workers.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="One kit — messages, roles, queues, routines — recomposed into four shapes."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <!-- Primitives rail (top): message · role · queue · trigger -->
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 13px">
+              The kit: messages · roles · queues · triggers
+            </text>
+            <g class="glyph-node" data-role="inbox" transform="translate(24 56)">
+              <rect width="128" height="36" rx="6" />
+              <text x="64" y="22" text-anchor="middle">message</text>
+            </g>
+            <g class="glyph-node" data-role="triager" transform="translate(168 56)">
+              <rect width="128" height="36" rx="6" />
+              <text x="64" y="22" text-anchor="middle">role</text>
+            </g>
+            <g class="glyph-node" data-role="builder" transform="translate(312 56)">
+              <rect width="128" height="36" rx="6" />
+              <text x="64" y="22" text-anchor="middle">queue</text>
+            </g>
+            <g class="glyph-node" data-role="reviewer" transform="translate(456 56)">
+              <rect width="160" height="36" rx="6" />
+              <text x="80" y="22" text-anchor="middle">routine on inbox_idle</text>
+            </g>
+
+            <text x="24" y="128" class="glyph-mbadge" style="font-size: 13px">
+              Four shapes from the same kit
+            </text>
+
+            <!-- Shape thumbnails (bottom row) -->
+            <!-- 01 · Dispatch -->
+            <g transform="translate(24 148)">
+              <rect width="140" height="180" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">01 · dispatch</text>
+              <g class="glyph-node" data-role="triager" transform="translate(14 42)">
+                <rect width="46" height="22" rx="3" />
+                <text x="23" y="15" text-anchor="middle">tri</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(82 28)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(82 52)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">bld</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(82 76)">
+                <rect width="46" height="18" rx="3" />
+                <text x="23" y="13" text-anchor="middle">rev</text>
+              </g>
+              <path class="glyph-edge" d="M60 50 L 82 36" />
+              <path class="glyph-edge" d="M60 54 L 82 60" />
+              <path class="glyph-edge" d="M60 58 L 82 84" />
+              <text x="12" y="140" class="glyph-mbadge" style="font-size: 10px">closed loop</text>
+              <text x="12" y="155" class="glyph-mbadge" style="font-size: 10px">no humans</text>
+            </g>
+
+            <!-- 02 · HITL -->
+            <g transform="translate(180 148)">
+              <rect width="140" height="180" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">02 · HITL</text>
+              <g class="glyph-node" data-role="inbox" transform="translate(10 42)">
+                <rect width="40" height="16" rx="3" />
+                <rect width="40" height="16" rx="3" transform="translate(4 20)" />
+                <rect width="40" height="16" rx="3" transform="translate(8 40)" />
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(66 50)">
+                <rect width="60" height="32" rx="16" />
+                <text x="30" y="18" text-anchor="middle">human</text>
+              </g>
+              <path class="glyph-edge" d="M54 58 L 66 66" />
+              <text x="12" y="140" class="glyph-mbadge" style="font-size: 10px">one pair of</text>
+              <text x="12" y="155" class="glyph-mbadge" style="font-size: 10px">hands</text>
+            </g>
+
+            <!-- 03 · SDLC -->
+            <g transform="translate(336 148)">
+              <rect width="140" height="180" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">03 · SDLC</text>
+              <g class="glyph-node" data-role="scout" transform="translate(10 48)">
+                <rect width="30" height="18" rx="3" />
+                <text x="15" y="13" text-anchor="middle">sc</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(50 48)">
+                <rect width="30" height="18" rx="3" />
+                <text x="15" y="13" text-anchor="middle">bl</text>
+              </g>
+              <g class="glyph-node" data-role="reviewer" transform="translate(90 48)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">rev</text>
+              </g>
+              <g class="glyph-node" data-role="resolver" transform="translate(50 90)">
+                <rect width="40" height="18" rx="3" />
+                <text x="20" y="13" text-anchor="middle">res</text>
+              </g>
+              <path class="glyph-edge" d="M40 57 L 50 57" />
+              <path class="glyph-edge" d="M80 57 L 90 57" />
+              <path class="glyph-edge" d="M64 66 L 64 90" />
+              <path class="glyph-edge" d="M106 66 C 100 80, 90 95, 86 95" />
+              <text x="12" y="140" class="glyph-mbadge" style="font-size: 10px">linear with</text>
+              <text x="12" y="155" class="glyph-mbadge" style="font-size: 10px">escalation</text>
+            </g>
+
+            <!-- 04 · One-shot -->
+            <g transform="translate(492 148)">
+              <rect width="124" height="180" rx="10" fill="none" stroke="var(--cs-border)" />
+              <text x="12" y="20" class="glyph-mbadge">04 · one-shot</text>
+              <g class="glyph-node" data-role="inbox" transform="translate(10 50)">
+                <circle cx="14" cy="14" r="14" />
+                <text x="14" y="18" text-anchor="middle">CI</text>
+              </g>
+              <g class="glyph-node" data-role="builder" transform="translate(50 48)">
+                <rect width="40" height="30" rx="4" style="stroke-dasharray: 3 2" />
+                <text x="20" y="14" text-anchor="middle">rtn</text>
+                <text x="20" y="25" text-anchor="middle" class="sub">cron</text>
+              </g>
+              <g class="glyph-node" data-role="human" transform="translate(94 48)">
+                <rect width="24" height="30" rx="4" />
+                <text x="12" y="20" text-anchor="middle">me</text>
+              </g>
+              <path class="glyph-edge" d="M38 64 L 50 64" />
+              <path class="glyph-edge" d="M90 64 L 94 64" />
+              <text x="12" y="140" class="glyph-mbadge" style="font-size: 10px">no queue</text>
+              <text x="12" y="155" class="glyph-mbadge" style="font-size: 10px">no triage</text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="One kit, every shape" id="why">
+        <p>
+          You've got a pile of work moving between people, agents and machines, and you want one
+          place that keeps every thread straight. CodeSense gives you four primitives —
+          <strong>messages</strong>, <strong>roles</strong>, <strong>queues</strong>, and
+          <strong>routines</strong> that fire on inbox activity — and lets you recompose them into
+          any shape: a closed dispatch factory, a human-held triage queue, a linear SDLC pipeline,
+          or a one-shot "ping me when CI is green." Same kit, different wiring.
+        </p>
+      </section>
+
+      <section data-search="Where the Inbox lives — right pane, shortcut, maximize, team filter" id="where-the-inbox-lives">
+        <h2>Where the Inbox lives</h2>
+        <p>
+          The Inbox lives in the right pane. Press <kbd>⇧⌘I</kbd>, or choose <strong>View → Inbox</strong>, to open it;
+          use the shortcut again to close it. You can rebind it in Settings → Shortcuts.
+          Use the section header's <strong>Maximize panel</strong> button for more room,
+          then restore with ✕ or <kbd>Esc</kbd>. The team filter inside the Inbox switches
+          between All teams and one team, and remembers your menu choice across restarts.
+          The Inbox tab shows its unread badge. When the right pane is closed, its edge
+          shows a dot for the panes' unread counts. <strong>Policy:</strong> the built-in Inbox
+          opts into live badges, so new mail updates that count while closed.
+          <strong>Architecture:</strong> panes without a live-badge declaration retain their
+          last known count and refresh when opened.
+        </p>
+      </section>
+
+      <section data-search="Conversation view — grouped messages, Markdown, reactions, tapback, emoji picker, agent faces, file drops" id="conversation-view">
+        <h2>A conversation, at a glance</h2>
+        <p>
+          Open a thread with one click. Messages from the same sender group together within
+          five minutes, with day labels between them. Your replies sit on the right; an
+          agent's messages sit on the left. Needs-your-reply messages stand out in the thread.
+          Opening a conversation marks its unread messages read, even if you go straight Back.
+        </p>
+        <p>
+          Agents show the same face as their session tab. An agent whose session has ended keeps
+          the face from its agent definition, with initials when there is none.
+          The themed scrollbar stays visible. In the thread, use ⌘/Ctrl↑/↓ or Home/End for
+          top/bottom, ⌥↑/↓ for ten lines, Page Up/Down for a page, and ↑/↓ for one line.
+          These keys leave the composer free for typing.
+        </p>
+        <figure>
+          <img src="../_shared/screens/inbox-message-view.png" width="900" height="900"
+            alt="The built-in Inbox with grouped agent messages on the left, human replies on the right, a code block, a thumbs-up reaction and the composer below."
+            loading="lazy" style="max-width: 100%; height: auto; border: 1px solid var(--cs-border)" />
+          <figcaption>The built-in Inbox, shown with example conversations.</figcaption>
+        </figure>
+        <p>
+          Markdown keeps its lists, tasks, quotes, tables and code blocks. Drop files onto an open
+          conversation to insert their paths at the composer cursor, quoting paths with spaces.
+        </p>
+        <p>
+          React to any message with a tapback. Rest the pointer on a bubble, press and hold it,
+          Tab to it, or right-click it and choose <b>React…</b>. The strip offers your six most
+          recent emoji; + opens every emoji, with search, categories, your recent picks and a
+          skin tone. Arrow keys move, Enter reacts and Escape closes. You hold one of each emoji
+          per message, so choosing it again takes it back. Reactions sit as chips on the
+          bubble's inner top corner, with a count of the people and agents who reacted and the
+          faces of the agents. Press a chip to add or remove yours. A reaction is not a reply:
+          it adds no unread mail and leaves Needs your reply in place. Agents react with the
+          <a href="./messages.html#react"><code>react</code> tool</a>.
+        </p>
+      </section>
+
+      <section data-search="Four primitives" id="primitives">
+        <h2>The kit</h2>
+        <div class="arcf-prim-grid">
+          <div class="arcf-prim-card">
+            <h3>Messages</h3>
+            <p>
+              The unit everything moves in. A short body, a sender, a recipient (another session, a
+              role, or the human), and a thread. Everything else is a shape made from messages.
+            </p>
+            <span class="arcf-chip"
+              ><span class="dot" style="--role-color: var(--cs-muted-fg)"></span>
+              <a href="./messages.html">messages →</a></span
+            >
+          </div>
+          <div class="arcf-prim-card">
+            <h3>Roles</h3>
+            <p>
+              A named seat. One holder at a time. Agents <code>register_role</code> to claim it; the
+              queue is addressed by role name so handoffs survive a session restart.
+            </p>
+            <span class="arcf-chip"
+              ><span class="dot" style="--role-color: var(--role-triager)"></span>
+              <a href="./roles.html">roles →</a></span
+            >
+          </div>
+          <div class="arcf-prim-card">
+            <h3>Queues</h3>
+            <p>
+              Every role has one. Deliveries land in order, workers
+              <code>claim_role_messages</code> a batch at a time,
+              <code>accept_role_message</code> each one, do the work, and <code>ack</code>.
+            </p>
+            <span class="arcf-chip"
+              ><span class="dot" style="--role-color: var(--role-builder)"></span>
+              <a href="./queues.html">queues →</a></span
+            >
+          </div>
+          <div class="arcf-prim-card">
+            <h3>Triggers</h3>
+            <p>
+              A routine with <code>event.kind: inbox_idle</code> fires when a queue sits idle with
+              unread mail. That's the glue that wakes workers without a central scheduler.
+            </p>
+            <span class="arcf-chip"
+              ><span class="dot" style="--role-color: var(--role-reviewer)"></span>
+              <a href="./triggers.html">triggers →</a></span
+            >
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Pages in this arc" id="toc">
+        <h2>Pages in this arc</h2>
+        <div class="arcf-toc">
+          <a href="./messages.html"
+            ><strong>Messages</strong> <span>Shape, reply, mark-read, inbox MCP tools.</span></a
+          >
+          <a href="./roles.html"
+            ><strong>Roles</strong> <span>One holder per role; claim, release, hand off.</span></a
+          >
+          <a href="./queues.html"
+            ><strong>Queues</strong> <span>Ordering, batches, acks, backpressure.</span></a
+          >
+          <a href="./triggers.html"
+            ><strong>Triggers</strong> <span>inbox_idle wakes a sleeping worker.</span></a
+          >
+          <a href="./patterns.html"
+            ><strong>Patterns</strong> <span>The four shapes side by side.</span></a
+          >
+          <a href="./parallel.html"
+            ><strong>Massively parallel</strong> <span>N builders off one dispatch queue.</span></a
+          >
+          <a href="./flexibility.html"
+            ><strong>Build your own</strong> <span>Compose the kit into any shape.</span></a
+          >
+          <a href="./decisions-and-escalation.html"
+            ><strong>Decisions &amp; escalation</strong>
+            <span>Resolver pattern; <code>bmad-loop-resolve</code>.</span></a
+          >
+          <a href="./local-vs-remote.html"
+            ><strong>Local vs remote</strong> <span>Distribute roles across machines.</span></a
+          >
+        </div>
+      </section>
+
+      <section data-search="Try this now — open the inbox-flows dashboard" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open the <strong>inbox flows</strong> dashboard. It's the demo rig for this arc: four
+          shapes rendered live from your editable context repo, with a composer that emits matching
+          <code>routine.yml</code> + <code>agent.yaml</code>.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "inbox-flows.html"}'
+          label="Open the inbox-flows dashboard"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Every UI action in this arc has a matching MCP tool. The four you'll see most:</p>
+          <pre><code>// Claim mail off a role queue
+claim_role_messages { team, role: 'builder', instanceId, generation, limit: 10 }
+
+// Accept a specific delivery
+accept_role_message { team, deliveryId, claimToken, instanceId, generation,
+  disposition: { kind: 'work' } }
+
+// Send a message to a role (send_message takes a session handle or "human")
+send_role_message { team, role: 'builder', text }
+
+// Ack when the delivery is handled
+ack_role_message { team, deliveryId, claimToken, instanceId, generation,
+  receiptId }</code></pre>
+          <p>See <a href="../mcp-explorer.html">mcp-explorer</a> for the full tool catalog.</p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="../README.html">← Back to home</a> · Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml</a> ·
+        <a href="../schema-browser.html#schema/agent-yaml">agent.yaml</a> ·
+        <a href="../mcp-explorer.html">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Inboxes, triage, workers</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

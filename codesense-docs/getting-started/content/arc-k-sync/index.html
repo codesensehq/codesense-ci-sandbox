@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="refresh-cw" />
+    <title>CodeSense — Arc K · Sync</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page="arc-k-sync/index"] .cs-main {
+        max-width: 1080px;
+      }
+      body[data-page="arc-k-sync/index"] .cs-main::before {
+        content: "";
+        position: fixed;
+        inset: var(--cs-docs-nav-height) 0 0 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 48px 48px;
+        opacity: 0.26;
+        mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+      }
+      body[data-page="arc-k-sync/index"] .cs-main > * {
+        position: relative;
+        z-index: 1;
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-k-sync/index"] h1 {
+        font-size: clamp(34px, 4.6vw, 54px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+        max-width: 22ch;
+      }
+      body[data-page="arc-k-sync/index"] .lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 64ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-k-sync/index"] .lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+
+      body[data-page="arc-k-sync/index"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      body[data-page="arc-k-sync/index"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 260px;
+      }
+      body[data-page="arc-k-sync/index"] figure.hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      body[data-page="arc-k-sync/index"] .cs-docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms,
+          box-shadow 160ms,
+          border-color 160ms;
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-card:hover,
+      body[data-page="arc-k-sync/index"] .cs-docs-card:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-card .step {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-card .title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--cs-fg);
+        margin: 2px 0;
+      }
+      body[data-page="arc-k-sync/index"] .cs-docs-card .hook {
+        font-size: 13.5px;
+        color: var(--cs-muted-fg);
+        line-height: 1.5;
+      }
+
+      body[data-page="arc-k-sync/index"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-k-sync/index"] ul {
+        max-width: 68ch;
+      }
+      body[data-page="arc-k-sync/index"] li {
+        margin: 8px 0;
+        line-height: 1.55;
+      }
+      body[data-page="arc-k-sync/index"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-k-sync/index"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-k-sync/index">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Arc K sync overview" id="hero">
+        <span class="cs-docs-eyebrow">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12a9 9 0 1 1-3.1-6.8L21 8" />
+            <path d="M21 3v5h-5" />
+          </svg>
+          Arc K · Sync &amp; agent-driven git
+        </span>
+
+        <h1>Your context repo moves. CodeSense never pushes, pulls or merges.</h1>
+        <p class="lede">
+          Every planning doc, agent, routine, story, and dashboard lives in your context repo — an
+          ordinary git tree you own. CodeSense <strong>reads and writes files</strong> there and reads
+          its git status and history; the
+          <strong>commit, push, pull and merge</strong> are done by an agent you ask, with the
+          same <code>git</code> and <code>gh</code> you use. One flow in, one flow out, one card
+          per conflict. No hidden
+          commits. No surprise pushes.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="CodeSense in the middle reads and writes files; an agent on the side runs the git against the context repo and the remote."
+          >
+            <title>Arc K — the agent-driven git loop</title>
+            <desc>
+              Center: CodeSense box (reads + writes files). Left: a context-repo folder with a
+              dashed sync edge to CodeSense. Right: a GitHub cloud with arrows labelled push + pull
+              going through an agent chip. Bottom-left: a worktree folder hydrated from the context
+              repo.
+            </desc>
+            <style>
+              .k-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .k-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .k-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .k-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .k-acc {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .k-dash {
+                stroke-dasharray: 4 4;
+              }
+              .k-flow {
+                stroke-dasharray: 160;
+                stroke-dashoffset: 160;
+                animation: kFlow 3.6s ease-in-out infinite;
+              }
+              .k-flow-b {
+                animation-delay: 1.2s;
+              }
+              @keyframes kFlow {
+                0%,
+                20% {
+                  stroke-dashoffset: 160;
+                }
+                70%,
+                100% {
+                  stroke-dashoffset: 0;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .k-flow,
+                .k-flow-b {
+                  animation: none;
+                  stroke-dashoffset: 0;
+                }
+              }
+            </style>
+
+            <defs>
+              <marker
+                id="k-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Center: CodeSense box -->
+            <g transform="translate(260 70)">
+              <rect class="k-surf" width="120" height="80" rx="10" />
+              <text class="k-txt" x="60" y="34" text-anchor="middle">CodeSense</text>
+              <text class="k-mut" x="60" y="54" text-anchor="middle">reads · writes</text>
+            </g>
+
+            <!-- Left: context repo folder -->
+            <g transform="translate(40 92)">
+              <path class="k-ins" d="M0 10 L22 10 L28 16 L130 16 L130 56 L0 56 Z" />
+              <text class="k-txt" x="12" y="34">context repo</text>
+              <text class="k-mut" x="12" y="48">a plain git tree</text>
+            </g>
+            <!-- edge: CodeSense ⇄ context repo (file I/O) -->
+            <path class="k-acc k-dash" d="M260 110 L170 110" marker-end="url(#k-arrow)" />
+            <path class="k-acc k-dash" d="M170 130 L260 130" marker-end="url(#k-arrow)" />
+            <text class="k-mut" x="215" y="104" text-anchor="middle">write</text>
+            <text class="k-mut" x="215" y="150" text-anchor="middle">read</text>
+
+            <!-- Right-top: agent chip -->
+            <g transform="translate(430 32)">
+              <rect class="k-surf" width="90" height="40" rx="8" />
+              <text class="k-txt" x="45" y="25" text-anchor="middle">agent</text>
+            </g>
+            <!-- edge: agent → context repo (git ops) -->
+            <path class="k-acc k-flow" d="M475 72 L475 92 L440 92" marker-end="url(#k-arrow)" />
+            <text class="k-mut" x="505" y="88">push · pull</text>
+
+            <!-- Right: GitHub cloud -->
+            <g transform="translate(550 90)">
+              <ellipse class="k-ins" cx="40" cy="35" rx="48" ry="26" />
+              <text class="k-mut" x="40" y="39" text-anchor="middle">remote</text>
+            </g>
+            <path class="k-acc k-flow k-flow-b" d="M520 60 L560 90" marker-end="url(#k-arrow)" />
+            <path class="k-acc k-flow k-flow-b" d="M560 125 L520 70" marker-end="url(#k-arrow)" />
+
+            <!-- Bottom: worktree hydrate -->
+            <g transform="translate(40 170)">
+              <path class="k-ins" d="M0 10 L22 10 L28 16 L130 16 L130 46 L0 46 Z" />
+              <text class="k-txt" x="12" y="34">worktree</text>
+            </g>
+            <path class="k-acc k-dash" d="M105 170 L170 150" marker-end="url(#k-arrow)" />
+            <text class="k-mut" x="100" y="196">hydrate selected docs</text>
+          </svg>
+          <figcaption id="hero-cap">
+            One center · agents do the git · nothing moves without a call
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="What this arc teaches" id="why">
+        <h2>What this arc teaches</h2>
+        <p style="max-width: 68ch">
+          CodeSense is a context editor, not a git client. It copies context into a worktree when an
+          agent starts there and when an agent asks, and nothing moves in between. The
+          <strong>sync direction</strong> you want determines which call you reach for, or what you ask an agent:
+        </p>
+        <ul>
+          <li>
+            <strong>Context → worktree</strong> (hydrate) — an agent gets what its definition declares
+            when it starts, and calls <code>hydrate_worktree</code> or <code>hydrate_story</code> for
+            more. You never run <code>git pull</code>.
+          </li>
+          <li>
+            <strong>Worktree → context</strong> (reverse-sync) — you edit a file in a worktree, then
+            an agent previews and publishes it with <code>reverse_sync_worktree</code>. You never run
+            <code>git add</code>.
+          </li>
+          <li>
+            <strong>Context ⇄ remote</strong> (push / pull) — you ask an agent to commit and push, or
+            to pull. It runs <code>git</code> and reports with <code>report_context_sync</code>. A
+            conflict opens a card per file: <strong>Use mine</strong>, <strong>Use theirs</strong>,
+            <strong>Keep both</strong>, <strong>Hand to ‹agent›</strong>, <strong>Compare</strong>.
+          </li>
+          <li>
+            <strong>Reorientation</strong> — the status button (<strong>⎇ branch | ↑N ↓M</strong>) is
+            the "where am I?" entry point. A click opens the Changes view.
+          </li>
+        </ul>
+        <p style="max-width: 68ch; margin-top: 12px">
+          Every direction has one call or request, one place in the app, one worked example. The pages below
+          walk each one in order; after that, search finds the one you want.
+        </p>
+      </section>
+
+      <section data-search="Pages in this arc" id="pages">
+        <h2>The pages</h2>
+        <div class="cs-docs-grid" role="list">
+          <a class="cs-docs-card" href="./agent-driven-git.html" role="listitem">
+            <span class="step">Model</span>
+            <span class="title">Agent-driven git</span>
+            <span class="hook"
+              >Why CodeSense never pushes or merges your context repo, and what runs the push / pull / merge
+              instead.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./hydration.html" role="listitem">
+            <span class="step">Direction · in</span>
+            <span class="title">Hydration</span>
+            <span class="hook"
+              >Context → worktree. At agent launch, and when an agent asks — only the files it
+              needs.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./reverse-sync.html" role="listitem">
+            <span class="step">Direction · out</span>
+            <span class="title">Reverse sync</span>
+            <span class="hook"
+              >Worktree → context. Preview, then publish a locally-edited file back to team
+              content.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./write-your-own-sync-skill.html" role="listitem">
+            <span class="step">Recipe</span>
+            <span class="title">Write your own sync skill</span>
+            <span class="hook"
+              >Wrap the hydrate and publish calls in a skill your agents run, starting from a short
+              example.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./when-to-sync.html" role="listitem">
+            <span class="step">Checklist</span>
+            <span class="title">When to sync</span>
+            <span class="hook"
+              >Concrete SDLC checkpoints with the exact call. The one you'll return to.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./conflicts.html" role="listitem">
+            <span class="step">Direction · fix</span>
+            <span class="title">Conflicts</span>
+            <span class="hook"
+              >One card per conflicted file. Pick a side, or hand it to an agent.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./publishing.html" role="listitem">
+            <span class="step">Direction · out</span>
+            <span class="title">Publishing</span>
+            <span class="hook"
+              >Team content → GitHub. The publish set, and the agent that pushes it.</span
+            >
+          </a>
+          <a class="cs-docs-card" href="./file-tools.html" role="listitem">
+            <span class="step">Tool reference</span>
+            <span class="title">Content file tools</span>
+            <span class="hook">Create, read, move, delete, list and search content files.</span>
+          </a>
+          <a class="cs-docs-card" href="./moving-between-contexts.html" role="listitem">
+            <span class="step">Tool reference</span>
+            <span class="title">Moving between contexts</span>
+            <span class="hook">Copy, move, route and remove content; context operations and sync state.</span>
+          </a>
+          <a class="cs-docs-card" href="./layer-tools.html" role="listitem">
+            <span class="step">Tool reference</span>
+            <span class="title">Legacy sense_sync tools</span>
+            <span class="hook">The five retired sense_sync tools and what replaces them.</span>
+          </a>
+        </div>
+      </section>
+
+      <section data-search="Skills this arc leans on" id="skills">
+        <h2>What this arc leans on</h2>
+        <ul>
+          <li>
+            <strong>Your own sync skill</strong> — wraps <code>hydrate_worktree</code>,
+            <code>preview_reverse_sync_worktree</code> and <code>reverse_sync_worktree</code>.
+            CodeSense ships an example, not an installed skill. See
+            <a href="./write-your-own-sync-skill.html">write your own sync skill</a>.
+          </li>
+          <li>
+            <strong><code>context_repo_status</code></strong> — branch, ahead/behind and conflicts,
+            the same state the status button shows. Read-only.
+          </li>
+          <li>
+            <strong><code>get_publish_set</code></strong> — what GitHub doesn't have yet. See
+            <a href="./publishing.html">publishing</a>.
+          </li>
+          <li>
+            <strong><code>report_context_sync</code></strong> — the agent doing the git tells the
+            status button how it went. See <a href="./conflicts.html">conflicts</a>.
+          </li>
+        </ul>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/get_publish_set">get_publish_set</a>
+        ·
+        <a href="../mcp-explorer.html#tool/reverse_sync_worktree">reverse_sync_worktree</a>
+        ·
+        <a href="../schema-browser.html">schema browser</a>
+        ·
+        <a href="../README.html">back to home</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc K · Sync</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

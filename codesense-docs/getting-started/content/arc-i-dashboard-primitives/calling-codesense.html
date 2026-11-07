@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="plug" />
+    <title>CodeSense — Calling CodeSense</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/calling-codesense">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Calling codesense invoke allowlist bridge" id="hero">
+        <span class="cs-docs-eyebrow">Arc I · Bridge</span>
+        <h1>One call. A promise. A clear error.</h1>
+        <p class="lede">
+          Every action a dashboard performs — read the inbox, open a workspace, send a message,
+          start a routine — goes through one function:
+          <code>window.codesense.invoke(verb, args)</code>. It returns a <code>Promise</code>.
+          It resolves with the result shape documented in the explorer, or rejects with an error whose message you can match on. Most named methods
+          you'll meet (<code>codesense.openFile</code>, <code>codesense.inbox</code>,
+          <code>codesense.worktrees</code>) are thin wrappers over <code>invoke</code>.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 220"
+            role="img"
+            aria-label="One call out from the doc frame, correlated reply back. Two labelled lanes mark read verbs and write verbs."
+          >
+            <title>Calling CodeSense — invoke round-trip</title>
+
+            <defs>
+              <marker id="ci-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent, #7aa2ff)" />
+              </marker>
+            </defs>
+
+            <!-- Doc frame -->
+            <g transform="translate(30 60)">
+              <rect class="i-surf" width="130" height="100" rx="8" />
+              <text class="i-txt" x="65" y="34" text-anchor="middle">your doc</text>
+              <text class="i-mut" x="65" y="54" text-anchor="middle">codesense.invoke</text>
+              <text class="i-mut" x="65" y="70" text-anchor="middle">(verb, args)</text>
+            </g>
+
+            <!-- Bridge box -->
+            <g transform="translate(260 60)">
+              <rect class="i-ins" width="130" height="100" rx="8" />
+              <text class="i-txt" x="65" y="34" text-anchor="middle">bridge</text>
+              <text class="i-mut" x="65" y="54" text-anchor="middle">allowlist</text>
+              <text class="i-mut" x="65" y="70" text-anchor="middle">allowlist · audit</text>
+            </g>
+
+            <!-- Host box -->
+            <g transform="translate(490 60)">
+              <rect class="i-surf" width="130" height="100" rx="8" />
+              <text class="i-txt" x="65" y="34" text-anchor="middle">host</text>
+              <text class="i-mut" x="65" y="54" text-anchor="middle">tauri command</text>
+            </g>
+
+            <!-- Edges -->
+            <path class="i-acc" d="M160 90 L260 90" marker-end="url(#ci-arrow)" />
+            <text class="i-mut" x="210" y="80" text-anchor="middle">invoke</text>
+            <path class="i-acc" d="M390 90 L490 90" marker-end="url(#ci-arrow)" />
+            <text class="i-mut" x="440" y="80" text-anchor="middle">dispatch</text>
+
+            <path class="i-acc" d="M490 130 L390 130" marker-end="url(#ci-arrow)" />
+            <text class="i-mut" x="440" y="146" text-anchor="middle">result · err</text>
+            <path class="i-acc" d="M260 130 L160 130" marker-end="url(#ci-arrow)" />
+            <text class="i-mut" x="210" y="146" text-anchor="middle">resolve · reject</text>
+          </svg>
+          <figcaption id="hero-cap">
+            doc · bridge · host · bridge · doc — one correlated round-trip
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== The core call =============== -->
+      <section data-search="The core invoke call signature promise" id="core">
+        <h2>The core call</h2>
+        <p>
+          <code>invoke(verb, args)</code> takes a verb name (a string) and an args object. The
+          promise resolves with whatever the verb returns. A failure rejects with a plain
+          <code>Error</code> whose <code>message</code> starts with a stable prefix you can
+          branch on:
+        </p>
+        <pre><code>try {
+  const here = await codesense.invoke("context", {});
+  render(here); // { org, team, layer, contentRoot }, or null outside every content root
+} catch (err) {
+  // err.message starts with one of:
+  //   '… is not allowlisted'  — the verb isn't a bridge verb
+  //   'denied: write budget'  — too many writes in a short window (also send, spawn, prefs)
+  //   'busy'                  — too many agent launches already running
+  //   'unavailable: …'        — the backend for this verb is down
+  // or it is the app's own refusal, word for word.
+  if (err.message.endsWith("is not allowlisted")) showFallback();
+  else throw err;
+}</code></pre>
+        <p>
+          The <a href="../primitives-explorer.html#invoke">invoke tab of the explorer</a> lists
+          every verb with its arguments.
+        </p>
+      </section>
+
+      <!-- =============== The allowlist =============== -->
+      <section data-search="The verb allowlist read write categories" id="allowlist">
+        <h2>The allowlist contract</h2>
+        <p>
+          <code>invoke</code> accepts only the page-bridge verbs. Anything else is refused
+          before it reaches the app — there is no route to a raw command. MCP tool names such
+          as <code>list_orgs_teams</code> are for agents, not pages; a page that calls one gets
+          <code>… is not allowlisted</code>.
+        </p>
+        <p>
+          Each verb needs a capability grant (for example <code>inbox:write</code>); a call
+          without it is refused with <code>denied: grant</code>. By default an allowlisted verb
+          with its grant runs without a confirm sheet. The team-safe preset and per-dashboard
+          settings add confirm sheets for destructive or send-as-you verbs, and
+          <code>loadMedia</code> always asks. The classes below decide which calls are logged and
+          which runaway limit applies. Writes are confined by the app itself — a page can only edit
+          content CodeSense manages, so a write into the read-only docs org is refused.
+        </p>
+        <p>
+          <code>files.delete</code> and <code>files.move</code> are allowed by default: a page
+          that holds the grant can delete or move team content files without a confirm sheet.
+          Dashboards are your own files and run with the app's page APIs, so open only dashboards
+          you trust (see <a href="https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents">How CodeSense trusts agents</a>). Both verbs are confirmable, so
+          a per-dashboard setting can make each call wait for the person. If they decline, nothing
+          is deleted or moved, and the page's promise resolves with
+          <code>{status: "cancelled"}</code> rather than rejecting. After an approval it resolves
+          with <code>{status: "confirmed", result: ...}</code>.
+        </p>
+        <p>
+          To set it, edit
+          <code>app-state.json</code> in the app's data directory
+          (<code>~/Library/Application Support/ai.codesense/app-state.json</code> for the macOS
+          app) and add the verbs under your profile's
+          <code>dashboardPolicy.perDashboard</code>, keyed by the dashboard's exact identity.
+          The profile section is <code>localProfileWorkspacesV1</code> keyed by your local
+          principal, the same numeric user id the app shows for your account. Change only
+          these fields and keep everything else in the file, including other profiles. The
+          app watches the file, and the policy is read on every dispatch, so the next
+          <code>files.delete</code> or <code>files.move</code> call uses the new setting; see
+          <a href="reacting-to-state.html#live-configuration">Configuration is live too</a>.
+        </p>
+        <p>
+          The key is not the dashboard's title. For an ordinary dashboard document it is the
+          file's absolute path, with no <code>doc:</code> prefix. For a pane it is the pane's
+          key, such as <code>dashboard:team:&lt;org&gt;:&lt;team&gt;/&lt;id&gt;</code> or
+          <code>dashboard:built-in:&lt;org&gt;/files-tree</code>. A setting only affects the
+          dashboard it is keyed to.
+        </p>
+        <pre><code>{
+  "localProfileWorkspacesV1": {
+    "&lt;account-id&gt;": {
+      "dashboardPolicy": {
+        "perDashboard": {
+          "/Users/me/work/acme-context/eng/content/dashboards/board.html": {
+            "files.delete": "prompt",
+            "files.move": "prompt"
+          },
+          "dashboard:team:acme:eng/triage": {
+            "files.delete": "prompt"
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+
+        <h3>Verb classes</h3>
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Logged?</th>
+              <th>Limit</th>
+              <th>Examples</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Read</td>
+              <td class="no">no</td>
+              <td class="no">none</td>
+              <td><code>context</code>, <code>queryContext</code>, <code>worktrees</code>,
+                  <code>inbox</code>, <code>sessionUsage</code></td>
+            </tr>
+            <tr>
+              <td>Metadata write</td>
+              <td class="yes">yes</td>
+              <td class="yes">write budget</td>
+              <td><code>setStatus</code>, <code>setField</code>, <code>markRead</code>,
+                  <code>react</code>, <code>loadMedia</code></td>
+            </tr>
+            <tr>
+              <td>Spawn</td>
+              <td class="yes">yes</td>
+              <td class="yes">launch cap</td>
+              <td><code>openWorkspace</code>, <code>runPrompt</code>, <code>runSkill</code>,
+                  <code>openFile</code></td>
+            </tr>
+            <tr>
+              <td>Send</td>
+              <td class="yes">yes</td>
+              <td class="yes">send budget</td>
+              <td><code>sendToSession</code>, <code>postMessage</code>,
+                  <code>replyAsHuman</code></td>
+            </tr>
+            <tr>
+              <td>Management</td>
+              <td class="yes">yes</td>
+              <td class="no">none</td>
+              <td><code>closeWorkspace</code>, <code>stopSession</code>,
+                  <code>routineCancel</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <code>codesense.loadMedia({messageId})</code> fetches one inbox image only after the user asks
+          to see it. It works in an Inbox pane: the built-in one, or a custom Inbox fork that
+          keeps the <code>human-inbox</code> surface. Ordinary pages and message frames are
+          refused with <code>denied: loadMedia requires the Inbox pane</code>, even with
+          <code>inbox:write</code>. In an Inbox pane it needs the <code>inbox:write</code> grant
+          and asks the user to confirm.
+        </p>
+      </section>
+
+      <!-- =============== Pattern — the three canonical shapes =============== -->
+      <section data-search="Pattern invoke read write subscribe" id="patterns">
+        <h2>Three canonical patterns</h2>
+        <ol class="steps">
+          <li>
+            <h3>Read something and render it</h3>
+            <p>
+              The simplest shape. Read once, render, done. Keep page-load calls to read verbs;
+              anything that writes or launches belongs behind a button.
+            </p>
+            <pre><code>codesense.worktrees().then((wts) =&gt; {
+  for (const wt of wts) renderRow(wt);
+});</code></pre>
+          </li>
+          <li>
+            <h3>Act on a click</h3>
+            <p>
+              A write or a launch runs as soon as you call it, so put it behind a button the
+              person clicks:
+            </p>
+            <pre><code>&lt;button id="go"&gt;Open DEMO-12&lt;/button&gt;
+&lt;script&gt;
+  document.getElementById("go").addEventListener("click", () =&gt;
+    codesense.invoke("openWorkspace", { storyId: "DEMO-12" }),
+  );
+&lt;/script&gt;</code></pre>
+          </li>
+          <li>
+            <h3>Subscribe and re-read</h3>
+            <p>
+              Live dashboards wrap the read in a function and let a nudge event trigger it. See
+              <a href="./reacting-to-state.html">reacting to state</a> for the full pattern —
+              the short version:
+            </p>
+            <pre><code>function reload() {
+  codesense.inbox().then(render);
+}
+reload();
+codesense.onInboxChanged(reload);</code></pre>
+          </li>
+        </ol>
+      </section>
+
+      <!-- =============== Older apps =============== -->
+      <section data-search="older app version feature check guard typeof optional call onTeardown kit" id="older-apps">
+        <h2>Write for older apps too</h2>
+        <p>
+          A team's panes and dashboards reach every teammate, including people whose app has not
+          updated yet. A page that uses a member their app lacks stops with a
+          <code>TypeError</code> before it finishes loading.
+        </p>
+        <p>
+          Before you use a member the oldest supported app lacks, check that it exists. Calling it,
+          reading through it, reading it into a variable and destructuring it are all uses. Any of
+          these checks works:
+        </p>
+        <pre><code>codesense.onTeardown?.(stop);
+
+if (typeof codesense.onFlush === "function") codesense.onFlush(save);
+
+async function load() {
+  if (!codesense.subscribe) return showNotice("Update CodeSense to see this list.");
+  render(await codesense.subscribe("sessions", { onChange: render }));
+}
+
+const kit = codesense.kit;
+const list = typeof kit.virtualList === "function" ? kit.virtualList({ container, rows, render }) : null;
+list?.setRows(rows);</code></pre>
+        <p>
+          The check must sit at the use: in the same condition, an earlier <code>return</code> in
+          the same block, or a <code>const</code> that holds the test. A check made elsewhere does
+          not count. The release check follows <code>codesense</code> through variables and
+          function parameters; a parameter named <code>cs</code>, <code>codesense</code> or
+          <code>kit</code> is treated as the API or its kit even when the caller is not visible. When
+          a feature is missing, say so on the page (for example "This view needs a newer
+          CodeSense") rather than leaving it empty. With a check, an older app shows the page
+          without that feature, and a current app works as before.
+        </p>
+        <!-- api-skew:surface start (generated by node scripts/check-api-skew.mjs --docs) -->
+        <p>
+          The oldest supported app is CodeSense 0.0.25. Every supported app has these
+          members, so they need no check: <code>act</code>, <code>agent</code>, <code>agents</code>, <code>context</code>, <code>firstPaint</code>, <code>getNavSelection</code>, <code>humanStatus</code>, <code>inbox</code>, <code>invoke</code>, <code>kit</code>, <code>machines</code>, <code>modelRates</code>, <code>onAgentsChanged</code>, <code>onInboxChanged</code>, <code>onMachinesChanged</code>, <code>onNavSelectionChange</code>, <code>onRoutineResult</code>, <code>onRoutinesChanged</code>, <code>onSessions</code>, <code>onTheme</code>, <code>onVisibility</code>, <code>onWorktreesChanged</code>, <code>openFile</code>, <code>prefs</code>, <code>queryContext</code>, <code>readWorkspace</code>, <code>roles</code>, <code>routine</code>, <code>routineCancel</code>, <code>routineRefresh</code>, <code>routineResult</code>, <code>routineRun</code>, <code>routineRuns</code>, <code>routineStatus</code>, <code>routines</code>, <code>run</code>, <code>runEvidence</code>, <code>runWorkProduct</code>, <code>runs</code>, <code>sessionUsage</code>, <code>sessions</code>, <code>setBadge</code>, <code>setField</code>, <code>setPrefs</code>, <code>snapshot</code>, <code>sprints</code>, <code>subscribeContext</code>, <code>taxonomy</code>, <code>theme</code>, <code>updates</code>, <code>version</code>, <code>worktrees</code>.
+        </p>
+        <p>Nested members (the kit) every supported app has: <code>kit.agentState</code>, <code>kit.agentStates</code>, <code>kit.avatar</code>, <code>kit.call</code>, <code>kit.dagSvg</code>, <code>kit.dagView</code>, <code>kit.edgePath</code>, <code>kit.empty</code>, <code>kit.h</code>, <code>kit.has</code>, <code>kit.icon</code>, <code>kit.iconMarkup</code>, <code>kit.iconNames</code>, <code>kit.keyed</code>, <code>kit.layoutDag</code>, <code>kit.live</code>, <code>kit.notice</code>, <code>kit.on</code>, <code>kit.phase</code>, <code>kit.phaseBadge</code>, <code>kit.phases</code>, <code>kit.s</code>, <code>kit.skeleton</code>, <code>kit.statusBadge</code>, <code>kit.statusDot</code>, <code>kit.storyBadge</code>, <code>kit.storyStatus</code>, <code>kit.storyStatuses</code>, <code>kit.timeAgo</code>, <code>kit.version</code>.</p>
+        <!-- api-skew:surface end -->
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section id="kit-nav-helpers">
+        <h2>Kit helpers for file-nav panes</h2>
+        <p>Panes that replace the file list reuse the app's own rules instead of copying them:
+          <code>kit.fileKindOf(path)</code> names a file's kind for <code>kit.fileKindIcon</code>;
+          <code>kit.stripViewerExtension(name)</code> and <code>kit.stripPipelineExtension(name)</code>
+          drop the extensions the nav hides; <code>kit.inLens(lens, story)</code> and
+          <code>kit.countLenses(stories)</code> decide and count lens membership;
+          <code>kit.stageGroupOf(story)</code> gives the by-stage group; and
+          <code>kit.compareNavNames(a, b)</code> is the nav's name order, for
+          <code>Array.sort</code>. See <a href="./pane-shapes.html#file-nav">File navigation panes</a>
+          for a worked example.</p>
+      </section>
+      <section data-search="Try this now bridge invoke context" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Click the button to call <code>context</code> from this page: the org, team and
+          folder this page lives in. Read-only.
+        </p>
+        <cs-try-this
+          verb="context"
+          args="{}"
+          label="Call context()"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How via MCP equivalent invoke" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details class="mcp">
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p>
+            Pages and agents reach the same app through different doors. A page calls bridge
+            verbs; an agent calls MCP tools. Many read verbs have an MCP twin:
+          </p>
+          <pre><code># Page
+await codesense.invoke("worktrees", {});
+
+# Agent (MCP tool)
+list_worktrees {}</code></pre>
+          <p>
+            Browse the pairing in
+            <a href="../ui-mcp-crossref.html">ui-mcp-crossref</a>.
+          </p>
+        </details>
+      </section>
+
+      <!-- =============== Reference =============== -->
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../primitives-explorer.html#kit/codesense.invoke">codesense.invoke</a>
+        ·
+        <a href="../primitives-explorer.html#invoke">every verb</a>
+        ·
+        <a href="../ui-mcp-crossref.html">ui-mcp-crossref</a>
+        ·
+        <a href="./index.html">arc I index</a>
+      </p>
+      <section id="spend-caps" data-search="spend caps budgetUsd pending native acceptance setModelRate">
+        <h2>Spend caps require a person to loosen</h2>
+        <p>Agent and routine reads include <code>budgetUsd</code>, <code>budgetPending</code> and
+          <code>spend</code>. An edit through MCP or an embedded page can tighten a cap immediately;
+          raising or removing it only saves a pending request. The native app's Spend cap controls
+          are the acceptance surface. Pages cannot invoke the native set or accept commands.</p>
+        <p>This enforcement covers CodeSense surfaces. Agents run as you; give an agent you don't
+          fully trust sandboxed permissions. See the <a href="../arc-e-agents/spend-caps.html#authority">Architecture boundary</a>
+          and <a href="https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents">How CodeSense trusts agents</a>.</p>
+        <p><code>setModelRate</code> changes that lower counted spend, including pricing an unpriced model,
+          also stay pending until native acceptance. Raising rates applies immediately.
+          See <a href="../arc-e-agents/spend-caps.html">Spend caps</a>.</p>
+      </section>
+          <!--tool-reference-->
+      <section id="tool-reference" data-search="Tool reference">
+        <h2>Tool reference</h2>
+        <p>Reference for MCP tools that act on the app's panes: commands, rendered documents, canvases and workspace card order. The page verb <code>codesense.commands.list()</code> returns the same rows as <code>command_list</code>, and <code>codesense.commands.run(id, args)</code> does what <code>command_run</code> does.</p>
+        <p id="commands"><strong>Commands</strong></p>
+        <h3 id="tool-command_list"><code>command_list</code></h3>
+        <p>Lists the commands the slot dashboards (right-pane, dock and file-nav) declare that you may run: <code>[{id, label, scope, binding, dashboard, active, humanOnly}]</code>. <code>id</code> is what <code>command_run</code> takes. <code>scope</code> is where the person's chord fires and does not limit <code>command_run</code>. <code>active</code> is false while the dashboard has narrowed its commands with <code>codesense.commands.register</code>; an inactive command cannot run. A dashboard whose policy grant lacks <code>commands:run</code> is left out.</p>
+        <pre data-tool-example="command_list"><code>{
+  &quot;tool&quot;: &quot;command_list&quot;,
+  &quot;arguments&quot;: {}
+}</code></pre>
+        <h3 id="tool-command_run"><code>command_run</code></h3>
+        <p>Runs a slot dashboard's command by <code>id</code> from <code>command_list</code>, with optional <code>args</code> for the page. The app reveals the dashboard's slot if it is closed and delivers the command once, after the page is ready, as the person's chord does. Returns <code>{requested:true}</code> once dispatched; the page acts on its own. Refused with <code>denied: grant</code> when the dashboard's policy grant lacks <code>commands:run</code>, <code>denied: ... is for humans only</code> for a <code>humanOnly</code> command, <code>unavailable:</code> for an inactive one, and <code>unknown command</code> for an id <code>command_list</code> does not list.</p>
+        <pre data-tool-example="command_run"><code>{
+  &quot;tool&quot;: &quot;command_run&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from command_list&gt;&quot;,
+    &quot;args&quot;: {}
+  }
+}</code></pre>
+        <p id="documents"><strong>Rendered documents and canvases</strong></p>
+        <h3 id="tool-read_rendered_document"><code>read_rendered_document</code></h3>
+        <p>Reads an already-open HTML document or team/private pane's rendered DOM, without writing an archive or refreshing data. Select the document tab or show the pane in the main window first, and use the absolute <code>path</code> from <code>pane_list</code>; closed, hidden and fallback panes return actionable errors. <code>format</code> is <code>text</code> (default, readable text) or <code>html</code> (frozen serialized HTML with injected scripts removed). Returns <code>sourcePath</code>, <code>format</code>, <code>content</code>, <code>capturedAt</code> and <code>truncated</code> (512 KiB cap). It is point-in-time DOM content, not a screenshot, and it never opens documents, runs collection or changes schedules.</p>
+        <pre data-tool-example="read_rendered_document"><code>{
+  &quot;tool&quot;: &quot;read_rendered_document&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/dashboards/status.html&quot;,
+    &quot;format&quot;: &quot;text&quot;
+  }
+}</code></pre>
+        <h3 id="tool-apply_canvas"><code>apply_canvas</code></h3>
+        <p>Validates and atomically writes a shared Excalidraw canvas. <code>path</code> is a target <code>.excalidraw</code> file on the content rails, or under a registered source-repo attachment or worktree. <code>elements</code> are lightweight shapes <code>{type, x, y, width?, height?, text?, label?, points?, strokeColor?, backgroundColor?}</code> with <code>type</code> of <code>rectangle</code>, <code>ellipse</code>, <code>diamond</code>, <code>text</code>, <code>line</code> or <code>arrow</code>. It is a whole-scene apply: the elements you pass become the entire scene. Malformed input is rejected before any write. Returns <code>{writtenPath, elementCount}</code>.</p>
+        <pre data-tool-example="apply_canvas"><code>{
+  &quot;tool&quot;: &quot;apply_canvas&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/diagrams/flow.excalidraw&quot;,
+    &quot;elements&quot;: [
+      {
+        &quot;type&quot;: &quot;rectangle&quot;,
+        &quot;x&quot;: 0,
+        &quot;y&quot;: 0,
+        &quot;width&quot;: 200,
+        &quot;height&quot;: 80,
+        &quot;text&quot;: &quot;Start&quot;
+      }
+    ]
+  }
+}</code></pre>
+        <h3 id="tool-render_canvas"><code>render_canvas</code></h3>
+        <p>Renders an <code>.excalidraw</code> file's current on-disk scene to a PNG through the live app's exporter and returns the bytes inline as an MCP image block, plus a text block with <code>sourcePath</code>, <code>byteLen</code> and <code>mimeType</code>. No file is written. It needs the CodeSense app open, and returns an actionable error in headless runs. <code>path</code> is absolute, on the context-repo rails or a registered source-repo attachment or worktree. Use it to verify a canvas you just wrote with <code>apply_canvas</code>.</p>
+        <pre data-tool-example="render_canvas"><code>{
+  &quot;tool&quot;: &quot;render_canvas&quot;,
+  &quot;arguments&quot;: {
+    &quot;path&quot;: &quot;/abs/context/_team/engineering/content/diagrams/flow.excalidraw&quot;
+  }
+}</code></pre>
+        <p id="order"><strong>Workspace card order</strong></p>
+        <h3 id="tool-reorder_workspace"><code>reorder_workspace</code></h3>
+        <p>Reorders a workspace card in its team's shared display order, as card drag and the page <code>moveWorkspace</code> verb do. Pass <code>teamKey</code> (<code>org:team</code>), <code>workspaceId</code> and exactly one anchor workspace id: <code>before</code> or <code>after</code>. It changes display order only; <code>move_workspace</code> moves a workspace to another machine. Returns <code>{requested:true}</code> after dispatch to the desktop viewer; unknown ids and unchanged placements are no-ops.</p>
+        <pre data-tool-example="reorder_workspace"><code>{
+  &quot;tool&quot;: &quot;reorder_workspace&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;workspaceId&quot;: &quot;story:DEMO-13&quot;,
+    &quot;before&quot;: &quot;story:DEMO-12&quot;
+  }
+}</code></pre>
+      </section>
+      <!--/tool-reference-->
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc I · Calling CodeSense</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

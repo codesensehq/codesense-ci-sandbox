@@ -1,0 +1,1674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — training manual</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="codesense:icon" content="book-open" />
+
+    <!-- Shared chrome bundled with the docs org. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+
+    <!-- Opt in to full theme awareness so --cs-* tokens + color-scheme land on
+       both panes and centre tabs. -->
+    <script>
+      window.__codesenseThemeAware = true;
+    </script>
+
+    <style>
+      /* -------------------------------------------------------------------------
+     * Home-page scoped styles (cs-docs-home-*). Lifting any of these up to the
+     * shared chrome is deferred until a second page needs them (the shared chrome keeps
+     * patterns that recur across arcs). Everything here honours the host
+     * tokens; nothing hard-codes a colour outside the fallback blocks.
+     * ----------------------------------------------------------------------- */
+
+      .cs-docs-home {
+        position: relative;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+
+      /* Decorative dotted lattice — strictly background, non-interactive. */
+      .cs-docs-home::before {
+        content: "";
+        position: fixed;
+        inset: var(--cs-docs-nav-height) 0 0 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in oklab, var(--cs-border) 55%, transparent) 1px,
+          transparent 1.4px
+        );
+        background-size: 48px 48px;
+        opacity: 0.28;
+        mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, black 0, black 55%, transparent 100%);
+      }
+      .cs-docs-home > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ------- Release ribbon ------- */
+      .cs-docs-home__ribbon {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-4);
+        padding: 10px var(--cs-docs-space-4);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        font-size: var(--cs-docs-text-sm);
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-home__ribbon-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--cs-success);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--cs-success) 25%, transparent);
+        flex: 0 0 auto;
+      }
+      .cs-docs-home__ribbon-text {
+        flex: 1;
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+      .cs-docs-home__ribbon-meta {
+        color: var(--cs-muted-fg);
+        font-weight: 400;
+        margin-left: 6px;
+      }
+
+      /* ------- Hero ------- */
+      .cs-docs-home__hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: var(--cs-docs-space-7);
+        align-items: center;
+        padding: var(--cs-docs-space-5) 0 var(--cs-docs-space-6);
+      }
+      @media (max-width: 900px) {
+        .cs-docs-home__hero {
+          grid-template-columns: 1fr;
+          gap: var(--cs-docs-space-5);
+        }
+      }
+      .cs-docs-home__title {
+        font-size: clamp(40px, 5.2vw, 68px);
+        line-height: 1.03;
+        letter-spacing: -0.035em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-4);
+        max-width: 22ch;
+        text-wrap: balance;
+      }
+      .cs-docs-home__title em {
+        font-style: normal;
+        color: var(--cs-accent);
+      }
+      .cs-docs-home__lede {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--cs-muted-fg);
+        max-width: 60ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      .cs-docs-home__lede strong {
+        color: var(--cs-fg);
+        font-weight: 500;
+      }
+
+      .cs-docs-home__ctas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cs-docs-space-3);
+        margin-bottom: var(--cs-docs-space-5);
+      }
+
+      /* Hero visual: inlined parallel-collapse anim + framing surface. */
+      .cs-docs-home__hero-visual {
+        position: relative;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .cs-docs-home__hero-visual svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 240px;
+      }
+      .cs-docs-home__hero-visual-cap {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-2);
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+
+      /* ------- Context toggle ------- */
+      .cs-docs-home__ctx {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3);
+        padding: 8px 12px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-full);
+        background: var(--cs-surface);
+        margin: 0 0 var(--cs-docs-space-4);
+      }
+      .cs-docs-home__ctx-label {
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-home__ctx-group {
+        display: inline-flex;
+        padding: 2px;
+        border-radius: var(--cs-docs-radius-full);
+        background: color-mix(in oklab, var(--cs-bg) 60%, transparent);
+        border: 1px solid var(--cs-border);
+      }
+      .cs-docs-home__ctx-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: var(--cs-docs-radius-full);
+        background: transparent;
+        color: var(--cs-muted-fg);
+        font: inherit;
+        font-size: var(--cs-docs-text-sm);
+        font-weight: 500;
+        border: 0;
+        cursor: pointer;
+        transition:
+          color 160ms ease-out,
+          background 160ms ease-out;
+      }
+      .cs-docs-home__ctx-btn[aria-pressed="true"] {
+        color: var(--cs-accent-fg);
+        background: var(--cs-accent);
+      }
+      .cs-docs-home__ctx-hint {
+        font-size: var(--cs-docs-text-xs);
+        color: var(--cs-faint-fg);
+      }
+      @media (max-width: 540px) {
+        .cs-docs-home__ctx {
+          flex-wrap: wrap;
+        }
+        .cs-docs-home__ctx-hint {
+          flex: 1 1 100%;
+        }
+      }
+
+      /* ------- Snippet strip (swaps on toggle) ------- */
+      .cs-docs-home__strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--cs-docs-space-3);
+        padding: var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: var(--cs-surface);
+        margin-bottom: var(--cs-docs-space-6);
+      }
+      @media (max-width: 820px) {
+        .cs-docs-home__strip {
+          grid-template-columns: 1fr;
+        }
+      }
+      .cs-docs-home__strip-cell {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-2);
+        padding: 14px;
+        border-radius: var(--cs-docs-radius);
+        background: color-mix(in oklab, var(--cs-bg) 70%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-border) 60%, transparent);
+      }
+      .cs-docs-home__strip-cap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      .cs-docs-home__strip-code {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre;
+        overflow-x: auto;
+        color: var(--cs-fg);
+        margin: 0;
+      }
+      .cs-docs-home__strip-code .tok-c {
+        color: var(--cs-muted-fg);
+      }
+      .cs-docs-home__strip-code .tok-k {
+        color: var(--cs-accent);
+      }
+      .cs-docs-home__strip-code .tok-s {
+        color: var(--cs-success);
+      }
+
+      /* CSS-only visibility: toggle driven by data-context on <body>. */
+      body[data-context="local"] .cs-example__remote,
+      body[data-context="remote"] .cs-example__local {
+        display: none;
+      }
+
+      /* ------- Search ------- */
+      .cs-docs-home__search {
+        display: flex;
+        align-items: center;
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-5);
+        padding: 14px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        cursor: text;
+        transition:
+          border-color 120ms ease-out,
+          background 120ms ease-out;
+      }
+      .cs-docs-home__search:focus-within {
+        border-color: var(--cs-accent);
+        background: color-mix(in oklab, var(--cs-accent) 5%, var(--cs-surface));
+      }
+      .cs-docs-home__search input {
+        flex: 1;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: var(--cs-fg);
+        font: inherit;
+        font-size: 16px;
+      }
+      .cs-docs-home__search input::placeholder {
+        color: var(--cs-muted-fg);
+      }
+
+      /* ------- Section heading ------- */
+      .cs-docs-home__section {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--cs-docs-space-4);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-4);
+      }
+      .cs-docs-home__section h2 {
+        font-size: var(--cs-docs-text-xl);
+        line-height: 1.2;
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .cs-docs-home__section-hint {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-md);
+      }
+
+      /* ------- Arc grid ------- */
+      .cs-docs-home__arcs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--cs-docs-space-3);
+      }
+      .cs-docs-home__arc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 18px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        color: inherit;
+        text-decoration: none;
+        transition:
+          transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: hidden;
+      }
+      .cs-docs-home__arc::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        background: var(--cs-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .cs-docs-home__arc:hover,
+      .cs-docs-home__arc:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: var(--cs-docs-shadow-md);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+        text-decoration: none;
+      }
+      .cs-docs-home__arc:hover::before,
+      .cs-docs-home__arc:focus-visible::before {
+        transform: scaleX(1);
+      }
+
+      .cs-docs-home__arc-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .cs-docs-home__arc-letter {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        flex: 0 0 auto;
+      }
+      .cs-docs-home__arc-icon {
+        color: var(--cs-muted-fg);
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: var(--cs-docs-radius-sm);
+        background: color-mix(in oklab, var(--cs-bg) 60%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-border) 70%, transparent);
+        transition:
+          color 160ms,
+          background 160ms,
+          border-color 160ms;
+      }
+      .cs-docs-home__arc-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .cs-docs-home__arc:hover .cs-docs-home__arc-icon,
+      .cs-docs-home__arc:focus-visible .cs-docs-home__arc-icon {
+        color: var(--cs-accent);
+        border-color: color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        background: color-mix(in oklab, var(--cs-accent) 10%, var(--cs-surface));
+      }
+      .cs-docs-home__arc-title {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        margin: 2px 0 0;
+        line-height: 1.25;
+      }
+      .cs-docs-home__arc-hook {
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-md);
+        line-height: 1.5;
+        margin: 0;
+      }
+      .cs-docs-home__arc-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      /* ------- Outro strip ------- */
+      .cs-docs-home__outro {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--cs-docs-space-5);
+        margin: var(--cs-docs-space-7) 0 0;
+        padding: var(--cs-docs-space-5);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 70%, transparent);
+      }
+      @media (max-width: 820px) {
+        .cs-docs-home__outro {
+          grid-template-columns: 1fr;
+        }
+      }
+      .cs-docs-home__outro-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cs-docs-home__outro-cell h3 {
+        font-size: var(--cs-docs-text-md);
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .cs-docs-home__outro-cell p {
+        font-size: var(--cs-docs-text-sm);
+        line-height: 1.5;
+        color: var(--cs-muted-fg);
+        margin: 0;
+      }
+      .cs-docs-home__outro-cell a {
+        color: var(--cs-accent);
+        font-weight: 500;
+      }
+      .cs-docs-home__outro-cell svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ------- Entry wave ------- */
+      @media (prefers-reduced-motion: no-preference) {
+        .cs-docs-home .cs-docs-reveal {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        .cs-docs-home .cs-docs-reveal.is-in {
+          opacity: 1;
+          transform: none;
+          transition:
+            opacity 500ms cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .cs-docs-home__title {
+          font-size: 38px;
+        }
+        .cs-docs-home__section {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
+        }
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="home" data-context="local">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-docs-home">
+      <!-- =============== Release ribbon =============== -->
+      <div class="cs-docs-home__ribbon" role="status" aria-live="polite">
+        <span class="cs-docs-home__ribbon-dot" aria-hidden="true"></span>
+        <span class="cs-docs-home__ribbon-text">
+          CodeSense docs
+          <span class="cs-docs-home__ribbon-meta">
+            v<span data-cs-version>&mdash;</span> · updated
+            <span data-cs-version-when>recently</span>
+          </span>
+        </span>
+        <button
+          type="button"
+          class="cs-docs-btn cs-docs-btn--quiet cs-docs-btn--sm"
+          data-action="update-docs"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="cs-docs-spin-target"
+          >
+            <path d="M3 12a9 9 0 0 1 15.5-6.4L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-15.5 6.4L3 16" />
+            <path d="M3 21v-5h5" />
+          </svg>
+          <span class="cs-docs-home__ribbon-btn-label">Update CodeSense docs</span>
+        </button>
+      </div>
+
+      <!-- =============== Hero =============== -->
+      <section class="cs-docs-home__hero">
+        <div class="cs-docs-home__hero-copy">
+          <h1 class="cs-docs-home__title cs-docs-reveal">
+            Teach your agents to run your <em>software factory</em>.
+          </h1>
+          <p class="cs-docs-home__lede cs-docs-reveal">
+            <strong>CodeSense</strong> is the context layer and execution surface for agent-driven
+            engineering teams. Fourteen arcs below walk you from first launch to many agents working
+            in parallel on this Mac and on machines you reach over SSH — then show how every step is reproducible via MCP,
+            with no UI required.
+          </p>
+          <div class="cs-docs-home__ctas cs-docs-reveal">
+            <a href="./tour.html" class="cs-docs-btn cs-docs-btn--primary" data-action="open-tour">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg>
+              Take the 60-second tour
+            </a>
+            <a
+              href="./factory-playbook.html"
+              class="cs-docs-btn cs-docs-btn--ghost"
+              data-action="open-playbook"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+                <path d="M10 6.5h4" />
+                <path d="M17 10v4" />
+                <path d="M3 17h7" />
+              </svg>
+              Open the Factory Playbook
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero visual: inlined parallel-collapse animation. SVG uses --cs-* on
+           the host via CSS vars; styles live inside the SVG so <img> would lose
+           them. Reduced-motion is honoured by the SVG itself. -->
+        <figure class="cs-docs-home__hero-visual cs-docs-reveal" aria-labelledby="hero-visual-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 320 220"
+            role="img"
+            aria-label="Five parallel agents converge into one shipped change"
+          >
+            <title>Parallel collapse</title>
+            <desc>
+              Five horizontal lanes on the left (one per worker) converge toward a single ship lane
+              on the right.
+            </desc>
+            <style>
+              .lane {
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1.5;
+                fill: none;
+              }
+              .lane-anim {
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 2;
+                fill: none;
+                stroke-dasharray: 240;
+                stroke-dashoffset: 240;
+                animation: cs-home-draw 3s ease-out infinite;
+              }
+              .dot {
+                fill: var(--cs-accent, #7aa2ff);
+                animation: cs-home-pulse 3s ease-in-out infinite;
+              }
+              .text {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  9px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .ship {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1.5;
+              }
+              .ship-text {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+                text-anchor: middle;
+              }
+              @keyframes cs-home-draw {
+                to {
+                  stroke-dashoffset: 0;
+                }
+              }
+              @keyframes cs-home-pulse {
+                0%,
+                70% {
+                  r: 4;
+                  opacity: 1;
+                }
+                85% {
+                  r: 7;
+                  opacity: 0.8;
+                }
+                100% {
+                  r: 4;
+                  opacity: 1;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .lane-anim {
+                  animation: none;
+                  stroke-dashoffset: 0;
+                }
+                .dot {
+                  animation: none;
+                }
+              }
+            </style>
+            <text class="text" x="20" y="34">builder-1</text>
+            <text class="text" x="20" y="74">builder-2</text>
+            <text class="text" x="20" y="114">builder-3</text>
+            <text class="text" x="20" y="154">builder-4</text>
+            <text class="text" x="20" y="194">builder-5</text>
+            <path class="lane" d="M70 30 L160 30 Q210 30 220 110 L240 110" />
+            <path class="lane" d="M70 70 L170 70 Q215 70 220 110 L240 110" />
+            <path class="lane" d="M70 110 L240 110" />
+            <path class="lane" d="M70 150 L170 150 Q215 150 220 110 L240 110" />
+            <path class="lane" d="M70 190 L160 190 Q210 190 220 110 L240 110" />
+            <path class="lane-anim" d="M70 30 L160 30 Q210 30 220 110 L240 110" />
+            <path
+              class="lane-anim"
+              d="M70 70 L170 70 Q215 70 220 110 L240 110"
+              style="animation-delay: 0.1s"
+            />
+            <path class="lane-anim" d="M70 110 L240 110" style="animation-delay: 0.2s" />
+            <path
+              class="lane-anim"
+              d="M70 150 L170 150 Q215 150 220 110 L240 110"
+              style="animation-delay: 0.3s"
+            />
+            <path
+              class="lane-anim"
+              d="M70 190 L160 190 Q210 190 220 110 L240 110"
+              style="animation-delay: 0.4s"
+            />
+            <g>
+              <rect class="ship" x="240" y="90" width="70" height="40" rx="8" />
+              <text class="ship-text" x="275" y="115">ship</text>
+              <circle class="dot" cx="275" cy="110" r="4" />
+            </g>
+          </svg>
+          <figcaption id="hero-visual-cap" class="cs-docs-home__hero-visual-cap">
+            Many agents · one coherent crank-turn
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== Context toggle =============== -->
+      <div class="cs-docs-home__ctx cs-docs-reveal" role="group" aria-label="Reading context">
+        <span class="cs-docs-home__ctx-label">You are reading as</span>
+        <div class="cs-docs-home__ctx-group" data-cs-ctx>
+          <button type="button" class="cs-docs-home__ctx-btn" data-ctx="local" aria-pressed="true">
+            Local
+          </button>
+          <button
+            type="button"
+            class="cs-docs-home__ctx-btn"
+            data-ctx="remote"
+            aria-pressed="false"
+          >
+            Remote
+          </button>
+        </div>
+        <span class="cs-docs-home__ctx-hint">Examples below re-anchor instantly.</span>
+      </div>
+
+      <!-- =============== Snippet strip =============== -->
+      <div class="cs-docs-home__strip cs-docs-reveal" aria-label="Example snippets">
+        <div class="cs-docs-home__strip-cell">
+          <div class="cs-docs-home__strip-cap">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>Open a story</span>
+          </div>
+          <pre
+            class="cs-docs-home__strip-code"
+          ><code><span class="cs-example__local"><span class="tok-c">// its worktree, on this Mac</span>
+open_workspace({ <span class="tok-k">story_id</span>: <span class="tok-s">"LL-214"</span> })</span><span class="cs-example__remote"><span class="tok-c">// its worktree, on a machine over SSH</span>
+open_workspace({ <span class="tok-k">story_id</span>: <span class="tok-s">"LL-214"</span>,
+  <span class="tok-k">machine_id</span>: <span class="tok-s">"mac-2"</span> })</span></code></pre>
+        </div>
+
+        <div class="cs-docs-home__strip-cell">
+          <div class="cs-docs-home__strip-cap">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <circle cx="12" cy="5" r="2" />
+              <path d="M12 7v4" />
+              <line x1="8" y1="16" x2="8" y2="16" />
+              <line x1="16" y1="16" x2="16" y2="16" />
+            </svg>
+            <span>Run an agent</span>
+          </div>
+          <pre
+            class="cs-docs-home__strip-code"
+          ><code><span class="cs-example__local"><span class="tok-c">// a saved agent, on this Mac</span>
+open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"</span>,
+  <span class="tok-k">storyId</span>: <span class="tok-s">"LL-214"</span>, <span class="tok-k">agent</span>: <span class="tok-s">"builder"</span> })</span><span class="cs-example__remote"><span class="tok-c">// the same agent, on a machine</span>
+open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"</span>,
+  <span class="tok-k">storyId</span>: <span class="tok-s">"LL-214"</span>, <span class="tok-k">agent</span>: <span class="tok-s">"builder"</span>,
+  <span class="tok-k">machineId</span>: <span class="tok-s">"mac-2"</span> })</span></code></pre>
+        </div>
+
+        <div class="cs-docs-home__strip-cell">
+          <div class="cs-docs-home__strip-cap">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M10 13l-2 2 2 2" />
+              <path d="M14 13l2 2-2 2" />
+            </svg>
+            <span class="cs-example__local">agent.yaml</span>
+            <span class="cs-example__remote">routine.yml</span>
+          </div>
+          <pre
+            class="cs-docs-home__strip-code"
+          ><code><span class="cs-example__local"><span class="tok-k">id</span>: builder
+<span class="tok-k">runtime</span>: claude
+<span class="tok-k">startup</span>: [CLAUDE.md, .claude/skills/bmad-build/]</span><span class="cs-example__remote"><span class="tok-k">where</span>: {kind: team_workspace, machine: mac-2}
+<span class="tok-k">triggers</span>:
+  - <span class="tok-k">schedule</span>: {cron: <span class="tok-s">"0 8 * * 1-5"</span>}</span></code></pre>
+        </div>
+      </div>
+
+      <!-- =============== Search =============== -->
+      <label class="cs-docs-home__search" for="cs-docs-home-q">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="color: var(--cs-muted-fg)"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.5" y2="16.5" />
+        </svg>
+        <input
+          id="cs-docs-home-q"
+          type="search"
+          placeholder="Search every doc, tool, primitive, example…"
+          autocomplete="off"
+          data-cs-search
+        />
+        <span class="cs-docs-kbd" aria-hidden="true">&#8984;</span>
+        <span class="cs-docs-kbd" aria-hidden="true">K</span>
+      </label>
+
+      <!-- =============== Arcs =============== -->
+      <div class="cs-docs-home__section">
+        <h2>The fourteen arcs</h2>
+        <span class="cs-docs-home__section-hint">
+          Read A → N once. After that, search. Updating or removing the app:
+          <a href="./arc-n-reference/updates-and-uninstall.html">Updates, network calls and removing CodeSense</a>.
+        </span>
+      </div>
+
+      <div class="cs-docs-home__arcs" role="list">
+        <!-- A -->
+        <a
+          href="./arc-a-first-touch/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="A"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">A</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">First touch</h3>
+          <p class="cs-docs-home__arc-hook">
+            What happens between install and your first useful minute.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">the tour</span>
+            <span class="cs-docs-chip">identity</span>
+            <span class="cs-docs-chip">where files live</span>
+          </div>
+        </a>
+
+        <!-- B -->
+        <a
+          href="./arc-b-model/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="B"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">B</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">The model</h3>
+          <p class="cs-docs-home__arc-hook">
+            Orgs, teams, and layers — how CodeSense keeps shared truth and personal context apart.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">teams.yml</span>
+            <span class="cs-docs-chip">inheritance</span>
+            <span class="cs-docs-chip">All-orgs</span>
+            <span class="cs-docs-chip">layers</span>
+          </div>
+        </a>
+
+        <!-- C -->
+        <a
+          href="./arc-c-workspaces-and-worktrees/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="C"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">C</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="6" y1="3" x2="6" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Workspaces &amp; worktrees</h3>
+          <p class="cs-docs-home__arc-hook">
+            Prepared copies of your repos, created where the work needs them.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">worktree.yaml</span>
+            <span class="cs-docs-chip">parallel</span>
+            <span class="cs-docs-chip">hydration</span>
+            <span class="cs-docs-chip">selected docs</span>
+          </div>
+        </a>
+
+        <!-- D -->
+        <a
+          href="./arc-d-terminals-and-machines/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="D"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">D</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <polyline points="7 10 10 13 7 16" />
+                <line x1="13" y1="16" x2="17" y2="16" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Terminals &amp; machines</h3>
+          <p class="cs-docs-home__arc-hook">
+            Local, remote, same shape. Private-account SSH; sessions survive relaunch.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">SSH posture</span>
+            <span class="cs-docs-chip">remote-saved</span>
+            <span class="cs-docs-chip">add-user</span>
+            <span class="cs-docs-chip">resume</span>
+          </div>
+        </a>
+
+        <!-- E -->
+        <a
+          href="./arc-e-agents/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="E"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">E</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+                <circle cx="12" cy="5" r="2" />
+                <path d="M12 7v4" />
+                <line x1="8" y1="16" x2="8" y2="16" />
+                <line x1="16" y1="16" x2="16" y2="16" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Agents</h3>
+          <p class="cs-docs-home__arc-hook">Compose an agent for a job and ship it to your team.</p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">agent.yaml</span>
+            <span class="cs-docs-chip">skills</span>
+            <span class="cs-docs-chip">CLAUDE.md</span>
+            <span class="cs-docs-chip">context resolver</span>
+          </div>
+        </a>
+
+        <!-- F -->
+        <a
+          href="./arc-f-inboxes-and-triage/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="F"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">F</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+                <path
+                  d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"
+                />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Inboxes, triage, workers</h3>
+          <p class="cs-docs-home__arc-hook">
+            Message-driven work, from a one-shot queue to a full factory shape.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">threads</span>
+            <span class="cs-docs-chip">roles</span>
+            <span class="cs-docs-chip">reply contracts</span>
+            <span class="cs-docs-chip">inbox_idle</span>
+          </div>
+        </a>
+
+        <!-- G -->
+        <a
+          href="./arc-g-routines/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="G"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">G</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="17 1 21 5 17 9" />
+                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                <polyline points="7 23 3 19 7 15" />
+                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Routines</h3>
+          <p class="cs-docs-home__arc-hook">Every trigger shape and the schedules behind them.</p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">cron</span>
+            <span class="cs-docs-chip">each_mac</span>
+            <span class="cs-docs-chip">inbox_idle</span>
+            <span class="cs-docs-chip">owned storage</span>
+          </div>
+        </a>
+
+        <!-- H -->
+        <a
+          href="./arc-h-pipelines-and-sdlc/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="H"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">H</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="18" cy="18" r="3" />
+                <circle cx="6" cy="6" r="3" />
+                <path d="M13 6h3a2 2 0 0 1 2 2v7" />
+                <line x1="6" y1="9" x2="6" y2="21" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Pipelines &amp; full SDLC</h3>
+          <p class="cs-docs-home__arc-hook">
+            Story &rarr; sprint &rarr; ship, with the dependency graph that drives it.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">frontmatter</span>
+            <span class="cs-docs-chip">story graph</span>
+            <span class="cs-docs-chip">depends_on</span>
+            <span class="cs-docs-chip">statuses</span>
+          </div>
+        </a>
+
+        <!-- I -->
+        <a
+          href="./arc-i-dashboard-primitives/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="I"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">I</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Dashboards &amp; primitives</h3>
+          <p class="cs-docs-home__arc-hook">
+            The page SDK that turns an HTML file in your context into a live page.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">codesense.kit</span>
+            <span class="cs-docs-chip">cs-*</span>
+            <span class="cs-docs-chip">bridge</span>
+            <span class="cs-docs-chip">dark/light</span>
+          </div>
+        </a>
+
+        <!-- J -->
+        <a
+          href="./arc-j-mcp/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="J"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">J</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22v-5" />
+                <path d="M9 7V2" />
+                <path d="M15 7V2" />
+                <path d="M6 13V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4Z" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">MCP full reference</h3>
+          <p class="cs-docs-home__arc-hook">
+            Every tool the running binary exposes, with live schema.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <!-- The count is read from generated/mcp-tools.json when the page loads. -->
+            <span class="cs-docs-chip"
+              ><data-count id="mcp-tools">All</data-count> verbs</span
+            >
+            <span class="cs-docs-chip">live schema</span>
+            <span class="cs-docs-chip">Try it</span>
+            <span class="cs-docs-chip">discovery</span>
+          </div>
+        </a>
+
+        <!-- K -->
+        <a
+          href="./arc-k-sync/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="K"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">K</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="8 3 4 7 8 11" />
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <polyline points="16 21 20 17 16 13" />
+                <line x1="20" y1="17" x2="4" y2="17" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Sync &amp; agent-driven git</h3>
+          <p class="cs-docs-home__arc-hook">
+            How agents drive every git move, and how the context repo stays coherent.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">reverse sync</span>
+            <span class="cs-docs-chip">your sync skill</span>
+            <span class="cs-docs-chip">hydration</span>
+            <span class="cs-docs-chip">drift</span>
+          </div>
+        </a>
+
+        <!-- L -->
+        <a
+          href="./arc-l-factory/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="L"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">L</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 20h20V8l-6 4V8l-6 4V4H4a2 2 0 0 0-2 2z" />
+                <line x1="7" y1="20" x2="7" y2="16" />
+                <line x1="12" y1="20" x2="12" y2="16" />
+                <line x1="17" y1="20" x2="17" y2="16" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">The factory</h3>
+          <p class="cs-docs-home__arc-hook">
+            Many agents, many worktrees, many machines — one coherent crank-turn.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">Builder &times; N</span>
+            <span class="cs-docs-chip">Scout</span>
+            <span class="cs-docs-chip">Resolver</span>
+            <span class="cs-docs-chip">Reviewer</span>
+          </div>
+        </a>
+
+        <!-- M -->
+        <a
+          href="./ui-mcp-crossref.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="M"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">M</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">MCP can do everything</h3>
+          <p class="cs-docs-home__arc-hook">
+            The invariant made auditable. Every UI action paired with its tool.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <span class="cs-docs-chip">crossref</span>
+            <span class="cs-docs-chip">one-sided fail</span>
+            <span class="cs-docs-chip">agent-visible UI</span>
+          </div>
+        </a>
+
+        <!-- N -->
+        <a
+          href="./arc-n-reference/index.html"
+          class="cs-docs-home__arc cs-docs-reveal"
+          role="listitem"
+          data-arc="N"
+        >
+          <div class="cs-docs-home__arc-row">
+            <span class="cs-docs-home__arc-letter">N</span>
+            <span class="cs-docs-home__arc-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+            </span>
+          </div>
+          <h3 class="cs-docs-home__arc-title">Reference catalog</h3>
+          <p class="cs-docs-home__arc-hook">
+            Every YAML schema, every shortcut, every file extension CodeSense renders.
+          </p>
+          <div class="cs-docs-home__arc-chips">
+            <!-- Counts placeholder — resolved from generated/schemas.json +
+               shortcuts.json once the primitives generator ships. I-11 compliant. -->
+            <span class="cs-docs-chip"
+              ><data-count id="schemas">All</data-count> schemas</span
+            >
+            <span class="cs-docs-chip"
+              ><data-count id="shortcuts">All</data-count> shortcuts</span
+            >
+            <span class="cs-docs-chip">extensions</span>
+            <span class="cs-docs-chip">glossary</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- =============== Outro =============== -->
+      <section class="cs-docs-home__outro" aria-label="Three things to know about this docs org">
+        <div class="cs-docs-home__outro-cell">
+          <h3>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Read-only docs org
+          </h3>
+          <p>
+            These docs ship with CodeSense and update together. Want to edit? Create a new context
+            repo —
+            <a href="./arc-a-first-touch/create-a-context-repo.html">start from the CodeSense example</a>.
+          </p>
+        </div>
+
+        <div class="cs-docs-home__outro-cell">
+          <h3>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            HTML docs run trusted
+          </h3>
+          <p>
+            Every page here has the full
+            <code>window.codesense</code> bridge, dark/light theming, and the page SDK. See
+            <a href="./arc-i-dashboard-primitives/index.html">dashboards &amp; primitives</a>.
+          </p>
+        </div>
+
+        <div class="cs-docs-home__outro-cell">
+          <h3>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="8 3 4 7 8 11" />
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <polyline points="16 21 20 17 16 13" />
+              <line x1="20" y1="17" x2="4" y2="17" />
+            </svg>
+            UI = MCP
+          </h3>
+          <p>
+            Everything the UI does, MCP does — the invariant is auditable. See
+            <a href="./ui-mcp-crossref.html">the UI&harr;MCP crossref</a>.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="cs-footer"></footer>
+
+    <script>
+      // ---- Local <> Remote context toggle ------------------------------------
+      (function () {
+        var group = document.querySelector("[data-cs-ctx]");
+        if (!group) return;
+        group.addEventListener("click", function (ev) {
+          var btn = ev.target.closest("[data-ctx]");
+          if (!btn) return;
+          var ctx = btn.getAttribute("data-ctx");
+          document.body.setAttribute("data-context", ctx);
+          var all = group.querySelectorAll("[data-ctx]");
+          for (var i = 0; i < all.length; i += 1) {
+            all[i].setAttribute("aria-pressed", String(all[i] === btn));
+          }
+        });
+      })();
+
+      // ---- Entry wave --------------------------------------------------------
+      (function () {
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var els = document.querySelectorAll(".cs-docs-home .cs-docs-reveal");
+        if (reduce) {
+          els.forEach(function (el) {
+            el.classList.add("is-in");
+          });
+          return;
+        }
+        els.forEach(function (el, i) {
+          setTimeout(
+            function () {
+              el.classList.add("is-in");
+            },
+            40 + i * 24,
+          );
+        });
+      })();
+
+      // ---- Live counts: resolve <data-count id="X"> from generated/*.json. ---
+      // Reads the generated JSON files and leaves the "All" text in place for a
+      // count it cannot read. The ids and
+      // their source files are intentionally small — the generator wires more.
+      (function () {
+        var sources = {
+          // id -> { file, extract(doc) -> number|null }
+          "mcp-tools": {
+            file: "./generated/mcp-tools.json",
+            extract: function (d) {
+              if (Array.isArray(d && d.families))
+                return d.families.reduce(function (n, f) {
+                  return n + (Array.isArray(f.tools) ? f.tools.length : 0);
+                }, 0);
+              return Array.isArray(d && d.tools) ? d.tools.length : null;
+            },
+          },
+          primitives: {
+            file: "./generated/primitives.json",
+            extract: function (d) {
+              return Array.isArray(d && d.primitives) ? d.primitives.length : null;
+            },
+          },
+          schemas: {
+            file: "./generated/schemas.json",
+            extract: function (d) {
+              if (Array.isArray(d && d.schemas)) return d.schemas.length;
+              if (d && typeof d === "object") return Object.keys(d).length || null;
+              return null;
+            },
+          },
+          shortcuts: {
+            file: "./generated/shortcuts.json",
+            extract: function (d) {
+              if (d && typeof d.totalCount === "number") return d.totalCount;
+              if (Array.isArray(d && d.shortcuts)) return d.shortcuts.length;
+              if (Array.isArray(d && d.entries)) return d.entries.length;
+              return null;
+            },
+          },
+          // search-index already ships — surface its entry count on the search
+          // placeholder when present.
+          "search-entries": {
+            file: "./generated/search-index.json",
+            extract: function (d) {
+              return Array.isArray(d && d.entries) ? d.entries.length : null;
+            },
+          },
+        };
+        var slots = document.querySelectorAll('[id^="data-count"], data-count');
+        // Also handle the <data-count id="X"> custom-element shape used in the
+        // markup above. Browsers treat unknown tags as inline, so the "coming
+        // soon" text is already visible until this script resolves it.
+        var byId = {};
+        document.querySelectorAll("data-count[id]").forEach(function (el) {
+          byId[el.getAttribute("id")] = el;
+        });
+
+        Object.keys(sources).forEach(function (id) {
+          var el = byId[id];
+          if (!el) return;
+          var src = sources[id];
+          fetch(src.file, { cache: "no-store" })
+            .then(function (r) {
+              return r.ok ? r.json() : null;
+            })
+            .then(function (doc) {
+              if (!doc) return;
+              var count = src.extract(doc);
+              if (typeof count === "number" && count >= 0) {
+                el.textContent = String(count);
+                el.setAttribute("data-count-resolved", "true");
+              }
+            })
+            .catch(function () {
+              /* leave placeholder */
+            });
+        });
+      })();
+
+      // ---- Live wiring: version, update, CTAs, search ------------------------
+      (function () {
+        var cs = window.codesense;
+
+        // Version read — the update routine's last result carries the shipped
+        // version + relative "when". The field names match the docs generator;
+        // if the bridge isn't live (file:// preview) we just leave the dash.
+        if (cs && typeof cs.routineResult === "function") {
+          try {
+            var p = cs.routineResult({ id: "update-codesense-docs" });
+            if (p && typeof p.then === "function") {
+              p.then(function (res) {
+                if (!res) return;
+                var data = (res && res.data) || res;
+                var v = data && (data.version || data.commit || data.sha);
+                var when = data && (data.updatedRelative || data.updated_at || data.when);
+                if (v) {
+                  var ve = document.querySelector("[data-cs-version]");
+                  if (ve) ve.textContent = String(v);
+                }
+                if (when) {
+                  var we = document.querySelector("[data-cs-version-when]");
+                  if (we) we.textContent = String(when);
+                }
+              }).catch(function () {
+                /* keep placeholder */
+              });
+            }
+          } catch (_) {
+            /* ignore */
+          }
+        }
+
+        // Update docs button.
+        var updateBtn = document.querySelector('[data-action="update-docs"]');
+        if (updateBtn) {
+          updateBtn.addEventListener("click", function () {
+            if (!cs || typeof cs.routineRefresh !== "function") return;
+            var label = updateBtn.querySelector(".cs-docs-home__ribbon-btn-label");
+            updateBtn.setAttribute("aria-busy", "true");
+            if (label) label.textContent = "Updating…";
+            Promise.resolve(cs.routineRefresh({ key: "update-codesense-docs" }))
+              .catch(function () {
+                /* let the banner / notice system handle it */
+              })
+              .then(function () {
+                updateBtn.removeAttribute("aria-busy");
+                if (label) label.textContent = "Update CodeSense docs";
+              });
+          });
+        }
+
+        // CTAs + arc cards: route through the viewer bridge when live, otherwise
+        // let the browser follow the href normally (file:// preview).
+        document
+          .querySelectorAll(
+            '[data-action="open-tour"], [data-action="open-playbook"], .cs-docs-home__arc',
+          )
+          .forEach(function (a) {
+            a.addEventListener("click", function (ev) {
+              if (!cs || typeof cs.openFile !== "function") return;
+              // Let modified-key clicks keep the browser default.
+              if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+              ev.preventDefault();
+              var href = a.getAttribute("href");
+              try {
+                cs.openFile({ path: href, newTab: true });
+              } catch (_) {
+                /* ignore */
+              }
+            });
+          });
+
+        // Search: ⌘K / Ctrl+K is handled by nav.js's palette; focusing the input
+        // in-page is a trusted twin that opens the same overlay. Only wire the
+        // keyboard shortcut here if nav.js hasn't claimed it (defensive).
+        var search = document.querySelector("[data-cs-search]");
+        if (search) {
+          window.addEventListener("keydown", function (ev) {
+            var mod =
+              navigator.platform.toLowerCase().indexOf("mac") !== -1 ? ev.metaKey : ev.ctrlKey;
+            if (mod && ev.key && ev.key.toLowerCase() === "k") {
+              // nav.js listens for this too; if it opens the palette, that
+              // steals focus naturally. We just make sure focus lands here as
+              // a fallback.
+              if (!document.querySelector('.cs-palette-overlay[data-open="true"]')) {
+                ev.preventDefault();
+                search.focus();
+              }
+            }
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

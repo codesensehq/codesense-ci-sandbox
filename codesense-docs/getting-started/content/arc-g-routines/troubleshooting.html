@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="life-buoy" />
+    <title>CodeSense — Routines troubleshooting</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --sev-ok: #2a8a5e;
+        --sev-warn: #a56a16;
+        --sev-bad: #b4423e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --sev-ok: #4ec28a;
+          --sev-warn: #e0ac55;
+          --sev-bad: #ef7a74;
+        }
+      }
+      .arcg-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcg-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arcg-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        margin: 0;
+      }
+      pre code {
+        font-size: 12px;
+      }
+      .symptom-list {
+        margin-top: var(--cs-docs-sp-4, 16px);
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-sp-3, 12px);
+      }
+      .symptom {
+        padding: 14px 16px;
+        background: var(--cs-surface);
+        border: 1px solid var(--cs-border);
+        border-left: 4px solid var(--sev, var(--cs-muted-fg));
+        border-radius: var(--cs-docs-radius-md, 10px);
+      }
+      .symptom[data-sev="warn"] {
+        --sev: var(--sev-warn);
+      }
+      .symptom[data-sev="bad"] {
+        --sev: var(--sev-bad);
+      }
+      .symptom[data-sev="ok"] {
+        --sev: var(--sev-ok);
+      }
+      .symptom h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .symptom h3 .tag {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--sev) 20%, var(--cs-surface));
+        color: var(--cs-fg);
+      }
+      .symptom p.hint {
+        margin: 0 0 10px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      .symptom ol {
+        margin: 0 0 8px 0;
+        padding-left: 22px;
+        font-size: var(--cs-docs-text-sm, 13px);
+      }
+      .symptom ol li + li {
+        margin-top: 4px;
+      }
+      .matrix {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: var(--cs-docs-sp-4, 16px);
+        font-size: var(--cs-docs-text-sm, 13px);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      .matrix th,
+      .matrix td {
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in srgb, var(--cs-border) 60%, transparent);
+        vertical-align: top;
+        text-align: left;
+      }
+      .matrix thead th {
+        background: color-mix(in oklab, var(--cs-bg) 70%, var(--cs-surface));
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        font-size: var(--cs-docs-text-xs, 12px);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .matrix tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .matrix code {
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-g-routines/troubleshooting">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Routines troubleshooting — stuck runs, missed schedules, debug"
+        id="hero"
+      >
+        <p>
+          <span class="cs-docs-chip" data-arc="G">Arc G · Routines</span>
+        </p>
+        <h1>When a routine misbehaves.</h1>
+        <figure class="cs-docs-card arcg-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="A debugging checklist: scheduler, trigger, armed_here, agent, task, publish — walked top to bottom."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="34" class="arcg-mbadge" style="font-size: 14px">
+              Six questions, walked top to bottom. The first "no" is the fault.
+            </text>
+
+            <!-- six steps as a vertical ladder -->
+            <g style="font-family: var(--cs-font-mono); font-size: 12px">
+              <g transform="translate(60 72)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  1 · Is the scheduler running? — routines console shows a next-fire
+                </text>
+              </g>
+              <g transform="translate(60 116)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  2 · Did the trigger evaluate true? — cron matched; inbox idle
+                </text>
+              </g>
+              <g transform="translate(60 160)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  3 · Is armed_here true for this Mac?
+                </text>
+              </g>
+              <g transform="translate(60 204)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  4 · Did the agent launch? — agent exists, permissions ok
+                </text>
+              </g>
+              <g transform="translate(60 248)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  5 · Did the task finish? — signal_done or exit before maxRuntime
+                </text>
+              </g>
+              <g transform="translate(60 292)">
+                <rect
+                  width="520"
+                  height="34"
+                  rx="6"
+                  fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                  stroke="var(--cs-border)"
+                />
+                <text x="16" y="22" style="fill: var(--cs-fg)">
+                  6 · Was the result published? — routine_publish_result + schema_compatible
+                </text>
+              </g>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="Where to look first" id="first-look">
+        <p>
+          The <a href="../examples/dashboards/routines-console.html">routines console</a>
+          is the one surface that answers every question on the ladder above — the next scheduled
+          fire, the last run with its status chip, the recent-N timeline, and the per-run detail
+          with task template, stdout, and the publish side-channel. Open it first; the symptom names
+          the step that failed.
+        </p>
+      </section>
+
+      <section data-search="Symptom catalogue" id="symptoms">
+        <h2>Symptom catalogue</h2>
+        <div class="symptom-list">
+          <!-- 1 -->
+          <div class="symptom" data-sev="warn">
+            <h3>A run is stuck in <code>running</code> <span class="tag">step 5</span></h3>
+            <p class="hint">
+              The agent launched but never called <code>signal_done</code> and never exited.
+              <code>maxRuntime</code> will cut it eventually; you can cancel sooner.
+            </p>
+            <ol>
+              <li>
+                Open the run on the routines console; the <em>stdout</em> tail usually names the
+                last thing it did.
+              </li>
+              <li>
+                Use the MCP tool <code>routine_cancel {runId}</code>, with a
+                <code>run_id</code> from <code>routine_runs</code>. It cancels one queued or
+                running run. A fresh run's agent or command stops; a wake run keeps its
+                existing session alive. See <a href="./index.html#cancel-run">the cancel example</a>
+                for returned state, authorization and wake withdrawal errors. To stop future
+                starts too, call <code>routine_set_enabled {id, enabled:false}</code>.
+              </li>
+              <li>
+                Fix the task: either add an explicit <code>signal_done</code> step, or lower
+                <code>policy.max_runtime</code> so stuck sessions fail fast and surface loudly.
+              </li>
+              <li>
+                <strong>OpenCode agents.</strong> When the model provider answers with a server
+                error (5xx), OpenCode retries without printing anything and without exiting, so
+                only <code>policy.max_runtime</code> ends the run. For OpenCode, set a short one
+                (<code>30m</code> suggested). A headless OpenCode run denies any
+                tool outside read-only tools and CodeSense's own unless the agent's
+                <code>permissions.opencode</code> allows it; a denied tool continues with an
+                error turn instead of stopping the run. A headless OpenCode
+                run that exits without calling <code>signal_done</code> ends with the model's
+                final text as its summary; that text is a summary, never the run's result. A
+                provider rejection (a 4xx, an unknown model) fails the run with its message.
+              </li>
+              <li>
+                <strong>Unattended OpenCode.</strong> The OpenCode unattended starter keeps
+                <code>--auto</code>. Escalating agents (<code>--auto</code> or an all-allow
+                map) get an allow base headless, and their own denies still apply, so a
+                <code>bash: deny</code> stays denied. Pair such an agent with a sandbox, and
+                still give each of its routines a short <code>policy.max_runtime</code>
+                (<code>30m</code> suggested).
+              </li>
+            </ol>
+          </div>
+
+          <!-- 2 -->
+          <div class="symptom" data-sev="warn">
+            <h3>Scheduled fires are missed <span class="tag">step 1 · 3</span></h3>
+            <p class="hint">
+              A cron routine shows no run at the expected time. Three usual causes.
+            </p>
+            <ol>
+              <li>
+                <strong>Mac was asleep.</strong> Local Macs skip fires while asleep (standard Mac
+                behavior). The routines console shows the skipped fire with reason
+                <code>mac_asleep</code>. Move must-fire routines to the always-on remote account (<a
+                  href="./remote.html"
+                  >remote</a
+                >, <code>runs_on: one_mac</code> armed there).
+              </li>
+              <li>
+                <strong><code>armed_here</code> is false.</strong>
+                <code>routine_get</code> says who's armed; flip with
+                <code>routine_set_enabled { enabled: true }</code> on this Mac if that's where you
+                want it to fire.
+              </li>
+              <li>
+                <strong>Overlap.</strong> A previous run is still going and the new fire coalesced.
+                Check the console for a <code>coalesced</code> badge; shorten the task or raise the
+                cadence.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 3 -->
+          <div class="symptom" data-sev="bad">
+            <h3>Every run fails <code>agent_unavailable</code> <span class="tag">step 4</span></h3>
+            <p class="hint">
+              The agent named by the routine isn't resolvable. Common after an agent rename or an
+              uninstall.
+            </p>
+            <ol>
+              <li>
+                <code>codesense.invoke('agent_list', {})</code> — confirm the id the routine targets
+                still exists.
+              </li>
+              <li>
+                If the agent was renamed, <code>routine_update</code> with the new agent id (and the
+                <code>baseRevision</code> you last read).
+              </li>
+              <li>
+                If it was uninstalled, either reinstall or point the routine at a built-in
+                (<code>builtin/claude</code>, <code>builtin/codex</code>) that every Mac has.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 4 -->
+          <div class="symptom" data-sev="warn">
+            <h3><code>inbox_idle</code> never fires <span class="tag">step 2</span></h3>
+            <p class="hint">
+              The queue has mail; the routine doesn't trigger. The idle threshold hasn't been
+              crossed, or the sessions aren't CodeSense-launched.
+            </p>
+            <ol>
+              <li>
+                Check the queue in agent-inbox-console. If messages show
+                <code>unread · 10s ago</code>, the idle threshold (default 2m) hasn't elapsed.
+              </li>
+              <li>
+                A session a user opened by hand (not through CodeSense) is invisible to
+                <code>inbox_idle</code>. Launch it through the Routines or Agents tab.
+              </li>
+              <li>
+                Confirm the trigger shape:
+                <code>triggers: [{ event: { kind: inbox_idle, role: builder } }]</code> with the
+                exact role name. A typo in the role becomes a silent miss.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 5 -->
+          <div class="symptom" data-sev="warn">
+            <h3>The dashboard shows "collecting" forever <span class="tag">step 6</span></h3>
+            <p class="hint">
+              The dashboard binds <code>routineResult</code> but the snapshot never promotes —
+              usually a schema mismatch or a missing publish step.
+            </p>
+            <ol>
+              <li>
+                On the console's run detail, look at <em>latest attempt</em>. A
+                <code>schema_mismatch</code> status means the payload didn't match
+                <code>resultSchema</code>. Fix the task or bump the routine's revision.
+              </li>
+              <li>
+                If the task never calls <code>routine_publish_result</code>, the run can finish "ok"
+                and yet publish nothing — add the publish step before <code>signal_done</code>.
+              </li>
+              <li>
+                A dashboard calling <code>routineRefresh</code> at page load (not from a user
+                action) is a lint warning and may be denied for budget reasons; move it behind an
+                explicit <em>Refresh</em> button.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 6 -->
+          <div class="symptom" data-sev="bad">
+            <h3>A hand-written routine never shows up <span class="tag">step 0</span></h3>
+            <p class="hint">
+              A file that doesn't parse, or whose <code>id</code> doesn't match its folder, is
+              skipped on load (logged only), so it never appears and never fires.
+            </p>
+            <ol>
+              <li>
+                The app's log names the file and the error. The common one is a routine
+                that isn't under an agent: it must sit at
+                <code>config/agents/&lt;agent&gt;/routines/&lt;id&gt;/routine.yml</code>, with the
+                folder name equal to its <code>id</code> and no <code>agent:</code> key.
+              </li>
+              <li>
+                The next common one is a duplicate <code>id</code>: ids are unique across the team,
+                whichever agent holds them. Rename one.
+              </li>
+              <li>
+                Still stuck? Compare against the
+                <a href="../schema-browser.html#schema/routine-yml">routine.yml schema browser</a> — every
+                field is annotated with its validator rule.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 7 -->
+          <div class="symptom" data-sev="warn">
+            <h3>Remote routines fire on the wrong Mac <span class="tag">step 3</span></h3>
+            <p class="hint">
+              A <code>one_mac</code> routine fires on your laptop instead of the always-on build
+              box, or vice versa.
+            </p>
+            <ol>
+              <li>
+                <code>routine_get</code> on each Mac answers who's armed. For <code>one_mac</code>,
+                exactly one Mac has <code>armed_here: true</code>.
+              </li>
+              <li>
+                To move the arming, call <code>routine_arm_on { id, machine: "this_mac" }</code> from
+                the Mac you want to arm. The other Mac's <code>armed_here</code> flips to false next
+                sync.
+              </li>
+              <li>See <a href="./remote.html">remote</a> for the full switching flow.</li>
+            </ol>
+          </div>
+
+          <!-- 8 -->
+          <div class="symptom" data-sev="warn">
+            <h3>A wake says queued, undelivered or unknown <span class="tag">step 4</span></h3>
+            <p class="hint">
+              A <code>mode: wake</code> run never typed into the agent, or can't say whether it did.
+              The run's Details popover names the reason.
+            </p>
+            <ol>
+              <li>
+                <strong>queued</strong> — the agent is busy or waiting on a permission prompt; it is
+                typed at the next idle point, up to the max wait, else
+                <code>busy_timeout</code>. Someone typing in that tab holds it back too.
+              </li>
+              <li>
+                <strong>undelivered</strong> — <code>machine_offline</code> (tried again next fire),
+                <code>machine_unknown</code> (fix the <code>machine</code>),
+                <code>session_ended</code>, <code>unobservable</code> (CodeSense can't tell when this
+                runtime is idle; Codex today), <code>archived</code>, <code>limit_reached</code>
+                (over the routine's <code>max_wakes_per_day</code>; it resumes on its own),
+                <code>max_wakes</code> (the routine made its <code>max_wakes</code> and paused
+                itself, with one inbox note: resume it to start a new count),
+                <code>rate_limited</code> (the session's safety backstop of 120 wakes an hour
+                tripped, usually a loop; the inbox note names the top source, and it resumes on its
+                own). A fire inside the routine's <code>min_gap</code> is coalesced, or
+                <strong>skipped</strong> with <code>overlap: skip</code>. A wake with limits to a
+                machine whose terminal server is too old to enforce them is
+                <code>unavailable</code>, with the reason as its detail and one inbox note to
+                update it. Limits count wakes only: a <code>fresh</code> routine ignores them (its
+                save warns), a launch-if-absent start is not counted, and each Mac and machine keeps
+                its own count. A machine-armed routine with limits is not armed on such a machine
+                (it fires nowhere until the terminal server is updated, or the limits removed; the
+                inbox says so once a day).
+              </li>
+              <li>
+                <strong>unknown</strong> — "May have been delivered. Check the terminal before
+                re-sending." It is never re-sent automatically; look at the tab's wake history first.
+              </li>
+              <li>
+                Wake never offered at all? It needs a saved, foreground agent (starters are fresh
+                only), and <code>allowWake: true</code> on an agent that auto-approves tools.
+              </li>
+            </ol>
+          </div>
+
+          <!-- 9 -->
+          <div class="symptom" data-sev="warn">
+            <h3>A session timer didn't fire <span class="tag">step 4</span></h3>
+            <p class="hint">
+              Timers set with <code>schedule_wakeup</code> belong to one session and wait for it to
+              be idle.
+            </p>
+            <ol>
+              <li>
+                <code>list_wakeups</code> with that session's id: no timer means it ended with its
+                session, was cancelled, or ran out its <code>count</code> / <code>until</code>.
+              </li>
+              <li>
+                The session is busy: a due fire waits for idle (folding later fires into it), and is
+                dropped as <code>busy_timeout</code> after 24 hours.
+              </li>
+              <li>
+                Setting, listing and cancelling need the desktop connected; a remote machine keeps
+                firing the timers it already has while the desktop is away.
+              </li>
+              <li>
+                A remote session reaches the CodeSense MCP tools through the desktop. If the desktop
+                disconnects (sleep, quit, network), that session loses them — including
+                <code>list_wakeups</code>, <code>cancel_wakeup</code> and <code>routine_done</code> —
+                for the rest of its run, even after the desktop comes back; restart the agent to get
+                them back. Its timers and queued wakes keep running on the machine.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Debug toolkit" id="toolkit">
+        <h2>Debug toolkit (in order of use)</h2>
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>What it tells you</th>
+              <th>When to reach for it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="../examples/dashboards/routines-console.html">routines console</a></td>
+              <td>Next fire, last fire, recent-N strip, run detail (task + stdout + publish).</td>
+              <td>Always first. Nine times out of ten the answer is on the strip.</td>
+            </tr>
+            <tr>
+              <td><code>routine_runs({ id, limit: 20 })</code></td>
+              <td>History with skipped and coalesced fires + reasons.</td>
+              <td>When a schedule looks "quiet" and you want proof of why.</td>
+            </tr>
+            <tr>
+              <td><code>routine_run_now({ id })</code></td>
+              <td>Fires once through the overlap rule; returns outcome.</td>
+              <td>To bisect: does it work when I fire it by hand?</td>
+            </tr>
+            <tr>
+              <td><code>routine_run({ runId })</code></td>
+              <td>One run in full: status, delivery reason, result.</td>
+              <td>When a wake says undelivered or unknown and you want the detail.</td>
+            </tr>
+            <tr>
+              <td><code>routine_create { …, dryRun: true }</code></td>
+              <td>Validator error with field + rule.</td>
+              <td>When the console says "load failed" with no detail.</td>
+            </tr>
+            <tr>
+              <td><code>routine_cancel({ runId })</code></td>
+              <td>Cancels one queued or running run; returns its resulting state. A finished run is unchanged with a validation message.</td>
+              <td>When a run is in <code>running</code> past expected duration.</td>
+            </tr>
+            <tr>
+              <td><code>subscribeContext({ topic: 'routines.runs' }, cb)</code></td>
+              <td>Live stream of fire → done events for the active team.</td>
+              <td>When you want to watch an inbox-idle wake live.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section
+        data-search="Try this now — open the routines console on this team"
+        id="try-this-now"
+      >
+        <h2>Try this now</h2>
+        <p>
+          Open the routines console. The symptom catalogue above maps directly to the surfaces on
+          the page: the strip answers the "did it fire" questions, the run detail answers the "what
+          happened" questions.
+        </p>
+        <cs-try-this
+          verb="openFile"
+          args='{"path": "examples/dashboards/routines-console.html"}'
+          label="Open the routines console"
+          needs-repo="false"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// A specific routine's recent history, skipped fires included
+routine_runs {"id":"acme/api/backend/builder-wake","limit":20}
+
+// One run in full (a wake's delivery status and reason included)
+routine_run {"runId":"&lt;run_id from routine_runs&gt;"}
+
+// Fire once by hand; returns outcome: queued / coalesced / skipped:&lt;reason&gt;
+routine_run_now {"id":"acme/api/backend/builder-wake"}
+
+// Cancel one run; future fires stay enabled
+routine_cancel {"runId":"&lt;run_id from routine_runs&gt;"}</code></pre>
+          <p>
+            These are MCP calls, available from a verified CodeSense connection. In a pane,
+            <code>codesense.routineCancel({key})</code> cancels this principal's live structured
+            results for a routine, rather than one run by id. To validate a routine, call
+            <code>routine_create</code> with <code>dryRun: true</code>.
+          </p>
+        </details>
+      </section>
+
+      <section id="budget-reached" data-search="budget_reached skipped spend cap unpriced model">
+        <h2>Why was a fire skipped with budget_reached?</h2>
+        <p>The routine or its agent has reached a daily or weekly spend cap, or has usage that cannot
+          be priced. The skipped run names the scope, window, spend and cap; an unpriced refusal
+          names the model. Open the agent's <strong>Overview → Spend cap</strong>, or the fresh routine's
+          cap block. Wait for the local window to roll over, or have a person save or accept a cap.
+          Changing a file or MCP value upward leaves the raise pending.</p>
+        <p>While a local agent is held, mail remains in its inbox and a person can still type.
+          The current turn finishes; queued automatic turns wait. See <a href="../arc-e-agents/spend-caps.html">Spend caps</a>.</p>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./remote.html">← Remote</a> · Back to: <a href="./index.html">Arc G index</a> ·
+        Edge cases &amp; reference → <a href="../mcp-explorer.html">mcp-explorer</a> ·
+        <a href="../schema-browser.html#schema/routine-yml">routine.yml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc G · Troubleshooting</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

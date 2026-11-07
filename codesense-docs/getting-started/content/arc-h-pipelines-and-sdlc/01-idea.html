@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 1 · Idea</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="1"
+    data-page="arc-h-pipelines-and-sdlc/01-idea"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 1 — Idea" id="hero">
+            <!-- Hero: dynamic phase header. All chrome fields are filled by
+                 _phase-page.js from ../generated/phases.yml. -->
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>01</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>PLAN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>01</span> · <span data-cs-phase-name>Idea</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  The first phase. An agent (or a human) spots a problem worth
+                  solving and names it loud enough for the rest of the factory
+                  to grab hold.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"
+                    ><strong>Agent</strong><span data-cs-phase-agent-name>Mary</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Skill</strong
+                    ><code data-cs-phase-skill>bmad-forge-idea</code></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Inbox</strong><span data-cs-phase-inbox-role>analyst</span></span
+                  >
+                  <span class="cs-docs-chip"
+                    ><strong>Trigger</strong><span data-cs-phase-trigger>manual</span></span
+                  >
+                  <a
+                    class="cs-docs-chip"
+                    data-cs-phase-dashboard-link
+                    href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What this phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              You've got a nagging itch — something in your repo is awkward, a
+              teammate keeps asking for the same thing, or you watched the agent
+              DAG grind through a bad path for the third time. The
+              <strong>Idea</strong> phase names it: a sentence or two sharp
+              enough that the next agent can start a <em>spec</em> without
+              rephrasing the problem.
+            </p>
+            <p>
+              Mary (the analyst persona) is the default owner. She leans on the
+              <code>bmad-brainstorming</code> and <code>bmad-forge-idea</code>
+              skills — the first for divergent exploration, the second to
+              hammer the idea until it has a shape or dies cheaply.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — DEMO idea" id="worked">
+            <h2>Worked example — how DEMO started</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+            <p style="margin-top: 10px; color: var(--cs-muted-fg)">
+              The seeded <code>DEMO</code> epic ships in
+              <a href="../examples/sample-epic/README.md"
+                ><code>examples/sample-epic/</code></a
+              >.
+            </p>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="What goes wrong — Idea phase"
+            id="goes-wrong"
+          >
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in idea phase" id="mcp">
+            <h2>MCP tools used</h2>
+            <p>
+              The analyst reaches for a short list of MCP calls — each one is a
+              link into the live reference.
+            </p>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml for Mary analyst" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <p>
+              Drop this into your context repo under <code>config/agents/mary/agent.yaml</code>.
+              It validates against the <a href="../schema-browser.html#schema/agent-yaml">agent.yaml schema</a>.
+            </p>
+            <figure class="cs-h-snippet">
+              <button
+                class="cs-h-snippet__copy"
+                type="button"
+                data-cs-copy-target="#phase-agent-yaml"
+              >
+                Copy
+              </button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section
+            class="cs-h-section"
+            data-search="routine.yml for Idea phase"
+            id="routine-yml"
+          >
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <p>
+              Ideation runs on demand, so this phase's routine is a comment-only
+              stub. Routines show up as live triggers starting in phase 8.
+            </p>
+            <figure class="cs-h-snippet">
+              <button
+                class="cs-h-snippet__copy"
+                type="button"
+                data-cs-copy-target="#phase-routine-yml"
+              >
+                Copy
+              </button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — idea phase" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Running Mary on your own Mac is the common case. She reads
+                  your context repo straight off disk and writes drafts into
+                  <code>content/</code>. No special setup — the host agent is
+                  already there.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  On a remote macbook, Mary runs under the private account's
+                  host agent. Her ideas reach team content when she publishes
+                  them with <code>reverse_sync_worktree</code>; nothing comes
+                  back on its own. Same skill, same inbox role.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — brainstorming" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Fire up a brainstorming session in your own editable context repo.
+              The button below invokes <code>runSkill('bmad-brainstorming')</code> via the
+              <code>window.codesense</code> bridge; if you landed here on the read-only docs
+              org you'll get a one-click <strong>Create a context repo</strong> prompt instead.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-brainstorming"}'
+              label="Start a brainstorming session"
+              confirm="Start bmad-brainstorming in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to do this via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <p>Agents reach the same skill through the MCP bridge:</p>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-brainstorming' })
+codesense.invoke('runSkill', { skill: 'bmad-forge-idea' })</code></pre>
+              <p>
+                Every MCP tool listed above has a detail page in the
+                <a href="../mcp-explorer.html">MCP explorer</a>.
+              </p>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp;
+            Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-1"
+              >factory playbook · phase 1</a
+            >
+            &nbsp;·&nbsp;
+            Edge cases &amp; reference →
+            <a href="../schema-browser.html#schema/agent-yaml">agent.yaml schema</a>
+            &nbsp;·&nbsp;
+            Next: <a href="./02-spec.html">02 Spec →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav>
+          <!-- rendered by _phase-page.js -->
+        </aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 1 · Idea</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

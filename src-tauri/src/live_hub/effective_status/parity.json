@@ -1,0 +1,4159 @@
+{
+  "derive": [
+    {
+      "args": [
+        {
+          "sessionId": null,
+          "alive": false
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "sessionId": null,
+          "alive": true
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": null,
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "sessionId": null,
+          "alive": true
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "thinking",
+          "activityStaleFor": 180000
+        }
+      ],
+      "expected": "thinking"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "working",
+          "toolOpen": true
+        }
+      ],
+      "expected": "tool-running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "working"
+        }
+      ],
+      "expected": "thinking"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "thinking",
+          "toolOpen": true
+        }
+      ],
+      "expected": "tool-running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done",
+          "subagents": 2
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done",
+          "subagents": 0
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "dot": "done",
+          "subagents": 2
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "dot": "done",
+          "subagents": 0
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "idle"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "dot": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 60000
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 599999
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 600000
+        }
+      ],
+      "expected": "stalled"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 600001
+        }
+      ],
+      "expected": "stalled"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 599999
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {}
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "activityStaleFor": 6000000
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done",
+        {
+          "activityStaleFor": 6000000,
+          "agentState": "done"
+        }
+      ],
+      "expected": "completed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "failed",
+        {
+          "activityStaleFor": 6000000,
+          "agentState": "done"
+        }
+      ],
+      "expected": "failed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "needs-attention",
+        {
+          "activityStaleFor": 6000000,
+          "agentState": "done"
+        }
+      ],
+      "expected": "dropped"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "awaiting-answer",
+        {
+          "activityStaleFor": 6000000,
+          "agentState": "done"
+        }
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "running",
+        {
+          "activityStaleFor": 6000000,
+          "agentState": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "blocked"
+        }
+      ],
+      "expected": "blocked"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "permission"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "blocked"
+        }
+      ],
+      "expected": "blocked"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "permission"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "sessionId": null,
+          "alive": false
+        }
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        },
+        null
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "running"
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "awaiting-answer"
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done"
+      ],
+      "expected": "completed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "failed"
+      ],
+      "expected": "failed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "needs-attention"
+      ],
+      "expected": "dropped"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        },
+        "running"
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        },
+        "awaiting-answer"
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done"
+      ],
+      "expected": "completed"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        },
+        "failed"
+      ],
+      "expected": "failed"
+    },
+    {
+      "args": [
+        {
+          "status": "done",
+          "sessionId": "s",
+          "alive": true
+        },
+        "needs-attention"
+      ],
+      "expected": "dropped"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        null
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        null
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        "running"
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        "running"
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        "awaiting-answer"
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        "awaiting-answer"
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done"
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done"
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        "failed"
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        "failed"
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "status": "paused",
+          "sessionId": "s",
+          "alive": true
+        },
+        "needs-attention"
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "errored",
+          "sessionId": "s",
+          "alive": true
+        },
+        "needs-attention"
+      ],
+      "expected": "errored"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        },
+        "running"
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        },
+        "awaiting-answer"
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        },
+        "done"
+      ],
+      "expected": "completed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "question"
+        }
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "permission"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "blocked"
+        }
+      ],
+      "expected": "blocked"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "failed"
+        }
+      ],
+      "expected": "failed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "crashed"
+        }
+      ],
+      "expected": "crashed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "question"
+        }
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "permission"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "blocked"
+        }
+      ],
+      "expected": "blocked"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "failed"
+        }
+      ],
+      "expected": "failed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "needsYou": "crashed"
+        }
+      ],
+      "expected": "crashed"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "dot": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "unobserved": true,
+          "dot": "running"
+        }
+      ],
+      "expected": "unknown"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "unobserved": true,
+          "needsYou": "permission"
+        }
+      ],
+      "expected": "paused"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": false
+        },
+        null,
+        {
+          "needsYou": "failed"
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        "done",
+        {
+          "needsYou": "failed"
+        }
+      ],
+      "expected": "completed"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "done",
+        {
+          "newTurnAfterCompletion": true,
+          "agentState": "thinking"
+        }
+      ],
+      "expected": "thinking"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "failed",
+        {
+          "newTurnAfterCompletion": true,
+          "agentState": "working",
+          "toolOpen": true
+        }
+      ],
+      "expected": "tool-running"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "needs-attention",
+        {
+          "newTurnAfterCompletion": true,
+          "agentState": "done"
+        }
+      ],
+      "expected": "idle"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "done",
+        {
+          "needsYou": "question"
+        }
+      ],
+      "expected": "awaiting-answer"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "done",
+        {
+          "agentEnded": true,
+          "needsYou": "crashed"
+        }
+      ],
+      "expected": "crashed"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "failed",
+        {
+          "agentEnded": true,
+          "needsYou": null
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        "done",
+        {
+          "agentEnded": true,
+          "needsYou": null
+        }
+      ],
+      "expected": "done"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        null,
+        {
+          "needsYou": "attention"
+        }
+      ],
+      "expected": "dropped"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        null,
+        {
+          "dot": "thinking"
+        }
+      ],
+      "expected": "thinking"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        null,
+        {
+          "dot": "running"
+        }
+      ],
+      "expected": "thinking"
+    },
+    {
+      "args": [
+        {
+          "sessionId": "s",
+          "alive": true,
+          "status": "running"
+        },
+        null,
+        {
+          "toolOpen": true
+        }
+      ],
+      "expected": "tool-running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "working",
+          "toolOpen": true,
+          "subagents": 2,
+          "activityStaleFor": 600000
+        }
+      ],
+      "expected": "tool-running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "agentState": "done",
+          "subagents": 2,
+          "activityStaleFor": 600000
+        }
+      ],
+      "expected": "running"
+    },
+    {
+      "args": [
+        {
+          "status": "running",
+          "sessionId": "s",
+          "alive": true
+        },
+        null,
+        {
+          "dot": "done",
+          "subagents": 2,
+          "activityStaleFor": 600000
+        }
+      ],
+      "expected": "running"
+    }
+  ],
+  "live": [
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "running"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "signal-progress",
+                    "phase": "dev"
+                  },
+                  "seq": 4
+                },
+                "t2": null,
+                "state": "working",
+                "openTools": 2,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentState": "working",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": true,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "running"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "PostToolUse"
+                  },
+                  "seq": 5
+                },
+                "t2": null,
+                "state": "working",
+                "openTools": 1,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentState": "working",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": true,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "PostToolUseFailure"
+                  },
+                  "seq": 6
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "done"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "Stop"
+                  },
+                  "seq": 7
+                },
+                "t2": null,
+                "state": "done",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "done",
+        "agentState": "done",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {
+            "s": "running"
+          },
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {
+            "s": "done"
+          },
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "done",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "running"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "PreToolUse"
+                  },
+                  "seq": 2
+                },
+                "t2": null,
+                "state": "working",
+                "openTools": 1,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentState": "working",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": true,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "working",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [],
+                  "toolOpen": true
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": true,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "working",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [],
+                  "reason": "progress"
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "working",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "running"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "PreToolUse"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "working",
+                "openTools": 1,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "working",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [],
+                  "toolOpen": false
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentState": "working",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "running"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "PreToolUse"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "working",
+                "openTools": 1,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "working",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "running",
+        "agentState": "working",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": true,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "done"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "Stop"
+                  },
+                  "seq": 2
+                },
+                "t2": null,
+                "state": "done",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "done",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [],
+                  "subagentsOpen": 2
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "done",
+        "agentState": "done",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 2,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "freshness": "current",
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "done",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                }
+              }
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "done"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "Stop"
+                  },
+                  "seq": 2
+                },
+                "t2": null,
+                "state": "done",
+                "openTools": 0,
+                "agent": "claude"
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "done",
+        "agentState": "done",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude",
+                "activityAt": 100
+              }
+            },
+            "stateSince": {
+              "s": 10
+            },
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 100
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {
+            "s": 500
+          },
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude",
+                "activityAt": 100
+              }
+            },
+            "stateSince": {
+              "s": 100
+            },
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 500
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {
+            "s": 100
+          },
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 1
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude",
+                "activityAt": 500
+              }
+            },
+            "stateSince": {
+              "s": 500
+            },
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 500
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {
+            "s": 42
+          },
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 42
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {},
+            "bySession": {},
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "state": "idle",
+                "agent": "claude",
+                "t1": null,
+                "t2": null
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "state": "idle",
+                "agent": "claude",
+                "t1": null,
+                "t2": null
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {
+            "s": 1792591597888
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 1792591597888
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {
+              "s": 1000
+            },
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "state": "idle",
+                "activityAt": 1000,
+                "agent": "claude",
+                "t1": null,
+                "t2": null
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 1000
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {
+              "s": 1000
+            },
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "state": "idle",
+                "activityAt": 1000,
+                "agent": "claude",
+                "t1": null,
+                "t2": null
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 1000
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 2,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "state": "idle",
+                "agent": "claude",
+                "t1": null,
+                "t2": null
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {},
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentState": "idle",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 6
+                },
+                "t2": null,
+                "state": "thinking",
+                "openTools": 0,
+                "agent": "claude",
+                "activityAt": 1792591597888,
+                "turnStartedSeq": 6
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {
+            "s": "thinking"
+          },
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "thinking",
+        "agentState": "thinking",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 1792591597888
+      }
+    },
+    {
+      "args": [
+        {
+          "agent": {
+            "outputAtBySession": {},
+            "completionSeqBySession": {},
+            "completionActivityBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "idle",
+                  "observed": false,
+                  "limited": true,
+                  "exit": null,
+                  "asks": []
+                },
+                "freshness": "current"
+              }
+            },
+            "bySession": {
+              "s": {
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "Stop"
+                  },
+                  "seq": 8
+                },
+                "t2": null,
+                "state": "done",
+                "openTools": 0,
+                "agent": "claude",
+                "activityAt": 1792591597889
+              }
+            },
+            "exitBySession": {},
+            "stateSince": {},
+            "seenAt": {},
+            "launchBySession": {},
+            "dismissedCrashBySession": {},
+            "relaunchBySession": {},
+            "processAgentBySession": {}
+          },
+          "agentDots": {
+            "s": "done"
+          },
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "dot": "done",
+        "agentState": "done",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 1792591597889
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {
+            "ask": {
+              "sessionId": "s"
+            }
+          },
+          "outcomes": {
+            "s": "done"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "question",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "failed"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "failed",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "needs-attention"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "attention",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {
+            "s": "needs-permission"
+          },
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "permission",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "dot": "needs-permission"
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "needs-permission",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [
+                    "a"
+                  ],
+                  "reason": "question"
+                },
+                "freshness": "current"
+              }
+            },
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "question",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {
+              "s": {
+                "snapshot": {
+                  "session": "s",
+                  "identity": {
+                    "hostBootId": "b",
+                    "sessionIncarnation": "p",
+                    "invocationId": "i"
+                  },
+                  "revision": 1,
+                  "turnGeneration": 0,
+                  "provider": "claude",
+                  "state": "needs-permission",
+                  "observed": true,
+                  "limited": true,
+                  "exit": null,
+                  "asks": [
+                    "a"
+                  ],
+                  "reason": "question"
+                },
+                "freshness": "current"
+              }
+            },
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "done"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "crashed"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "state": "crashed",
+                "t1": null,
+                "t2": {
+                  "signal": {
+                    "kind": "exited",
+                    "code": 1
+                  },
+                  "seq": 5
+                }
+              }
+            },
+            "dismissedCrashBySession": {
+              "s": 5
+            },
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": true,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true,
+        "agentState": "crashed",
+        "dot": "crashed"
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "crashed"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "state": "crashed",
+                "t1": null,
+                "t2": {
+                  "signal": {
+                    "kind": "exited",
+                    "code": 1
+                  },
+                  "seq": 5
+                }
+              }
+            },
+            "dismissedCrashBySession": {
+              "s": 4
+            },
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {}
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "crashed",
+        "agentEnded": true,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true,
+        "agentState": "crashed",
+        "dot": "crashed"
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "state": "thinking",
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 7
+                },
+                "turnStartedSeq": 7,
+                "activityAt": 100
+              }
+            },
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {
+              "s": 5
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "failed"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": true,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "agentState": "thinking",
+        "dot": "thinking",
+        "activityTick": 100
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "thinking"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "state": "thinking",
+                "t1": {
+                  "signal": {
+                    "kind": "claude-hook",
+                    "event": "UserPromptSubmit"
+                  },
+                  "seq": 7
+                },
+                "turnStartedSeq": 7,
+                "activityAt": 100
+              }
+            },
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {
+              "s": 8
+            }
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "failed"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "failed",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "agentState": "thinking",
+        "dot": "thinking",
+        "activityTick": 100
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {
+              "s": 100
+            },
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 100
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {
+            "s": 200
+          },
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {},
+            "outputAtBySession": {
+              "s": 100
+            },
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {
+            "s": "running"
+          }
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false,
+        "activityTick": 200
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {},
+          "startupStuck": true
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "startup",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {},
+          "startupStuck": false
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "crashed"
+          },
+          "agent": {
+            "bySession": {
+              "s": {
+                "state": "crashed",
+                "t1": null,
+                "t2": {
+                  "signal": {
+                    "kind": "exited",
+                    "code": 1
+                  },
+                  "seq": 5
+                }
+              }
+            },
+            "stateSince": {},
+            "dismissedCrashBySession": {
+              "s": 5
+            },
+            "activityBySession": {},
+            "outputAtBySession": {},
+            "completionSeqBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {},
+          "startupStuck": true
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": null,
+        "agentEnded": true,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true,
+        "agentState": "crashed",
+        "dot": "crashed"
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {},
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {
+            "a1": {
+              "sessionId": "s"
+            }
+          },
+          "outcomes": {},
+          "startupStuck": true
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "question",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": false
+      }
+    },
+    {
+      "args": [
+        {
+          "aiStatusBySession": {},
+          "progressTickBySession": {},
+          "agentDots": {
+            "s": "crashed"
+          },
+          "agent": {
+            "bySession": {},
+            "stateSince": {},
+            "dismissedCrashBySession": {},
+            "activityBySession": {}
+          },
+          "pendingAsks": {},
+          "outcomes": {},
+          "startupStuck": true
+        },
+        "s"
+      ],
+      "expected": {
+        "needsYou": "crashed",
+        "agentEnded": false,
+        "newTurnAfterCompletion": false,
+        "toolOpen": false,
+        "subagents": 0,
+        "unobserved": true,
+        "dot": "crashed"
+      }
+    }
+  ],
+  "order": {
+    "rows": [
+      {
+        "id": "z",
+        "handle": "z",
+        "effectiveStatus": "done",
+        "unread": 20
+      },
+      {
+        "id": "c",
+        "handle": "c",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "b",
+        "handle": "b",
+        "effectiveStatus": "blocked",
+        "unread": 2
+      },
+      {
+        "id": "a",
+        "handle": "a",
+        "effectiveStatus": "crashed",
+        "unread": 2
+      },
+      {
+        "id": "x",
+        "handle": "x",
+        "effectiveStatus": "awaiting-answer",
+        "unread": 9
+      },
+      {
+        "id": "d",
+        "handle": "d",
+        "effectiveStatus": "tool-running",
+        "unread": 10
+      },
+      {
+        "id": "s",
+        "handle": "s",
+        "effectiveStatus": "stalled",
+        "unread": 0
+      },
+      {
+        "id": "_worker/acme/default/sprint-1",
+        "handle": "_worker/acme/default/sprint-1",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "alpha",
+        "handle": "alpha",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "Beta",
+        "handle": "Beta",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "SW-PLG-16",
+        "handle": "SW-PLG-16",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "eclair",
+        "handle": "eclair",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "Agent-2",
+        "handle": "Agent-2",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "agent-10",
+        "handle": "agent-10",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "SV-PLG-16#lead",
+        "handle": "SV-PLG-16#lead",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "sv-plg-16",
+        "handle": "sv-plg-16",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "a-b",
+        "handle": "a-b",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "a_b",
+        "handle": "a_b",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "ab",
+        "handle": "ab",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "Agent2",
+        "handle": "Agent2",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "agent10",
+        "handle": "agent10",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "ALPHA",
+        "handle": "ALPHA",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "a b",
+        "handle": "a b",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "a.b",
+        "handle": "a.b",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      },
+      {
+        "id": "a#b",
+        "handle": "a#b",
+        "effectiveStatus": "thinking",
+        "unread": 1
+      }
+    ],
+    "expected": [
+      "x",
+      "a",
+      "b",
+      "d",
+      "_worker/acme/default/sprint-1",
+      "a b",
+      "a_b",
+      "a-b",
+      "a.b",
+      "a#b",
+      "ab",
+      "agent-10",
+      "Agent-2",
+      "agent10",
+      "Agent2",
+      "alpha",
+      "ALPHA",
+      "Beta",
+      "c",
+      "eclair",
+      "sv-plg-16",
+      "SV-PLG-16#lead",
+      "SW-PLG-16",
+      "z",
+      "s"
+    ]
+  },
+  "managedAsk": [
+    {
+      "finish": "success",
+      "afterClose": "running"
+    },
+    {
+      "finish": "failed",
+      "afterClose": "running"
+    },
+    {
+      "finish": "needs-attention",
+      "afterClose": "running"
+    }
+  ],
+  "supervision": [
+    {
+      "name": "legacy Stop uses the 45-second quiet window",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 1,
+          "event": "legacy",
+          "status": "running",
+          "hook": "UserPromptSubmit"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 45099,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "host-observed Stop stays idle at 45 seconds; host new turns do not reset liveness",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "done",
+            "observed": true
+          }
+        },
+        {
+          "at": 101,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 100000,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "thinking",
+            "observed": true,
+            "turnGeneration": 2
+          }
+        },
+        {
+          "at": 599999,
+          "event": "check",
+          "outcome": "running",
+          "status": "thinking"
+        },
+        {
+          "at": 600000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "host authority clears an already armed legacy quiet timer",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 1000,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "done",
+            "observed": true
+          }
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 590000,
+          "event": "legacy",
+          "status": "running",
+          "hook": "UserPromptSubmit"
+        },
+        {
+          "at": 600000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "an unobserved host leaves the legacy quiet input intact",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 1,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "idle",
+            "observed": false
+          }
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "a clean invocation exit in a live shell is Ended, not session death",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "idle",
+            "observed": true,
+            "exit": {
+              "code": 0,
+              "signal": null,
+              "requested": false
+            }
+          }
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "name": "PTY exit alone ends a running managed task without completion",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "pty-exit"
+        },
+        {
+          "at": 101,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "explicit completion wins over quiet and PTY exit",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 1000,
+          "event": "done",
+          "status": "success"
+        },
+        {
+          "at": 2000,
+          "event": "pty-exit"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "done",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "name": "legacy running cancels quiet and resets the 600-second deadline",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 40000,
+          "event": "legacy",
+          "status": "running",
+          "hook": "UserPromptSubmit"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "thinking"
+        },
+        {
+          "at": 639999,
+          "event": "check",
+          "outcome": "running",
+          "status": "thinking"
+        },
+        {
+          "at": 640000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "repeated legacy done does not reset the quiet window",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 40000,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "agent messages reset only the 600-second liveness window",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "done",
+            "observed": true
+          }
+        },
+        {
+          "at": 500000,
+          "event": "message"
+        },
+        {
+          "at": 600000,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 1100000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "asks suppress and rearm liveness on its existing cadence",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 200,
+          "event": "ask-open"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "awaiting-answer",
+          "status": "awaiting-answer"
+        },
+        {
+          "at": 600000,
+          "event": "check",
+          "outcome": "awaiting-answer",
+          "status": "awaiting-answer"
+        },
+        {
+          "at": 650000,
+          "event": "ask-close"
+        },
+        {
+          "at": 1199999,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 1200000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "subagents suppress a spent quiet timer until launch liveness fires",
+      "events": [
+        {
+          "at": 0,
+          "event": "bind"
+        },
+        {
+          "at": 1,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "done",
+            "observed": true,
+            "subagentsOpen": 1
+          }
+        },
+        {
+          "at": 100,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "running"
+        },
+        {
+          "at": 50000,
+          "event": "snapshot",
+          "snapshot": {
+            "state": "done",
+            "observed": true,
+            "subagentsOpen": 0
+          }
+        },
+        {
+          "at": 95000,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 600000,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    },
+    {
+      "name": "binding an already quiet legacy tab does not synthesize a status transition",
+      "events": [
+        {
+          "at": 0,
+          "event": "legacy",
+          "status": "done",
+          "hook": "Stop"
+        },
+        {
+          "at": 100,
+          "event": "bind"
+        },
+        {
+          "at": 45100,
+          "event": "check",
+          "outcome": "running",
+          "status": "idle"
+        },
+        {
+          "at": 600100,
+          "event": "check",
+          "outcome": "needs-attention",
+          "status": "dropped"
+        }
+      ]
+    }
+  ]
+}

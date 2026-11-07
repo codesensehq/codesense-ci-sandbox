@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <!-- Example dashboard · Setup status. Whether line attribution and turn-link capture work on
+         this Mac, from one codesense.setup() read. The same values describe_setup returns. -->
+    <title>Setup status: attribution and capture</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--cs-bg); color: var(--cs-fg); }
+      body { font: 13px/1.5 var(--cs-font-sans); }
+      .page { padding: 20px 24px 40px; max-width: 640px; }
+      h1 { font-size: 16px; margin: 0 0 12px; }
+      th { text-align: left; font-weight: 500; color: var(--cs-muted-fg); padding-right: 24px; }
+      #state { margin-top: 12px; color: var(--cs-muted-fg); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>Setup status</h1>
+      <table class="cs-table" aria-label="Attribution and capture status">
+        <tbody id="rows"></tbody>
+      </table>
+      <p id="state" role="status">Loading…</p>
+    </div>
+    <script>
+      // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+      (async () => {
+        const rows = document.getElementById("rows");
+        const state = document.getElementById("state");
+        const cell = (tag, text) => Object.assign(document.createElement(tag), { textContent: String(text) });
+        try {
+          // Older apps have no setup(); say so instead of failing on the call.
+          if (typeof window.codesense.setup !== "function") throw new Error("Update CodeSense to see setup status.");
+          const { attribution: a } = await window.codesense.setup();
+          const c = a.capture;
+          const table = [
+            ["Line attribution", a.status.kind + (a.status.reason ? ` (${a.status.reason})` : "")],
+            ["git-ai", a.gitAiVersion ?? "not installed"],
+            ["Daemon", a.daemonReachable ? "running" : "not running"],
+            ["Last capture sweep", c.lastSweepAt ? new Date(c.lastSweepAt).toLocaleString() : "none since the app started"],
+            ["Logs seen / new", `${c.logsSeen} / ${c.logsNew}`],
+            ["Turn links stored", c.sessionMappingRowsStored],
+            ["Last capture error", c.lastError ?? "none"],
+          ];
+          for (const [label, value] of table) {
+            const tr = document.createElement("tr");
+            tr.append(cell("th", label), cell("td", value));
+            rows.append(tr);
+          }
+          state.textContent = "This Mac, since the app started.";
+        } catch (error) {
+          // An app without setup() threw the update reason above; show it as thrown.
+          const tooOld = window.codesense && typeof window.codesense.setup !== "function";
+          state.textContent = tooOld ? error.message : "Open in CodeSense for setup status.";
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,346 @@
+id: while-you-were-away
+name: While you were away
+owner: codesense
+mode: fresh
+task: |
+  Write {{person}} a short review of durable team work in org
+  acme/team-context, team web. Use only cited-retrieval
+  (read its SKILL.md) for evidence collection. Do not use read_messages
+  or signal_progress. Do not read other orgs.
+
+  Window: from {{last_run_at}} to the current time. The template is blank
+  on the first run: use the last 24 hours then. If the last routine attempt
+  failed, use the previous successfully published review's window.until
+  instead, so a failed attempt cannot create a hole. Get that previous
+  result with routine_result, deliberately, not as evidence for any claim.
+  On a rerun of today's file, retain its original window.since and refresh
+  the end to now, so the day's earlier work isn't erased. {{date}} is the
+  review's YYYY-MM-DD in the schedule's time zone.
+  If person is not a simple lowercase path segment, fail with a clear error.
+
+  Read this team's context_repo_status to resolve the actual repoPath;
+  do not guess a checkout path. Deliberately read today's review, if present,
+  only to retain window.since. Gather evidence
+  for the resulting window through cited-retrieval. Fix one generated_at
+  timestamp after retrieval, and publish the exact window, event_count and
+  from_sha..to_sha it returned. A missing source is a failed collection,
+  not zero events: signal_done failed and keep the previous review/result.
+  Do not label a partial collection complete; if a cap prevents covering
+  the window, fail and state the retrieval gap.
+
+  Write sections in this order, omitting empty sections:
+  What moved; Decisions and why; Waiting on you; Risks; Diffs worth reading.
+  Every claim, including a reason or a risk, needs at least one citation to
+  an item returned by cited-retrieval. Cut uncitable claims. A decision's
+  reason must be recorded, never guessed. Avoid an uncited opening summary.
+  Use a generic work-review format; no section or citation depends on an
+  agent name, vendor, or application. event_count counts distinct events
+  used, not citations or supporting files. If it is zero, sections is []
+  and the only body line is "No recorded changes in this window."
+
+  The result payload is {person, review_path, window:{since,until},
+  generated_at, event_count, from_sha, to_sha, sections:[{title,claims:
+  [{text,citations:[{source,org,team,at,path?,run_id?,sha?,id?,record?}]}]}]}.
+  Use source commit/run/advance/story/message/inbox. A message is an agent
+  update and carries record: agent-update; inbox IDs are separate. Story
+  paths end in #Lnn. Use full commit SHAs. All citations stay in this org
+  and team. Do not put summary text inside citation objects.
+
+  Prepare the new review body and non-receipt frontmatter for this team's
+  content/reviews/{{person}}/{{date}}.md before changing the existing file
+  (review_path is reviews/{{person}}/{{date}}.md, relative to content).
+  Frontmatter: person, generated_at, window_since, window_until, event_count,
+  from_sha, to_sha, and the latest receipt fields when present. No type
+  or cs:* fields: this is plain metadata, not a pipeline story. Follow it
+  with the window, generation time, event count and commit range, then the
+  nonempty sections and cited claims. Markdown citation labels include
+  sha, run_id, path#Lnn or id explicitly. Commit citations link to the
+  context repo commit; run/message/inbox citations retain their identifiers
+  for lookup in the pane. A no-event review still keeps its metadata and
+  has the single body line above.
+
+  Immediately before writing the prepared replacement, re-read today's file
+  and copy its current opened_at and acted_at fields into the replacement.
+  If the file does not exist, there are no receipts to preserve. Preserve
+  absence as well as presence: if a receipt field is now absent, leave it
+  absent so an undo during collection is respected. Never restore receipts
+  from the initial read.
+  Do not gather more evidence or do other work between this fresh receipt
+  read and the write. Replace today's file rather than append a second review.
+
+  The agent does the git: stage only this person's review directory in the
+  team context repo, including receipt-only edits to earlier days. Commit
+  and push that repo with the user's git identity and explicit paths, then
+  report_context_sync with this org and state ok. Never commit unrelated
+  working-tree edits. If push fails, report_context_sync failed and
+  signal_done failed; do not promote a new cached review. Do not create an
+  empty commit if the desired review and receipts are already committed.
+  After successful push, routine_publish_result with the exact payload
+  matching the committed review, then signal_done success. CodeSense does
+  not sync this repository for you.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - schedule:
+      cron: "0 7 * * 1-5"
+      tz: America/Los_Angeles
+policy:
+  max_runtime: 15m
+runs_on: one_mac
+variables:
+  person:
+    type: text
+    default: sam
+revision: 1
+result_schema: {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "person",
+    "review_path",
+    "window",
+    "generated_at",
+    "event_count",
+    "from_sha",
+    "to_sha",
+    "sections"
+  ],
+  "properties": {
+    "person": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "review_path": {
+      "type": "string",
+      "pattern": "^reviews/[a-z0-9][a-z0-9-]*/[0-9]{4}-[0-9]{2}-[0-9]{2}\\.md$"
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "since",
+        "until"
+      ],
+      "properties": {
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "from_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "to_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sections": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "claims"
+        ],
+        "properties": {
+          "title": {
+            "enum": [
+              "What moved",
+              "Decisions and why",
+              "Waiting on you",
+              "Risks",
+              "Diffs worth reading"
+            ]
+          },
+          "claims": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "text",
+                "citations"
+              ],
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "citations": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "source",
+                      "org",
+                      "team",
+                      "at"
+                    ],
+                    "properties": {
+                      "source": {
+                        "enum": [
+                          "commit",
+                          "run",
+                          "advance",
+                          "story",
+                          "message",
+                          "inbox"
+                        ]
+                      },
+                      "org": {
+                        "const": "acme/team-context"
+                      },
+                      "team": {
+                        "const": "web"
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "path": {
+                        "type": "string",
+                        "pattern": "^.+#L[1-9][0-9]*$"
+                      },
+                      "run_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sha": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{40}$"
+                      },
+                      "id": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "record": {
+                        "const": "agent-update"
+                      }
+                    },
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "commit"
+                          }
+                        },
+                        "required": [
+                          "sha"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "run"
+                          }
+                        },
+                        "required": [
+                          "run_id"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "advance"
+                          }
+                        },
+                        "anyOf": [
+                          {
+                            "required": [
+                              "run_id"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "path"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "story"
+                          }
+                        },
+                        "required": [
+                          "path"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "message"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "record"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "source": {
+                            "const": "inbox"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_count": {
+            "const": 0
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sections": {
+            "maxItems": 0
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "sections": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

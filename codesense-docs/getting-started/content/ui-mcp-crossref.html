@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <meta name="codesense:icon" content="link-2" />
+    <title>CodeSense — UI ↔ MCP crossref</title>
+
+    <!-- Shared docs chrome: top-nav, palette, theme glue. Mounts into the empty
+         <nav class="cs-topnav"> below and sets body[data-nav-ready]=true. -->
+    <link rel="stylesheet" href="./_shared/cs-docs.css" />
+    <script src="./_shared/nav.js" defer></script>
+
+    <style>
+      /* -------------------------------------------------------------------
+       * ui-mcp-crossref — local styles (`cs-xref-*`)
+       *
+       * A reference-shaped dashboard, not a content page: no hero visual,
+       * no try-this. Three filterable
+       * tabs (paired / UI-only / MCP-only) sit under a thin header strip
+       * showing the live counts fetched from `generated/ui-mcp.json`.
+       * The dashboard spine (`cs-page`, `cs-main`, `cs-topnav`) is
+       * inherited from `_shared/cs-docs.css`.
+       * ----------------------------------------------------------------- */
+
+      .cs-xref-page {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: var(--cs-docs-space-5) var(--cs-docs-space-5) var(--cs-docs-space-7);
+      }
+
+      .cs-xref-head {
+        display: flex;
+        flex-direction: column;
+        gap: var(--cs-docs-space-3);
+        margin-bottom: var(--cs-docs-space-5);
+      }
+      .cs-xref-head__title {
+        margin: 0;
+        font-size: clamp(22px, 1.6vw + 1rem, 32px);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+      }
+      .cs-xref-head__title em {
+        font-style: normal;
+        color: var(--cs-accent);
+      }
+      .cs-xref-head__lede {
+        margin: 0;
+        color: var(--cs-muted-fg);
+        max-width: 72ch;
+        line-height: 1.5;
+      }
+
+      /* Counts strip ------------------------------------------------- */
+      .cs-xref-counts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--cs-docs-space-3) var(--cs-docs-space-4);
+        padding: var(--cs-docs-space-3) var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: 8px;
+        background: var(--cs-inset);
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+      .cs-xref-counts b {
+        color: var(--cs-fg);
+        font-weight: 600;
+      }
+      .cs-xref-counts .sep {
+        color: var(--cs-faint-fg);
+      }
+
+      /* Tabs --------------------------------------------------------- */
+      .cs-xref-tabs {
+        display: flex;
+        gap: 2px;
+        margin-bottom: var(--cs-docs-space-4);
+        border-bottom: 1px solid var(--cs-border);
+      }
+      .cs-xref-tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 10px 14px;
+        margin-bottom: -1px;
+        font: inherit;
+        color: var(--cs-muted-fg);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .cs-xref-tab[aria-selected="true"] {
+        color: var(--cs-fg);
+        border-bottom-color: var(--cs-accent);
+      }
+      .cs-xref-tab:focus-visible {
+        outline: 2px solid var(--cs-accent);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      .cs-xref-tab__count {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-faint-fg);
+        background: var(--cs-inset);
+        padding: 2px 6px;
+        border-radius: 999px;
+      }
+      .cs-xref-tab[aria-selected="true"] .cs-xref-tab__count {
+        color: var(--cs-fg);
+      }
+
+      /* Filter row --------------------------------------------------- */
+      .cs-xref-filters {
+        display: flex;
+        gap: var(--cs-docs-space-3);
+        align-items: center;
+        margin-bottom: var(--cs-docs-space-3);
+      }
+      .cs-xref-search {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        background: var(--cs-surface);
+      }
+      .cs-xref-search input {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        flex: 1;
+        min-width: 0;
+      }
+      .cs-xref-search input:focus {
+        outline: none;
+      }
+      .cs-xref-search:focus-within {
+        border-color: var(--cs-accent);
+      }
+      .cs-xref-filter-info {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-muted-fg);
+      }
+      .cs-xref-filter-info b {
+        color: var(--cs-fg);
+      }
+
+      /* Rows --------------------------------------------------------- */
+      .cs-xref-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cs-xref-row {
+        display: grid;
+        grid-template-columns: minmax(240px, 1.2fr) auto minmax(240px, 1.2fr);
+        align-items: center;
+        gap: var(--cs-docs-space-3);
+        padding: var(--cs-docs-space-3) var(--cs-docs-space-4);
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        background: var(--cs-surface);
+      }
+      .cs-xref-row:target {
+        border-color: var(--cs-accent);
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--cs-accent) 25%, transparent);
+      }
+      .cs-xref-row__cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .cs-xref-row__name {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+        color: var(--cs-fg);
+        overflow-wrap: anywhere;
+      }
+      .cs-xref-row__src {
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        color: var(--cs-muted-fg);
+        overflow-wrap: anywhere;
+      }
+      .cs-xref-row__src a {
+        color: inherit;
+      }
+      .cs-xref-row__link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        padding: 4px 8px;
+        border: 1px dashed var(--cs-border);
+        border-radius: 999px;
+        font-family: var(--cs-font-mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+      }
+      .cs-xref-row__link--map {
+        border-style: solid;
+        color: var(--cs-accent);
+        border-color: color-mix(in oklab, var(--cs-accent) 40%, var(--cs-border));
+      }
+      .cs-xref-row__note {
+        grid-column: 1 / -1;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+        line-height: 1.45;
+      }
+      .cs-xref-row__badge {
+        font-family: var(--cs-font-mono);
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        align-self: start;
+      }
+      .cs-xref-row__badge--acknowledged {
+        color: var(--cs-fg);
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+      }
+      .cs-xref-row__badge--unacknowledged {
+        color: color-mix(in oklab, var(--cs-fg) 70%, var(--cs-warning));
+        background: color-mix(in oklab, var(--cs-warning) 10%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-warning) 40%, var(--cs-border));
+      }
+
+      /* Single-column variant for the UI-only / MCP-only tabs. */
+      .cs-xref-row--single {
+        grid-template-columns: 1fr auto auto;
+      }
+
+      /* State surfaces ---------------------------------------------- */
+      .cs-xref-loading,
+      .cs-xref-error,
+      .cs-xref-empty {
+        display: none;
+        padding: var(--cs-docs-space-5);
+        text-align: center;
+        color: var(--cs-muted-fg);
+      }
+      body[data-state="loading"] .cs-xref-loading {
+        display: block;
+      }
+      body[data-state="error"] .cs-xref-error {
+        display: block;
+      }
+      body[data-state="ready"] .cs-xref-list[data-cs-empty="true"] ~ .cs-xref-empty {
+        display: block;
+      }
+
+      /* Outro ------------------------------------------------------- */
+      .cs-xref-outro {
+        margin-top: var(--cs-docs-space-6);
+        padding: var(--cs-docs-space-4) var(--cs-docs-space-5);
+        border: 1px dashed var(--cs-border);
+        border-radius: 8px;
+        color: var(--cs-muted-fg);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .cs-xref-outro code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+        color: var(--cs-fg);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="ui-mcp-crossref" data-state="loading" data-tab="paired">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+
+    <main class="cs-main cs-main--wide" id="main">
+      <div class="cs-xref-page">
+        <header class="cs-xref-head">
+          <h1 class="cs-xref-head__title">UI <em>&harr;</em> MCP crossref</h1>
+          <p class="cs-xref-head__lede">
+            Every Tauri command the UI invokes paired with the MCP tool an agent can call to achieve
+            the same thing — the auditor for invariant <strong>I&#8209;2</strong>
+            (MCP&#8209;complete). Build-time generator reads the registrations in
+            <code>src-tauri/src/lib.rs</code> and <code>src-tauri/src/mcp/handler.rs</code>, pairs
+            by exact function-name match plus an explicit map, and emits
+            <code>generated/ui-mcp.json</code>. New one-sided commands land as drift and fail CI
+            until a pair is added or the item is listed in
+            <code>_shared/allow-unpaired.yml</code> with a rationale.
+          </p>
+
+          <div class="cs-xref-counts" aria-label="Generator counts">
+            <span> <b data-count id="count-paired">0</b> paired </span>
+            <span class="sep">·</span>
+            <span>
+              <b data-count id="count-ui-only">0</b> UI-only (<b data-count id="count-ui-ack">0</b>
+              with rationale)
+            </span>
+            <span class="sep">·</span>
+            <span>
+              <b data-count id="count-mcp-only">0</b> MCP-only (<b data-count id="count-mcp-ack"
+                >0</b
+              >
+              with rationale)
+            </span>
+          </div>
+        </header>
+
+        <div class="cs-xref-tabs" role="tablist" aria-label="Views">
+          <button
+            type="button"
+            class="cs-xref-tab"
+            role="tab"
+            aria-selected="true"
+            data-cs-tab="paired"
+          >
+            Paired
+            <span class="cs-xref-tab__count" data-count data-cs-tab-count="paired">0</span>
+          </button>
+          <button type="button" class="cs-xref-tab" role="tab" data-cs-tab="uiOnly">
+            UI-only
+            <span class="cs-xref-tab__count" data-count data-cs-tab-count="uiOnly">0</span>
+          </button>
+          <button type="button" class="cs-xref-tab" role="tab" data-cs-tab="mcpOnly">
+            MCP-only
+            <span class="cs-xref-tab__count" data-count data-cs-tab-count="mcpOnly">0</span>
+          </button>
+        </div>
+
+        <div class="cs-xref-filters">
+          <label class="cs-xref-search" for="cs-xref-q">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              style="color: var(--cs-muted-fg); flex: 0 0 auto"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              id="cs-xref-q"
+              type="search"
+              placeholder="Filter by name…"
+              autocomplete="off"
+              data-cs-q
+            />
+          </label>
+          <span class="cs-xref-filter-info">
+            <b data-count data-cs-visible>0</b> of <b data-count data-cs-total>0</b> showing
+          </span>
+        </div>
+
+        <div class="cs-xref-loading" role="status" aria-live="polite">
+          Fetching <code>generated/ui-mcp.json</code>…
+        </div>
+
+        <div class="cs-xref-error" role="status" aria-live="polite">
+          Couldn't load <code>generated/ui-mcp.json</code>. Open this page inside CodeSense (or the
+          dev viewer) so the file is reachable same-origin.
+        </div>
+
+        <div class="cs-xref-list" data-cs-list role="list"></div>
+
+        <div class="cs-xref-empty" role="status" aria-live="polite">
+          Nothing matches that filter.
+        </div>
+
+        <aside class="cs-xref-outro" aria-label="How this page stays fresh">
+          Generated by
+          <code>scripts/generate-ui-mcp-crossref.mjs</code> on every build. The CI gate runs
+          <code>npm run gen:docs:check</code>; a new <code>#[tool(...)]</code> or
+          <code>invoke_handler</code> entry without a mirror fails the build and the error names the
+          drifted entity + the file to edit. See <code>_shared/ui-mcp-map.yml</code> for explicit
+          pairings and <code>_shared/allow-unpaired.yml</code> for intentional one-sided entries.
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+        var root = document.body;
+        var listEl = document.querySelector("[data-cs-list]");
+        var qEl = document.querySelector("[data-cs-q]");
+        var visibleEl = document.querySelector("[data-cs-visible]");
+        var totalEl = document.querySelector("[data-cs-total]");
+        var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-cs-tab]"));
+
+        var state = { doc: null, tab: "paired", q: "" };
+
+        // ----- Hash routing -----------------------------------------
+        // `#tab/<name>` selects a tab; `#pair/<name>` opens the paired tab
+        // and scrolls to the row (whose id is `pair-<name>`).
+        function applyHash() {
+          var hash = (location.hash || "").replace(/^#/, "");
+          if (!hash) return null;
+          var m = /^(pair|ui|mcp)\/(.+)$/.exec(hash);
+          if (!m) return null;
+          var kind = m[1];
+          var name = m[2];
+          var tab = kind === "pair" ? "paired" : kind === "ui" ? "uiOnly" : "mcpOnly";
+          selectTab(tab, { preserveHash: true });
+          window.requestAnimationFrame(function () {
+            var row = document.getElementById(kind + "-" + name);
+            if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+          });
+          return { tab: tab, name: name };
+        }
+
+        // ----- Tab selection ---------------------------------------
+        function selectTab(tab, opts) {
+          state.tab = tab;
+          root.setAttribute("data-tab", tab);
+          tabs.forEach(function (b) {
+            b.setAttribute("aria-selected", String(b.getAttribute("data-cs-tab") === tab));
+          });
+          if (!(opts && opts.preserveHash)) {
+            // Keep the URL tidy — `#tab/<name>` on each click.
+            history.replaceState(null, "", "#tab/" + tab);
+          }
+          renderList();
+        }
+
+        tabs.forEach(function (b) {
+          b.addEventListener("click", function () {
+            selectTab(b.getAttribute("data-cs-tab"));
+          });
+        });
+
+        // ----- Filter --------------------------------------------
+        qEl.addEventListener("input", function () {
+          state.q = qEl.value.trim().toLowerCase();
+          renderList();
+        });
+
+        // Focus search on `/`.
+        document.addEventListener("keydown", function (ev) {
+          if (ev.target && /INPUT|TEXTAREA|SELECT/.test(ev.target.tagName)) return;
+          if (ev.key === "/" && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
+            ev.preventDefault();
+            qEl.focus();
+            qEl.select();
+          }
+        });
+
+        // ----- Helpers ------------------------------------------
+        function escapeHtml(s) {
+          return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function sourceLink(file, line) {
+          if (!file) return "";
+          var label = escapeHtml(file + ":" + line);
+          return '<span class="cs-xref-row__src">' + label + "</span>";
+        }
+
+        function rowsForTab() {
+          var doc = state.doc;
+          if (!doc) return [];
+          var rows = doc[state.tab] || [];
+          if (!state.q) return rows;
+          var q = state.q;
+          return rows.filter(function (r) {
+            if (state.tab === "paired") {
+              return (
+                r.name.toLowerCase().indexOf(q) >= 0 ||
+                (r.ui && r.ui.name.toLowerCase().indexOf(q) >= 0) ||
+                (r.mcp && r.mcp.name.toLowerCase().indexOf(q) >= 0)
+              );
+            }
+            var hay = (r.name || "") + " " + (r.rationale || "");
+            return hay.toLowerCase().indexOf(q) >= 0;
+          });
+        }
+
+        function renderPairedRow(row) {
+          var ui = row.ui || {};
+          var mcp = row.mcp || {};
+          var via = row.via === "map" ? "map" : "exact";
+          var viaClass = via === "map" ? " cs-xref-row__link--map" : "";
+          var note = row.note
+            ? '<p class="cs-xref-row__note">' + escapeHtml(row.note) + "</p>"
+            : "";
+          return (
+            '<article class="cs-xref-row" id="pair-' +
+            escapeHtml(row.name) +
+            '" role="listitem">' +
+            '<div class="cs-xref-row__cell">' +
+            '<span class="cs-xref-row__name">' +
+            escapeHtml(ui.name || row.name) +
+            "</span>" +
+            sourceLink(ui.file, ui.line) +
+            (ui.wrapperFile
+              ? '<span class="cs-xref-row__src">' +
+                escapeHtml(ui.wrapperFile + ":" + ui.wrapperLine) +
+                "</span>"
+              : "") +
+            "</div>" +
+            '<span class="cs-xref-row__link' +
+            viaClass +
+            '" title="' +
+            (via === "map" ? "paired via _shared/ui-mcp-map.yml" : "paired by exact-name match") +
+            '">' +
+            escapeHtml(via) +
+            " &harr;" +
+            "</span>" +
+            '<div class="cs-xref-row__cell">' +
+            '<span class="cs-xref-row__name">' +
+            escapeHtml(mcp.name || row.name) +
+            "</span>" +
+            sourceLink(mcp.file, mcp.line) +
+            "</div>" +
+            note +
+            "</article>"
+          );
+        }
+
+        function renderUnpairedRow(row, kind) {
+          var idPrefix = kind === "uiOnly" ? "ui-" : "mcp-";
+          var ackClass = row.acknowledged
+            ? "cs-xref-row__badge--acknowledged"
+            : "cs-xref-row__badge--unacknowledged";
+          var ackLabel = row.acknowledged ? "allowed" : "unacknowledged";
+          var rationale = row.rationale
+            ? '<p class="cs-xref-row__note">' + escapeHtml(row.rationale) + "</p>"
+            : row.acknowledged
+              ? ""
+              : '<p class="cs-xref-row__note">No rationale yet. Add one to ' +
+                "<code>_shared/allow-unpaired.yml</code> or pair this in " +
+                "<code>_shared/ui-mcp-map.yml</code>, then run <code>npm run gen:docs</code>.</p>";
+          return (
+            '<article class="cs-xref-row cs-xref-row--single" id="' +
+            idPrefix +
+            escapeHtml(row.name) +
+            '" role="listitem">' +
+            '<div class="cs-xref-row__cell">' +
+            '<span class="cs-xref-row__name">' +
+            escapeHtml(row.name) +
+            "</span>" +
+            sourceLink(row.file, row.line) +
+            (row.wrapperFile
+              ? '<span class="cs-xref-row__src">' +
+                escapeHtml(row.wrapperFile + ":" + row.wrapperLine) +
+                "</span>"
+              : "") +
+            "</div>" +
+            '<span class="cs-xref-row__badge ' +
+            ackClass +
+            '">' +
+            ackLabel +
+            "</span>" +
+            '<span class="cs-xref-row__link">' +
+            (kind === "uiOnly" ? "UI only" : "MCP only") +
+            "</span>" +
+            rationale +
+            "</article>"
+          );
+        }
+
+        function renderList() {
+          if (!state.doc) return;
+          var rows = rowsForTab();
+          var html;
+          if (state.tab === "paired") {
+            html = rows.map(renderPairedRow).join("");
+          } else {
+            html = rows
+              .map(function (r) {
+                return renderUnpairedRow(r, state.tab);
+              })
+              .join("");
+          }
+          listEl.innerHTML = html;
+          listEl.setAttribute("data-cs-empty", String(rows.length === 0));
+          if (visibleEl) visibleEl.textContent = String(rows.length);
+          var total = (state.doc[state.tab] || []).length;
+          if (totalEl) totalEl.textContent = String(total);
+        }
+
+        function updateCounts(counts) {
+          var map = {
+            "count-paired": counts.paired,
+            "count-ui-only": counts.uiOnly,
+            "count-ui-ack": counts.uiOnlyAcknowledged,
+            "count-mcp-only": counts.mcpOnly,
+            "count-mcp-ack": counts.mcpOnlyAcknowledged,
+          };
+          Object.keys(map).forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = String(map[id] == null ? 0 : map[id]);
+          });
+          document.querySelectorAll("[data-cs-tab-count]").forEach(function (el) {
+            var key = el.getAttribute("data-cs-tab-count");
+            el.textContent = String(counts[key] == null ? 0 : counts[key]);
+          });
+        }
+
+        function load() {
+          return fetch("./generated/ui-mcp.json", { credentials: "same-origin" })
+            .then(function (res) {
+              if (!res.ok) throw new Error("HTTP " + res.status);
+              return res.json();
+            })
+            .then(function (doc) {
+              if (
+                !doc ||
+                !Array.isArray(doc.paired) ||
+                !Array.isArray(doc.uiOnly) ||
+                !Array.isArray(doc.mcpOnly)
+              ) {
+                throw new Error("Malformed ui-mcp.json");
+              }
+              state.doc = doc;
+              root.setAttribute("data-state", "ready");
+              updateCounts(doc.counts || {});
+              var fromHash = applyHash();
+              if (!fromHash) selectTab(state.tab);
+            })
+            .catch(function (err) {
+              root.setAttribute("data-state", "error");
+              /* eslint-disable no-console */
+              if (typeof console !== "undefined" && console.error) console.error(err);
+              /* eslint-enable no-console */
+            });
+        }
+
+        window.addEventListener("hashchange", function () {
+          applyHash();
+        });
+
+        load();
+      })();
+    </script>
+  </body>
+</html>

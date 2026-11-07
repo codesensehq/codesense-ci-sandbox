@@ -1,0 +1,7 @@
+# Violates (e): a second terminal parser. Never built.
+[package]
+name = "guard-fixture-e"
+version = "0.0.0"
+
+[dependencies]
+vte = "0.13"

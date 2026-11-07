@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Massively parallel</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/massively-parallel"] figure.hero {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/massively-parallel"] .braid {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--cs-inset);
+        border-radius: var(--cs-docs-radius);
+      }
+      body[data-page="arc-l-factory/massively-parallel"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/massively-parallel">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Massively parallel shipping" id="hero">
+        <h1>Massively parallel shipping</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Pick a story graph. Spin up N Builders. Watch the DAG light up like a Christmas tree. This
+          is Phase 8 of the <a href="../factory-playbook.html#phase-8">factory playbook</a>, with a
+          per-story worktree keeping each Builder's checkout clean and the
+          <code>builder</code> inbox serializing who claims which story.
+        </p>
+      </section>
+
+      <section data-search="What makes parallel safe" id="why">
+        <h2>What makes parallel safe</h2>
+        <p>
+          Running five agents against the same repo without stepping on each other sounds hard. In
+          CodeSense it's four invariants:
+        </p>
+        <ol>
+          <li>
+            <strong>Per-story worktree.</strong> Each story claim creates its own git worktree.
+            Builders never share a working tree.
+          </li>
+          <li>
+            <strong>Inbox claim-and-ack.</strong> A message in the <code>builder</code> inbox can
+            only be claimed by one Builder at a time; claim is atomic.
+          </li>
+          <li>
+            <strong>Depends-on frontmatter.</strong> Stories declare upstream dependencies; a
+            Builder won't claim a story whose upstreams are still open.
+          </li>
+          <li>
+            <strong>agent-dag ground truth.</strong> One dashboard shows all live agents, their
+            worktrees, their current story, their last check-in. If anything looks off, you see it.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Step-by-step — turn a 5-story epic into 5 PRs" id="steps">
+        <h2>Step-by-step: turn a 5-story epic into 5 PRs</h2>
+        <ol>
+          <li>
+            <p>
+              <strong>Freeze the spec.</strong> You've got an epic with a dependency graph (each story's
+              <code>depends_on</code> field, written when the stories were sliced).
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>One Builder definition, many sessions.</strong> One <code>amelia-builder</code>
+              agent definition is enough: each launch is its own session in its own story
+              worktree, and every one of them claims off <code>builder</code>.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Add the claim routine.</strong> One <code>routine.yml</code> with a
+              <code>role_pending</code> trigger in <code>fresh</code> mode: each message queued for
+              <code>builder</code> starts a Builder session that claims it.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Open the agent-dag.</strong> Within a minute, the DAG shows Builder-1 claiming
+              DEMO-1, Builder-2 claiming DEMO-2 (its upstream was DEMO-1's dep-free
+              sibling). DEMO-5 stays grey — it's waiting on an upstream decision.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Watch for amber.</strong> If a Builder session hangs for &gt; 10 minutes
+              without a worktree write, the DAG shades amber. One click reclaims the story to
+              another Builder.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="The parallel braid" id="braid">
+        <h2>The parallel braid</h2>
+        <div class="braid">
+          <p style="margin: 0 0 10px; color: var(--cs-muted-fg)">
+            Each Builder is a <strong>strand</strong>. Strands run in isolation (per-worktree) and
+            only cross at the inbox. The braid is what you watch when you want to feel the factory
+            move.
+          </p>
+          <pre><code>Builder-1 ──[DEMO-1 ✓]── open PR ──→ reviewer inbox
+Builder-2 ──[DEMO-2 ✓]── open PR ──→ reviewer inbox
+Builder-3 ──[DEMO-3 ⚠ escalated]──→ resolver inbox
+Builder-4 ──[DEMO-4 claim]── (running)
+Builder-5 ──[—]── waiting on DEMO-5 upstream</code></pre>
+        </div>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// The Builder definition
+agent_create { id: 'amelia-builder', name: 'Amelia (builder)', runtime: 'claude',
+               startup: ['.claude/skills/bmad-build/'] }
+
+// The claim routine: write it as a file, since routine_create takes only a
+// schedule (`when`) and a role_pending trigger lives in routine.yml:
+//   config/agents/amelia-builder/routines/builder-claim/routine.yml
+//   (the phase 8 snippet in the factory playbook)
+
+// Queue the five stories
+send_role_message { team: '&lt;team&gt;', role: 'builder', text: 'Build DEMO-1' }   // … one per story</code></pre>
+          <p>Each parameter's exact shape is in the <a href="../mcp-explorer.html#tool/agent_create">MCP explorer</a>.</p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./local-only.html">Local-only shape →</a> · Deep dive:
+        <a href="../factory-playbook.html#phase-8">factory-playbook — Phase 8</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Massively parallel</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

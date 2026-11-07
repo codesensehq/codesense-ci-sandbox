@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="droplet" />
+    <title>CodeSense — Hydration</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1080px;
+      }
+      .arcC-hero {
+        display: block;
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .arcC-hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 280px;
+      }
+      .arcC-hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      /* Numbered-step pattern — shared voice with worktree-creation.html. */
+      .arcC-step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      .arcC-step:first-of-type {
+        border-top: 0;
+      }
+      .arcC-step-n {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+      }
+      .arcC-step h3 {
+        margin: 2px 0 6px;
+        font-size: 16px;
+      }
+      .arcC-step p {
+        margin: 0 0 10px;
+        line-height: 1.55;
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 10px 12px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      /* Policy dial — three horizontally-stacked cards. */
+      .arcC-policy {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      .arcC-policy__card {
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .arcC-policy__eyebrow {
+        font-family: var(--cs-font-mono);
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+      }
+      .arcC-policy__card h3 {
+        margin: 0;
+        font-size: 15px;
+      }
+      .arcC-policy__card p {
+        margin: 0;
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+        line-height: 1.5;
+      }
+      .arcC-policy__card--light {
+        border-color: color-mix(in oklab, var(--cs-accent) 50%, var(--cs-border));
+      }
+      /* Schema peek block — matches the "In the slug" treatment in workspace-kinds. */
+      .arcC-schema {
+        margin: var(--cs-docs-space-4) 0;
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+      }
+      .arcC-schema h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .arcC-shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/hydration">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="How a story's context reaches a worktree: hydrate_story and its policy" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Hydration</span>
+        </p>
+        <h1>Only the docs this story needs, when an agent asks</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          Creating a worktree copies no context, and an agent's launch copies only what its
+          <code>context</code> asks for. A story's docs arrive when an agent calls
+          <code>hydrate_story</code>: it copies the story's epic folder from team content into
+          the worktree, and an optional <strong>policy</strong> widens that to referenced epics,
+          parent epics or the surrounding epic, up to a cap. One comparison, one batched copy, and
+          nothing moves afterward until an agent asks again.
+        </p>
+
+        <figure class="arcC-hero" aria-labelledby="hydrate-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 240"
+            role="img"
+            aria-label="A context repo on the left streams four labelled doc chips rightward into a worktree frame on the right, where they land at the same paths."
+          >
+            <title>Arc C — hydrate_story: a story's epic flows into the worktree</title>
+            <desc>
+              A rectangle on the left labelled "team content" holds four doc chips (the story, its
+              epic's README, and two files from an epic the story references) that stream along
+              flow-lines into a worktree frame on the right, landing at the same relative paths.
+            </desc>
+            <style>
+              .arcCh-surface {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .arcCh-frame {
+                fill: color-mix(in oklab, var(--cs-surface, #161b22) 70%, transparent);
+                stroke: color-mix(
+                  in oklab,
+                  var(--cs-accent, #7aa2ff) 50%,
+                  var(--cs-border, #262c38)
+                );
+                stroke-width: 1.4;
+              }
+              .arcCh-signal {
+                stroke: var(--cs-accent, #5ad1ff);
+                stroke-width: 1.2;
+                fill: none;
+                stroke-dasharray: 3 4;
+                animation: arcCh-flow 2.2s linear infinite;
+              }
+              .arcCh-chip-signal {
+                fill: color-mix(
+                  in oklab,
+                  var(--cs-accent, #5ad1ff) 18%,
+                  var(--cs-surface, #161b22)
+                );
+                stroke: var(--cs-accent, #5ad1ff);
+                stroke-width: 1;
+              }
+              .arcCh-text {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcCh-muted {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              @keyframes arcCh-flow {
+                to {
+                  stroke-dashoffset: -14;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .arcCh-signal {
+                  animation: none;
+                }
+              }
+            </style>
+
+            <!-- Context repo (left) -->
+            <g transform="translate(20 40)">
+              <rect class="arcCh-surface" width="180" height="160" rx="6" />
+              <text class="arcCh-muted" x="12" y="18">TEAM CONTENT</text>
+              <text class="arcCh-text" x="12" y="36">default/content/</text>
+
+              <!-- doc chips -->
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="48" width="156" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="61">sample-epic/DEMO-1.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="72" width="156" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="85">sample-epic/README.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="96" width="130" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="109">kill-ladder/README.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="120" width="130" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="133">kill-ladder/KL-2.md</text>
+              </g>
+            </g>
+
+            <!-- Flow lines -->
+            <path class="arcCh-signal" d="M200 70 C 300 70, 340 90, 440 90" />
+            <path
+              class="arcCh-signal"
+              d="M200 95 C 300 95, 340 110, 440 110"
+              style="animation-delay: 0.2s"
+            />
+            <path
+              class="arcCh-signal"
+              d="M200 120 C 300 120, 340 130, 440 130"
+              style="animation-delay: 0.4s"
+            />
+            <path
+              class="arcCh-signal"
+              d="M200 145 C 300 145, 340 150, 440 150"
+              style="animation-delay: 0.6s"
+            />
+
+            <!-- Worktree frame (right) -->
+            <g transform="translate(440 40)">
+              <rect class="arcCh-frame" width="180" height="160" rx="6" />
+              <text class="arcCh-muted" x="12" y="18">WORKTREE</text>
+              <text class="arcCh-text" x="12" y="36">…-wt/feat-DEMO-1-foundation/</text>
+              <!-- hydrated chips reflecting source -->
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="48" width="156" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="61">sample-epic/DEMO-1.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="72" width="156" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="85">sample-epic/README.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="96" width="130" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="109">kill-ladder/README.md</text>
+              </g>
+              <g>
+                <rect class="arcCh-chip-signal" x="12" y="120" width="130" height="18" rx="3" />
+                <text class="arcCh-text" x="20" y="133">kill-ladder/KL-2.md</text>
+              </g>
+              <text class="arcCh-muted" x="12" y="152">written 4 · unchanged 0 · kept 0</text>
+            </g>
+          </svg>
+          <figcaption id="hydrate-cap">
+            hydrate_story with referenceDepth 1: the story's epic plus the epic it references, at the same paths
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== What hydration is =============== -->
+      <section data-search="What hydration is and why" id="what">
+        <h2>What hydration is</h2>
+        <p>
+          Your context repo holds everything: epics, stories, architecture docs, retros, team
+          references, agent configs. Most of that is irrelevant to a single story, and none of it
+          reaches a worktree by itself. <em>Hydrating</em> is an explicit copy from team content
+          into a workspace that an agent asks for:
+        </p>
+        <ul>
+          <li>
+            <code>hydrate_story</code> copies a story's epic (or the wider closure its policy
+            names). This page is about it.
+          </li>
+          <li>
+            <code>hydrate_worktree</code> copies exact <code>paths</code> or whole
+            <code>sets</code> (folders such as <code>.claude/skills</code> or <code>docs</code>).
+            With neither, it copies the runtime default set: <code>CLAUDE.md</code>,
+            <code>.claude/{commands,hooks,agents,skills}</code>, <code>AGENTS.md</code> and
+            <code>.agents/skills</code>.
+          </li>
+        </ul>
+        <p>
+          Either way, each file lands at its path inside its content tier, so
+          <code>default/content/sample-epic/DEMO-1.md</code> becomes
+          <code>sample-epic/DEMO-1.md</code> in the worktree. The copies are added to the
+          clone's <code>.git/info/exclude</code> (shared by all its worktrees), so they never show up
+          in <code>git status</code>.
+        </p>
+      </section>
+
+      <!-- =============== The policy =============== -->
+      <section data-search="hydrate_story policy: referenceDepth ancestryLevels siblingBreadth maxMembers" id="policy">
+        <h2>The policy</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Without a <code>policy</code>, <code>hydrate_story</code> copies the story's own epic
+          folder (the folder the story file sits in) and every file under it. A policy turns on
+          up to three wider axes, bounded by a cap. When you pass one, give all four fields.
+        </p>
+        <div class="arcC-policy" role="list">
+          <article class="arcC-policy__card" role="listitem">
+            <span class="arcC-policy__eyebrow">Axis · <code>referenceDepth</code></span>
+            <h3>References</h3>
+            <p>
+              Follow the story's <code>supporting_docs</code> frontmatter this many hops, and copy
+              the epic folder of each story reached. <code>0</code> is off. Cycles are walked once.
+            </p>
+          </article>
+          <article class="arcC-policy__card" role="listitem">
+            <span class="arcC-policy__eyebrow">Axis · <code>ancestryLevels</code></span>
+            <h3>Parent epics</h3>
+            <p>
+              Add the parent folders of the story's epic, this many levels up, never past the
+              team's <code>content/</code> root. <code>0</code> is off.
+            </p>
+          </article>
+          <article class="arcC-policy__card" role="listitem">
+            <span class="arcC-policy__eyebrow">Axis · <code>siblingBreadth</code></span>
+            <h3>The surrounding epic</h3>
+            <p>
+              <code>true</code> adds the whole folder around the story's epic, so sibling epics
+              come along. <code>false</code> is off.
+            </p>
+          </article>
+          <article class="arcC-policy__card arcC-policy__card--light" role="listitem">
+            <span class="arcC-policy__eyebrow">Cap · <code>maxMembers</code></span>
+            <h3>Epic-folder ceiling</h3>
+            <p>
+              The most epic folders one closure may hold (the default policy uses
+              <code>64</code>). When the walk hits it, it stops there rather than grow without
+              bound.
+            </p>
+          </article>
+        </div>
+        <pre><code>// the default: just the story's epic folder
+{ "referenceDepth": 0, "ancestryLevels": 0, "siblingBreadth": false, "maxMembers": 64 }
+
+// the story's epic plus every epic its supporting_docs point at, one hop out
+{ "referenceDepth": 1, "ancestryLevels": 0, "siblingBreadth": false, "maxMembers": 10 }</code></pre>
+      </section>
+
+      <!-- =============== How hydration decides =============== -->
+      <section data-search="How hydrate_story resolves what to copy" id="resolution">
+        <h2>How CodeSense decides what to copy</h2>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">1</span>
+          <div>
+            <h3>Find the story</h3>
+            <p>
+              CodeSense looks the <code>storyId</code> up in the team's story index and takes the
+              folder the story file sits in as its epic. That folder is always copied.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">2</span>
+          <div>
+            <h3>Walk the policy</h3>
+            <p>
+              References first (following <code>supporting_docs</code> up to
+              <code>referenceDepth</code> hops), then parent epics (<code>ancestryLevels</code>),
+              then the surrounding epic (<code>siblingBreadth</code>). An epic folder reached twice
+              is copied once. The walk stops at <code>maxMembers</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="arcC-step">
+          <span class="arcC-step-n">3</span>
+          <div>
+            <h3>Compare, then copy once</h3>
+            <p>
+              CodeSense compares every file in those folders with what the worktree holds and
+              copies the new and changed ones in one batch. It never overwrites a file the repo
+              tracks or a copy someone edited in the worktree: those are reported as kept. The
+              epics it hydrated are recorded, so <code>list_hydrated</code> can show them later.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============== Re-hydration =============== -->
+      <section data-search="Rehydrating a worktree after context docs change, and sending edits back" id="re-hydrate">
+        <h2>After the copy</h2>
+        <p>
+          When team content changes (say the architecture doc gets amended), the worktree keeps
+          its old copy until an agent calls <code>hydrate_story</code> or
+          <code>hydrate_worktree</code> again. Nothing re-hydrates on its own. A repeat call is
+          cheap: unchanged files are left alone, new ones land, and a file you edited is kept. A
+          copy the team deleted is removed only by a <code>hydrate_worktree</code> call that passes
+          <code>prune: true</code>, and only under that call's paths.
+        </p>
+        <p>
+          Agents can edit the hydrated docs in the worktree. The edit stays there until the agent
+          previews it with <code>preview_reverse_sync_worktree</code> and publishes it with
+          <code>reverse_sync_worktree</code>, which writes it back to the team file it came from.
+        </p>
+        <p style="color: var(--cs-muted-fg); font-size: var(--cs-docs-text-sm)">
+          A routine that needs fresh docs says so in its prompt: its agent calls
+          <code>hydrate_story</code> as its first step. To make that a habit, wrap the calls in
+          <a href="../arc-k-sync/write-your-own-sync-skill.html">your own sync skill</a>.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — hydrate a story into a worktree" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          The call needs your workspace: the worktree's path and your session id (an agent passes
+          its <code>$PWD</code> and <code>$CODESENSE_TAB_SESSION_ID</code>). This button shows the
+          call without running it; ask an agent in a worktree to run it for real.
+        </p>
+        <cs-try-this
+          verb="hydrate_story"
+          args='{"target":{"kind":"local","codeRepoPath":"../sample-source-repo-wt/feat-DEMO-1-foundation","sessionId":"&lt;your session id&gt;"},"storyId":"DEMO-1"}'
+          label="Hydrate DEMO-1"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to hydrate a story via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            The <code>target</code> names the workspace: <code>{kind:"local", codeRepoPath,
+            sessionId}</code> on this Mac, or <code>{kind:"remote", machineId,
+            workspaceHandle}</code> on a machine (the handle from
+            <code>prepare_remote_workspace</code>).
+          </p>
+          <pre><code>// Hydrate a story's epic, plus the epics it references (one hop).
+codesense.invoke('hydrate_story', {
+  target: { kind: 'local', codeRepoPath: process.cwd(), sessionId: process.env.CODESENSE_TAB_SESSION_ID },
+  storyId: 'DEMO-1',
+  policy: { referenceDepth: 1, ancestryLevels: 0, siblingBreadth: false, maxMembers: 10 },
+})
+// → { operationId, status: 'ready',            // or 'failed' / 'cancelled'
+//     wanted: 4, written: 4, unchanged: 0,
+//     keptModified: [], skippedTracked: [], failed: [], …,
+//     writtenPaths: ['sample-epic/DEMO-1.md', …], note: '…',
+//     story: { storyId: 'DEMO-1', epicDir: '…/sample-epic', filesScoped: 4, outsideTeamContent: 0 } }
+
+// Which epics this workspace has hydrated so far
+codesense.invoke('list_hydrated', { target })</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See
+            <a href="../mcp-explorer.html#tool/hydrate_story">hydrate_story</a>,
+            <a href="../mcp-explorer.html#tool/hydrate_worktree">hydrate_worktree</a> and
+            <a href="../mcp-explorer.html#tool/list_hydrated">list_hydrated</a>
+            for the live schemas.
+          </p>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/hydrate_story">hydrate_story</a> ·
+        <a href="../mcp-explorer.html#tool/hydrate_worktree">hydrate_worktree</a> ·
+        <a href="./parallelism.html">parallelism →</a> ·
+        <a href="./troubleshooting.html">troubleshooting</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Hydration</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

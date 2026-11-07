@@ -1,0 +1,38 @@
+{
+  "phase": 10,
+  "name": "Review",
+  "group": "Verify",
+  "describedBy": "./phases.yml#phase-10",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "in-progress", "title": "Per-agent kill switch"},
+      {"id": "DEMO-1", "kind": "story", "status": "done", "title": "Host kill ladder + MCP wrapper", "points": 3, "sprint": "FAKE-S1"},
+      {"id": "DEMO-2", "kind": "story", "status": "review", "title": "DAG node kill button + confirmation modal", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-3", "kind": "story", "status": "in-progress", "title": "Public MCP tool: kill_agent", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-4", "kind": "story", "status": "todo", "title": "Remember a killed agent across relaunches", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-5", "kind": "story", "status": "blocked", "title": "DAG transitions through 'stopping' without a reload", "points": 3, "sprint": "FAKE-S1"}
+    ],
+    "edges": [
+      {"from": "DEMO-1", "to": "DEMO-2"},
+      {"from": "DEMO-1", "to": "DEMO-3"},
+      {"from": "DEMO-1", "to": "DEMO-4"},
+      {"from": "DEMO-1", "to": "DEMO-5"}
+    ]
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-10-winston", "agent": "winston-reviewer", "status": "running", "startedAt": "2026-10-04T15:40:00Z", "endedAt": null, "story": "DEMO-2"}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch", "fake-thread-decision-escalation", "fake-thread-review-feedback"],
+    "focus": "fake-review-feedback-001"
+  },
+  "sprint": {
+    "active": "FAKE-S1",
+    "committed_points": 12,
+    "delivered_points": 3,
+    "stories": ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"]
+  },
+  "note": "Phase 10 — DEMO-1 shipped (done). Winston reviews DEMO-2 and posts two findings via the review-feedback thread."
+}

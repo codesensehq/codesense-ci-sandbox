@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codesense.ai/schemas/factory-phase.schema.json",
+  "title": "Factory phase",
+  "description": "One row of the canonical CodeSense SDLC, authored in phases.yml. The factory playbook (factory-playbook.html) and the arc H content pages both render from it. A build-time check validates both consumers reference the same keys declared here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase",
+    "group",
+    "name",
+    "agent",
+    "skill",
+    "mcpTools",
+    "inboxRole",
+    "trigger",
+    "dashboard",
+    "agentYaml",
+    "routineYml",
+    "whatGoesWrong",
+    "workedExample"
+  ],
+  "properties": {
+    "phase": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 14,
+      "description": "1-based phase number in the canonical SDLC."
+    },
+    "group": {
+      "type": "string",
+      "enum": [
+        "Plan",
+        "Design",
+        "Build",
+        "Verify",
+        "Ship",
+        "Loop"
+      ],
+      "description": "The macro group this phase belongs to."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable phase name, e.g. 'Idea', 'Spec', 'Architecture'."
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "icon"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string",
+          "description": "lucide icon name"
+        }
+      }
+    },
+    "skill": {
+      "type": "string",
+      "description": "Primary skill (installed slash command / BMad skill) that drives this phase."
+    },
+    "mcpTools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "MCP tools the phase's agent calls."
+    },
+    "inboxRole": {
+      "type": "string",
+      "description": "Inbox role this phase listens on."
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "schedule",
+        "metadata_change",
+        "agent_done",
+        "inbox_idle",
+        "role_pending"
+      ],
+      "description": "How the phase is kicked off: by hand, or by its routine's trigger (a schedule or one of the routine event kinds)."
+    },
+    "dashboard": {
+      "type": "string",
+      "description": "Primary dashboard that visualises this phase's state."
+    },
+    "agentYaml": {
+      "type": "string",
+      "description": "Pasteable agent.yaml snippet (frontmatter plus body) demonstrating the phase."
+    },
+    "routineYml": {
+      "type": "string",
+      "description": "Pasteable routine.yml snippet (or 'n/a' for manual phases)."
+    },
+    "whatGoesWrong": {
+      "type": "string",
+      "description": "Common failure mode plus the escalation path."
+    },
+    "workedExample": {
+      "type": "string",
+      "description": "What the phase's agent actually wrote in the sample epic. Keeps the phase grounded in a real artifact."
+    }
+  }
+}

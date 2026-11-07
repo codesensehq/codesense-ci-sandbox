@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="layers" />
+    <title>CodeSense — The context resolver</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      .arce-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arce-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .arce-step {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arce-step__n {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--cs-accent) 20%, var(--cs-surface));
+        color: var(--cs-accent);
+        font-weight: 600;
+      }
+      .arce-step h3 {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-md, 15px);
+      }
+      .arce-step p {
+        margin: 0 0 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+        color: var(--cs-muted-fg);
+      }
+      .arce-trace {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0 20px;
+        font-size: 13px;
+      }
+      .arce-trace th,
+      .arce-trace td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--cs-border);
+        text-align: left;
+        vertical-align: top;
+      }
+      .arce-trace th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+      }
+      .arce-trace code {
+        font-family: var(--cs-font-mono);
+        font-size: 12px;
+      }
+      .arce-trace .arce-hit {
+        color: var(--cs-success);
+        font-weight: 600;
+      }
+      .arce-trace .arce-miss {
+        color: var(--cs-faint-fg);
+      }
+      pre code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/context-field">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="The context resolver — how CodeSense turns startup paths into what the agent sees" id="hero">
+        <h1>From a path to a seated session.</h1>
+        <figure class="cs-docs-card arce-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="agent.yaml startup lists paths; the resolver walks the team chain for each one; the first team that has it wins; the resolved bundle plus CodeSense MCP plus the user's CLI login seat the session."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <text x="24" y="30" style="fill: var(--cs-muted-fg); font-size: 13px; font-family: var(--cs-font-ui)">
+              1 · The ask
+            </text>
+            <g transform="translate(24 48)">
+              <rect
+                width="190"
+                height="140"
+                rx="10"
+                fill="var(--cs-inset-strong, var(--cs-inset))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-fg); font-family: var(--cs-font-mono); font-size: 11px">
+                agent.yaml
+              </text>
+              <text x="14" y="42" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                startup:
+              </text>
+              <text x="26" y="58" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - CLAUDE.md
+              </text>
+              <text x="26" y="74" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - .claude/skills/docs/
+              </text>
+              <text x="26" y="90" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                - .claude/commands/
+              </text>
+              <text x="38" y="104" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                sense-worktree.md
+              </text>
+              <text x="14" y="124" style="fill: var(--cs-muted-fg); font-family: var(--cs-font-mono); font-size: 10px">
+                mcp.servers: [slack]
+              </text>
+            </g>
+
+            <path class="glyph-edge" d="M218 118 L 254 118" stroke="var(--cs-muted-fg)" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />
+
+            <text x="264" y="30" style="fill: var(--cs-muted-fg); font-size: 13px; font-family: var(--cs-font-ui)">
+              2 · The walk — team chain, first hit wins
+            </text>
+            <g transform="translate(264 48)">
+              <rect
+                width="206"
+                height="140"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="12" y="22" style="fill: var(--cs-fg); font-size: 11px">
+                Docs team
+              </text>
+              <text x="12" y="36" style="fill: var(--cs-success); font-size: 10px; font-family: var(--cs-font-mono)">
+                ✓ CLAUDE.md
+              </text>
+              <text x="12" y="50" style="fill: var(--cs-faint-fg); font-size: 10px; font-family: var(--cs-font-mono)">
+                — .claude/skills/docs/
+              </text>
+              <text x="12" y="70" style="fill: var(--cs-fg); font-size: 11px">
+                Writers team (parent)
+              </text>
+              <text x="12" y="84" style="fill: var(--cs-success); font-size: 10px; font-family: var(--cs-font-mono)">
+                ✓ .claude/skills/docs/
+              </text>
+              <text x="12" y="104" style="fill: var(--cs-fg); font-size: 11px">
+                Root team
+              </text>
+              <text x="12" y="118" style="fill: var(--cs-success); font-size: 10px; font-family: var(--cs-font-mono)">
+                ✓ .claude/commands/sense-worktree.md
+              </text>
+            </g>
+
+            <path d="M476 118 L 512 118" stroke="var(--cs-muted-fg)" stroke-width="1.2" fill="none" marker-end="url(#arrow)" />
+
+            <text x="520" y="30" style="fill: var(--cs-muted-fg); font-size: 13px; font-family: var(--cs-font-ui)">
+              3 · Seated
+            </text>
+            <g transform="translate(520 48)">
+              <rect
+                width="100"
+                height="140"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-accent) 10%, var(--cs-surface))"
+                stroke="var(--cs-accent)"
+              />
+              <text x="10" y="22" style="fill: var(--cs-fg); font-size: 11px">
+                session
+              </text>
+              <text x="10" y="40" style="fill: var(--cs-muted-fg); font-size: 10px">
+                copied-in
+              </text>
+              <text x="10" y="54" style="fill: var(--cs-muted-fg); font-size: 10px">
+                files
+              </text>
+              <text x="10" y="74" style="fill: var(--cs-muted-fg); font-size: 10px">
+                +
+              </text>
+              <text x="10" y="94" style="fill: var(--cs-muted-fg); font-size: 10px">
+                CodeSense MCP
+              </text>
+              <text x="10" y="114" style="fill: var(--cs-muted-fg); font-size: 10px">
+                +
+              </text>
+              <text x="10" y="128" style="fill: var(--cs-muted-fg); font-size: 10px">
+                user CLI login
+              </text>
+            </g>
+
+            <!-- Lower band: not shown, always present -->
+            <g transform="translate(24 220)">
+              <rect
+                width="596"
+                height="120"
+                rx="10"
+                fill="color-mix(in srgb, var(--cs-fg) 4%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text x="14" y="22" style="fill: var(--cs-muted-fg); font-size: 12px; font-family: var(--cs-font-ui)">
+                Three things the resolver always adds — no listing needed
+              </text>
+              <text x="14" y="46" style="fill: var(--cs-fg); font-size: 12px">
+                The CodeSense MCP server
+              </text>
+              <text x="14" y="60" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Bridge to the dashboard, invokes, document reads. Refused if you try to list it.
+              </text>
+              <text x="14" y="82" style="fill: var(--cs-fg); font-size: 12px">
+                The team's root instruction file, when present
+              </text>
+              <text x="14" y="96" style="fill: var(--cs-muted-fg); font-size: 11px">
+                CLAUDE.md for claude runtimes, AGENTS.md for codex. First hit on the chain.
+              </text>
+              <text x="320" y="46" style="fill: var(--cs-fg); font-size: 12px">
+                The user's own CLI login
+              </text>
+              <text x="320" y="60" style="fill: var(--cs-muted-fg); font-size: 11px">
+                Nothing in agent.yaml. Each user runs under their own account.
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What the context resolver is" id="why">
+        <p>
+          You wrote a <code>startup:</code> list. The context resolver is the
+          code that turns that list into a real set of files on disk a
+          <code>claude</code> or <code>codex</code> run can open. It walks your
+          <strong>team chain</strong> once per entry (your team, then its
+          parent, then the root), takes the <strong>first hit</strong>, and
+          records which team gave it to you. If every team misses, the
+          <code>agent_preview</code> reply names the entry as a resolve error
+          and nothing is written for that launch. There's no partial-success
+          mode: every path in <code>startup</code> either resolves or the
+          launch refuses.
+        </p>
+      </section>
+
+      <section data-search="The five jobs — chain, resolve, dedup, copy in, trace" id="jobs">
+        <h2>Five jobs</h2>
+
+        <div class="arce-step">
+          <span class="arce-step__n">1</span>
+          <div>
+            <h3>Build the team chain</h3>
+            <p>
+              <code>team_chain</code> starts at your active team and climbs the
+              <code>parent</code> pointer until it reaches a team with no
+              parent — the root. Short list, in order:
+              <code>[&lt;team&gt;, &lt;parent&gt;, …, &lt;root&gt;]</code>. A
+              cycle in parents is caught by the validator long before the
+              resolver sees it.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">2</span>
+          <div>
+            <h3>Resolve each entry, first hit wins</h3>
+            <p>
+              For every path in <code>startup</code>, the resolver asks each
+              team in the chain, in order: <em>do you have this file or
+              directory under your <code>content/</code>?</em> The first one
+              that does supplies it. Teams never merge — a skill in the parent
+              and a same-named skill in your team don't blend; the child wins
+              and the parent's copy is ignored.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">3</span>
+          <div>
+            <h3>Pull in <code>requires:</code></h3>
+            <p>
+              If a resolved entry's frontmatter declares <code>requires:</code>,
+              each required path goes through the same team-chain walk.
+              Required paths that themselves require things recurse, with a
+              fixed depth cap and dedup on the way. A required path that no
+              team has is a resolve error naming the <em>parent</em> that
+              asked for it.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">4</span>
+          <div>
+            <h3>Dedup &amp; copy in</h3>
+            <p>
+              Same path showing up twice (once from <code>startup</code>, once
+              as a <code>requires:</code>) is kept once; identity is the final
+              content-relative path. Then launch preparation copies the
+              resolved files into the workspace for the CLI to open normally:
+              one diff against what is already there and one batched copy. It
+              never overwrites a file the repo tracks or a copy someone edited
+              there (those are reported as kept). In a source-repo worktree
+              the copied paths go into the clone's <code>.git/info/exclude</code>,
+              shared by all its worktrees, so they stay out of your commits; a
+              team-workspace launch adds no exclude. Nothing updates them
+              afterward. An agent that needs more calls
+              <code>hydrate_worktree</code> or <code>hydrate_story</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="arce-step">
+          <span class="arce-step__n">5</span>
+          <div>
+            <h3>Return a trace</h3>
+            <p>
+              Every call to <code>agent_preview</code> returns a
+              <code>manifest</code> that lists each resolved entry, which team
+              supplied it, its size, and which <code>requires:</code> edges it
+              pulled in. The <code>agent-preview</code> dashboard renders this
+              trace as a table (same data as the one below).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Trace for the shipped docs-helper agent" id="trace">
+        <h2>Worked example: <code>docs-helper</code></h2>
+        <p>The shipped helper has no explicit startup entries. Its native CLI permissions
+          allow the tools needed for the manual offline update task:</p>
+        <pre><code>id: docs-helper
+name: Docs helper
+description: Keeps the CodeSense docs up to date and answers questions about CodeSense.
+created_by: codesense
+runtime: claude
+launch: headless
+permissions:
+  claude:
+    allow:
+      - Read
+      - Skill(update-codesense-docs)
+      - mcp__codesense__codesense_overview
+      - mcp__codesense__update_codesense_docs
+revision: 2</code></pre>
+        <p>The CodeSense MCP bridge and the launcher's CLI login are supplied by the runtime.
+          The manual routine's task explicitly names the <code>update-codesense-docs</code>
+          skill; it does not depend on a <code>CLAUDE.md</code> or <code>requires:</code>
+          chain. A local <code>team_workspace</code> routine prepares the agent's resolved context
+          in its own scratch directory, including the default <code>.claude/skills/</code> when no
+          explicit context is declared. Shared team content stays unchanged. See
+          <a href="../arc-g-routines/routine-yml.html#workspace-context">fresh routine context and
+          scratch files</a> for the lifecycle and a projection example.</p>
+        <table class="arce-trace">
+          <thead><tr><th>Entry</th><th>Source</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><code>startup</code></td><td>No explicit entries in the agent file</td><td>Nothing explicitly copied</td></tr>
+            <tr><td>Update skill</td><td>Resolved from the agent's context; named in the routine task</td><td>Prepared in the routine workspace</td></tr>
+            <tr><td>CodeSense MCP server</td><td>Runtime</td><td>Attached</td></tr>
+            <tr><td>CLI login</td><td>Whoever launched the session</td><td>Runtime authentication</td></tr>
+            <tr><td>Claude tool permissions</td><td><code>permissions.claude.allow</code> plus CodeSense communication defaults</td><td>Included in generated headless launch settings</td></tr>
+          </tbody>
+        </table>
+        <p>The helper checks <code>codesense_overview</code> and calls
+          <code>update_codesense_docs</code>, which resolves the canonical profile docs root
+          independently of cwd. See the <a href="../arc-a-first-touch/update-the-docs.html#steps">manual
+          enable-and-run example</a>; each Mac opts in before a routine can fire.</p>
+      </section>
+
+      <section data-search="How the resolver fails — missing team, missing path, overlap" id="failures">
+        <h2>How the resolver fails</h2>
+        <p>
+          Every failure mode is deliberate — the resolver never silently drops
+          an entry.
+        </p>
+        <ul>
+          <li>
+            <strong>No team has the path.</strong>
+            <code>agent_preview</code> returns a
+            <code>resolve</code> error naming the missing entry and the chain
+            it walked. Nothing is copied.
+          </li>
+          <li>
+            <strong>Path escapes <code>content/</code>.</strong> An entry with
+            <code>..</code> or an absolute path never reaches the resolver —
+            the validator rejects it on save. If you push one in by editing
+            the file on disk, startup fails with
+            <code>invalid startup entry</code>.
+          </li>
+          <li>
+            <strong>Overlap with an earlier entry.</strong>
+            <code>.claude/skills/</code> followed by
+            <code>.claude/skills/docs/</code> is also rejected on save —
+            overlap would make the trace ambiguous. Pick one.
+          </li>
+          <li>
+            <strong>MCP server missing from the team's
+            <code>.mcp.json</code>.</strong> <code>mcp.servers: [slack]</code>
+            with no <code>slack</code> in the team's config is a
+            <code>warning</code> in <code>agent_preview</code> (so you can
+            still save the agent) but the launch refuses the server with
+            <code>unknown MCP server</code>.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="Try this now — trace a launch for a startup list of your own" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Preview an agent against the real resolver. The reply's
+          <code>manifest.resolved[]</code> is the full trace — one row per
+          resolved entry, with the team that supplied it. Edit the
+          <code>startup</code> list and watch the trace change.
+        </p>
+        <cs-try-this
+          verb="invoke"
+          args='{"name": "agent_preview", "args": {"name": "Context trace", "runtime": "claude", "launch": "headless", "startup": ["CLAUDE.md", ".claude/skills/update-codesense-docs/"]}}'
+          label="Trace a resolve on this team"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>// Resolve a startup list, see the trace, copy nothing.
+codesense.invoke('agent_preview', { name, runtime, startup, mcpServers })
+// → manifest.resolved: [{ path, teamId, size, pulledInBy }]
+//    manifest.errors:   [{ code: "resolve", path, chainWalked }]
+//    manifest.provides: [{ kind: "skill" | "command", name, from }]
+
+// Get the current definition so you can diff before and after.
+codesense.invoke('agent_get', { id: 'docs-helper' })
+
+// See the chain yourself: describe_setup lists each team and its parent.
+codesense.invoke('describe_setup', {})</code></pre>
+          <p>
+            See <a href="../mcp-explorer.html">mcp-explorer</a> for every
+            field and
+            <a href="../schema-browser.html#schema/agent-yaml"
+              >schema-browser → agent.yaml</a
+            >
+            for the resolver's own rules.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc E index</a> ·
+        Previous: <a href="./skills.html">Skills</a> ·
+        Next: <a href="./designing-for-a-role.html">Designing for a role →</a>
+        · Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/agent-yaml">schema-browser · agent.yaml</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc E · Context resolver</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

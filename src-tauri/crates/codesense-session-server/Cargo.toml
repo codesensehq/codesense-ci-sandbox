@@ -1,0 +1,52 @@
+[package]
+name = "codesense-session-server"
+version = "0.1.0"
+description = "Long-lived PTY session-server sidecar for CodeSense: hosts the codesense-pty-core runtime so sessions outlive the app"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "codesense_session_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "codesense-session-server"
+path = "src/main.rs"
+
+[features]
+# Musl release artifacts retain the rust-lld-only cross-build contract.
+portable-hash = ["blake3/pure"]
+# `test-support`: the `testing` module — a real sidecar served in-process on a
+# temp instance root, for the app's sidecar-client tests. Off in every normal build.
+test-support = ["dep:tempfile", "codesense-pty-core/test-support"]
+# Answers `DebugDump` (see codesense-pty-core's `e2e-dump`). Off by default.
+e2e-dump = ["codesense-pty-core/e2e-dump"]
+
+[dependencies]
+base64 = "0.22"
+blake3 = "1"
+# Session timers evaluate cron in an IANA zone from the embedded tzdb.
+chrono = { version = "0.4", default-features = false, features = ["std", "now"] }
+chrono-tz = "0.10"
+cron = "0.15"
+flate2 = "1"
+# Decodes the zstd batch codec (pure Rust: no C in the musl host).
+ruzstd = "0.9"
+uuid = { version = "1", features = ["v4"] }
+codesense-host-proto = { path = "../codesense-host-proto" }
+codesense-pty-core = { path = "../codesense-pty-core" }
+dirs = "5"
+libc = "0.2"
+log = "0.4"
+sha2 = "0.10"
+sysinfo = "0.32"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = { version = "3", optional = true }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "sync", "time", "macros"] }
+
+[dev-dependencies]
+codesense-pty-core = { path = "../codesense-pty-core", features = ["test-support"] }
+tempfile = "3"

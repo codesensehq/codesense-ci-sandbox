@@ -1,0 +1,23 @@
+[
+  { "glob": ".claude/skills/legacy-*", "path": ".claude/skills/legacy-a", "matches": true },
+  { "glob": ".claude/skills/legacy-*", "path": ".claude/skills/legacy-a/SKILL.md", "matches": false },
+  { "glob": ".claude/skills/legacy-*", "path": ".claude/skills/current", "matches": false },
+  { "glob": "docs/**/draft.md", "path": "docs/a/b/draft.md", "matches": true },
+  { "glob": "docs/**/draft.md", "path": "docs/draft.md", "matches": true },
+  { "glob": "docs/**", "path": "docs/a/b.md", "matches": true },
+  { "glob": "docs/v?", "path": "docs/v1", "matches": true },
+  { "glob": "docs/v?", "path": "docs/v10", "matches": false },
+  { "glob": "docs/[!a]x", "path": "docs/bx", "matches": true },
+  { "glob": "docs/[!a]x", "path": "docs/ax", "matches": false },
+  { "glob": "docs/[^a]x", "path": "docs/bx", "matches": true },
+  { "glob": "docs/[^a]x", "path": "docs/ax", "matches": false },
+  { "glob": "docs/[a-c]x", "path": "docs/bx", "matches": true },
+  { "glob": "docs/[a-c]x", "path": "docs/dx", "matches": false },
+  { "glob": "{docs,notes}/x", "path": "notes/x", "matches": true },
+  { "glob": "{docs,notes}/x", "path": "other/x", "matches": false },
+  { "glob": "docs/[[]draft[]] [*]notes[*]", "path": "docs/[draft] *notes*", "matches": true },
+  { "glob": "docs/[[]draft[]] [*]notes[*]", "path": "docs/d draft-notes-x", "matches": false },
+  { "glob": "docs/[{]a[}]", "path": "docs/{a}", "matches": true },
+  { "glob": "docs/[?]", "path": "docs/?", "matches": true },
+  { "glob": "docs/[?]", "path": "docs/a", "matches": false }
+]

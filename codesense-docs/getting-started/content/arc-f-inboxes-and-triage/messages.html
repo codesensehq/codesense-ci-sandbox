@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="mail" />
+    <title>CodeSense — Messages</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+
+    <style>
+      :root {
+        --role-triager: #1f5e9e;
+        --role-builder: #2a8a5e;
+        --role-reviewer: #6b50e8;
+        --role-scout: #b57a21;
+        --role-resolver: #b03326;
+        --role-analyst: #1f8ba6;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --role-triager: #6ea8f0;
+          --role-builder: #4ec28a;
+          --role-reviewer: #a898ff;
+          --role-scout: #e0ac55;
+          --role-resolver: #ea6a5a;
+          --role-analyst: #5ec6dc;
+        }
+      }
+
+      .arcf-hero {
+        padding: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: var(--cs-inset);
+      }
+      .arcf-hero svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .glyph-node rect,
+      .glyph-node circle {
+        fill: color-mix(in srgb, var(--role-color, var(--cs-muted-fg)) 16%, var(--cs-surface));
+        stroke: var(--role-color, var(--cs-muted-fg));
+        stroke-width: 1.4;
+      }
+      .glyph-node[data-role="triager"] {
+        --role-color: var(--role-triager);
+      }
+      .glyph-node[data-role="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .glyph-node[data-role="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .glyph-node[data-role="scout"] {
+        --role-color: var(--role-scout);
+      }
+      .glyph-node[data-role="resolver"] {
+        --role-color: var(--role-resolver);
+      }
+      .glyph-node[data-role="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .glyph-node[data-role="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .glyph-node[data-role="inbox"] {
+        --role-color: var(--cs-muted-fg);
+      }
+      .glyph-node text {
+        fill: var(--cs-fg);
+        font-size: 12px;
+        font-family: var(--cs-font-ui);
+      }
+      .glyph-node .sub {
+        fill: var(--cs-muted-fg);
+        font-size: 10px;
+      }
+      .glyph-edge {
+        fill: none;
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+        marker-end: url(#arrow);
+      }
+      .glyph-mbadge {
+        fill: var(--cs-muted-fg);
+        font-size: 11px;
+        font-family: var(--cs-font-ui);
+      }
+
+      .arcf-msg {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-md, 10px);
+        background: var(--cs-surface);
+        margin: 10px 0;
+      }
+      .arcf-msg .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-top: 6px;
+        background: var(--role-color, var(--cs-muted-fg));
+      }
+      .arcf-msg[data-from="analyst"] {
+        --role-color: var(--role-analyst);
+      }
+      .arcf-msg[data-from="builder"] {
+        --role-color: var(--role-builder);
+      }
+      .arcf-msg[data-from="reviewer"] {
+        --role-color: var(--role-reviewer);
+      }
+      .arcf-msg[data-from="human"] {
+        --role-color: var(--cs-fg);
+      }
+      .arcf-msg__head {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        font-size: 12px;
+        color: var(--cs-muted-fg);
+      }
+      .arcf-msg__from {
+        font-family: var(--cs-font-mono);
+        color: var(--cs-fg);
+      }
+      .arcf-msg__body {
+        margin-top: 6px;
+        font-size: var(--cs-docs-text-sm, 13px);
+      }
+      .arcf-msg__body code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-f-inboxes-and-triage/messages">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="A message — sender, recipient, body, thread" id="hero">
+        <h1>A message.</h1>
+        <figure class="cs-docs-card arcf-hero">
+          <svg
+            viewBox="0 0 640 360"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="One message leaves one sender, enters a role queue, is claimed by a worker, replied back to the sender."
+          >
+            <defs>
+              <marker
+                id="arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 L10 5 L0 10 z" fill="var(--cs-muted-fg)" />
+              </marker>
+            </defs>
+
+            <g class="glyph-node" data-role="analyst" transform="translate(40 150)">
+              <rect width="110" height="60" rx="6" />
+              <text x="55" y="30" text-anchor="middle">analyst</text>
+              <text x="55" y="46" text-anchor="middle" class="sub">(sender)</text>
+            </g>
+
+            <!-- message body in flight -->
+            <g transform="translate(190 150)">
+              <rect
+                width="140"
+                height="60"
+                rx="6"
+                fill="color-mix(in srgb, var(--cs-fg) 6%, var(--cs-surface))"
+                stroke="var(--cs-border)"
+              />
+              <text
+                x="70"
+                y="24"
+                text-anchor="middle"
+                style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
+              >
+                send_message
+              </text>
+              <text x="70" y="40" text-anchor="middle" class="glyph-mbadge">to: role:builder</text>
+              <text x="70" y="52" text-anchor="middle" class="glyph-mbadge">body · markdown</text>
+            </g>
+
+            <g class="glyph-node" data-role="builder" transform="translate(370 150)">
+              <rect width="110" height="60" rx="6" />
+              <text x="55" y="26" text-anchor="middle">builder</text>
+              <text x="55" y="42" text-anchor="middle" class="sub">(role queue)</text>
+            </g>
+
+            <g class="glyph-node" data-role="builder" transform="translate(520 150)">
+              <rect width="90" height="60" rx="6" />
+              <text x="45" y="26" text-anchor="middle">amelia</text>
+              <text x="45" y="42" text-anchor="middle" class="sub">(session)</text>
+            </g>
+
+            <path class="glyph-edge" d="M150 180 L 190 180" />
+            <path class="glyph-edge" d="M330 180 L 370 180" />
+            <path class="glyph-edge" d="M480 180 L 520 180" />
+            <text x="170" y="170" class="glyph-mbadge">send</text>
+            <text x="350" y="170" class="glyph-mbadge">claim</text>
+            <text x="500" y="170" class="glyph-mbadge">accept</text>
+
+            <!-- reply arc -->
+            <path class="glyph-edge" d="M565 150 C 580 60, 100 60, 95 150" />
+            <text x="320" y="80" text-anchor="middle" class="glyph-mbadge">reply · threaded</text>
+
+            <text x="24" y="36" class="glyph-mbadge" style="font-size: 14px">
+              A message travels four hops: send → queue → claim → accept. Replies follow the thread
+              back.
+            </text>
+          </svg>
+        </figure>
+      </section>
+
+      <section data-search="What a message is — shape and intent" id="why">
+        <p>
+          A message is CodeSense's smallest unit of communication: a short body (markdown or HTML),
+          a sender, a recipient (another session, a role, or <code>human</code>), and a thread that
+          groups the back-and-forth. Agents send them with <code>send_message</code>, read them with
+          <code>inbox_list</code>, and reply with <code>reply</code>. That's the whole protocol —
+          every pattern you'll see later is just a different wiring of these four verbs.
+        </p>
+      </section>
+
+      <section data-search="A real thread from the seed data" id="example">
+        <h2>A worked example</h2>
+        <p>
+          This is the seed <strong>triage-dispatch</strong> thread
+          (<code>examples/inboxes/01-triage-dispatch.yml</code>). A human asks for a feature; Mary
+          (analyst) drafts an epic and dispatches the first story to the builder role. Three
+          messages, one closed loop.
+        </p>
+
+        <div class="arcf-msg" data-from="human">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">human</span>
+              <span>→ role:analyst</span>
+              <span>09:12 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              Can we add a kill switch to the agent-dag? When an agent goes off the rails it's a
+              pain to open the Agents panel to stop it.
+            </div>
+          </div>
+        </div>
+
+        <div class="arcf-msg" data-from="analyst">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">mary-analyst</span>
+              <span>→ human</span>
+              <span>09:38 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              Drafted DEMO as a 5-story epic. Foundation (host kill ladder) first, then UI, MCP,
+              persistence, dag rerender. Dispatching DEMO-1 to the builder role now.
+            </div>
+          </div>
+        </div>
+
+        <div class="arcf-msg" data-from="analyst">
+          <span class="dot" aria-hidden="true"></span>
+          <div>
+            <div class="arcf-msg__head">
+              <span class="arcf-msg__from">mary-analyst</span>
+              <span>→ role:builder</span>
+              <span>09:38:30 UTC</span>
+            </div>
+            <div class="arcf-msg__body">
+              DEMO-1 — host kill ladder + internal MCP wrapper. Grace from
+              <code>graceful_shutdown_ms</code> (default 3000). ACs in the story file.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-search="Message fields — what shows up on the wire" id="shape">
+        <h2>Message shape</h2>
+        <ol>
+          <li>
+            <strong>Sender &amp; recipient.</strong> Senders are sessions, agents, or
+            <code>human</code>. <code>send_message</code> goes to a session (a <code>list_sessions</code> handle) or
+            <code>human</code>; <code>send_role_message</code> goes to a role
+            (<code>role: "builder"</code>). A role recipient means "whoever is currently holding that
+            role, and if nobody is, the next one to claim it."
+          </li>
+          <li>
+            <strong>Body.</strong> Short markdown by default; <code>contentType</code> is
+            <code>plain</code>, <code>markdown</code> or <code>html</code>. HTML to the human is a
+            live page in the Inbox (its scripts run with <code>window.codesense</code>, buttons
+            included); HTML to an agent is reduced to plain formatting. With HTML, pass a one-line
+            plain-text <code>summary</code> for the preview.
+          </li>
+          <li>
+            <strong>Thread.</strong> The server assigns a <code>thread_id</code> on the first
+            message; <code>reply</code> continues it. The agent-inbox-console groups by thread.
+          </li>
+          <li>
+            <strong>replyTo.</strong> Set <code>replyTo: "role:manager"</code> on an outbound
+            message to route replies back to a role queue instead of your session — the thread
+            survives a session restart or handoff.
+          </li>
+          <li>
+            <strong>on_click.</strong> Optional. A click target the viewer honors
+            (<code>open-file</code>, <code>show-message</code>, …). Seed threads use it to deep-link
+            into the sample epic.
+          </li>
+        </ol>
+      </section>
+
+      <section id="send-media" data-search="Send a GIF or image meme media alt path attachFile team config inbox.media">
+        <h2>Send a GIF or image</h2>
+        <p>An agent can add one image to <code>send_message</code> or <code>reply</code> with
+          <code>media</code>. Supply exactly one source, <code>url</code> or <code>path</code>, and
+          describe the image with required <code>alt</code> text. A caption is optional.</p>
+        <pre><code>send_message({
+  to: "human",
+  text: "The tests finally passed.",
+  kind: "update",
+  media: {
+    url: "https://i.giphy.com/111ebonMs90YLu.gif",
+    alt: "A smiling thumbs-up celebrates the passing tests."
+  }
+})</code></pre>
+        <p>Find a GIF with your own web search. For a GIPHY page
+          <code>giphy.com/gifs/&lt;slug&gt;-&lt;id&gt;</code>, the direct media URL is
+          <code>https://i.giphy.com/&lt;id&gt;.gif</code>. No provider API key is needed. Prefer a small
+          rendition, such as <code>https://i.giphy.com/media/&lt;id&gt;/200w.gif</code> or the
+          <code>giphy-downsized</code> file: a published dashboard (a phone) shows images only up to 5 MB.</p>
+        <p>Images must be GIF, WebP, PNG or JPEG, at most 8 MB and 4096 × 4096 pixels.
+          Tap-to-load requests require confirmation in the host; HTML message frames cannot request a load.
+          Remote fetches reject private and local network addresses, including redirect destinations.</p>
+        <p>For a meme you made, use <code>media: {path: "media/meme.png", alt: "…"}</code>.
+          Relative paths resolve in the sender's own team content first, then in that local session's
+          captured workspace. Absolute paths are accepted only when they resolve inside that team
+          content or the sender's own workspace. Shared inherited team content remains available;
+          other sessions' workspaces, arbitrary home paths, and traversal or symlink escapes are
+          refused. A remote session cannot read files from its remote workspace with <code>path</code>.
+          Local files never contact a media host.
+          GIF, WebP, PNG and JPEG are accepted, up to 8 MB; SVG is refused.</p>
+        <p>Keep GIFs for light moments. Never add them to a <code>needs-you</code> question,
+          and avoid flashing or strobing images. Alt text should explain the joke.</p>
+        <p>A cached image plays inside its chat bubble. Clicking it opens a lightbox with alt text
+          and a source link; Esc closes it. With OS Reduce Motion, a still frame has an explicit
+          play/pause control. Pending images show alt text and <strong>Load from host</strong>.
+          Blocked images show a source link. Failures explain why; only temporary failures offer Retry.</p>
+        <p>The engine setting <code>inbox.media</code> lives in the team's config directory,
+          in <code>config/inbox.yml</code> as <code>media: {remote: auto, hosts: ["*.giphy.com", "static.klipy.com"]}</code>.
+          Those are the defaults. <code>auto</code> fetches only from listed hosts for agents on your
+          own admitted machines; every other sender or host requires a tap. <code>ask</code> always
+          asks. <code>off</code> prevents remote fetching and hides previously cached remote images.
+          There is no setting control in the pane. The host fetches once, then serves the local cache;
+          the pane never loads an image directly from a remote site.</p>
+        <p>For a document attachment instead, <code>attachFile: "design/ux-brief.md"</code> adds
+          the existing file card with Open. It is a logical team-content reference, separate from
+          <code>media</code>, and leaves the message's primary file unchanged.</p>
+      </section>
+
+      <section id="react" data-search="React to a message emoji tapback reaction react tool remove toggle one per emoji reactions read_messages">
+        <h2>React with an emoji</h2>
+        <p>An agent can answer a message with a single emoji, like a tapback, without writing a reply.
+          Call <code>react</code> with the <code>messageId</code> that <code>read_messages</code> returns, passed as <code>message_id</code>, and any one emoji.</p>
+        <pre><code>react({ message_id: 42, emoji: "👍" })            // adds it; the same call again takes it back
+react({ message_id: 42, emoji: "👍", remove: false }) // makes sure it is there, never toggles it off
+react({ message_id: 42, emoji: "👍", remove: true })  // takes it back, and does nothing if it was never there
+// → { status: "reacted", messageId: 42, emoji: "👍", outcome: "added" | "removed" | "unchanged" }</code></pre>
+        <p>You hold at most one of each emoji per message, so reacting twice with the same emoji toggles it off.
+          Any emoji works, including skin-tone and ZWJ sequences such as 🧑🏽‍💻 and flags. The value must be exactly one
+          emoji (at most 64 bytes); text or two emoji come back as <code>{status: "invalid"}</code>.</p>
+        <p>A reaction is not mail. It adds no unread count, wakes nobody, and is not a reply. The human sees it as a chip on
+          the message, with your face, and a reaction they add to a message you sent reaches you once in a
+          <code>reactions</code> list next to <code>messages</code> in your next <code>read_messages</code>:
+          <code>[{messageId, emoji, reactor, createdAtMs, team}]</code> (<code>team</code> is the team that holds the message). If they take it back before you read it, you never hear of it.
+          You can react to messages you sent, received or are the reply target of; mail between two other agents answers
+          <code>no message</code>.</p>
+      </section>
+
+      <section data-search="Try this now — send a message" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          See the exact <code>send_message</code> call an agent makes to reach you. The button
+          only shows the call; <code>send_message</code> is an MCP tool, so a page can't send it.
+        </p>
+        <cs-try-this
+          verb="send_message"
+          args='{"to": "human", "text": "Hello from the Messages page.", "contentType": "markdown"}'
+          label="Send yourself a hello"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p>Claude and Codex use the verified identity of their CodeSense terminal tab,
+            including when started by hand in that tab. Omit <code>sessionId</code>;
+            if supplied, it must name that same tab. An outside or unbound connection
+            is refused. Only the native app can answer as the person.</p>
+          <pre><code>// Send to a session handle, or "human"
+codesense.invoke('send_message', {
+  to: 'human',
+  text: 'Which refund flow should DEMO-1 follow?',
+  kind: 'needs-you',            // marks a question for agent views and dashboards
+  contentType: 'markdown',
+  replyTo: 'role:manager',      // optional: route replies to a role queue
+})
+
+// Send to a role's queue
+codesense.invoke('send_role_message', {
+  team, role: 'builder',
+  text: 'DEMO-1 — ACs in the story file.',
+})
+
+// Read your own direct mail
+codesense.invoke('read_messages', {})
+
+// List mail waiting on a role
+codesense.invoke('inbox_list', { role: 'builder' })
+
+// Reply in-thread
+codesense.invoke('reply', { messageId, text })
+
+// React to a message with one emoji (again with the same emoji to take it back)
+codesense.invoke('react', { messageId, emoji: '👍' })
+
+// Report completion as your bound tab
+codesense.invoke('signal_done', { status: 'success', summary: 'Checks passed' })</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc F overview</a> · Next: <a href="./roles.html">Roles →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/send_message">send_message</a> ·
+        <a href="../mcp-explorer.html#tool/inbox_list">inbox_list</a>
+      </p>
+          <!--tool-reference-->
+      <section id="tool-reference" data-search="Tool reference">
+        <h2>Tool reference</h2>
+        <p>Reference for the inbox, human-status, role-queue and workspace-chat tools. Inbox mail comes from people and agents your user's setup lets reach you. Times are epoch milliseconds unless a tool says otherwise. <code>team</code> is written <code>{org, team}</code> and <code>teamKey</code> is written <code>org:team</code>. Unless an entry says otherwise, a missing team defaults to the team active in the app; <code>inbox_list</code> tries its <code>sessionId</code>'s team first. Where a tool takes <code>sessionId</code> or <code>session_id</code> to identify the caller (<code>read_messages</code>, the workspace chat tools), a supplied one must name the caller itself; in <code>inbox_list</code>, <code>sessionId</code> names the session whose mail you list.</p>
+        <p id="inbox"><strong>Reading and posting mail</strong></p>
+        <h3 id="tool-read_messages"><code>read_messages</code></h3>
+        <p>Drains your unread inbox messages, oldest first; each is returned once, then marked read. Pass your <code>$CODESENSE_TAB_SESSION_ID</code> as <code>session_id</code>, or omit it to read the inbox of the tab the connection runs in. An outside or unbound connection is refused, and a supplied <code>session_id</code> must name the same tab. Returns <code>{messages:[{messageId, from, fromName, text, inReplyTo, inReplyToTeam, replyTo?, summary?, primaryFile?, attachmentHint?}]}</code>. Answer any one with <code>reply</code>.</p>
+        <pre data-tool-example="read_messages"><code>{
+  &quot;tool&quot;: &quot;read_messages&quot;,
+  &quot;arguments&quot;: {
+    &quot;session_id&quot;: &quot;&lt;your $CODESENSE_TAB_SESSION_ID&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-inbox_list"><code>inbox_list</code></h3>
+        <p>Lists inbox messages without marking anything read (unlike <code>read_messages</code>). Every session, every role and <code>human</code> has an inbox in each team. All arguments are optional: <code>scope</code> (<code>to-human</code>, <code>to-agents</code> or <code>all</code>; default <code>to-human</code> with no filter, <code>all</code> with one), <code>agentId</code>, <code>sessionId</code> (a handle or session id), <code>role</code>, <code>limit</code> (default 50, at most 500; the newest 500 are kept in view), <code>before</code> (a messageId: only older messages), <code>include</code> (<code>["text"]</code> for every body in full, <code>["conversations"]</code> for the human's conversation summaries), <code>kind</code> (<code>needs-you</code> or <code>update</code>, applied before <code>limit</code>) and <code>team</code>. A <code>sessionId</code> is the session whose mail you read, not your identity; without a <code>team</code>, the team defaults to that session's team, else the team active in the app. Returns <code>{messages, humanUnread, hasMore, total}</code>, newest first. An answer stays under 64 KB: a body over 2 KB comes as a 512-byte <code>textPreview</code> with <code>truncated: true</code> unless you include <code>text</code>, and when older messages did not fit, <code>hasMore</code> is true; pass the last listed <code>messageId</code> as <code>before</code> for the next page. <code>total</code> counts the messages that matched (older than <code>before</code> when given) ahead of <code>limit</code>. Each message carries its <code>kind</code>, <code>delivery</code> state for role mail, <code>replyTo</code> and more, described in the served description. Answer one with <code>reply</code>.</p>
+        <pre data-tool-example="inbox_list"><code>{
+  &quot;tool&quot;: &quot;inbox_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;scope&quot;: &quot;to-agents&quot;,
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <h3 id="tool-inbox_post"><code>inbox_post</code></h3>
+        <p>Posts an item to the Inbox as an &quot;I need you&quot;. It requires a verified CodeSense tab connection; an unbound CLI or trigger is refused. <code>title</code> is required and non-blank. Optional <code>context</code>, <code>backlink</code> and <code>need</code> (<code>awaiting-answer</code>, <code>needs-approval</code>, <code>needs-attention</code>, <code>awaiting-validation</code> or <code>done</code>; default <code>needs-attention</code>), which the Inbox maps to the matching action. It shows a pending item; it does not gate a run. Returns <code>{id}</code>.</p>
+        <pre data-tool-example="inbox_post"><code>{
+  &quot;tool&quot;: &quot;inbox_post&quot;,
+  &quot;arguments&quot;: {
+    &quot;title&quot;: &quot;Review the release notes&quot;,
+    &quot;need&quot;: &quot;needs-approval&quot;,
+    &quot;context&quot;: &quot;Draft is on the docs branch&quot;
+  }
+}</code></pre>
+        <h3 id="tool-mark_unread"><code>mark_unread</code></h3>
+        <p>Marks human-directed inbox messages unread without changing their archive state. <code>messageIds</code> is a list of positive integers. Pass both <code>org</code> and <code>team</code>, or omit both for this session's team (else the active team). Messages addressed to agents are unchanged. Returns <code>{marked}</code>, counting rows that changed.</p>
+        <pre data-tool-example="mark_unread"><code>{
+  &quot;tool&quot;: &quot;mark_unread&quot;,
+  &quot;arguments&quot;: {
+    &quot;messageIds&quot;: [
+      123,
+      124
+    ]
+  }
+}</code></pre>
+        <h3 id="tool-get_human_status"><code>get_human_status</code></h3>
+        <p>Reads the human's status for a team so you can adjust how you reach them. Returns <code>{status, note?, updatedAtMs}</code>: <code>online</code> (default when never set), <code>away</code> (short break), <code>busy</code> (heads-down; do not ping unless critical) or <code>offline</code> (out; expect no answer until their next session); <code>note</code> is their own hint (up to 200 characters) and <code>updatedAtMs</code> is 0 when never set. It changes nothing.</p>
+        <pre data-tool-example="get_human_status"><code>{
+  &quot;tool&quot;: &quot;get_human_status&quot;,
+  &quot;arguments&quot;: {
+    &quot;team&quot;: {
+      &quot;org&quot;: &quot;acme&quot;,
+      &quot;team&quot;: &quot;engineering&quot;
+    }
+  }
+}</code></pre>
+        <p id="roles"><strong>Role queues</strong></p>
+        <h3 id="tool-roles_list"><code>roles_list</code></h3>
+        <p>Lists a team's configured role queues: stable id, display name, icon (<code>pack:id</code>, or null) and <code>defaultHandler</code> (a saved-agent key or null). <code>teamKey</code> is required. Queue state and live holders come from <code>role_state</code>.</p>
+        <pre data-tool-example="roles_list"><code>{
+  &quot;tool&quot;: &quot;roles_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;
+  }
+}</code></pre>
+        <h3 id="tool-role_state"><code>role_state</code></h3>
+        <p>Shows the role mailboxes of a team: who holds each role and where every message sent to it stands. It changes and claims nothing. Optional <code>role</code>, <code>limit</code> (acknowledged deliveries per role, default 20; open ones are always all listed) and <code>team</code>. Returns <code>{roles:[{role, roleName, registrations, counts, deliveries, deliveriesTruncated}]}</code>. A delivery's <code>state</code> is <code>pending</code>, <code>claimed</code> (<code>claimLapsed</code> true means it can be claimed again), <code>accepted</code> or <code>acknowledged</code>.</p>
+        <pre data-tool-example="role_state"><code>{
+  &quot;tool&quot;: &quot;role_state&quot;,
+  &quot;arguments&quot;: {
+    &quot;role&quot;: &quot;reviewer&quot;,
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <h3 id="tool-role_save"><code>role_save</code></h3>
+        <p>Saves team role settings. <code>teamKey</code> is <code>org:team</code>; <code>config</code> has <code>id</code> (the stable queue id), <code>name</code>, <code>icon</code> (<code>pack:id</code>, or null to reset) and <code>defaultHandler</code> (one saved-agent key, or null). Changing settings never changes queued mail, existing holders, or the saved agent's default role, and a default handler does not launch automatically.</p>
+        <pre data-tool-example="role_save"><code>{
+  &quot;tool&quot;: &quot;role_save&quot;,
+  &quot;arguments&quot;: {
+    &quot;teamKey&quot;: &quot;acme:engineering&quot;,
+    &quot;config&quot;: {
+      &quot;id&quot;: &quot;reviewer&quot;,
+      &quot;name&quot;: &quot;Reviewer&quot;,
+      &quot;defaultHandler&quot;: null
+    }
+  }
+}</code></pre>
+        <h3 id="tool-release_role"><code>release_role</code></h3>
+        <p>Releases this instance's registration for a <code>role</code>: claimed-but-unaccepted deliveries return to pending so another instance can claim them. Accepted or acknowledged deliveries are not touched, and other registered instances stay intact. Required: <code>team</code> (<code>{org, team}</code>), <code>role</code>, <code>instanceId</code> and <code>generation</code>. Returns <code>{released: N}</code>. Call it to step down while the session keeps running; a session that registered with <code>sessionId</code> has its roles released when it ends.</p>
+        <pre data-tool-example="release_role"><code>{
+  &quot;tool&quot;: &quot;release_role&quot;,
+  &quot;arguments&quot;: {
+    &quot;team&quot;: {
+      &quot;org&quot;: &quot;acme&quot;,
+      &quot;team&quot;: &quot;engineering&quot;
+    },
+    &quot;role&quot;: &quot;reviewer&quot;,
+    &quot;instanceId&quot;: &quot;&lt;instanceId from register_role&gt;&quot;,
+    &quot;generation&quot;: 1
+  }
+}</code></pre>
+        <p id="chat"><strong>Workspace chat</strong></p>
+        <p>One chat per workspace, bound to the session; a session is bound to one workspace.</p>
+        <h3 id="tool-workspace_chat_read"><code>workspace_chat_read</code></h3>
+        <p>Reads messages from the chat of the workspace this session is bound to, oldest first. With <code>since</code> set, returns messages with id greater than it; omitted, it returns from this session's first unread page; <code>since: 0</code> inspects the whole history. <code>limit</code> defaults to 50 (cap 500); <code>limit: 0</code> is a cheap head-id and archive probe that reads nothing and does not advance the read watermark. Returns <code>{workspaceId, messages, headId, archived, unreadRemaining}</code>. Only contiguous returned history advances the read position. An archived workspace may be read. <code>workspace</code>, if given, must equal your bound workspace.</p>
+        <pre data-tool-example="workspace_chat_read"><code>{
+  &quot;tool&quot;: &quot;workspace_chat_read&quot;,
+  &quot;arguments&quot;: {
+    &quot;since&quot;: 0,
+    &quot;limit&quot;: 50
+  }
+}</code></pre>
+        <h3 id="tool-workspace_chat_send"><code>workspace_chat_send</code></h3>
+        <p>Posts one message to the chat of the workspace this session is bound to. <code>text</code> is non-empty, at most 32 KiB and secret-scanned before it is stored. Every other bound supported agent is offered an inbox notice, and the human sees the same transcript in the inbox group chat. Optional <code>workspace</code> (must equal your bound workspace), <code>contentType</code> (<code>plain</code>, <code>markdown</code> or <code>html</code>; html is sanitised between agents), <code>onClick</code> and <code>primaryFile</code>. Returns <code>{status:&quot;sent&quot;, messageId, workspaceId}</code>. Refusals: no session binding, session not bound to a workspace, workspace mismatch, and archived workspace.</p>
+        <pre data-tool-example="workspace_chat_send"><code>{
+  &quot;tool&quot;: &quot;workspace_chat_send&quot;,
+  &quot;arguments&quot;: {
+    &quot;text&quot;: &quot;Docs page is ready for review&quot;,
+    &quot;contentType&quot;: &quot;markdown&quot;
+  }
+}</code></pre>
+      </section>
+      <!--/tool-reference-->
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc F · Messages</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="users" />
+    <title>CodeSense — Team, source repo and notes tools</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/team-and-notes-tools">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Team, source repo and notes tools">
+        <span class="cs-docs-eyebrow">Arc L · Factory</span>
+        <h1>Team, source repo and notes tools</h1>
+        <p class="lede">
+          Reference for the tools that create and organise teams, bind source repos and local clones, read the publish set, and read and write private notes.
+        </p>
+      </section>
+      <section id="how-to-read" data-search="How to read this page">
+        <h2>How to read this page</h2>
+        <p><code>org</code> is an org slug written <code>owner/repo</code>. Team and source-repo admin tools make the same edit as the matching action in the app, and most return <code>{status:&quot;ok&quot;, data:{...}}</code> or <code>{status:&quot;validation&quot;, message}</code>; an unknown or archived team returns <code>{status:&quot;unauthorizedTeam&quot;}</code> on the source-repo tools.</p>
+      </section>
+      <section id="teams" data-search="Teams">
+        <h2>Teams</h2>
+        <h3 id="tool-create_team"><code>create_team</code></h3>
+        <p>Creates a team in an org, the same edit as the UI's New team. Pass <code>org</code> and <code>name</code> (a lowercase slug); optional <code>parent</code> nests it under an existing team (checked first, so a bad parent creates nothing) and <code>activate: true</code> then switches the app to it as <code>set_active_team</code> does. You are recorded as the creator. If the switch fails the team stays created with <code>activated:false</code> and an <code>activationError</code>. An invalid, reserved or duplicate name returns <code>validation</code> and writes nothing.</p>
+        <pre data-tool-example="create_team"><code>{
+  &quot;tool&quot;: &quot;create_team&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;name&quot;: &quot;engineering&quot;,
+    &quot;parent&quot;: &quot;platform&quot;,
+    &quot;activate&quot;: false
+  }
+}</code></pre>
+        <h3 id="tool-rename_team"><code>rename_team</code></h3>
+        <p>Renames a team: its registry entry, content and installs move to the new name, and the UI carries its tabs and state over. Pass <code>org</code>, <code>team</code> (current name) and <code>newName</code> (a lowercase slug). An unknown team or an invalid, reserved or taken name returns <code>validation</code> and changes nothing.</p>
+        <pre data-tool-example="rename_team"><code>{
+  &quot;tool&quot;: &quot;rename_team&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;newName&quot;: &quot;platform-eng&quot;
+  }
+}</code></pre>
+        <h3 id="tool-archive_team"><code>archive_team</code></h3>
+        <p>Archives (<code>archived: true</code>) or unarchives (<code>archived: false</code>) a team: an org-wide, reversible retirement, the same edit as the UI's Archive. An archived active team is switched off in the UI. To remove the registry entry instead, see <code>delete_team</code>.</p>
+        <pre data-tool-example="archive_team"><code>{
+  &quot;tool&quot;: &quot;archive_team&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;archived&quot;: true
+  }
+}</code></pre>
+        <h3 id="tool-delete_team"><code>delete_team</code></h3>
+        <p>Deletes a team from the org's registry, the same edit as the UI's Delete team. Only the registry entry is removed; the team's content stays on disk and is git-recoverable. If it was the active team the UI falls back to another team.</p>
+        <pre data-tool-example="delete_team"><code>{
+  &quot;tool&quot;: &quot;delete_team&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;
+  }
+}</code></pre>
+        <h3 id="tool-set_team_parent"><code>set_team_parent</code></h3>
+        <p>Sets or clears a team's parent (team nesting). Omit <code>parent</code>, or pass null, to make the team a root. An unknown team or parent, the team itself, or one of its descendants (a cycle) returns <code>validation</code> and changes nothing.</p>
+        <pre data-tool-example="set_team_parent"><code>{
+  &quot;tool&quot;: &quot;set_team_parent&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;parent&quot;: &quot;platform&quot;
+  }
+}</code></pre>
+        <h3 id="tool-set_team_starter_page"><code>set_team_starter_page</code></h3>
+        <p>Sets or clears the file CodeSense opens when the team has nothing open (<code>landing_page:</code> in <code>teams.yml</code>). <code>path</code> is required: pass a path relative to the team's content folder (<code>guide/start.md</code>) or an absolute path inside it, which must be an existing file, not hidden and not outside the folder; pass null to clear it (the team then falls back to README.md, README.html, then index.html). Leaving <code>path</code> out is refused. <code>org</code> and <code>team</code> name the team; omit both for the active team. The edit is a local working-tree change of the context repo; publish it to share it. The read-only CodeSense Docs is refused.</p>
+        <pre data-tool-example="set_team_starter_page"><code>{
+  &quot;tool&quot;: &quot;set_team_starter_page&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;path&quot;: &quot;guide/start.md&quot;
+  }
+}</code></pre>
+        <h3 id="tool-set_private_items_use"><code>set_private_items_use</code></h3>
+        <p>Sets &quot;Use my private items&quot; for a team, the same per-team switch as the Private tab. Pass <code>org</code>, <code>team</code> and <code>use</code>. It changes which private files, agents and routines apply to that team, not what the user is browsing. An unknown or archived team is refused.</p>
+        <pre data-tool-example="set_private_items_use"><code>{
+  &quot;tool&quot;: &quot;set_private_items_use&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;use&quot;: true
+  }
+}</code></pre>
+      </section>
+      <section id="source-repos" data-search="Source repos">
+        <h2>Source repos</h2>
+        <p>CodeSense never clones. Clone with git yourself, then bind the folder.</p>
+        <h3 id="tool-add_source_repo"><code>add_source_repo</code></h3>
+        <p>Adds a source repo to a team. Pass <code>org</code>, <code>team</code> and exactly one of <code>url</code> (https, git@, <code>host/owner/repo</code> or GitHub shorthand <code>owner/repo</code>, tracked on the team) or <code>path</code> (an absolute folder on this machine, bound as the repo's local clone). A folder is tracked as the repo its <code>upstream</code> remote names, else <code>origin</code>, else <code>local/&lt;folder&gt;</code>; <code>remoteName</code> in the result says which. A folder inside a git repository must be that repository's root. Add by <code>url</code> and bind the clone later with <code>attach_source_repo_path</code>. A bad URL or folder, a duplicate or an invalid identity returns <code>validation</code>.</p>
+        <pre data-tool-example="add_source_repo"><code>{
+  &quot;tool&quot;: &quot;add_source_repo&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;url&quot;: &quot;acme/app&quot;
+  }
+}</code></pre>
+        <h3 id="tool-attach_source_repo_path"><code>attach_source_repo_path</code></h3>
+        <p>Binds, or rebinds, a local clone to one of a team's source repos so worktrees, terminals and editor actions find its code. Pass <code>org</code>, <code>team</code>, <code>repo</code> (<code>owner/repo</code>, or <code>host/owner/repo</code> when the same owner/repo is on two forges) and <code>path</code>: the absolute path of a git working tree's root with a remote that names that repo. Remotes are tried <code>origin</code>, <code>upstream</code>, then the rest. A folder that is not a working-tree root (the error names the root to pick), has no remote, or has no remote naming the repo is refused. Rebinding replaces the previous clone.</p>
+        <pre data-tool-example="attach_source_repo_path"><code>{
+  &quot;tool&quot;: &quot;attach_source_repo_path&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;,
+    &quot;team&quot;: &quot;engineering&quot;,
+    &quot;repo&quot;: &quot;acme/app&quot;,
+    &quot;path&quot;: &quot;/Users/me/code/app&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="publish-set" data-search="Publish set">
+        <h2>Publish set</h2>
+        <h3 id="tool-get_publish_set"><code>get_publish_set</code></h3>
+        <p>Reads the structured changes for the active context repo as a <code>{buckets, general}</code> publish set. It is read-only: nothing is committed, pushed or merged. Optional <code>worktree</code> (a registered id or name) uses that worktree's working tree against the merge-base of its branch and the clone's local main, including committed and uncommitted edits. Omit it, or pass <code>clone</code>, for the usual clone against GitHub.</p>
+        <pre data-tool-example="get_publish_set"><code>{
+  &quot;tool&quot;: &quot;get_publish_set&quot;,
+  &quot;arguments&quot;: {
+    &quot;worktree&quot;: &quot;clone&quot;
+  }
+}</code></pre>
+      </section>
+      <section id="notes" data-search="Private notes">
+        <h2>Private notes</h2>
+        <p>Notes are Markdown kept on this Mac only, never pushed or shared, each with local history. One org's notes are never visible from another. <code>org</code> (<code>owner/repo</code>) is optional on every notes tool: omit it for the org your session works in. Every reply names the <code>org</code> it used, so pass it back to stay on it. Replies are <code>{status:&quot;ok&quot;, data:{...}}</code> or <code>validation</code>.</p>
+        <h3 id="tool-notes_list"><code>notes_list</code></h3>
+        <p>Lists the person's private notes for one org, pinned first then most recently touched: <code>notes:[{id, title, pinned, lastOpenedAt, updatedAt?, updatedBy?}]</code>. Bodies are not included; use <code>notes_read</code>.</p>
+        <pre data-tool-example="notes_list"><code>{
+  &quot;tool&quot;: &quot;notes_list&quot;,
+  &quot;arguments&quot;: {
+    &quot;org&quot;: &quot;acme/context&quot;
+  }
+}</code></pre>
+        <h3 id="tool-notes_search"><code>notes_search</code></h3>
+        <p>Finds notes whose title or body contains <code>query</code> (case-insensitive). Optional <code>limit</code> (default 20). Returns <code>hits:[{id, title, matched, snippet?}]</code> with <code>matched</code> of <code>title</code>, <code>text</code> or <code>both</code>: title matches first, then body matches, most recently touched first.</p>
+        <pre data-tool-example="notes_search"><code>{
+  &quot;tool&quot;: &quot;notes_search&quot;,
+  &quot;arguments&quot;: {
+    &quot;query&quot;: &quot;release plan&quot;,
+    &quot;limit&quot;: 10
+  }
+}</code></pre>
+        <h3 id="tool-notes_read"><code>notes_read</code></h3>
+        <p>Reads one note with its Markdown body. <code>id</code> comes from <code>notes_list</code> or <code>notes_search</code>. A missing note returns <code>validation</code>.</p>
+        <pre data-tool-example="notes_read"><code>{
+  &quot;tool&quot;: &quot;notes_read&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from notes_list&gt;&quot;
+  }
+}</code></pre>
+        <h3 id="tool-notes_create"><code>notes_create</code></h3>
+        <p>Adds a private note. <code>title</code> is required; <code>content</code> (Markdown body), <code>pinned</code>, <code>org</code> and <code>sessionId</code> are optional. <code>sessionId</code> (your <code>$CODESENSE_TAB_SESSION_ID</code>) credits the note to your session; a remote session is always credited to its own tab, and a supplied <code>sessionId</code> must name the caller itself. The note is committed to local history and the Notes pane shows it at once. An unbound caller is refused.</p>
+        <pre data-tool-example="notes_create"><code>{
+  &quot;tool&quot;: &quot;notes_create&quot;,
+  &quot;arguments&quot;: {
+    &quot;title&quot;: &quot;Release plan&quot;,
+    &quot;content&quot;: &quot;# Release plan\n&quot;,
+    &quot;pinned&quot;: false
+  }
+}</code></pre>
+        <h3 id="tool-notes_write"><code>notes_write</code></h3>
+        <p>Changes a note. <code>id</code> is required, plus exactly one of <code>content</code> (the whole new body), <code>append</code> (text added on a new line at the end) or <code>patch</code> (<code>{find, replace}</code>, where <code>find</code> must occur exactly once in the body; read the note first), and/or <code>title</code> to rename. More than one of content/append/patch, no edit, or a patch matching zero or several times returns <code>validation</code>. Each change is committed with you as author, and anything the person typed before your write is committed first under their name, so <code>notes_restore</code> can undo you. A write that changes nothing reports <code>changed:false</code>.</p>
+        <pre data-tool-example="notes_write"><code>{
+  &quot;tool&quot;: &quot;notes_write&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from notes_list&gt;&quot;,
+    &quot;patch&quot;: {
+      &quot;find&quot;: &quot;draft&quot;,
+      &quot;replace&quot;: &quot;final&quot;
+    }
+  }
+}</code></pre>
+        <h3 id="tool-notes_history"><code>notes_history</code></h3>
+        <p>Lists who changed a note and when, newest first: <code>revisions:[{commit, at, actor:{kind, name, ...}, change, summary, added, removed}]</code> where <code>change</code> is <code>create</code>, <code>write</code>, <code>restore</code>, <code>meta</code> or <code>delete</code>. Optional <code>limit</code> (default 50). Asking for history first commits the person's pending typing. Read an old version with <code>notes_read_at</code>; bring it back with <code>notes_restore</code>.</p>
+        <pre data-tool-example="notes_history"><code>{
+  &quot;tool&quot;: &quot;notes_history&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from notes_list&gt;&quot;,
+    &quot;limit&quot;: 20
+  }
+}</code></pre>
+        <h3 id="tool-notes_read_at"><code>notes_read_at</code></h3>
+        <p>Reads a note's text as it was at one revision. <code>commit</code> comes from <code>notes_history</code> (at least its first 4 characters). Returns <code>{org, id, commit, title?, content}</code>, or <code>validation</code> for an unknown commit or a note that did not exist then.</p>
+        <pre data-tool-example="notes_read_at"><code>{
+  &quot;tool&quot;: &quot;notes_read_at&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from notes_list&gt;&quot;,
+    &quot;commit&quot;: &quot;a1b2c3d4&quot;
+  }
+}</code></pre>
+        <h3 id="tool-notes_restore"><code>notes_restore</code></h3>
+        <p>Brings a note's body back to its text at one revision as a new change: the current text is committed first, so the restore can be undone the same way. <code>id</code> and <code>commit</code> are required; the title is left as it is. Returns <code>changed:false</code> when the text was already that. An unbound caller is refused, and a supplied <code>sessionId</code> must name the caller itself.</p>
+        <pre data-tool-example="notes_restore"><code>{
+  &quot;tool&quot;: &quot;notes_restore&quot;,
+  &quot;arguments&quot;: {
+    &quot;id&quot;: &quot;&lt;id from notes_list&gt;&quot;,
+    &quot;commit&quot;: &quot;a1b2c3d4&quot;
+  }
+}</code></pre>
+      </section>
+      <p class="ref">
+        <a href="./index.html">All Arc L pages</a> ·
+        <a href="./patterns.html">Patterns</a> ·
+        <a href="../mcp-explorer.html">MCP explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc L · Factory</div>
+    </footer>
+  </body>
+</html>

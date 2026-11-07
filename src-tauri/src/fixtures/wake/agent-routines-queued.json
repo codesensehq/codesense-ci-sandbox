@@ -1,0 +1,27 @@
+{
+  "routines": [
+    {
+      "enabled": true,
+      "id": "acme/api/backend/digest",
+      "mode": "fresh",
+      "name": "Digest",
+      "nextRunAt": "<rfc3339>",
+      "queued": null
+    },
+    {
+      "enabled": true,
+      "id": "acme/api/backend/triage",
+      "mode": "fresh",
+      "name": "Triage",
+      "nextRunAt": "<rfc3339>",
+      "queued": {
+        "deadlineMs": 1700000060000,
+        "machineId": "codesense-test-1",
+        "marker": "Triage",
+        "runId": "run-42",
+        "sessionId": "s-barb",
+        "unconfirmed": false
+      }
+    }
+  ]
+}

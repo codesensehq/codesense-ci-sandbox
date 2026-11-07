@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <title>CodeSense — Phase 7 · ATDD (optional)</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-h.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <script src="./_phase-page.js" defer></script>
+  </head>
+  <body
+    class="cs-page cs-docs"
+    data-arc="H"
+    data-phase="7"
+    data-page="arc-h-pipelines-and-sdlc/07-atdd"
+  >
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <div class="cs-h-page">
+        <div class="cs-h-stage">
+          <section data-hero data-search="Phase 7 — ATDD" id="hero">
+            <header class="cs-h-head">
+              <div class="cs-h-head__num" data-cs-phase-number>07</div>
+              <div>
+                <div class="cs-h-head__group" data-cs-phase-group>DESIGN</div>
+                <h1 class="cs-h-head__title">
+                  Phase <span data-cs-phase-number>07</span> ·
+                  <span data-cs-phase-name>ATDD (optional)</span>
+                </h1>
+                <p class="cs-h-head__sub">
+                  Murat writes the red-phase acceptance test <em>before</em>
+                  Amelia starts building. The test asserts behaviour, not shape.
+                  Optional, but the stories that use it ship with less rework.
+                </p>
+                <div class="cs-h-facets">
+                  <span class="cs-docs-chip"><strong>Agent</strong><span data-cs-phase-agent-name>…</span></span>
+                  <span class="cs-docs-chip"><strong>Skill</strong><code data-cs-phase-skill>…</code></span>
+                  <span class="cs-docs-chip"><strong>Inbox</strong><span data-cs-phase-inbox-role>…</span></span>
+                  <span class="cs-docs-chip"><strong>Trigger</strong><span data-cs-phase-trigger>…</span></span>
+                  <a class="cs-docs-chip" data-cs-phase-dashboard-link href="#"
+                    ><strong>Dashboard</strong><span data-cs-phase-dashboard>…</span></a
+                  >
+                </div>
+              </div>
+            </header>
+          </section>
+
+          <section class="cs-h-section" data-search="What ATDD phase is for" id="what">
+            <h2>What this phase is for</h2>
+            <p>
+              ATDD — acceptance-test-driven development — writes the test the
+              story will have to pass <em>before</em> anybody starts building.
+              The test is red when it lands; the build phase's job is to turn it
+              green. It's the fastest way to catch "the real problem isn't what
+              we thought" moments.
+            </p>
+            <p>
+              Not every story needs it. Use ATDD when the story spans a new
+              end-to-end flow or carries real UX risk. Skip it for refactors,
+              internal tooling, or copy edits.
+            </p>
+          </section>
+
+          <section class="cs-h-section" data-search="Worked example — ATDD red test" id="worked">
+            <h2>Worked example — red-phase test for DEMO-2</h2>
+            <div class="cs-docs-card" data-cs-phase-worked-example>
+              <p>Loading worked example from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="What goes wrong — ATDD" id="goes-wrong">
+            <h2>What goes wrong</h2>
+            <div class="cs-docs-card" data-cs-phase-what-goes-wrong>
+              <p>Loading from <code>phases.yml</code>…</p>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="MCP tools used in ATDD" id="mcp">
+            <h2>MCP tools used</h2>
+            <div data-cs-phase-mcp-tools>…</div>
+          </section>
+
+          <section class="cs-h-section" data-search="agent.yaml Murat ATDD" id="agent-yaml">
+            <h2>Copy-paste: <code>agent.yaml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-agent-yaml">Copy</button>
+              <pre id="phase-agent-yaml" data-cs-phase-agent-yaml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="routine.yml ATDD" id="routine-yml">
+            <h2>Copy-paste: <code>routine.yml</code></h2>
+            <figure class="cs-h-snippet">
+              <button class="cs-h-snippet__copy" type="button" data-cs-copy-target="#phase-routine-yml">Copy</button>
+              <pre id="phase-routine-yml" data-cs-phase-routine-yml>…</pre>
+            </figure>
+          </section>
+
+          <section class="cs-h-section" data-search="Local vs remote — ATDD" id="lr">
+            <h2>Local vs remote</h2>
+            <div class="cs-h-lr">
+              <div class="cs-h-lr__cell" data-side="local">
+                <div class="cs-h-lr__label">Local</div>
+                <p>
+                  Murat drops the red test into your source repo's
+                  <code>e2e/</code> or <code>tests/</code> folder as a Playwright
+                  / vitest file. Local <code>pnpm test</code> confirms it's red.
+                </p>
+              </div>
+              <div class="cs-h-lr__cell" data-side="remote">
+                <div class="cs-h-lr__label">Remote (private-account)</div>
+                <p>
+                  Remote Murat runs the same skill against the remote source
+                  repo. The test file is source code, so it comes back on the
+                  story's branch for review before builders claim the
+                  story.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="cs-h-section" data-search="Try this now — ATDD" id="try">
+            <h2>Try this now</h2>
+            <p>
+              Draft a red-phase test against your most recent story. The skill
+              needs the spec, the architecture, and a specific story file.
+            </p>
+            <cs-try-this
+              verb="runSkill"
+              args='{"skill":"bmad-testarch-atdd"}'
+              label="Author a red-phase test"
+              confirm="Run bmad-testarch-atdd in your active editable context repo?"
+            ></cs-try-this>
+          </section>
+
+          <section class="cs-h-section" data-search="How to ATDD via MCP" id="via-mcp">
+            <details>
+              <summary><strong>How to do this via MCP</strong></summary>
+              <pre><code>codesense.invoke('runSkill', { skill: 'bmad-testarch-atdd' })</code></pre>
+            </details>
+          </section>
+
+          <p style="margin-top: 24px; color: var(--cs-muted-fg)">
+            <a href="./index.html">← Arc H overview</a>
+            &nbsp;·&nbsp; Live state →
+            <a data-cs-phase-xref href="../factory-playbook.html#phase-7">factory playbook · phase 7</a>
+            &nbsp;·&nbsp; Previous: <a href="./06-sprint-plan.html">← 06 Sprint plan</a> ·
+            Next: <a href="./08-build.html">08 Build →</a>
+          </p>
+        </div>
+        <aside class="cs-h-sidenav" aria-label="All 14 phases" data-cs-arc-h-sidenav></aside>
+      </div>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc H · Phase 7 · ATDD</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

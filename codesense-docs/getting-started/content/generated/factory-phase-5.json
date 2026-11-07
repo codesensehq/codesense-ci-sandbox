@@ -1,0 +1,36 @@
+{
+  "phase": 5,
+  "name": "Story graph",
+  "group": "Plan",
+  "describedBy": "./phases.yml#phase-5",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "planning", "title": "Per-agent kill switch"},
+      {"id": "DEMO-1", "kind": "story", "status": "planning", "title": "Host kill ladder + MCP wrapper"},
+      {"id": "DEMO-2", "kind": "story", "status": "planning", "title": "DAG node kill button + confirmation modal"},
+      {"id": "DEMO-3", "kind": "story", "status": "planning", "title": "Public MCP tool: kill_agent"},
+      {"id": "DEMO-4", "kind": "story", "status": "planning", "title": "Remember a killed agent across relaunches"},
+      {"id": "DEMO-5", "kind": "story", "status": "planning", "title": "DAG transitions through 'stopping' without a reload"}
+    ],
+    "edges": [
+      {"from": "DEMO-1", "to": "DEMO-2"},
+      {"from": "DEMO-1", "to": "DEMO-3"},
+      {"from": "DEMO-1", "to": "DEMO-4"},
+      {"from": "DEMO-1", "to": "DEMO-5"}
+    ]
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-5-john", "agent": "john-pm", "status": "running", "startedAt": "2026-10-02T16:10:00Z", "endedAt": null, "story": null}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch"],
+    "focus": null
+  },
+  "sprint": {
+    "active": null,
+    "stories": []
+  },
+  "note": "Phase 5 — John writes the five stories: one root and four siblings that each depend only on it and do not touch the same files, so they can build in parallel. Pipeline graph is now the shape it will carry for the rest of the demo."
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="cloud" />
+    <title>CodeSense — Remote (private account)</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/remote-private-account">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Remote private-account — SSH posture, terminal server, survive relaunch" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="D">Arc D · Remote</span>
+          <span class="cs-docs-chip cs-docs-chip--ok">private account</span>
+        </p>
+        <h1>Remote, as first-class as local</h1>
+      </section>
+
+      <section data-search="Why remote private-account" id="why">
+        <p>
+          A remote machine in <strong>private-account</strong> mode gives you your own
+          Unix login on the box: your files, your agent CLI logins, your terminal
+          server identity. Teammates on the same host have theirs. CodeSense's parity
+          promise is written against this mode — if a workflow works locally, it
+          works here, with the handful of caveats called out in the
+          <a href="./parity-matrix.html">parity matrix</a>.
+        </p>
+      </section>
+
+      <section data-search="SSH posture — what CodeSense trusts, what it refuses" id="ssh-posture">
+        <h2>SSH posture</h2>
+        <p>
+          CodeSense talks to your remote machine over ordinary OpenSSH. The posture it
+          takes is deliberately boring:
+        </p>
+        <ul>
+          <li>
+            <strong>Your public key stays on the machine, your private key stays on
+            your Mac.</strong> CodeSense never asks for a private key, a password, or
+            an API token.
+          </li>
+          <li>
+            <strong>Host keys are pinned.</strong> The first time you test a machine,
+            CodeSense returns the host-key fingerprint; you confirm it, and from then
+            on CodeSense enforces the pin. A mismatched fingerprint on a later
+            connection refuses with "pinned host key does not match."
+          </li>
+          <li>
+            <strong>Agent sign-in is first-class.</strong> If you already use an SSH
+            agent (<code>ssh-add</code>), CodeSense uses it. If you prefer a key file,
+            you point at it and CodeSense parks the passphrase in your macOS keychain
+            via a one-way handle; the passphrase itself never lands in CodeSense state.
+          </li>
+          <li>
+            <strong>Jump hosts</strong> are supported — set <code>jump_host</code> on
+            the declaration and SSH's <code>ProxyJump</code> handles the hop.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="The CodeSense terminal server on the remote" id="terminal-server">
+        <h2>The CodeSense terminal server</h2>
+        <p>
+          A tiny server CodeSense installs on each remote machine (one per private
+          account) is what makes remote feel like local. It:
+        </p>
+        <ol>
+          <li>
+            <strong>Owns the PTYs</strong> — each remote tab is a PTY under this
+            server, not a child of your SSH session. If your laptop sleeps, the PTYs
+            keep running.
+          </li>
+          <li>
+            <strong>Streams scrollback</strong> — the same emulator contract as local,
+            exposed over a framed protocol over SSH. One codec, one scrollback shape.
+          </li>
+          <li>
+            <strong>Carries a pinned identity</strong> — the <code>pinned_server_id</code>
+            on the machine declaration. If the server is replaced (someone wiped the
+            box, or you reset the installation), CodeSense refuses until you re-verify.
+          </li>
+          <li>
+            <strong>Upgrades under control</strong> — <em>Machines → Replace terminal
+            server</em> prepares the new binary alongside the live one, then swaps.
+            Older servers get a "terminalServerOutdated" refusal for new verbs so
+            you know to upgrade.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Tabs survive relaunch" id="survive-relaunch">
+        <h2>Tabs survive relaunch</h2>
+        <p>
+          Because PTYs are owned by the terminal server (not by your SSH session),
+          remote tabs stay alive across:
+        </p>
+        <ul>
+          <li>Your Mac sleeping or losing Wi-Fi.</li>
+          <li>Quitting and re-opening CodeSense.</li>
+          <li>Restarting the host-agent on your Mac.</li>
+        </ul>
+        <p>
+          On reconnect, CodeSense re-attaches, snaps the latest scrollback, and the
+          agent you had running is still running — the <em>remote-saved agent
+          startup</em> story. You see this as "my <code>claude</code> session was
+          still there when I woke the Mac up." The one thing that doesn't survive is a
+          deliberate <em>close tab</em> — closing a tab tears the PTY down.
+        </p>
+      </section>
+
+      <section data-search="A remote tab, start to finish" id="walkthrough">
+        <h2>A remote tab, start to finish</h2>
+        <ol>
+          <li>
+            You pick a workspace, open its workspace sheet, and the machine picker
+            offers "this Mac" or any saved remotes.
+          </li>
+          <li>
+            You pick the remote. CodeSense opens an SSH connection (or reuses the
+            pooled one), asks the terminal server to spawn a PTY in your workspace's
+            hydrated worktree on the remote.
+          </li>
+          <li>
+            The tab opens. You type <code>claude "fix the build"</code> or just
+            <code>ls</code> — the shell responds exactly as it would in a local tab.
+          </li>
+          <li>
+            You walk away. The next morning you re-open CodeSense; the tab is still
+            there, the agent is still waiting on your reply, and
+            <code>read_terminal_tab</code> returns the scrollback that accumulated
+            overnight.
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Try this now — open a remote tab" id="try-this-now">
+        <h2>Try this now</h2>
+        <p>
+          Open a shell tab on a saved remote machine. You'll need a machine saved
+          already (<a href="./setup-machine.html">walk the setup flow first</a>) and
+          an open workspace.
+        </p>
+        <cs-try-this
+          verb="open_remote_tab"
+          args='{"launch":"shell"}'
+          label="Open a remote terminal tab"
+          dry-run="true"
+        ></cs-try-this>
+      </section>
+
+      <section data-search="How to open a remote tab via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>codesense.invoke('open_remote_tab', {
+  requestId: crypto.randomUUID(),
+  machineId: 'build-box-01-ab12cd',
+  teamKey: 'ops',
+  workspaceId: '&lt;workspace&gt;',
+  hostCwd: '/home/sam/work/my-repo',
+  launch: 'shell',       // or 'claude' / 'codex' / an agentKey
+  headed: true,
+})</code></pre>
+          <p>
+            For a saved agent, pass <code>launch: {agentKey}</code> and
+            <code>preparedWorkspaceHandle</code> from a verified hydration.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./local-machine.html">← Local machine</a> ·
+        <a href="./setup-machine.html">Setup machine →</a> ·
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/open_remote_tab">mcp-explorer</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc D · Remote</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,260 @@
+{
+  "_comment": "One session mixing Claude hooks with MCP signals through the dot ledger. Each step: what drives it, the terminal-status-update emitted for it (null when nothing is emitted: a suppressed hook, an ask closed without a restore, or a liveness probe), and the dot and agent state the frontend then shows. The Rust ledger test asserts `emitted`; the frontend test replays `emitted` through the real listener, answers `liveness` steps from the real poller's probe, and asserts `dot` and `agent_state`. The last turn is a plain CLI tab: Claude, established by a hook, is killed after an MCP signal, and the probe still ends the turn.",
+  "tab_session_id": "mcp-dot-fixture",
+  "steps": [
+    {
+      "step": "hook UserPromptSubmit",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "UserPromptSubmit"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "signal_progress dev",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "signal-progress",
+          "phase": "dev"
+        }
+      },
+      "dot": "running",
+      "agent_state": "working"
+    },
+    {
+      "step": "hook PreToolUse",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "PreToolUse"
+      },
+      "dot": "running",
+      "agent_state": "working"
+    },
+    {
+      "step": "ask_user open",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "needs-permission",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-user"
+        }
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "hook PreToolUse",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "PreToolUse"
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "ask_user resolve",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-resolved"
+        }
+      },
+      "dot": "running",
+      "agent_state": "working"
+    },
+    {
+      "step": "hook UserPromptSubmit",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "UserPromptSubmit"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "signal_done failed",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "error",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "signal-done",
+          "outcome": "failed"
+        }
+      },
+      "dot": "error",
+      "agent_state": "errored"
+    },
+    {
+      "step": "hook PostToolUse",
+      "emitted": null,
+      "dot": "error",
+      "agent_state": "errored"
+    },
+    {
+      "step": "signal_progress blocked",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "needs-permission",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "signal-progress",
+          "phase": "blocked"
+        }
+      },
+      "dot": "needs-permission",
+      "agent_state": "blocked"
+    },
+    {
+      "step": "hook UserPromptSubmit",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "UserPromptSubmit"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "signal_done success",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "done",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "signal-done",
+          "outcome": "success"
+        }
+      },
+      "dot": "done",
+      "agent_state": "done"
+    },
+    {
+      "step": "hook UserPromptSubmit",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "UserPromptSubmit"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "ask_user open",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "needs-permission",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-user"
+        }
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "hook PostToolUse",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "PostToolUse"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "ask_user resolve",
+      "emitted": null,
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "ask_user open",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "needs-permission",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-user"
+        }
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "ask_user abandon",
+      "emitted": null,
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "hook UserPromptSubmit",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "UserPromptSubmit"
+      },
+      "dot": "running",
+      "agent_state": "thinking"
+    },
+    {
+      "step": "ask_user open",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "needs-permission",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-user"
+        }
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "hook PreToolUse",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "hook_event": "PreToolUse"
+      },
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "liveness alive",
+      "emitted": null,
+      "dot": "needs-permission",
+      "agent_state": "needs-permission"
+    },
+    {
+      "step": "ask_user resolve",
+      "emitted": {
+        "tab_session_id": "mcp-dot-fixture",
+        "status": "running",
+        "source": "mcp",
+        "agent_signal": {
+          "kind": "ask-resolved"
+        }
+      },
+      "dot": "running",
+      "agent_state": "working"
+    },
+    {
+      "step": "liveness exited",
+      "emitted": null,
+      "dot": "error",
+      "agent_state": "crashed"
+    }
+  ]
+}

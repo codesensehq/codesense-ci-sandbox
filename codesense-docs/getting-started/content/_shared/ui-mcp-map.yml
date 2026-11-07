@@ -1,0 +1,55 @@
+# `ui-mcp-map.yml` — explicit UI ↔ MCP pairings the
+# auto-matcher cannot find. Owned by
+# `scripts/generate-ui-mcp-crossref.mjs`.
+#
+# The generator pairs by exact function-name match first (a Tauri command
+# ident === an MCP tool fn ident); this file is for the long tail where
+# the names drifted — a Tauri command grew a `_for_wave` suffix, say, or
+# an MCP tool kept the shorter public name while the Rust fn gained an
+# internal qualifier.
+#
+# Each pair:
+#   - ui:   the Tauri command fn ident (e.g. `set_active_team_for_wave`)
+#     mcp:  the MCP tool fn ident      (e.g. `set_active_team`)
+#     note: optional human sentence explaining why the names differ.
+#
+# A map entry wins over the auto-matcher, so retiring a drifted name is
+# a one-line change here (not a rename across both sides at once).
+
+pairs:
+  # Role-inbox Tauri commands kept the `_cmd` suffix the FE wrappers wrote
+  # against; the MCP mirrors land on the bare name.
+  - ui: accept_role_message_cmd
+    mcp: accept_role_message
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+  - ui: ack_role_message_cmd
+    mcp: ack_role_message
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+  - ui: claim_role_messages_cmd
+    mcp: claim_role_messages
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+  - ui: register_role_cmd
+    mcp: register_role
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+  - ui: release_role_cmd
+    mcp: release_role
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+  - ui: send_role_message_cmd
+    mcp: send_role_message
+    note: Tauri side kept the `_cmd` suffix for the FE wrapper symmetry.
+
+  # `cmd_` prefix on the weft-scopes Tauri command — the MCP mirror
+  # publishes under the shorter name.
+  - ui: cmd_wv_watch_list
+    mcp: wv_watch_list
+    note: Tauri side gained a `cmd_` prefix to disambiguate from a sibling type.
+  # The Settings section's read is the agents' `terminal_server_status`
+  # (the Tauri `terminal_server_status` name already reports only an
+  # incompatible server, for the restart prompt); the Settings Restart of a
+  # running server is the agents' `restart_terminal_server` with `expected`.
+  - ui: terminal_server_overview
+    mcp: terminal_server_status
+    note: The Tauri `terminal_server_status` name predates the agents' tool and reports only an incompatible server.
+  - ui: replace_terminal_server
+    mcp: restart_terminal_server
+    note: The Settings Restart of a running server; the MCP tool covers both it and the incompatible restart.

@@ -1,0 +1,8 @@
+{
+  "cwd": "/tmp/claude-hook-capture",
+  "hook_event_name": "SessionEnd",
+  "prompt_id": "c1a0de00-0000-4000-9000-000000000301",
+  "reason": "other",
+  "session_id": "c1a0de00-0000-4000-a000-000000000307",
+  "transcript_path": "/Users/dev/.claude/projects/-tmp-claude-hook-capture/c1a0de00-0000-4000-a000-000000000307.jsonl"
+}

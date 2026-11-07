@@ -1,0 +1,19 @@
+format = """$directory$git_branch$git_status
+$character"""
+
+[character]
+success_symbol = "[❯](bold blue)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+style = "bold white"
+truncation_length = 4
+truncation_symbol = "…/"
+
+[git_branch]
+style = "bold purple"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "yellow"
+format = "[$all_status$ahead_behind]($style)"

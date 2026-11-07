@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Solo with remote</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/solo-with-remote"] figure.diag {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/solo-with-remote"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+      }
+      /* Factory hero inline-SVG stand-in — mirrors
+         diagrams/factory/solo-with-remote.excalidraw.sketch.md coord space
+         (1280x720). Swapped for the rendered PNG once render_canvas lands. */
+      .fac-hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 980px;
+        margin: 16px auto 8px;
+      }
+      .fac-hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .fac-hero-fig .mac {
+        fill: var(--cs-inset);
+        stroke-width: 2;
+      }
+      .fac-hero-fig .mac-local { stroke: #4ec28a; }
+      .fac-hero-fig .mac-remote { stroke: #a898ff; }
+      .fac-hero-fig .chip {
+        fill: var(--cs-surface);
+        stroke-width: 1.6;
+      }
+      .fac-hero-fig .r-triager { stroke: #6ea8f0; }
+      .fac-hero-fig .r-builder { stroke: #4ec28a; }
+      .fac-hero-fig .r-reviewer { stroke: #a898ff; }
+      .fac-hero-fig .r-scout { stroke: #e0ac55; }
+      .fac-hero-fig .r-resolver { stroke: #f0a93b; }
+      .fac-hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .title {
+        fill: var(--cs-fg);
+        font: 600 18px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .edge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.4;
+        fill: none;
+      }
+      .fac-hero-fig .edge-bridge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.6;
+        fill: none;
+      }
+      .fac-hero-fig .bridge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.4;
+        stroke-dasharray: 3 3;
+        fill: none;
+      }
+      .fac-hero-fig .trigger {
+        stroke: #6ea8f0;
+        stroke-width: 1.4;
+        stroke-dasharray: 3 3;
+        fill: none;
+      }
+      .fac-hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 980px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/solo-with-remote">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="Solo with remote — 1 Mac plus 1-2 remote Macs" id="hero">
+        <h1>Solo + remote · one Mac plus one or two remote machines</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          You've got a laptop. You've got an always-on Linux box in the closet (call it
+          <code>mini</code>). Add it as a machine over SSH and you can send heavy work to it while
+          your laptop keeps its fans quiet. Its sessions keep running when the laptop sleeps or
+          you quit CodeSense.
+        </p>
+        <figure class="fac-hero-fig" aria-labelledby="fac-solo-cap">
+          <svg
+            viewBox="0 0 1280 720"
+            role="img"
+            aria-label="Two side-by-side MacBook frames linked by a dashed private-account bridge. The left (local) Mac holds a triager, a local builder, a resolver, and an analyst; the right (remote) Mac holds two more builders, a reviewer, and a scout. Edges fan out from the triager, crossing the bridge where work goes remote."
+          >
+            <title>Solo + remote · one Mac plus a remote Mac</title>
+
+            <!-- Private-account bridge arc -->
+            <path class="bridge" d="M 320 70 Q 640 20 960 70" />
+            <text class="mut" x="640" y="46" text-anchor="middle">private-account bridge</text>
+
+            <!-- Local Mac frame -->
+            <rect class="mac mac-local" x="60" y="80" width="540" height="560" rx="18" />
+            <text class="title" x="80" y="110">MacBook · local — dev@local</text>
+            <circle cx="585" cy="95" r="5" fill="#4ec28a" />
+
+            <!-- Remote Mac frame -->
+            <rect class="mac mac-remote" x="680" y="80" width="540" height="560" rx="18" />
+            <text class="title" x="700" y="110">MacBook · remote — dev@mini</text>
+            <circle cx="1205" cy="95" r="5" fill="#a898ff" />
+
+            <!-- Local chips -->
+            <rect class="chip r-triager" x="100" y="180" width="220" height="80" rx="10" />
+            <circle cx="110" cy="190" r="4" fill="#4ec28a" />
+            <text class="lbl" x="210" y="214" text-anchor="middle">triager</text>
+            <text class="mut" x="210" y="236" text-anchor="middle">routes to both Macs</text>
+
+            <rect class="chip r-builder" x="100" y="290" width="220" height="70" rx="10" />
+            <circle cx="110" cy="300" r="4" fill="#4ec28a" />
+            <text class="lbl" x="210" y="330" text-anchor="middle">builder</text>
+
+            <rect class="chip r-resolver" x="100" y="400" width="220" height="70" rx="10" />
+            <circle cx="110" cy="410" r="4" fill="#4ec28a" />
+            <text class="lbl" x="210" y="440" text-anchor="middle">resolver</text>
+
+            <rect class="chip r-triager" x="360" y="290" width="220" height="70" rx="10" />
+            <circle cx="370" cy="300" r="4" fill="#4ec28a" />
+            <text class="lbl" x="470" y="330" text-anchor="middle">analyst</text>
+
+            <!-- Remote chips -->
+            <rect class="chip r-builder" x="720" y="180" width="220" height="70" rx="10" />
+            <circle cx="730" cy="190" r="4" fill="#a898ff" />
+            <text class="lbl" x="830" y="220" text-anchor="middle">builder</text>
+
+            <rect class="chip r-builder" x="720" y="270" width="220" height="70" rx="10" />
+            <circle cx="730" cy="280" r="4" fill="#a898ff" />
+            <text class="lbl" x="830" y="310" text-anchor="middle">builder</text>
+
+            <rect class="chip r-reviewer" x="720" y="390" width="220" height="70" rx="10" />
+            <circle cx="730" cy="400" r="4" fill="#a898ff" />
+            <text class="lbl" x="830" y="430" text-anchor="middle">reviewer</text>
+
+            <rect class="chip r-scout" x="980" y="290" width="220" height="70" rx="10" />
+            <circle cx="990" cy="300" r="4" fill="#a898ff" />
+            <text class="lbl" x="1090" y="330" text-anchor="middle">scout</text>
+
+            <!-- Local edges -->
+            <path class="edge" d="M 210 260 L 210 290" />
+            <polygon fill="var(--cs-muted-fg)" points="210,290 204,278 216,278" />
+            <path class="edge" d="M 210 260 Q 210 335 210 400" />
+            <polygon fill="var(--cs-muted-fg)" points="210,400 204,388 216,388" />
+            <path class="edge" d="M 320 220 L 360 310" />
+            <polygon fill="var(--cs-muted-fg)" points="360,310 348,304 358,296" />
+
+            <!-- Cross-bridge edges from triager to remote chips -->
+            <path class="edge-bridge" d="M 320 210 Q 520 110 720 210" />
+            <polygon fill="var(--cs-muted-fg)" points="720,210 708,208 711,220" />
+            <path class="edge-bridge" d="M 320 215 Q 520 170 720 300" />
+            <polygon fill="var(--cs-muted-fg)" points="720,300 708,298 711,310" />
+            <path class="edge-bridge" d="M 320 220 Q 520 230 720 420" />
+            <polygon fill="var(--cs-muted-fg)" points="720,420 708,418 711,430" />
+            <path class="edge-bridge" d="M 320 225 Q 640 250 980 320" />
+            <polygon fill="var(--cs-muted-fg)" points="980,320 968,318 971,330" />
+
+            <text class="mut" x="520" y="140" text-anchor="middle">private-account</text>
+
+            <!-- Trigger (inbox_idle) dashed arcs into builder-2 and reviewer -->
+            <path class="trigger" d="M 830 90 Q 830 130 830 180" />
+            <polygon fill="#6ea8f0" points="830,180 824,168 836,168" />
+            <text class="mut" x="840" y="100">inbox_idle</text>
+            <path class="trigger" d="M 830 110 Q 970 240 830 390" />
+            <polygon fill="#6ea8f0" points="830,390 836,378 824,378" />
+
+            <!-- Reply-queue loop back under both frames -->
+            <path class="edge" d="M 1090 460 Q 1200 620 640 640 Q 180 640 150 400 L 190 230" />
+            <polygon fill="var(--cs-muted-fg)" points="190,230 180,242 194,242" />
+            <text class="mut" x="640" y="618" text-anchor="middle">reply queue</text>
+
+            <!-- Legend -->
+            <g transform="translate(80, 680)">
+              <circle cx="0" cy="0" r="4" fill="#4ec28a" />
+              <text class="mut" x="12" y="4">home mac</text>
+              <circle cx="110" cy="0" r="4" fill="#a898ff" />
+              <text class="mut" x="122" y="4">mini (remote)</text>
+              <text class="mut" x="280" y="4">
+                primitives · worktrees · inbox roles · routines · private-account · inbox_idle
+              </text>
+            </g>
+          </svg>
+        </figure>
+        <p class="fac-hero-cap" id="fac-solo-cap">
+          This is the shape; the live
+          <code>factory/solo-with-remote.excalidraw</code> canvas has the
+          editable version — click the diagram to open it.
+        </p>
+      </section>
+
+      <section data-search="When to use solo-plus-remote" id="why">
+        <h2>When to reach for solo + remote</h2>
+        <ul>
+          <li>
+            You want to run <strong>overnight</strong> on something other than your laptop battery.
+          </li>
+          <li>Your laptop needs to be portable and quiet; the mini can roar.</li>
+          <li>
+            You want a <strong>build / review split</strong>: fast dev loop locally, long reviews on
+            the mini.
+          </li>
+          <li>You want a staging-shaped environment without any cloud dependency.</li>
+        </ul>
+      </section>
+
+      <section data-search="Private-account mode in one paragraph" id="private-account">
+        <h2>Private-account mode in one paragraph</h2>
+        <p>
+          CodeSense reaches the machine with ordinary OpenSSH and your own SSH setup (your SSH
+          agent or a key file); it never asks for a key, password or token. It installs a small
+          <strong>terminal server</strong> in your account there, which owns the machine's
+          terminals, so they outlive your SSH connection. A private-account machine is yours alone:
+          its agents use the same MCP tools, Inbox and team context as local ones once you turn on
+          remote MCP control for it. Linux is the verified remote; another Mac over SSH may work
+          but hasn't been checked. Full detail:
+          <a href="../arc-d-terminals-and-machines/remote-private-account.html">Terminals &amp;
+          machines → Remote (private account)</a>.
+        </p>
+      </section>
+
+      <section data-search="Step-by-step — turn the mini into a Builder farm" id="steps">
+        <h2>Step-by-step: turn the mini into a Builder farm</h2>
+        <ol>
+          <li>
+            <p>
+              <strong>Add the machine.</strong> Open <strong>Machines</strong>
+              (<span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">⌥</span><span class="cs-docs-kbd">C</span>)
+              or run <strong>Add machine…</strong> from ⌘K. The first connection test shows the
+              machine's host key fingerprint; confirm it and CodeSense pins it.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Define your Builder agent once.</strong> It lives in the context repo, so the
+              same definition launches on either machine.
+            </p>
+            <pre><code># config/agents/amelia-builder/agent.yaml
+id: amelia-builder
+name: Amelia (builder)
+runtime: claude
+startup:
+  - .claude/skills/bmad-build/
+revision: 1</code></pre>
+          </li>
+          <li>
+            <p>
+              <strong>Send its sessions to the mini</strong> with a routine whose
+              <code>where.machine</code> is the machine's id (from <code>list_machines</code>):
+            </p>
+            <pre><code># config/agents/amelia-builder/routines/builder-claim-remote/routine.yml
+id: builder-claim-remote
+name: Start a builder on the mini
+mode: fresh
+task: |
+  Join the builder role with register_role, claim the waiting
+  message with claim_role_messages and build the story it names
+  with /bmad-build.
+where:
+  kind: team_workspace
+  machine: &lt;machine id&gt;
+triggers:
+  - event:
+      kind: role_pending
+policy:
+  max_runtime: 2h
+revision: 1</code></pre>
+          </li>
+          <li>
+            <p>
+              The <strong>agent-dag</strong> now shows sessions on both machines. Builder
+              sessions light up on the mini while your laptop stays quiet.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Parity gap — event triggers need the laptop" id="parity">
+        <h2>⚠ Parity gap — event triggers need the laptop</h2>
+        <p>
+          Sessions already running on the mini keep going when the laptop sleeps or CodeSense
+          quits. New ones don't start: a <code>role_pending</code>, <code>inbox_idle</code> or
+          <code>agent_done</code> trigger is fired by the CodeSense app on your Mac. A routine moved
+          onto the machine with <code>routine_arm_on</code> fires on the machine's own clock
+          whether or not any Mac is open, but only on a schedule.
+        </p>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>list_machines { orgSlug: '&lt;owner/repo&gt;' }
+// → This Mac (machineId 'local') first, then shared and private machines
+
+test_machine_connection { … }      // before the first connect
+set_machine_remote_mcp_control { … }   // let its agents reach CodeSense
+
+// A schedule that fires on the mini's own clock:
+routine_arm_on { id: 'nightly-sweep', machine: '&lt;machine id&gt;' }</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./multi-mac-distributed.html">Multi-mac distributed →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Solo + remote</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

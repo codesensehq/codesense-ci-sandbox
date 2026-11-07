@@ -1,0 +1,12 @@
+{
+ "fixture": "codex-tui",
+ "rest_from": 111,
+ "snapshot": {
+  "cols": 100,
+  "rows": 30,
+  "seq": 12852,
+  "resize_gen": 0,
+  "scrollback": 5000,
+  "vt": "\u001b[0m\u001b[?1049h\u001b[H\u001b[0m \r\n\u001b[2C\u001b[38;2;99;168;248m>_ \u001b[39;1mOpenAI Codex\u001b[22;2m (v0.158.0)\r\n\u001b[5C/private/tmp/th1-demo\r\n\r\n\u001b[2C\u001b[38;2;99;168;248;22mShall we turn “what if” into something?\r\n\r\n\r\n\u001b[39;1;2m› \u001b[0mDo\u001b[1Cnot\u001b[1Crun\u001b[1Cany\u001b[1Ccommands\u001b[1Cor\u001b[1Cuse\u001b[1Cany\u001b[1Ctools.\u001b[1CWrite\u001b[1Ca\u001b[1Cnumbered\u001b[1Clist\u001b[1Cof\u001b[1C60\u001b[1Cshort\u001b[1Cone-line\u001b[1Cfacts\u001b[1Cabout\r\n\u001b[2Coctopuses.\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\u001b[38;2;202;202;202;1m•\u001b[1C\u001b[39;22;2mWorking\u001b[1C(2s • \u001b[22;1mesc\u001b[22;2m to interrupt)\r\n\r\n\u001b[0m \r\n\u001b[1m›\u001b[1C\u001b[22;2mAsk Codex to do anything\r\n\r\n\u001b[2C\u001b[38;2;246;226;183;22mGPT-6-Astra low\u001b[0m · \u001b[38;2;171;223;167m/private/tmp/th1-demo\u001b[1C\u001b[0m·\u001b[1C\u001b[38;2;245;194;231m⠼\r\n\u001b[2C\u001b[39;1m?\u001b[1C\u001b[0mfor\u001b[1Cshortcuts\u001b[58C⚠\u001b[1C\u001b[38;2;196;167;103m1 warning\u001b[1C\u001b[0m·\u001b[1C\u001b[1mf2\u001b[1C\u001b[0mto\u001b[1Cview\u001b[3A\u001b[97D\u001b[?2004h\u001b[?1004h\u001b[?1003h\u001b[?1006h\u001b[27;3H"
+ }
+}

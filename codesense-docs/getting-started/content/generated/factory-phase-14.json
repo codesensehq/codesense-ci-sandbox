@@ -1,0 +1,39 @@
+{
+  "phase": 14,
+  "name": "Loop",
+  "group": "Loop",
+  "describedBy": "./phases.yml#phase-14",
+  "pipeline": {
+    "nodes": [
+      {"id": "DEMO", "kind": "epic", "status": "in-progress", "title": "Per-agent kill switch"},
+      {"id": "DEMO-1", "kind": "story", "status": "done", "title": "Host kill ladder + MCP wrapper", "points": 3, "sprint": "FAKE-S1"},
+      {"id": "DEMO-2", "kind": "story", "status": "done", "title": "DAG node kill button + confirmation modal", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-3", "kind": "story", "status": "done", "title": "Public MCP tool: kill_agent", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-4", "kind": "story", "status": "done", "title": "Remember a killed agent across relaunches", "points": 2, "sprint": "FAKE-S1"},
+      {"id": "DEMO-5", "kind": "story", "status": "blocked", "title": "DAG transitions through 'stopping' without a reload", "points": 3, "sprint": "FAKE-S1"}
+    ],
+    "edges": [
+      {"from": "DEMO-1", "to": "DEMO-2"},
+      {"from": "DEMO-1", "to": "DEMO-3"},
+      {"from": "DEMO-1", "to": "DEMO-4"},
+      {"from": "DEMO-1", "to": "DEMO-5"}
+    ]
+  },
+  "agentDag": {
+    "sessions": [
+      {"id": "s-fake-14-sweep", "agent": "loop-sweeper", "status": "running", "startedAt": "2026-10-07T06:00:00Z", "endedAt": null, "story": null}
+    ]
+  },
+  "inbox": {
+    "threads": ["fake-thread-triage-dispatch", "fake-thread-decision-escalation", "fake-thread-review-feedback", "fake-thread-ship-confirmation"],
+    "focus": null
+  },
+  "sprint": {
+    "active": "FAKE-S1",
+    "committed_points": 12,
+    "delivered_points": 9,
+    "carried_points": 3,
+    "stories": ["DEMO-1", "DEMO-2", "DEMO-3", "DEMO-4", "DEMO-5"]
+  },
+  "note": "Phase 14 — the sweep runs after sprint close. DEMO-5 (3 points, still blocked on UX) is carried into FAKE-S2's draft. 9 of 12 points delivered."
+}

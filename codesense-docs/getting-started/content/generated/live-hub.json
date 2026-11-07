@@ -1,0 +1,1129 @@
+{
+  "counts": {
+    "builtins": 15,
+    "families": 1
+  },
+  "topics": [
+    {
+      "name": "sessions",
+      "rows": [
+        {
+          "type": "object",
+          "description": "untyped (Value): runtime and roster objects are merged; these are the source-declared core fields, not a closed row type.",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "handle": {
+              "type": "string"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "running",
+                "idle",
+                "needs-you",
+                "exited",
+                "offline",
+                "unknown"
+              ]
+            },
+            "machine": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The machine its terminal tab runs on, by its label (`This Mac` here)."
+            },
+            "machineId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "That machine's id, for a remote tab: what another tool addresses it by."
+            },
+            "workspace": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "team": {
+              "anyOf": [
+                {
+                  "description": "untyped (Value): crate::commands::dashboard_launch::LaunchTeam",
+                  "rustType": "crate::commands::dashboard_launch::LaunchTeam"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "launchedBy": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "story": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "chatWorkspaceId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "workspaceHandle": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The workspace a remote saved-Agent tab runs in, by its handle."
+            },
+            "deadlineAtMs": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The enforced epoch-ms deadline for a bounded local launch."
+            },
+            "expiring": {
+              "type": "boolean",
+              "description": "Present only while the launch is in its deadline exit grace period."
+            },
+            "outputRunId": {
+              "description": "untyped (Value)"
+            },
+            "kind": {
+              "description": "untyped (Value)"
+            },
+            "sessionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The current tab session its progress and activity are keyed by; handles are reusable."
+            },
+            "alive": {
+              "description": "untyped (Value)"
+            },
+            "status": {
+              "description": "untyped (Value)"
+            },
+            "failed": {
+              "description": "untyped (Value)"
+            },
+            "backgrounded": {
+              "description": "untyped (Value)"
+            },
+            "startedWith": {
+              "description": "untyped (Value)"
+            },
+            "startedAtMs": {
+              "description": "untyped (Value)"
+            },
+            "launcher": {
+              "description": "untyped (Value)"
+            },
+            "lastOutputMs": {
+              "description": "untyped (Value)"
+            },
+            "provenance": {
+              "description": "untyped (Value)"
+            },
+            "accountProvenance": {
+              "description": "untyped (Value)"
+            },
+            "agentRevision": {
+              "description": "untyped (Value)"
+            },
+            "launchTeamKey": {
+              "description": "untyped (Value)"
+            },
+            "detected": {
+              "description": "untyped (Value)"
+            },
+            "names": {
+              "description": "untyped (Value)"
+            },
+            "rowNames": {
+              "description": "untyped (Value)"
+            },
+            "model": {
+              "description": "untyped (Value)"
+            },
+            "pendingAsk": {
+              "description": "untyped (Value)"
+            },
+            "agent": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The saved Agent it runs (its `agent_get` id, e.g. `builtin/claude`), when it was launched from one."
+            },
+            "runtime": {
+              "description": "untyped (Value)"
+            },
+            "usage": {
+              "description": "untyped (Value)"
+            },
+            "role": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The role its launcher assigned, when it assigned one."
+            },
+            "queueRole": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "roleJoinError": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "avatar": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The avatar its launcher assigned, when it assigned one."
+            },
+            "progress": {
+              "anyOf": [
+                {
+                  "description": "untyped (Value): crate::dashboard_stream::hub::SessionProgress",
+                  "rustType": "crate::dashboard_stream::hub::SessionProgress"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Its latest `signal_progress` ({phase, step?, total?, note?, atMs}), when it reported any: where in its task it says it is."
+            },
+            "launchTelemetry": {
+              "anyOf": [
+                {
+                  "description": "untyped (Value): crate::commands::launch_telemetry::LaunchTelemetry",
+                  "rustType": "crate::commands::launch_telemetry::LaunchTelemetry"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The launch telemetry for the session's most recent launch, when it was recorded. Null for sessions launched before launch telemetry existed or that never completed a telemetry record. See [`LaunchTelemetry`](crate::commands::launch_telemetry::LaunchTelemetry)."
+            },
+            "releaseQualified": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`false` only when the agent CLI release the launch recorded is outside the range CodeSense is qualified on, so its status, inbox wake and usage may not work. Absent when the release is qualified or unknown (a launch that recorded no version)."
+            },
+            "releaseNote": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Why, in the words of the launch warning (the release and the range supported), present with `release_qualified`."
+            },
+            "inboxWaiter": {
+              "description": "untyped (Value): InboxWaiter has a custom Serialize implementation; variant names do not define its wire values. Whether new mail reaches its agent at once (an idle agent starts a turn; a running one hears at its next step), through its CLI's inbox port: a waiter, or its host submitting the notice. False for an agent CodeSense has no way to tell (its CLI has no wake path, its host cannot name its process, or its waiter has gone): nothing tells it about its mail. `\"unknown\"` for a tab on a machine that is not connected now.",
+              "rustType": "InboxWaiter"
+            },
+            "subagents": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "How many subagents its agent runs now, from its host's activity; omitted at none. `state` stays the agent's own: one idle at its prompt is `idle` while they run."
+            },
+            "sessionRef": {
+              "description": "untyped (Value)"
+            },
+            "inboxRef": {
+              "description": "untyped (Value)"
+            },
+            "teamKey": {
+              "description": "untyped (Value)"
+            },
+            "placementTeamRef": {
+              "description": "untyped (Value)"
+            },
+            "parentId": {
+              "description": "untyped (Value)"
+            },
+            "parentSource": {
+              "description": "untyped (Value)"
+            },
+            "order": {
+              "description": "untyped (Value)"
+            },
+            "workspaceRef": {
+              "description": "untyped (Value)"
+            },
+            "storyRef": {
+              "description": "untyped (Value)"
+            },
+            "workspaceRank": {
+              "description": "untyped (Value)"
+            },
+            "crewParentId": {
+              "description": "untyped (Value)"
+            },
+            "crewOrder": {
+              "description": "untyped (Value)"
+            },
+            "crewLead": {
+              "description": "untyped (Value)"
+            },
+            "hasAgent": {
+              "description": "untyped (Value)"
+            },
+            "effectiveStatus": {
+              "description": "untyped (Value)"
+            },
+            "needsYouKind": {
+              "description": "untyped (Value)"
+            },
+            "managedState": {
+              "description": "untyped (Value)"
+            },
+            "activityAtMs": {
+              "description": "untyped (Value)"
+            },
+            "crashId": {
+              "description": "untyped (Value)"
+            },
+            "endReason": {
+              "description": "untyped (Value)"
+            },
+            "statusSinceMs": {
+              "description": "untyped (Value)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "inbox",
+      "rows": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "untyped (Value)",
+              "sourceExpression": "format!(\"counts:{key}\")"
+            },
+            "rowType": {
+              "type": "string",
+              "const": "counts"
+            },
+            "team": {
+              "description": "untyped (Value)",
+              "sourceExpression": "team"
+            },
+            "humanUnread": {
+              "description": "untyped (Value)",
+              "sourceExpression": "recipients.get(HUMAN).copied().unwrap_or(0)"
+            },
+            "recipients": {
+              "description": "untyped (Value)",
+              "sourceExpression": "recipients"
+            },
+            "needsYouBySender": {
+              "description": "untyped (Value)",
+              "sourceExpression": "needs"
+            },
+            "sessions": {
+              "description": "untyped (Value)",
+              "sourceExpression": "fields"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "untyped (Value)",
+              "sourceExpression": "message_key(team,id)"
+            },
+            "rowType": {
+              "type": "string",
+              "const": "message"
+            },
+            "team": {
+              "description": "untyped (Value)",
+              "sourceExpression": "team"
+            },
+            "messageId": {
+              "description": "untyped (Value)",
+              "sourceExpression": "id"
+            },
+            "createdAt": {
+              "description": "untyped (Value)",
+              "sourceExpression": "created_at"
+            },
+            "message": {
+              "description": "untyped (Value)",
+              "sourceExpression": "bridge"
+            },
+            "conversation": {
+              "description": "untyped (Value)",
+              "sourceExpression": "conversation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agentList",
+      "rows": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "sessionRef": {
+              "type": "string"
+            },
+            "inboxRef": {
+              "type": "string"
+            },
+            "teamKey": {
+              "type": "string"
+            },
+            "placementTeamRef": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentSource": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "order": {
+              "type": "number"
+            },
+            "workspaceRef": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "workspace": {
+              "description": "untyped (Value): Value",
+              "rustType": "Value"
+            },
+            "storyRef": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "workspaceRank": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "crewParentId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "crewOrder": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "crewLead": {
+              "type": "boolean"
+            },
+            "statusGroup": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "id",
+            "sessionRef",
+            "inboxRef",
+            "teamKey",
+            "order",
+            "workspaceRank",
+            "crewLead"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "spendRows": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.spend_rows"
+            },
+            "ready": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.agent_ready"
+            },
+            "homeTeam": {
+              "description": "untyped (Value)",
+              "sourceExpression": "Value::Null"
+            },
+            "teamOrder": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.agent_team_order"
+            },
+            "teamNames": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.agent_team_names"
+            },
+            "pane": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.agent_pane"
+            },
+            "workspaceRollups": {
+              "description": "untyped (Value)",
+              "sourceExpression": "model.agent_workspace_rollups"
+            },
+            "id": {
+              "description": "untyped (Value)",
+              "sourceExpression": "\"agentList:state\".into()"
+            },
+            "rowType": {
+              "description": "untyped (Value)",
+              "sourceExpression": "\"state\".into()"
+            },
+            "order": {
+              "description": "untyped (Value)",
+              "sourceExpression": "f64::MAX.into()"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "records",
+      "rows": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "untyped (Value)",
+              "sourceExpression": "record.id"
+            },
+            "fields": {
+              "description": "untyped (Value)",
+              "sourceExpression": "fields"
+            },
+            "preview": {
+              "description": "untyped (Value)",
+              "sourceExpression": "preview"
+            },
+            "refs": {
+              "description": "untyped (Value)",
+              "sourceExpression": "refs"
+            },
+            "updatedAt": {
+              "description": "untyped (Value)",
+              "sourceExpression": "record.fields.get(\"updatedAt\")"
+            },
+            "updatedBy": {
+              "description": "untyped (Value)",
+              "sourceExpression": "record.fields.get(\"updatedBy\")"
+            },
+            "title": {
+              "description": "untyped (Value)",
+              "sourceExpression": "title.clone()"
+            },
+            "headCommit": {
+              "description": "untyped (Value)",
+              "sourceExpression": "json!(head)"
+            },
+            "order": {
+              "description": "untyped (Value)",
+              "sourceExpression": "json!(index)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "paneSources",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "machineStats",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "runEndorsements",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "runEvidence",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "files",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "stories",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "agentDefinitions",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "workspaceConfig",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "prefs",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    },
+    {
+      "name": "storyTotals",
+      "rows": [
+        {
+          "description": "untyped (Value)"
+        }
+      ]
+    }
+  ],
+  "families": [
+    {
+      "name": "ui:<slotId>",
+      "row": {
+        "type": "object",
+        "description": "untyped (Value): persisted shared slot state spread into a row with id set to the topic.",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "producer": "src/features/dashboard/lib/live-hub.ts"
+    }
+  ],
+  "envelopes": {
+    "Snapshot": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "viewKey": {
+          "type": "string"
+        },
+        "rev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot": {
+          "type": "array",
+          "items": {
+            "description": "untyped (Value): Value",
+            "rustType": "Value"
+          }
+        },
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "topic",
+        "viewKey",
+        "rev",
+        "snapshot"
+      ]
+    },
+    "Delta": {
+      "type": "object",
+      "properties": {
+        "actor": {
+          "anyOf": [
+            {
+              "description": "untyped (Value): Value",
+              "rustType": "Value"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "topic": {
+          "type": "string"
+        },
+        "viewKey": {
+          "type": "string"
+        },
+        "rev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "upserts": {
+          "type": "array",
+          "items": {
+            "description": "untyped (Value): Value",
+            "rustType": "Value"
+          }
+        },
+        "removes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "topic",
+        "viewKey",
+        "rev",
+        "upserts",
+        "removes"
+      ]
+    },
+    "SubscriptionReply": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "viewKey": {
+          "type": "string"
+        },
+        "rev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "description": "untyped (Value): Value",
+                "rustType": "Value"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deltas": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "actor": {
+                    "anyOf": [
+                      {
+                        "description": "untyped (Value): Value",
+                        "rustType": "Value"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "cursor": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "kind": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "topic": {
+                    "type": "string"
+                  },
+                  "viewKey": {
+                    "type": "string"
+                  },
+                  "rev": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "upserts": {
+                    "type": "array",
+                    "items": {
+                      "description": "untyped (Value): Value",
+                      "rustType": "Value"
+                    }
+                  },
+                  "removes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "requestId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "total": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "topic",
+                  "viewKey",
+                  "rev",
+                  "upserts",
+                  "removes"
+                ]
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "topic",
+        "viewKey",
+        "rev"
+      ]
+    }
+  },
+  "viewKeys": {
+    "records": {
+      "pattern": "records:{scope}:{owner}:{collection}",
+      "source": "\n        let scope = if store.collection.scope == Scope::Private {\n            \"private\"\n        } else {\n            \"team\"\n        };\n        let owner = if scope == \"private\" {\n            self.org.clone()\n        } else {\n            format!(\"{}/{}\", self.org, self.team.as_deref().unwrap_or(\"\"))\n        };\n        let key = format!(\"records:{scope}:{owner}:{}\", store.collection.name);\n        if matches!(\n            self.caller,\n            crate::context_repo::caller_scope::CallerScope::Human\n        ) {\n            key\n        } else {\n            format!(\"{key}:{}\", self.caller.cache_key())\n        }\n    "
+    },
+    "globalUiTopics": [
+      "ui:dock",
+      "theme"
+    ],
+    "team": "team:{org}/{team}",
+    "all": "all",
+    "resolveSource": "\n    if grant.scope == \"team\" || (grant.slot == \"file-nav\" && grant.team.is_some()) {\n        grant\n            .team\n            .as_ref()\n            .map(|team| team_key(&team.org, &team.team))\n    } else {\n        Some(\"all\".into())\n    }\n",
+    "admitsSource": "\n    let key = key.split(\"|\").next().unwrap_or(key);\n    key == \"all\" || scope == Some(key)\n"
+  },
+  "sources": {
+    "src-tauri/src/live_hub/projection.rs": "96f20439dc0a2cb6655514f025ee2689064e97ba1fa75deee77ca29e4340fe68",
+    "src-tauri/src/live_hub/view_key.rs": "8e76214d7c961f122717219e2893d06ccd504dc042fe96790243089ea0a2ae37",
+    "src-tauri/src/live_hub/mod.rs": "6100ccd8c708a4ed3c62a558a7c8e2955e087e2e67301e89027f872fa5030516",
+    "src-tauri/src/live_hub/agent_list/sessions.rs": "a9726ec640a283d333235a25f81e21791f49f9231fc786e52e0f11dc60cd851d",
+    "src-tauri/src/mcp/session_list.rs": "94bed4633747fb7396ad4f6a8e986929f3909219102eabf27de62d05350eb332",
+    "src-tauri/src/agents/session_fields.rs": "9ec6c8ab4833c6b6d6242524dac58c6203df507271a4bfa13233838553c50416",
+    "src-tauri/src/live_hub/agent_list/fields.rs": "0e6d5d02a04c2e620fc4e754c5ab140cfe687eae3f3494fabdd1f44ad07416a8",
+    "src-tauri/src/live_hub/effective_status.rs": "4c975cc197d37d6f0890ec4905b3db0a3b56b2deae669797bf28c284787aa2ca",
+    "src-tauri/src/live_hub/inbox.rs": "cbea9f4ec93f4fd10ac7e0ceeb97c8a307dd4e9cc40d849eeb2b706ef2bdf263",
+    "src-tauri/src/live_hub/agent_list/rows.rs": "86be0bbd951d279e47bd938be31f1f5a4f8c70e24c0fc9e2db4fd9d07fa6dce2",
+    "src-tauri/src/live_hub/agent_list/views.rs": "0fbc27242d28517476f53c8395fab13ba460850539003dd7d5bea97b685c5ebf",
+    "src-tauri/src/records/projection.rs": "ff7eb296d7dc0ec988570db058eca494c34009e9ffca8ef7de1c65d2d064d913",
+    "src/features/dashboard/lib/live-hub.ts": "2381dfbbcc96a4d538919d95be76f3d33e7627a6b52731ae9553e195ea8d5446",
+    "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7"
+  },
+  "untypedTopics": [
+    "sessions",
+    "inbox",
+    "agentList",
+    "records",
+    "paneSources",
+    "machineStats",
+    "runEndorsements",
+    "runEvidence",
+    "files",
+    "stories",
+    "agentDefinitions",
+    "profile",
+    "workspaceConfig",
+    "prefs",
+    "storyTotals",
+    "ui:<slotId>"
+  ]
+}

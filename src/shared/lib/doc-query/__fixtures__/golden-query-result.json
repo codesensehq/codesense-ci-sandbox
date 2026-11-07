@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 3,
+  "docs": [
+    {
+      "id": "A-1",
+      "path": "/ctx/epic-a/a1-foundation.md",
+      "fileName": "a1-foundation.md",
+      "tags": {
+        "context_level": ["team"],
+        "area": ["query"]
+      },
+      "status": "todo",
+      "documentType": "story",
+      "mtime": 1730000000000,
+      "sourceRepo": "alderco/codesense",
+      "sprint": "2026-08-A",
+      "points": null,
+      "assignedTo": "octocat-dev",
+      "relationships": {
+        "supportingDocs": [
+          {
+            "id": "A-S",
+            "path": "/ctx/epic-a/shared-notes.md",
+            "fileName": "shared-notes.md",
+            "resolved": true
+          },
+          {
+            "id": "arch-notes.excalidraw",
+            "path": "/ctx/epic-a/arch-notes.excalidraw",
+            "fileName": "arch-notes.excalidraw",
+            "resolved": true
+          },
+          {
+            "id": "diagram.bin",
+            "path": "/ctx/epic-a/diagram.bin",
+            "fileName": "diagram.bin",
+            "resolved": false
+          }
+        ],
+        "backlinks": [
+          {
+            "id": "A-2",
+            "path": "/ctx/epic-a/a2-consumer.md",
+            "fileName": "a2-consumer.md",
+            "resolved": true
+          }
+        ],
+        "dependsOn": []
+      }
+    },
+    {
+      "id": "A-2",
+      "path": "/ctx/epic-a/a2-consumer.md",
+      "fileName": "a2-consumer.md",
+      "tags": {
+        "context_level": ["org"]
+      },
+      "status": "in-progress",
+      "documentType": "story",
+      "mtime": null,
+      "sourceRepo": "alderco/codesense",
+      "sprint": null,
+      "points": null,
+      "assignedTo": null,
+      "relationships": {
+        "supportingDocs": [
+          {
+            "id": "A-1",
+            "path": "/ctx/epic-a/a1-foundation.md",
+            "fileName": "a1-foundation.md",
+            "resolved": true
+          }
+        ],
+        "backlinks": [],
+        "dependsOn": [
+          {
+            "id": "A-1",
+            "path": "/ctx/epic-a/a1-foundation.md",
+            "fileName": "a1-foundation.md",
+            "resolved": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "A-S",
+      "path": "/ctx/epic-a/shared-notes.md",
+      "fileName": "shared-notes.md",
+      "tags": {
+        "area": ["query", "docs"]
+      },
+      "status": "done",
+      "documentType": "doc",
+      "mtime": null,
+      "sourceRepo": null,
+      "sprint": null,
+      "points": null,
+      "assignedTo": null,
+      "relationships": {
+        "supportingDocs": [],
+        "backlinks": [
+          {
+            "id": "A-1",
+            "path": "/ctx/epic-a/a1-foundation.md",
+            "fileName": "a1-foundation.md",
+            "resolved": true
+          }
+        ],
+        "dependsOn": []
+      }
+    },
+    {
+      "id": "B-1",
+      "path": "/ctx/epic-b/b1-downstream.md",
+      "fileName": "b1-downstream.md",
+      "tags": {
+        "context_level": ["team"]
+      },
+      "status": "blocked",
+      "documentType": "story",
+      "mtime": null,
+      "sourceRepo": null,
+      "sprint": null,
+      "points": null,
+      "assignedTo": null,
+      "relationships": {
+        "supportingDocs": [],
+        "backlinks": [],
+        "dependsOn": [
+          {
+            "id": "A-1",
+            "path": "/ctx/epic-a/a1-foundation.md",
+            "fileName": "a1-foundation.md",
+            "resolved": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "B-2",
+      "path": "/ctx/epic-b/b2-custom.md",
+      "fileName": "b2-custom.md",
+      "tags": {
+        "context_level": ["galaxy"]
+      },
+      "status": "shipped",
+      "documentType": "story",
+      "mtime": null,
+      "sourceRepo": null,
+      "sprint": null,
+      "points": null,
+      "assignedTo": null,
+      "relationships": {
+        "supportingDocs": [],
+        "backlinks": [],
+        "dependsOn": []
+      }
+    }
+  ]
+}

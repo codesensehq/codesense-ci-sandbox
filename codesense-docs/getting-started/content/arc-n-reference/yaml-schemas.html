@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="file-code" />
+    <title>CodeSense — YAML schemas</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-n-reference/yaml-schemas"] .cs-main {
+        max-width: 980px;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .cs-docs-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--cs-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cs-muted-fg);
+        padding: 3px 7px;
+        border: 1px solid var(--cs-border);
+        border-radius: 6px;
+        margin: 20px 0 12px;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] h1 {
+        font-size: clamp(28px, 3.6vw, 40px);
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 var(--cs-docs-space-3);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .lede {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--cs-fg);
+        max-width: 64ch;
+        margin: 0 0 var(--cs-docs-space-5);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .lede strong {
+        font-weight: 500;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] figure.hero {
+        margin: 0 0 var(--cs-docs-space-5);
+        padding: 0;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-inset);
+        overflow: hidden;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] figure.hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] figure.hero figcaption {
+        padding: 10px 14px;
+        border-top: 1px solid var(--cs-border);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] h2 {
+        font-size: var(--cs-docs-text-xl);
+        margin: var(--cs-docs-space-6) 0 var(--cs-docs-space-3);
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] p,
+      body[data-page="arc-n-reference/yaml-schemas"] li {
+        line-height: 1.6;
+        max-width: 68ch;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] li {
+        margin: 6px 0;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] code {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        background: var(--cs-inset);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] pre {
+        margin: 10px 0;
+        padding: 12px 14px;
+        background: var(--cs-inset);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        font-size: 12.5px;
+        overflow-x: auto;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-5);
+        font-size: var(--cs-docs-text-sm);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: hidden;
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas th,
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas td {
+        padding: 10px 12px;
+        border-bottom: 1px solid color-mix(in oklab, var(--cs-border) 60%, transparent);
+        vertical-align: top;
+        text-align: left;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas thead th {
+        background: var(--cs-inset);
+        color: var(--cs-muted-fg);
+        font-weight: 500;
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas td.file {
+        font-family: var(--cs-font-mono);
+        font-size: 12.5px;
+        color: var(--cs-fg);
+        white-space: nowrap;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] table.schemas td.deep a {
+        color: var(--cs-accent);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .steps {
+        counter-reset: step;
+        padding: 0;
+        margin: var(--cs-docs-space-3) 0 var(--cs-docs-space-5);
+        list-style: none;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .steps > li {
+        counter-increment: step;
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 12px;
+        padding: 14px 0;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .steps > li:first-child {
+        border-top: 0;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .steps > li::before {
+        content: counter(step);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: color-mix(in oklab, var(--cs-accent) 15%, var(--cs-surface));
+        border: 1px solid color-mix(in oklab, var(--cs-accent) 55%, var(--cs-border));
+        color: var(--cs-accent);
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .steps h3 {
+        margin: 2px 0 6px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] details {
+        margin: var(--cs-docs-space-3) 0;
+        padding: 10px 14px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        background: var(--cs-surface);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] details summary {
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--cs-fg);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] details[open] {
+        background: var(--cs-inset);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .ref {
+        display: block;
+        margin: var(--cs-docs-space-6) 0 0;
+        padding-top: var(--cs-docs-space-4);
+        border-top: 1px solid var(--cs-border);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+      body[data-page="arc-n-reference/yaml-schemas"] .ref a {
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-n-reference/yaml-schemas">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero data-search="YAML schemas narrative companion" id="hero">
+        <span class="cs-docs-eyebrow">Arc N · Schemas</span>
+        <h1>YAML schemas: what CodeSense parses, and how to look them up.</h1>
+        <p class="lede">
+          CodeSense parses nine file types: an <strong>agent</strong>, a <strong>routine</strong>,
+          a <strong>role</strong>,
+          an <strong>org</strong>, its <strong>teams</strong>, a <strong>worktree</strong>, a
+          <strong>bundle</strong>, and the frontmatter inside every <strong>story</strong> and
+          <strong>epic</strong> markdown file. All nine live side-by-side in the
+          <a href="../schema-browser.html">schema browser</a> with local shape checks — paste YAML
+          to inspect supported fields and basic constraints. This page teaches you how to read it.
+        </p>
+
+        <figure class="hero" aria-labelledby="hero-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 200"
+            role="img"
+            aria-label="Schema browser screenshot abstraction: left list with 9 schema entries, right pane with field table and paste-and-validate textarea."
+          >
+            <title>Schema browser shape</title>
+            <desc>
+              Left: a 9-row list of schema file names. Right: a split pane with a field table on
+              top and a validator textarea on the bottom with a green status bar.
+            </desc>
+            <style>
+              .y-surf {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .y-ins {
+                fill: var(--cs-inset, #11161e);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .y-txt {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 10.5px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .y-mut {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px ui-monospace,
+                  SFMono-Regular,
+                  monospace;
+              }
+              .y-ok {
+                fill: var(--cs-success, #3fb950);
+              }
+              .y-acc {
+                fill: var(--cs-accent-soft, rgba(122, 162, 255, 0.18));
+                stroke: var(--cs-accent, #7aa2ff);
+                stroke-width: 1;
+              }
+            </style>
+
+            <!-- Browser chrome -->
+            <rect class="y-surf" x="20" y="18" width="600" height="170" rx="10" />
+
+            <!-- Left list of 8 -->
+            <rect class="y-ins" x="30" y="30" width="170" height="148" rx="6" />
+            <text class="y-mut" x="40" y="48">agent.yaml</text>
+            <text class="y-mut" x="40" y="66">routine.yml</text>
+            <text class="y-mut" x="40" y="84">org.yml</text>
+            <text class="y-mut" x="40" y="102">teams.yml</text>
+            <!-- selected row -->
+            <rect class="y-acc" x="36" y="110" width="158" height="18" rx="4" />
+            <text class="y-txt" x="40" y="123">story frontmatter</text>
+            <text class="y-mut" x="40" y="140">epic frontmatter</text>
+            <text class="y-mut" x="40" y="158">worktree.yaml</text>
+            <text class="y-mut" x="40" y="174">bundle.json</text>
+
+            <!-- Right: field table -->
+            <rect class="y-ins" x="210" y="30" width="400" height="90" rx="6" />
+            <text class="y-txt" x="220" y="48">story frontmatter · fields</text>
+            <line x1="220" y1="56" x2="600" y2="56" stroke="var(--cs-border, #262c38)" />
+            <text class="y-mut" x="220" y="72">type</text>
+            <text class="y-mut" x="310" y="72">enum</text>
+            <text class="y-mut" x="400" y="72">story · bug · spike · doc · retro</text>
+            <text class="y-mut" x="220" y="88">status</text>
+            <text class="y-mut" x="310" y="88">enum</text>
+            <text class="y-mut" x="400" y="88">planning · todo · in-progress · …</text>
+            <text class="y-mut" x="220" y="104">depends_on</text>
+            <text class="y-mut" x="310" y="104">string[]</text>
+            <text class="y-mut" x="400" y="104">story ids within epic</text>
+
+            <!-- Right: validator -->
+            <rect class="y-ins" x="210" y="128" width="400" height="50" rx="6" />
+            <text class="y-mut" x="220" y="146">paste YAML to validate</text>
+            <circle class="y-ok" cx="226" cy="168" r="4" />
+            <text class="y-txt" x="236" y="172">OK · 0 errors</text>
+          </svg>
+          <figcaption id="hero-cap">
+            schema-browser.html — list on the left, field table + validator on the right.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section data-search="How to read the schema browser" id="how-to-read">
+        <h2>How to read the schema browser</h2>
+        <ol class="steps">
+          <li>
+            <div>
+              <h3>Pick a schema from the left list</h3>
+              <p>
+                Eight rows: <code>agent.yaml</code>, <code>routine.yml</code>, <code>org.yml</code>,
+                <code>teams.yml</code>, <code>worktree.yaml</code>, <code>bundle.json</code>, plus
+                <code>story frontmatter</code> and <code>epic frontmatter</code>. Clicking a row
+                deep-links the page: <code>schema-browser.html#schema/story-frontmatter</code>.
+                Share that URL and the recipient lands exactly where you did.
+              </p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Read the field table top-down</h3>
+              <p>
+                <strong>Required</strong> fields come first, then <strong>optional</strong> ones
+                with defaults, then <strong>validation rules</strong>, then an
+                <strong>example</strong>. Field names appear in the exact snake_case or camelCase
+                the parser accepts — <em>both</em> are shown when the schema recognises an alias
+                (e.g. <code>default_mode</code> ↔ <code>defaultMode</code> on
+                <code>permissions.claude</code>).
+              </p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Paste YAML into the validator</h3>
+              <p>
+                The validator debounces at ~120 ms. Its <code>validateYaml</code> bridge is
+                currently unavailable, including when CodeSense is connected, so the browser
+                uses a local subset parser and shape checks. A green bar does not establish
+                Rust model validity or event semantics. Use the model’s save path for semantic
+                validation; errors shown here cover only checks implemented by the browser.
+              </p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Copy the example and modify it</h3>
+              <p>
+                Every schema row ships an example. Where a validator is available, paste it there,
+                mutate one field at a time, and watch the status bar. Learning by breakage is the
+                fastest way to internalise which fields are required vs. optional, and which have
+                enum constraints.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="YAML schema catalog" id="catalog">
+        <h2>The schema catalog, at a glance</h2>
+        <p>
+          Full field tables live in the explorer. This matrix is for orientation — which file holds
+          what, where it lives on disk, and which arc teaches it.
+        </p>
+        <table class="schemas">
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>What it declares</th>
+              <th>Lives in</th>
+              <th>Taught by</th>
+              <th>Deep link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="file">agent.yaml</td>
+              <td>An agent's identity, runtime, args, startup files, MCP servers, permissions.</td>
+              <td><code>&lt;context repo&gt;/&lt;team&gt;/config/agents/&lt;a&gt;/</code></td>
+              <td><a href="../arc-e-agents/agent-yaml.html">Arc E · agent.yaml</a></td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/agent-yaml">#agent-yaml</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="file">routine.yml</td>
+              <td>An agent task or argv command, with schedules, metadata/events and chaining.</td>
+              <td><code>&lt;context repo&gt;/&lt;team&gt;/config/agents/&lt;a&gt;/routines/&lt;id&gt;/</code></td>
+              <td><a href="../arc-g-routines/index.html">Arc G · routines</a></td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/routine-yml">#routine-yml</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="file">roles/&lt;id&gt;.yaml</td>
+              <td>Queue display name, icon and optional default handler.</td>
+              <td><code>&lt;team&gt;/content/roles/</code></td>
+              <td><a href="../arc-f-inboxes-and-triage/roles.html#configuration">Role configuration</a></td>
+              <td class="deep"><a href="../schema-browser.html#schema/role-yaml">#role-yaml</a></td>
+            </tr>
+            <tr>
+              <td class="file">org.yml</td>
+              <td>Org metadata: slug, display name, remote URL, tag schema, people, teams.</td>
+              <td><code>&lt;context repo&gt;/</code></td>
+              <td><a href="../arc-b-model/index.html">Arc B · the model</a></td>
+              <td class="deep"><a href="../schema-browser.html#schema/org-yml">#org-yml</a></td>
+            </tr>
+            <tr>
+              <td class="file">teams.yml</td>
+              <td>Teams within an org, their remotes, and the parent-team inheritance chain.</td>
+              <td><code>&lt;context repo&gt;/</code></td>
+              <td><a href="../arc-b-model/index.html">Arc B · the model</a></td>
+              <td class="deep"><a href="../schema-browser.html#schema/teams-yml">#teams-yml</a></td>
+            </tr>
+            <tr>
+              <td class="file">worktree.yaml</td>
+              <td>How CodeSense creates and prepares worktrees for one source repo.</td>
+              <td><code>&lt;context repo&gt;/_codesense/worktree/&lt;owner&gt;/&lt;repo&gt;.yaml</code></td>
+              <td>
+                <a href="../arc-c-workspaces-and-worktrees/index.html"
+                  >Arc C · workspaces &amp; worktrees</a
+                >
+              </td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/worktree-yaml">#worktree-yaml</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="file">bundle.json</td>
+              <td>A launch bundle: default agent, launch config, defaults for a story.</td>
+              <td><code>&lt;team&gt;/bundles/&lt;b&gt;/</code></td>
+              <td><a href="../arc-e-agents/index.html">Arc E · agents</a></td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/bundle-json">#bundle-json</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="file">story frontmatter</td>
+              <td>Type, status, depends_on, supporting_docs — the pipeline graph edge data.</td>
+              <td>Head of any <code>.md</code> inside an epic directory.</td>
+              <td>
+                <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H · pipelines &amp; SDLC</a>
+              </td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/story-frontmatter">#story-frontmatter</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="file">epic frontmatter</td>
+              <td>Same shape as story frontmatter; sits in the epic's <code>README.md</code>.</td>
+              <td><code>README.md</code> or <code>index.md</code> at the epic root.</td>
+              <td>
+                <a href="../arc-h-pipelines-and-sdlc/index.html">Arc H · pipelines &amp; SDLC</a>
+              </td>
+              <td class="deep">
+                <a href="../schema-browser.html#schema/epic-frontmatter">#epic-frontmatter</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="Try this now paste YAML" id="try">
+        <h2>Try this now</h2>
+        <p>
+          Open the
+          <a href="../schema-browser.html#schema/story-frontmatter">story-frontmatter row</a>, copy
+          the example, paste it into the validator pane, change <code>status: in-progress</code> to
+          <code>status: wat</code>, and watch the status bar flip red. The error cites the enum rule
+          verbatim. Flip it back and the bar goes green. That round trip is the entire
+          schema-browser idiom.
+        </p>
+      </section>
+
+      <section data-search="YAML validation bridge and MCP" id="mcp"><h2>Validate a definition</h2>
+        <p><code>validateYaml</code> is a page bridge verb, not an MCP tool. The bridge is currently unavailable; the schema
+          browser uses local shape checks even when connected. Those checks do not replace Rust
+          semantic validation. An agent can use
+          <code>agent_create {dryRun:true, ...}</code> or <code>routine_create {dryRun:true, ...}</code>
+          for end-to-end create validation. For event triggers, pass <code>events</code> to routine creation as shown in the
+          <a href="../arc-g-routines/trigger-cookbook.html#events">event cookbook</a>.
+          Role settings use <code>role_save</code>; the role schema has no bridge validator.</p>
+      </section>
+
+      <p class="ref">
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html">live schema browser</a>
+        ·
+        <a href="../mcp-explorer.html#tool/routine_create">routine_create dry run</a>
+        ·
+        <a href="./index.html">back to Arc N</a>
+      </p>
+      <section data-search="generated serde Agent RoutineDef RoleConfig schemas" id="model-schemas"><h2>Generated model schemas</h2>
+        <p>The Agent, RoutineDef and RoleConfig schemas are exported from the actual Rust serde models.
+          Source hashes make the normal docs check fail if their backing models drift.</p>
+        <ul><li><a href="../generated/schemas/agent-yaml.schema.json">Agent JSON Schema</a></li>
+          <li><a href="../generated/schemas/routine-yml.schema.json">Routine JSON Schema</a> · <a href="../arc-g-routines/routine-yml.html">every field</a></li>
+          <li><a href="../generated/schemas/role-yaml.schema.json">Role config JSON Schema</a> · <a href="../arc-f-inboxes-and-triage/roles.html#configuration">role settings</a></li></ul>
+        <p>Use the model's save path for semantic validation; JSON Schema validates the wire shape.</p>
+      </section>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc N · YAML schemas</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

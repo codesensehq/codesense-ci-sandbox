@@ -1,0 +1,10 @@
+id: manager
+name: Manager
+description: Watches the manager role queue, triages incoming work, launches and tracks workers, and reports to you.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/manage-team/
+default_prompt: /manage-team
+revision: 1

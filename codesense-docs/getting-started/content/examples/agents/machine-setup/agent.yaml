@@ -1,0 +1,11 @@
+id: machine-setup
+name: Machine setup
+description: Gets a remote machine ready for CodeSense and adds teammates to it.
+runtime: claude
+launch: foreground
+startup:
+  - CLAUDE.md
+  - .claude/skills/setup-machine/
+  - .claude/skills/add-machine-user/
+default_prompt: /setup-machine
+revision: 1

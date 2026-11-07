@@ -1,0 +1,71 @@
+[package]
+name = "codesense-pty-core"
+version = "0.1.0"
+description = "Tauri-free interactive-PTY runtime: spawn port, session registry, reader/batcher, emulator feed, warm-pool handoff and teardown"
+authors = ["Trevor Alfstad"]
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "codesense_pty_core"
+
+[features]
+# Compiles the resource-leak-gate lifecycle iteration (driven by the app's
+# `dhat-heap` harness). Off by default, so no gate code reaches a normal build.
+leak-gate = []
+# Compiles the seeded cursor-addressed TUI fixture generator and its example
+# binary (the display/emulator parity workload). Off by default, so release
+# builds never compile it.
+tui-fixture = []
+# Compiles the echo emulator worker, a stand-in for the real one in tests of
+# the code above a host. Off by default.
+test-support = ["codesense-host-proto/test-support"]
+# Answers `DebugDump` (the emulator's full buffer, for the webdriver oracle).
+# Off by default: a release host answers it `Unsupported`.
+e2e-dump = []
+
+[dependencies]
+async-trait = "0.1"
+base64 = "0.22"
+blake3 = "1"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+codesense-host-proto = { path = "../codesense-host-proto" }
+libc = "0.2"
+log = "0.4"
+portable-pty = "0.9.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+socket2 = "0.6"
+sysinfo = "0.32"
+tokio = { version = "1", features = ["rt", "net", "io-util", "sync", "macros"] }
+toml = "0.8"
+toml_edit = "0.20"
+# Codex's engine (its app-server) speaks JSON-RPC over a WebSocket on a Unix socket; the
+# workspace already carries this version through tokio-tungstenite.
+tungstenite = { version = "0.28", default-features = false, features = ["handshake"] }
+unicode-normalization = "0.1"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+codesense-host-proto = { path = "../codesense-host-proto", features = ["test-support"] }
+# The trait error type of `portable_pty::MasterPty`, for the fake PTY in tests.
+anyhow = "1"
+tempfile = "3"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros"] }
+
+[[example]]
+name = "tui_fixture"
+required-features = ["tui-fixture"]
+
+# Its own entry point serves the PTY child-limit shim, as the app's and the
+# session server's do, and runs each test in its own process.
+[[test]]
+name = "child_nofile"
+harness = false
+
+[[test]]
+name = "tui_fixture"
+required-features = ["tui-fixture"]

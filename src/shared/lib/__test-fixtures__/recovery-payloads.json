@@ -1,0 +1,12 @@
+{
+  "inherited": {
+    "repo_path": "",
+    "context_repo_path": "",
+    "file_path": "/fixture/org/platform/content",
+    "inherited_by": "/fixture/org/backend/content"
+  },
+  "private": {
+    "repo_path": "/fixture/users/1/private/orgs/acme/app/content",
+    "file_path": "/fixture/users/1/private/orgs/acme/app/content"
+  }
+}

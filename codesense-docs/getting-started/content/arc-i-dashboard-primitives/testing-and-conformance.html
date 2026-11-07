@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="columns" />
+    <title>CodeSense — Testing and conformance for agents</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <link rel="stylesheet" href="./_arc-i.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-i-dashboard-primitives/testing-and-conformance">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="hero" data-search="Testing and conformance for agents">
+        <span class="cs-docs-eyebrow">Arc I · Pane authoring</span>
+        <h1>Testing and conformance for agents</h1>
+        <p class="lede">
+          Use the shipped tools and references to check a pane without a source checkout.
+          Distinguish static checks, rendered evidence and a real application walk.
+        </p>
+      </section>
+      <section id="without-source" data-search="Checks available without source">
+        <h2>Checks available without source</h2>
+        <ol>
+          <li>
+            Read <code>get_live_data_contract</code> and the generated
+            <a href="../generated/pane-declarations.md">declarations</a>,
+            <a href="../generated/capabilities.md">capabilities</a> and
+            <a href="../generated/slots.md">slots</a>.
+          </li>
+          <li>
+            Call <code>validate_live_data_doc {content, path}</code> on the exact HTML. It validates
+            slot/capability/command declarations and reports heuristic usage findings and what it
+            checked. A valid result does not execute JavaScript, check server responses or prove
+            liveness.
+          </li>
+          <li>
+            Use <code>pane_write</code>, <code>pane_open</code> and <code>pane_list</code>. Use the
+            returned absolute path with
+            <code>read_rendered_document {path, format:"text"}</code> while the pane is visible.
+            Closed, hidden and fallback panes return actionable errors; show or fix the pane before
+            retrying.
+          </li>
+          <li>
+            Discover the command with <code>command_list</code>, invoke its returned id using
+            <code>command_run</code>, then capture again and compare visible feedback. The recipe
+            shows the sequence.
+          </li>
+        </ol>
+        <p>
+          Rendered evidence is bounded, point-in-time DOM content, not a screenshot or a freshness
+          guarantee. The tool does not open a pane or run data collection for you. For a visual and
+          keyboard walk ask the person to inspect the running pane; label unperformed in-app
+          behavior <strong>unproven, not blocking</strong>.
+        </p>
+      </section>
+      <section id="source-only" data-search="Source-only conformance">
+        <h2>Source-only conformance</h2>
+        <p>
+          Maintainers with a CodeSense source checkout run
+          <code>pnpm test:conformance -- path/to/pane.html</code>. The existing WebKit harness
+          mounts the real slot host, viewer and injected SDK with fixture data. It checks focus-in,
+          Escape, flush, budget denial, hidden/stale/resync, maximize/restore, reparent and
+          accessibility. This is separate from the agent-facing MCP checks above; user agents do not
+          need the source.
+        </p>
+        <p>
+          The docs build statically checks every shipped dashboard example for executable explicit
+          readiness, script syntax and declarations against generated contracts, and refuses the
+          bundle on failure. It cannot prove the readiness call is reached at runtime. The golden
+          example additionally runs against pushed rows and a declared command through the
+          conformance host.
+        </p>
+      </section>
+      <p class="ref">
+        Generated contracts: <a href="../generated/page-sdk.md">Page SDK</a> ·
+        <a href="../generated/pane-declarations.md">Declarations</a> ·
+        <a href="../generated/capabilities.md">Capabilities</a> ·
+        <a href="../generated/slots.md">Slots</a> · <a href="../generated/live-hub.md">LiveHub</a> ·
+        <a href="../generated/tokens.md">Tokens</a>.
+      </p>
+      <p class="ref">
+        <a href="./index.html">All Arc I pages</a> ·
+        <a href="./custom-pane-live-list.html">Build a live pane in five steps</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">CodeSense docs · Arc I · Dashboard primitives</div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="user-round" />
+    <title>CodeSense — Agent accounts</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-e-agents/agent-accounts">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section data-hero id="start" data-search="agent accounts claude codex login active pin own login">
+        <h1>Run agents on the login you chose.</h1>
+        <p>An account is one Claude Code or Codex login that CodeSense keeps in a private folder it creates.
+          CodeSense never reads or sends the credentials; the CLI signs in and uses them itself.
+          A launch uses a pinned account, else the Active account, else your own CLI login. A selected
+          account that can't be used refuses the launch. It never falls back to your own login.</p>
+      </section>
+      <section id="which" data-search="active pin own login precedence resolve agent_get">
+        <h2>Which account a launch uses</h2>
+        <ol>
+          <li><strong>The launcher's account.</strong> A launch that names an account (<code>override_account_id</code>)
+            must name the generation it saw. A change since then refuses it.</li>
+          <li><strong>The agent's pin.</strong> An account you bound one agent to.</li>
+          <li><strong>Active.</strong> One account per CLI that unpinned launches use. Active follows its account
+            through a rename or a new sign-in. Only people change it; agents pin per launch.</li>
+          <li><strong>Your own login.</strong> Used only when no Active account is set for that CLI.</li>
+        </ol>
+        <p>To learn which account agent X will use, call <code>agent_get</code> and read <code>resolved.account</code>.
+          <code>resolve_agent_account</code> without an override ignores pins.</p>
+        <p>While an account is injected, CodeSense drops the credential variables the CLI would rank above its login
+          (for Claude: <code>ANTHROPIC_AUTH_TOKEN</code>, <code>CLAUDE_CODE_OAUTH_TOKEN</code>, the Bedrock, Vertex and
+          Foundry switches, and <code>ANTHROPIC_PROFILE</code>; for Codex: <code>CODEX_API_KEY</code>). A launch on your own
+          login keeps them.</p>
+      </section>
+      <section id="refusals" data-search="refusal reasons detached auth-required provider-mismatch account-missing generation-mismatch required-missing">
+        <h2>Refusal reasons and their fixes</h2>
+        <table>
+          <thead><tr><th>Reason</th><th>Meaning</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>detached</code></td><td>The account was disconnected.</td><td>Reattach it, or pick another.</td></tr>
+            <tr><td><code>auth-required</code></td><td>The login is not signed in (it expired, or sign-in was not finished).</td><td>Sign in to the account again.</td></tr>
+            <tr><td><code>provider-mismatch</code></td><td>The account is for the other CLI.</td><td>Pick a Claude account for Claude, a Codex one for Codex.</td></tr>
+            <tr><td><code>account-missing</code></td><td>The account no longer exists.</td><td>Pick another account, or clear the selection.</td></tr>
+            <tr><td><code>generation-mismatch</code></td><td>The account changed after this launch was prepared.</td><td>List the accounts and retry with the current generation.</td></tr>
+            <tr><td><code>required-missing</code></td><td>No account is set up for this CLI.</td><td>Add one and sign in.</td></tr>
+          </tbody>
+        </table>
+        <p>A signed-in account whose login has gone is noticed when accounts are listed (at most once every ten
+          minutes per account) and after a failed Codex usage poll, and then shows as needing sign-in. An
+          account that was in error and now verifies goes back to ready.</p>
+      </section>
+      <section id="tools" data-search="list_agent_accounts get_active_agent_account resolve_agent_account set_active_agent_account includeDetached requestedAccountId">
+        <h2>The MCP tools</h2>
+        <ul>
+          <li><code>list_agent_accounts</code> lists attached accounts. <code>{"includeDetached": true}</code> adds detached
+            ones, marked by <code>detachedAt</code>.</li>
+          <li><code>get_active_agent_account</code> reads the Active selection for one CLI.</li>
+          <li><code>resolve_agent_account</code> previews what a launch would use. A refusal carries the
+            <code>reason</code> and, when you passed an override, <code>requestedAccountId</code>. It never returns a
+            home or credentials.</li>
+          <li><code>set_active_agent_account</code> is for people only; it needs the interactive account-management
+            capability.</li>
+        </ul>
+        <p>Spend caps for accounts' agents are in <a href="./spend-caps.html">Spend caps</a>.</p>
+      </section>
+    </main>
+    <footer class="cs-footer">CodeSense docs · Agent accounts</footer>
+  </body>
+</html>

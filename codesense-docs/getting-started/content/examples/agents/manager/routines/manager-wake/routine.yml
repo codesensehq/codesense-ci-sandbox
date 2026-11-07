@@ -1,0 +1,18 @@
+id: manager-wake
+name: Wake the manager
+owner: codesense
+mode: wake
+task: |
+  You have unread mail. Call read_messages with your session id, then
+  claim_role_messages for the manager role, and carry on with /manage-team.
+  If there is nothing for you, say so in one line and wait.
+where:
+  kind: team_workspace
+  machine: local
+triggers:
+  - event:
+      kind: inbox_idle
+policy:
+  max_runtime: 5m
+runs_on: each_mac
+revision: 1

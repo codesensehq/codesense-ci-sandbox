@@ -1,0 +1,21 @@
+edited.txt
+  s_5cef34e3292d7d::t_4d9f8ddca3e461 1
+written.txt
+  s_5cef34e3292d7d::t_68582e0b58f78b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea7dc9de11557141d2b4096e1d68dc2ba801e4b4",
+  "prompts": {},
+  "sessions": {
+    "s_5cef34e3292d7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c1a0de00-0000-4000-a000-000000000101",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Fixture <fixture@example.invalid>"
+    }
+  }
+}

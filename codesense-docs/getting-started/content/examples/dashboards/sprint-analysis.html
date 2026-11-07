@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="dashboard" />
+    <!-- Example dashboard · Sprint analysis. Reads your team's stories (query), sprint
+         registry (sprints) and status taxonomy (taxonomy) straight from your context —
+         no connector needed. -->
+    <title>Sprint analysis</title>
+    <!-- Inert first-paint payload: the page paints before the first read answers. -->
+    <script type="application/json" id="codesense-dashboard-data">
+      { "activeSprint": null, "sprints": [], "warnings": [] }
+    </script>
+    <style>
+      /* Colours come from the app's theme (--cs-* tokens the host sets), so the page
+         follows light/dark and the viewer theme wherever it is open. Spacing, radius,
+         the mono font and the cs- components come from the dashboard kit every live
+         doc gets (see the kit section of get_live_data_contract). */
+      * { box-sizing: border-box; }
+      html { background: var(--cs-bg); }
+      body {
+        margin: 0;
+        background: var(--cs-bg);
+        color: var(--cs-fg);
+        font: 13px/1.5 var(--cs-font-sans);
+        font-variant-numeric: tabular-nums;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection { background: color-mix(in srgb, var(--cs-accent) 14%, transparent); color: var(--cs-fg); }
+      ::-webkit-scrollbar { width: 10px; height: 10px; }
+      ::-webkit-scrollbar-thumb { background: var(--cs-border); border-radius: 10px; border: 2px solid var(--cs-bg); }
+      ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); }
+      ::-webkit-scrollbar-track { background: transparent; }
+      a { color: var(--cs-accent); text-decoration: none; text-underline-offset: 2px; }
+      a:hover { text-decoration: underline; }
+      :focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 2px; border-radius: 4px; }
+      code, .mono { font-family: var(--cs-font-mono); font-size: 12px; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 20px 24px 40px; }
+
+      /* Header */
+      .hd { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+      .hd-main { flex: 1; min-width: 0; }
+      .hd h1 { font-size: 18px; line-height: 1.3; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+      .hd-sub { margin: 4px 0 0; color: var(--cs-muted-fg); max-width: 72ch; text-wrap: pretty; }
+      .hd-side { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-top: 1px; }
+
+      /* Live status pill */
+      .live { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 4px 10px;
+        border: 1px solid var(--cs-border); border-radius: 999px; color: var(--cs-muted-fg); font-size: 12px; white-space: nowrap; }
+      .live i { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .live[data-state="live"] i { background: var(--cs-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-success) 22%, transparent); }
+      .live[data-state="loading"] i { background: var(--cs-accent); animation: pulse 1.2s ease-in-out infinite; }
+      .live[data-state="error"] i { background: var(--cs-danger); }
+      .live[data-state="off"] i { background: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+
+      /* Buttons */
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 12px;
+        border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius); background: var(--cs-surface); color: var(--cs-fg);
+        font: 500 12px/1 var(--cs-font-sans); cursor: pointer; white-space: nowrap;
+        transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out; }
+      .btn:hover:not(:disabled) { background: var(--cs-inset); border-color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .btn:active:not(:disabled) { transform: translateY(1px); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn.primary { background: var(--cs-accent); border-color: var(--cs-accent); color: #fff; }
+      .btn.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--cs-accent) 86%, #000); border-color: transparent; }
+      .btn.ghost { background: transparent; border-color: transparent; color: var(--cs-muted-fg); }
+      .btn.ghost:hover:not(:disabled) { background: var(--cs-inset); color: var(--cs-fg); border-color: transparent; }
+      .btn.icon { width: 28px; padding: 0; }
+      .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+      .btn[aria-busy="true"] svg { animation: spin 0.9s linear infinite; }
+
+      /* Sections + lists */
+      .section { margin-top: 22px; }
+      .section:first-child { margin-top: 0; }
+      .section-hd { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; }
+      .section-hd h2 { margin: 0; font-size: 13px; font-weight: 600; }
+      .count { display: inline-flex; min-width: 20px; height: 18px; padding: 0 6px; align-items: center; justify-content: center;
+        border-radius: 999px; background: var(--cs-inset); color: var(--cs-muted-fg); font-size: 11px; font-weight: 600; }
+      .section-hd .aside { margin-left: auto; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-size: 12px; }
+      .list { border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); background: var(--cs-surface); overflow: hidden; }
+      .row { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start;
+        padding: 10px 14px; border-top: 1px solid var(--cs-border); transition: background-color 120ms ease-out; }
+      .row:first-child { border-top: 0; }
+      .row:hover { background: var(--cs-inset); }
+      .row .mark { width: 16px; height: 16px; margin-top: 2px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .row .mark svg { width: 16px; height: 16px; display: block; }
+      .row .title { font-weight: 500; color: var(--cs-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+      .row a.title:hover { color: var(--cs-accent); }
+      .row .meta { color: var(--cs-muted-fg); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 1px; }
+      .row .meta .sep::before { content: "·"; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); }
+      .row .side { color: var(--cs-muted-fg); font-size: 12px; white-space: nowrap; text-align: right; display: flex; align-items: center; gap: 8px; }
+      .ok { color: var(--cs-success); } .bad { color: var(--cs-danger); } .warn { color: var(--cs-warning); } .run { color: var(--cs-warning); }
+      .tag { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border));
+        color: var(--cs-muted-fg); font-size: 11px; font-weight: 500; white-space: nowrap; }
+      .tag .swatch { width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; background: currentColor; }
+
+      /* The three-part state: what happened, why, one action. */
+      .state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+        padding: 40px 24px; border: 1px dashed color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius-lg); background: var(--cs-surface); }
+      .state-icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 6px;
+        background: var(--cs-inset); color: var(--cs-muted-fg); }
+      .state-icon svg { width: 18px; height: 18px; }
+      .state[data-tone="connect"] .state-icon { background: color-mix(in srgb, var(--cs-accent) 14%, transparent); color: var(--cs-accent); }
+      .state[data-tone="error"] .state-icon { color: var(--cs-danger); }
+      .state h3 { margin: 0; font-size: 14px; font-weight: 600; }
+      .state p { margin: 0; max-width: 52ch; color: var(--cs-muted-fg); text-wrap: pretty; }
+      .state .btn { margin-top: 10px; }
+
+      /* Skeleton */
+      .sk { display: block; height: 10px; border-radius: 4px; background: var(--cs-inset); animation: pulse 1.4s ease-in-out infinite; }
+      .notice { display: flex; gap: 8px; align-items: flex-start; padding: 9px 12px; margin-bottom: 14px; border-radius: var(--cs-radius);
+        border: 1px solid color-mix(in srgb, var(--cs-warning) 45%, transparent); background: color-mix(in srgb, var(--cs-warning) 8%, transparent);
+        color: var(--cs-fg); font-size: 12px; }
+      .notice svg { width: 14px; height: 14px; color: var(--cs-warning); flex-shrink: 0; margin-top: 2px; }
+      .foot { margin-top: 18px; color: color-mix(in srgb, var(--cs-muted-fg) 75%, transparent); font-size: 12px; }
+
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+      @media (max-width: 560px) {
+        .page { padding: 16px; }
+        .hd { flex-direction: column; gap: 10px; }
+        .row { grid-template-columns: 16px minmax(0, 1fr); }
+        .row .side { grid-column: 2; justify-content: flex-start; }
+      }
+      select { height: 28px; padding: 0 8px; border: 1px solid color-mix(in srgb, var(--cs-fg) 22%, var(--cs-border)); border-radius: var(--cs-radius);
+        background: var(--cs-surface); color: var(--cs-fg); font: 12px var(--cs-font-sans); cursor: pointer; }
+      select:focus-visible { outline: none; border-color: var(--cs-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs-accent) 14%, transparent); }
+      .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; overflow: hidden;
+        border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); background: var(--cs-border); }
+      .stat { padding: 12px 16px; background: var(--cs-surface); }
+      .stat .v { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+      .stat .v small { font-size: 13px; font-weight: 500; color: var(--cs-muted-fg); margin-left: 2px; }
+      .stat .l { color: var(--cs-muted-fg); font-size: 12px; margin-top: 2px; }
+      .panel { border: 1px solid var(--cs-border); border-radius: var(--cs-radius-lg); background: var(--cs-surface); padding: 14px 16px; }
+      .chart { display: block; width: 100%; height: auto; overflow: visible; }
+      .chart text { fill: var(--cs-muted-fg); font: 11px var(--cs-font-sans); }
+      .chart .grid { stroke: var(--cs-border); stroke-width: 1; }
+      .chart .delivered { fill: var(--cs-accent); }
+      .chart .carried { fill: var(--cs-warning); opacity: 0.55; }
+      .chart .avg { stroke: var(--cs-fg); stroke-width: 1.25; stroke-dasharray: 4 4; opacity: 0.7; }
+      .chart .val { fill: var(--cs-fg); font-weight: 600; }
+      .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; color: var(--cs-muted-fg); font-size: 12px; }
+      .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+      .legend .sw.line { width: 14px; height: 0; border-radius: 0; border-top: 1.5px dashed var(--cs-fg); opacity: 0.7; vertical-align: 3px; }
+      .stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--cs-inset); gap: 2px; }
+      .stack span { display: block; height: 100%; min-width: 3px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      th { text-align: right; font-weight: 500; color: var(--cs-muted-fg); padding: 6px 10px; border-bottom: 1px solid var(--cs-border); }
+      td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--cs-border); }
+      tr:last-child td { border-bottom: 0; }
+      th:first-child, td:first-child { text-align: left; padding-left: 0; }
+      td .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+      .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+      .drift { color: var(--cs-danger); font-size: 11px; margin-left: 6px; }
+      .hint { color: var(--cs-muted-fg); font-size: 12px; margin: 10px 0 0; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hd">
+        <div class="hd-main">
+          <h1>Sprint analysis</h1>
+          <p class="hd-sub" id="sub">Velocity, capacity, and where the work stands — computed from the stories in your context.</p>
+        </div>
+        <div class="hd-side">
+          <select id="sprint" aria-label="Sprint" hidden></select>
+          <span class="live" id="live" data-state="loading" aria-live="polite"><i></i><span>Loading</span></span>
+          <button class="btn icon ghost" id="refresh" type="button" title="Refresh now" aria-label="Refresh now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8" /><path d="M21 3v5h-5" /></svg></button>
+        </div>
+      </header>
+      <div id="notes"></div>
+      <main id="main"></main>
+    </div>
+    <script>
+      const CONFIG = {
+        rollingWindow: 3, // closed sprints averaged for "capacity to plan against"
+        refreshMs: 60000,
+      };
+      // ── Page helpers (edit freely). ──
+      // Safe DOM only: every value is set with textContent / attributes, never parsed as HTML.
+      const cs = window.codesense;
+      const $ = (id) => document.getElementById(id);
+
+      function h(tag, attrs, ...kids) {
+        const n = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs || {})) {
+          if (v == null || v === false) continue;
+          if (k === "class") n.className = v;
+          else if (k === "text") n.textContent = v;
+          else if (k === "href") n.href = /^https?:\/\//i.test(v) ? v : "#";
+          else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+          else n.setAttribute(k, v === true ? "" : v);
+        }
+        for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid);
+        return n;
+      }
+
+      // Authored 24px stroke icons (Lucide geometry). "c:x,y,r" is a circle; else a path.
+      const ICONS = {
+        refresh: ["M21 12a9 9 0 1 1-2.64-6.36L21 8", "M21 3v5h-5"],
+        plug: ["M12 22v-5", "M9 8V2", "M15 8V2", "M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"],
+        shield: ["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"],
+        alert: ["M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z", "M12 9v4", "M12 17h.01"],
+        check: ["c:12,12,9", "m8.5 12 2.5 2.5 4.5-5"],
+        x: ["c:12,12,9", "m15 9-6 6", "m9 9 6 6"],
+        clock: ["c:12,12,9", "M12 7v5l3 2"],
+        dot: ["c:12,12,4"],
+        ring: ["c:12,12,8"],
+        skip: ["c:12,12,9", "M8 12h8"],
+        pr: ["c:6,6,2.5", "c:18,18,2.5", "M6 8.5V21", "M13 6h3a2 2 0 0 1 2 2v7.5"],
+        draft: ["c:6,6,2.5", "c:18,18,2.5", "M6 8.5V21", "M18 11v2", "M18 6v1"],
+        repo: ["M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"],
+        inbox: ["M22 12h-6l-2 3h-4l-2-3H2", "M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"],
+        chart: ["M3 3v18h18", "M18 17V9", "M13 17V5", "M8 17v-3"],
+        terminal: ["m4 17 6-6-6-6", "M12 19h8"],
+        search: ["c:11,11,7", "m20 20-3.5-3.5"],
+        issue: ["c:12,12,9", "c:12,12,1.5"],
+        external: ["M15 3h6v6", "M10 14 21 3", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"],
+      };
+      function icon(name) {
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "1.75");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+        for (const part of ICONS[name] || []) {
+          let el;
+          if (part.startsWith("c:")) {
+            const [cx, cy, r] = part.slice(2).split(",");
+            el = document.createElementNS(NS, "circle");
+            el.setAttribute("cx", cx);
+            el.setAttribute("cy", cy);
+            el.setAttribute("r", r);
+          } else {
+            el = document.createElementNS(NS, "path");
+            el.setAttribute("d", part);
+          }
+          svg.append(el);
+        }
+        return svg;
+      }
+
+      function ago(value) {
+        const t = typeof value === "number" ? value : Date.parse(value);
+        if (!Number.isFinite(t)) return "";
+        const s = Math.max(0, (Date.now() - t) / 1000);
+        if (s < 60) return "just now";
+        if (s < 3600) return Math.floor(s / 60) + "m ago";
+        if (s < 86400) return Math.floor(s / 3600) + "h ago";
+        if (s < 86400 * 30) return Math.floor(s / 86400) + "d ago";
+        return new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      }
+      const plural = (n, word, many) => n + " " + (n === 1 ? word : many || word + "s");
+
+      // Header status pill: loading · live · error · off.
+      function setLive(state, label) {
+        const pill = $("live");
+        if (!pill) return;
+        pill.dataset.state = state;
+        pill.lastChild.textContent = label;
+      }
+
+      // The three-part state (what, why, ONE action) — used for empty, connect, error.
+      function stateView({ tone, glyph, title, body, action }) {
+        return h(
+          "div",
+          { class: "state", "data-tone": tone || "empty", role: "status" },
+          h("div", { class: "state-icon" }, icon(glyph || "inbox")),
+          h("h3", { text: title }),
+          body ? h("p", { text: body }) : null,
+          action
+            ? h("button", { class: "btn" + (action.primary === false ? "" : " primary"), type: "button", onclick: action.run }, action.icon ? icon(action.icon) : null, action.label)
+            : null,
+        );
+      }
+      function skeletonList(rows) {
+        return h(
+          "div",
+          { class: "list", "aria-busy": "true", "aria-label": "Loading" },
+          Array.from({ length: rows }, (_, i) =>
+            h(
+              "div",
+              { class: "row" },
+              h("span", { class: "sk", style: "width:14px;height:14px;border-radius:50%;margin-top:2px" }),
+              h("div", {}, h("span", { class: "sk", style: "width:" + (46 + ((i * 17) % 38)) + "%" }), h("span", { class: "sk", style: "width:28%;margin-top:8px;height:8px" })),
+              h("span", { class: "sk", style: "width:44px" }),
+            ),
+          ),
+        );
+      }
+      function section(title, count, aside, body) {
+        return h(
+          "section",
+          { class: "section" },
+          h("div", { class: "section-hd" }, h("h2", { text: title }), count != null ? h("span", { class: "count", text: String(count) }) : null, aside ? h("span", { class: "aside", text: aside }) : null),
+          body,
+        );
+      }
+
+      // Refresh loop: an interval (paused while hidden) plus focus/visibility accelerators,
+      // with a single in-flight guard so a slow upstream never stacks requests.
+      function poll(fn, everyMs) {
+        let timer = null;
+        let inFlight = false;
+        let last = 0;
+        const run = async () => {
+          if (inFlight) return;
+          inFlight = true;
+          last = Date.now();
+          try { await fn(); } finally { inFlight = false; }
+        };
+        const start = () => { if (!timer) timer = setInterval(run, everyMs); };
+        const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+        const onVisible = () => {
+          if (document.visibilityState === "visible") {
+            if (Date.now() - last > 10000) run();
+            start();
+          } else stop();
+        };
+        document.addEventListener("visibilitychange", onVisible);
+        window.addEventListener("focus", onVisible);
+        const btn = $("refresh");
+        if (btn) btn.addEventListener("click", async () => {
+          btn.setAttribute("aria-busy", "true");
+          await run();
+          btn.removeAttribute("aria-busy");
+        });
+        run();
+        start();
+      }
+      const main = $("main");
+      const state = { sprints: [], activeSprint: null, warnings: [], docs: [], states: [], selected: "", userChose: false, loaded: false };
+      const num = (n) => (Number.isFinite(n) ? n : 0);
+      const round1 = (n) => Math.round(n * 10) / 10;
+
+      // ── Taxonomy: the team's own status vocabulary (labels, colours, roles). ──
+      const byId = () => new Map(state.states.map((s) => [String(s.id).toLowerCase(), s]));
+      function stateOf(status) { return byId().get(String(status || "").toLowerCase()) || null; }
+      function isDone(d) { const s = stateOf(d.status); return !!s && s.role === "done" && s.delivered !== false; }
+      function isStory(d) { return d && (d.documentType == null || d.documentType === "story"); }
+
+      const closedSprints = () =>
+        state.sprints.filter((s) => s && s.state === "closed").slice().sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")) || String(a.id).localeCompare(String(b.id)));
+      function rolling(closed) {
+        const w = closed.slice(-CONFIG.rollingWindow);
+        return w.length ? { avg: round1(w.reduce((a, s) => a + num(s.deliveredPoints), 0) / w.length), n: w.length } : { avg: null, n: 0 };
+      }
+      const epicOf = (d) => { const segs = String(d.path || "").split("/").filter(Boolean); return segs.length >= 2 ? segs[segs.length - 2] : "—"; };
+
+      // ── SVG ──
+      function svg(tag, attrs, ...kids) {
+        const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [k, v] of Object.entries(attrs || {})) if (v != null) n.setAttribute(k, String(v));
+        for (const kid of kids.flat()) if (kid != null) n.append(kid);
+        return n;
+      }
+      function velocityChart(closed, roll) {
+        // Drawn at the panel's real pixel width so labels stay 11px at any size.
+        const W = Math.max(280, Math.round(main.clientWidth - 34)), H = 180, L = 32, R = 8, T = 18, B = 26;
+        const iw = W - L - R, ih = H - T - B;
+        const max = Math.max(1, ...closed.map((s) => num(s.deliveredPoints) + num(s.carriedPoints)));
+        const step = Math.max(1, Math.ceil(max / 4));
+        const top = step * 4;
+        const y = (v) => T + ih - (v / top) * ih;
+        const bw = iw / closed.length;
+        const g = [];
+        for (let v = 0; v <= top; v += step) g.push(svg("line", { class: "grid", x1: L, x2: W - R, y1: y(v), y2: y(v) }), svg("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, String(v)));
+        closed.forEach((s, i) => {
+          const dv = num(s.deliveredPoints), cv = num(s.carriedPoints);
+          const w = Math.min(44, bw * 0.62), x = L + i * bw + (bw - w) / 2;
+          g.push(svg("rect", { class: "delivered", x, y: y(dv), width: w, height: Math.max(0, y(0) - y(dv)), rx: 3 }, svg("title", {}, s.id + " — delivered " + dv + " pts")));
+          if (cv > 0) g.push(svg("rect", { class: "carried", x, y: y(dv + cv), width: w, height: Math.max(0, y(dv) - y(dv + cv)), rx: 3 }, svg("title", {}, s.id + " — carried " + cv + " pts")));
+          g.push(svg("text", { class: "val", x: x + w / 2, y: y(dv + cv) - 5, "text-anchor": "middle" }, String(dv)));
+          const label = String(s.id);
+          g.push(svg("text", { x: x + w / 2, y: H - 8, "text-anchor": "middle" }, label.length > 10 ? "…" + label.slice(-9) : label));
+        });
+        if (roll.avg != null) {
+          g.push(svg("line", { class: "avg", x1: L, x2: W - R, y1: y(roll.avg), y2: y(roll.avg) }, svg("title", {}, roll.n + "-sprint average: " + roll.avg + " pts")));
+        }
+        return svg("svg", { class: "chart", viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Points delivered per closed sprint" }, g);
+      }
+
+      // ── Rollups over live story metadata ──
+      function statusRollup(docs) {
+        const map = new Map();
+        for (const d of docs) {
+          const raw = String(d.status || "").toLowerCase();
+          const s = stateOf(raw);
+          const key = s ? s.id : raw || "unset";
+          const row = map.get(key) || { label: s ? s.label : raw || "No status", color: s ? s.color : "color-mix(in srgb, var(--cs-muted-fg) 75%, transparent)", order: s && Number.isFinite(s.order) ? s.order : 1e9, drift: !s && !!raw && state.states.length > 0, count: 0, points: 0 };
+          row.count += 1;
+          row.points += num(d.points);
+          map.set(key, row);
+        }
+        return [...map.values()].sort((a, b) => a.order - b.order || a.label.localeCompare(b.label));
+      }
+      function statusPanel(docs, heading) {
+        const rows = statusRollup(docs);
+        const total = docs.length;
+        return h(
+          "div",
+          { class: "panel" },
+          h("div", { class: "section-hd" }, h("h2", { text: heading }), h("span", { class: "count", text: String(total) })),
+          h("div", { class: "stack", role: "img", "aria-label": rows.map((r) => r.label + " " + r.count).join(", ") }, rows.map((r) => h("span", { style: "flex:" + r.count + ";background:" + r.color, title: r.label + ": " + r.count }))),
+          h(
+            "table",
+            { style: "margin-top:12px" },
+            h("thead", {}, h("tr", {}, h("th", { text: "Status" }), h("th", { text: "Stories" }), h("th", { text: "Points" }))),
+            h("tbody", {}, rows.map((r) => h("tr", {}, h("td", {}, h("span", { class: "swatch", style: "background:" + r.color }), r.label, r.drift ? h("span", { class: "drift", text: "not in taxonomy", title: "This status isn't in your team's status taxonomy" }) : null), h("td", { text: String(r.count) }), h("td", { text: String(round1(r.points)) })))),
+          ),
+        );
+      }
+      function epicPanel(docs, heading) {
+        const map = new Map();
+        for (const d of docs) {
+          const k = epicOf(d);
+          const e = map.get(k) || { epic: k, count: 0, points: 0, done: 0 };
+          e.count += 1;
+          e.points += num(d.points);
+          if (isDone(d)) e.done += num(d.points);
+          map.set(k, e);
+        }
+        const rows = [...map.values()].sort((a, b) => b.points - a.points || b.count - a.count || a.epic.localeCompare(b.epic)).slice(0, 12);
+        return h(
+          "div",
+          { class: "panel" },
+          h("div", { class: "section-hd" }, h("h2", { text: heading }), h("span", { class: "count", text: String(map.size) })),
+          h(
+            "table",
+            {},
+            h("thead", {}, h("tr", {}, h("th", { text: "Epic" }), h("th", { text: "Stories" }), h("th", { text: "Points" }), h("th", { text: "Done pts" }))),
+            h("tbody", {}, rows.map((e) => h("tr", {}, h("td", { class: "mono", text: e.epic }), h("td", { text: String(e.count) }), h("td", { text: String(round1(e.points)) }), h("td", { text: String(round1(e.done)) })))),
+          ),
+          map.size > rows.length ? h("p", { class: "hint", text: "Showing the 12 largest of " + map.size + " epics." }) : null,
+        );
+      }
+
+      function stat(value, unit, label) {
+        return h("div", { class: "stat" }, h("div", { class: "v" }, String(value), unit ? h("small", { text: unit }) : null), h("div", { class: "l", text: label }));
+      }
+
+      function render() {
+        const notes = $("notes");
+        notes.replaceChildren(...(state.warnings.length ? [h("div", { class: "notice" }, icon("alert"), h("span", { text: "Sprint registry notes: " + state.warnings.join(" · ") }))] : []));
+        const stories = state.docs.filter(isStory);
+        if (state.loaded && !stories.length && !state.sprints.length) {
+          main.replaceChildren(stateView({ glyph: "chart", title: "No stories to analyze yet", body: "This page reads the stories in your team's context. Add an epic folder with a story — a markdown file with `type: story` frontmatter — and it fills in here, no setup needed." }));
+          return;
+        }
+        const closed = closedSprints();
+        const roll = rolling(closed);
+        const last = closed[closed.length - 1];
+        const active = state.sprints.find((s) => s.id === state.activeSprint) || null;
+        const activeDocs = active ? stories.filter((d) => d.sprint === active.id) : [];
+        const inFlight = stories.filter((d) => { const s = stateOf(d.status); return s && (s.role === "active" || s.role === "review"); }).length;
+
+        const stats = h(
+          "div",
+          { class: "stats" },
+          stat(roll.avg != null ? roll.avg : "—", roll.avg != null ? "pts" : "", roll.n ? "Velocity · " + roll.n + "-sprint average" : "Velocity · after the first sprint closes"),
+          stat(last ? num(last.deliveredPoints) : "—", last ? "pts" : "", last ? "Last sprint · " + last.id : "No closed sprint yet"),
+          stat(active ? round1(activeDocs.filter(isDone).reduce((a, d) => a + num(d.points), 0)) + " / " + round1(activeDocs.reduce((a, d) => a + num(d.points), 0)) : "—", active ? "pts" : "", active ? "Done / committed · " + active.id : "No active sprint"),
+          stat(inFlight, "", plural(stories.length, "story", "stories") + " · in flight now"),
+        );
+
+        const velocity = closed.length
+          ? h(
+              "div",
+              { class: "panel" },
+              velocityChart(closed, roll),
+              h(
+                "div",
+                { class: "legend" },
+                h("span", {}, h("span", { class: "sw", style: "background:var(--cs-accent)" }), "Delivered"),
+                h("span", {}, h("span", { class: "sw", style: "background:var(--cs-warning);opacity:.55" }), "Carried over"),
+                roll.avg != null ? h("span", {}, h("span", { class: "sw line" }), roll.n + "-sprint average · " + roll.avg + " pts") : null,
+              ),
+            )
+          : h("div", { class: "panel" }, h("p", { class: "hint", style: "margin:0", text: "Velocity shows up once a sprint closes. Tag stories with a `sprint:` value in their frontmatter — when that sprint closes, its delivered points become a bar here." }));
+
+        const sel = state.sprints.find((s) => s.id === state.selected) || null;
+        const scoped = sel ? stories.filter((d) => d.sprint === sel.id) : stories;
+        const scopeLabel = sel ? "Sprint " + sel.id + (sel.goal ? " — " + sel.goal : "") : "All stories";
+        main.replaceChildren(
+          stats,
+          section("Velocity", null, closed.length ? plural(closed.length, "closed sprint") : null, velocity),
+          section(scopeLabel, null, sel ? sel.state : null, scoped.length ? h("div", { class: "grid-2" }, statusPanel(scoped, "By status"), epicPanel(scoped, "By epic")) : h("div", { class: "panel" }, h("p", { class: "hint", style: "margin:0", text: "No stories carry this sprint tag right now." }))),
+        );
+      }
+
+      function populateSprints() {
+        const sel = $("sprint");
+        const ordered = state.sprints.slice().sort((a, b) => String(b.start || "").localeCompare(String(a.start || "")) || String(b.id).localeCompare(String(a.id)));
+        sel.hidden = ordered.length === 0;
+        if (state.selected && !ordered.some((s) => s.id === state.selected)) state.selected = "";
+        // Default to the active sprint until the user picks a scope themselves ("All stories" included).
+        if (!state.userChose && !state.selected && state.activeSprint) state.selected = state.activeSprint;
+        sel.replaceChildren(h("option", { value: "", text: "All stories" }), ...ordered.map((s) => h("option", { value: s.id, text: s.id + " · " + s.state, selected: s.id === state.selected })));
+        sel.value = state.selected;
+      }
+      function applyRegistry(reg) {
+        if (!reg) return;
+        state.sprints = Array.isArray(reg.sprints) ? reg.sprints : [];
+        state.activeSprint = reg.activeSprint || null;
+        state.warnings = Array.isArray(reg.warnings) ? reg.warnings : [];
+      }
+
+      // This team's stories through the context engine, in the doc
+      // shape the page renders (scoped to the content root this page lives in).
+      function toDoc(r) {
+        const f = r.fields || {};
+        const tags = {};
+        for (const k in f) tags[k] = [].concat(f[k] == null ? [] : f[k]).map(String);
+        const pts = Number(f.points);
+        return { id: r.id, path: r.path, fileName: r.fileName, status: f.status ?? null, documentType: f.type ?? null, sprint: f.sprint ?? null, points: f.points == null || !Number.isFinite(pts) ? null : pts, assignedTo: f.assigned_to ?? null, tags };
+      }
+      let docDir;
+      async function readStories() {
+        if (docDir === undefined) {
+          const dir = await cs.invoke("getDocDir").catch(() => null);
+          docDir = typeof dir === "string" && dir ? dir : null;
+        }
+        const res = await cs.queryContext({ where: { kinds: ["story", "bug", "spike"], ...(docDir ? { sameRootAs: docDir } : {}) }, limit: 10000 });
+        return ((res && res.rows) || []).map(toDoc);
+      }
+
+      async function refresh() {
+        try {
+          const [q, reg, tax] = await Promise.all([
+            readStories(),
+            typeof cs.sprints === "function" ? cs.sprints().catch(() => null) : null,
+            typeof cs.taxonomy === "function" ? cs.taxonomy().catch(() => null) : null,
+          ]);
+          state.docs = q || [];
+          if (reg) applyRegistry(reg);
+          if (tax && Array.isArray(tax.states)) state.states = tax.states;
+          state.loaded = true;
+          populateSprints();
+          render();
+          setLive("live", "Live");
+        } catch (err) {
+          const msg = String((err && err.message) || err);
+          if (!state.loaded) {
+            main.replaceChildren(stateView({ tone: "error", glyph: "alert", title: "Couldn't read your stories", body: "The story read didn't complete (" + msg + "). This page keeps retrying on its own.", action: { label: "Try again", icon: "refresh", primary: false, run: refresh } }));
+            setLive("error", "Unreachable");
+          } else {
+            setLive("error", "Retrying");
+          }
+        }
+      }
+
+      $("sprint").addEventListener("change", (e) => { state.selected = e.target.value; state.userChose = true; render(); });
+      let resizeTimer = null;
+      window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (state.loaded) render(); }, 120); });
+      if (cs && cs.firstPaint) applyRegistry(cs.firstPaint);
+      main.replaceChildren(skeletonList(4));
+      if (!cs || typeof cs.queryContext !== "function") {
+        main.replaceChildren(stateView({ glyph: "shield", title: "Open this page inside CodeSense", body: "Sprint analysis reads your stories through CodeSense. Open it from your team's context in the app." }));
+        setLive("off", "Off");
+      } else {
+        poll(refresh, CONFIG.refreshMs);
+      }
+    // Explicit page readiness keeps this example live when copied into a slot.
+      window.codesense?.ready?.();
+    </script>
+  </body>
+</html>

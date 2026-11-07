@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Multi-mac distributed</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/multi-mac-distributed"] figure.diag {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/multi-mac-distributed"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+      }
+      /* Factory hero inline-SVG stand-in — mirrors
+         diagrams/factory/multi-mac.excalidraw.sketch.md coord space (1280x720).
+         Swapped for the rendered PNG once render_canvas lands. */
+      .fac-hero-fig {
+        display: block;
+        width: 100%;
+        max-width: 980px;
+        margin: 16px auto 8px;
+      }
+      .fac-hero-fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .fac-hero-fig .mac {
+        fill: var(--cs-inset);
+        stroke-width: 2;
+      }
+      .fac-hero-fig .mac-a { stroke: #4ec28a; }
+      .fac-hero-fig .mac-b { stroke: #a898ff; }
+      .fac-hero-fig .mac-c { stroke: #e0ac55; }
+      .fac-hero-fig .chip {
+        fill: var(--cs-surface);
+        stroke-width: 1.6;
+      }
+      .fac-hero-fig .r-triager { stroke: #6ea8f0; }
+      .fac-hero-fig .r-builder { stroke: #4ec28a; }
+      .fac-hero-fig .r-reviewer { stroke: #a898ff; }
+      .fac-hero-fig .r-scout { stroke: #e0ac55; }
+      .fac-hero-fig .r-resolver { stroke: #f0a93b; }
+      .fac-hero-fig .lbl {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .mut {
+        fill: var(--cs-muted-fg);
+        font: 12px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .title {
+        fill: var(--cs-fg);
+        font: 600 15px var(--cs-font-sans, system-ui), sans-serif;
+      }
+      .fac-hero-fig .edge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.4;
+        fill: none;
+      }
+      .fac-hero-fig .edge-bridge {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.6;
+        fill: none;
+      }
+      .fac-hero-fig .gap {
+        stroke: var(--cs-border);
+        stroke-width: 0.5;
+        stroke-dasharray: 2 3;
+      }
+      .fac-hero-fig .repo {
+        fill: var(--cs-surface);
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1.2;
+      }
+      .fac-hero-fig .pullpush {
+        stroke: var(--cs-muted-fg);
+        stroke-width: 1;
+        stroke-dasharray: 4 4;
+        fill: none;
+      }
+      .fac-hero-cap {
+        display: block;
+        margin: 4px auto 20px;
+        max-width: 980px;
+        text-align: center;
+        color: var(--cs-faint-fg);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/multi-mac-distributed">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Multi-mac distributed — many developers one factory"
+        id="hero"
+      >
+        <h1>Multi-mac distributed · several developers' Macs cooperating</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Three developers. Three Macs. One team context repo. One triager keeps the whole thing in
+          sync; each developer runs the roles that matter for the hour. Nobody has to know what the
+          others are doing — the inbox does the choreography.
+        </p>
+        <figure class="fac-hero-fig" aria-labelledby="fac-multi-cap">
+          <svg
+            viewBox="0 0 1280 720"
+            role="img"
+            aria-label="Three MacBook frames side-by-side — Alice, Bob, Carol. Alice's holds the shared triager plus a builder and a resolver. Bob's holds two builders and a reviewer. Carol's holds a scout, a builder, and a reviewer. All three Macs pull-and-push against one team repo pill at the bottom; the triager's edges fan out across the private-account bridges."
+          >
+            <title>Multi-mac distributed · three developers' Macs</title>
+
+            <!-- Mac frames -->
+            <rect class="mac mac-a" x="60" y="120" width="370" height="500" rx="16" />
+            <text class="title" x="80" y="148">MacBook — alice@mobile</text>
+            <circle cx="415" cy="135" r="5" fill="#4ec28a" />
+
+            <rect class="mac mac-b" x="455" y="120" width="370" height="500" rx="16" />
+            <text class="title" x="475" y="148">MacBook — bob@desk</text>
+            <circle cx="810" cy="135" r="5" fill="#a898ff" />
+
+            <rect class="mac mac-c" x="850" y="120" width="370" height="500" rx="16" />
+            <text class="title" x="870" y="148">MacBook — carol@laptop</text>
+            <circle cx="1205" cy="135" r="5" fill="#e0ac55" />
+
+            <!-- Inter-frame private-account guides -->
+            <line class="gap" x1="440" y1="150" x2="440" y2="580" />
+            <line class="gap" x1="835" y1="150" x2="835" y2="580" />
+            <text class="mut" x="440" y="580" text-anchor="middle">private-account</text>
+            <text class="mut" x="835" y="580" text-anchor="middle">private-account</text>
+
+            <!-- Alice chips -->
+            <rect class="chip r-triager" x="80" y="200" width="330" height="70" rx="10" />
+            <circle cx="90" cy="210" r="4" fill="#4ec28a" />
+            <text class="lbl" x="245" y="232" text-anchor="middle">triager</text>
+            <text class="mut" x="245" y="254" text-anchor="middle">shared lease · one at a time</text>
+
+            <rect class="chip r-builder" x="80" y="300" width="330" height="60" rx="10" />
+            <circle cx="90" cy="310" r="4" fill="#4ec28a" />
+            <text class="lbl" x="245" y="335" text-anchor="middle">builder</text>
+
+            <rect class="chip r-resolver" x="80" y="400" width="330" height="60" rx="10" />
+            <circle cx="90" cy="410" r="4" fill="#4ec28a" />
+            <text class="lbl" x="245" y="435" text-anchor="middle">resolver</text>
+
+            <!-- Bob chips -->
+            <rect class="chip r-builder" x="475" y="200" width="330" height="60" rx="10" />
+            <circle cx="485" cy="210" r="4" fill="#a898ff" />
+            <text class="lbl" x="640" y="235" text-anchor="middle">builder</text>
+
+            <rect class="chip r-builder" x="475" y="290" width="330" height="60" rx="10" />
+            <circle cx="485" cy="300" r="4" fill="#a898ff" />
+            <text class="lbl" x="640" y="325" text-anchor="middle">builder</text>
+
+            <rect class="chip r-reviewer" x="475" y="400" width="330" height="60" rx="10" />
+            <circle cx="485" cy="410" r="4" fill="#a898ff" />
+            <text class="lbl" x="640" y="435" text-anchor="middle">reviewer</text>
+
+            <!-- Carol chips -->
+            <rect class="chip r-scout" x="870" y="200" width="330" height="60" rx="10" />
+            <circle cx="880" cy="210" r="4" fill="#e0ac55" />
+            <text class="lbl" x="1035" y="235" text-anchor="middle">scout</text>
+
+            <rect class="chip r-builder" x="870" y="290" width="330" height="60" rx="10" />
+            <circle cx="880" cy="300" r="4" fill="#e0ac55" />
+            <text class="lbl" x="1035" y="325" text-anchor="middle">builder</text>
+
+            <rect class="chip r-reviewer" x="870" y="400" width="330" height="60" rx="10" />
+            <circle cx="880" cy="410" r="4" fill="#e0ac55" />
+            <text class="lbl" x="1035" y="435" text-anchor="middle">reviewer</text>
+
+            <!-- Routing edges from triager (always on alice's Mac today) -->
+            <!-- local to Alice: triager -> a-builder-1, a-resolver -->
+            <path class="edge" d="M 245 270 L 245 300" />
+            <polygon fill="var(--cs-muted-fg)" points="245,300 239,288 251,288" />
+            <path class="edge" d="M 245 270 Q 245 335 245 400" />
+            <polygon fill="var(--cs-muted-fg)" points="245,400 239,388 251,388" />
+            <!-- cross to Bob -->
+            <path class="edge-bridge" d="M 410 220 Q 440 190 475 220" />
+            <polygon fill="var(--cs-muted-fg)" points="475,220 464,215 466,227" />
+            <path class="edge-bridge" d="M 410 230 Q 440 260 475 310" />
+            <polygon fill="var(--cs-muted-fg)" points="475,310 464,305 466,317" />
+            <path class="edge-bridge" d="M 410 240 Q 440 340 475 420" />
+            <polygon fill="var(--cs-muted-fg)" points="475,420 464,415 466,427" />
+            <!-- cross to Carol -->
+            <path class="edge-bridge" d="M 410 215 Q 630 180 870 220" />
+            <polygon fill="var(--cs-muted-fg)" points="870,220 858,217 861,229" />
+            <path class="edge-bridge" d="M 410 225 Q 630 270 870 310" />
+            <polygon fill="var(--cs-muted-fg)" points="870,310 858,307 861,319" />
+            <path class="edge-bridge" d="M 410 235 Q 630 350 870 420" />
+            <polygon fill="var(--cs-muted-fg)" points="870,420 858,417 861,429" />
+
+            <!-- Shared team repo pill -->
+            <rect class="repo" x="540" y="640" width="200" height="36" rx="18" />
+            <text class="mut" x="640" y="663" text-anchor="middle">team repo (git)</text>
+
+            <!-- pull/push edges from each frame to repo -->
+            <path class="pullpush" d="M 240 620 L 580 644" />
+            <path class="pullpush" d="M 640 620 L 640 640" />
+            <path class="pullpush" d="M 1035 620 L 700 644" />
+            <text class="mut" x="380" y="632" text-anchor="middle">pull/push</text>
+            <text class="mut" x="900" y="632" text-anchor="middle">pull/push</text>
+
+            <!-- Legend -->
+            <g transform="translate(80, 700)">
+              <circle cx="0" cy="0" r="4" fill="#4ec28a" />
+              <text class="mut" x="10" y="4">alice</text>
+              <circle cx="70" cy="0" r="4" fill="#a898ff" />
+              <text class="mut" x="80" y="4">bob</text>
+              <circle cx="140" cy="0" r="4" fill="#e0ac55" />
+              <text class="mut" x="150" y="4">carol</text>
+            </g>
+          </svg>
+        </figure>
+        <p class="fac-hero-cap" id="fac-multi-cap">
+          This is the shape; the live
+          <code>factory/multi-mac.excalidraw</code> canvas has the editable
+          version — click the diagram to open it.
+        </p>
+      </section>
+
+      <section data-search="When to use multi-mac distributed" id="why">
+        <h2>When to reach for multi-mac</h2>
+        <ul>
+          <li>You've got <strong>more than one developer</strong> on the same codebase.</li>
+          <li>You want to use each developer's spare cycles without a cloud build farm.</li>
+          <li>
+            You want a <strong>shared triager</strong> so nobody duplicates work and nobody has to
+            ask "what are you working on?"
+          </li>
+          <li>
+            You want to split roles by comfort: Alice loves reviews, Bob loves plumbing, Carol owns
+            the dogfood sweep.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="The shared triager rule" id="triager">
+        <h2>The shared triager rule</h2>
+        <p>
+          In a multi-mac shape, exactly <strong>one</strong> Triager agent is active at a time. The
+          team context repo stores a <code>triager-lease.yml</code>; the triager routine checks the
+          lease before claiming any dispatch message. If Alice's laptop goes offline, the lease
+          expires in 5 minutes and Bob's Mac picks it up.
+        </p>
+        <p>
+          This is the only piece of state the team shares beyond git. Everything else — role queues,
+          worktrees, agent-dag — is per-Mac, synced via the team repo.
+        </p>
+      </section>
+
+      <section data-search="Step-by-step — stand up a three-Mac factory" id="steps">
+        <h2>Step-by-step: stand up a three-Mac factory</h2>
+        <ol>
+          <li>
+            <p>
+              <strong>Each developer joins the team.</strong> One clicks
+              <em>Create a team repo</em>; the other two <em>Connect existing team repo</em>. The
+              team repo lives in git — anywhere all three can push.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Each developer trusts the others' Macs</strong> under the same private
+              account. The <strong>Macs</strong> dashboard lists all six (two per developer if they
+              each have a laptop + mini).
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>One developer authors the team-wide routines</strong> under the team context.
+              One Triager routine; one <code>builder-wake</code>; one <code>reviewer-wake</code>;
+              one <code>scout-wake</code>. Every developer's CodeSense picks them up on git pull.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Each developer picks which role to host.</strong> Alice runs Triager +
+              Resolver + a Builder. Bob runs two Builders + a Reviewer. Carol runs a Scout + a
+              Builder + a Reviewer. The agent-dag now has three columns.
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>Human-in-the-loop</strong> moves between developers. A Resolver escalation
+              lands in <code>resolver</code>; whoever is at the keyboard answers. The next
+              escalation might go to someone else.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section data-search="Expected drama and how CodeSense handles it" id="drama">
+        <h2>Expected drama and how CodeSense handles it</h2>
+        <ul>
+          <li>
+            <strong>Carol's Mac goes offline mid-review.</strong> The reviewer inbox message's claim
+            times out in 10 minutes; Bob's Reviewer picks it up on the next
+            <code>inbox_idle</code> wake.
+          </li>
+          <li>
+            <strong>Alice and Bob both pull at the same instant.</strong> Git rebase on push; the
+            second pusher re-pulls and tries again. CodeSense never writes to the team repo without
+            a rebase-and-retry wrapper.
+          </li>
+          <li>
+            <strong>Someone edits a routine while a routine is firing.</strong> The daemon reads
+            routines fresh at each tick; the change takes effect on the next wake.
+          </li>
+        </ul>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>list_orgs_teams {}
+// → [{ org, team, synced, starterPage? }], including the shared team
+
+set_active_team { org: '&lt;owner/repo&gt;', team: '&lt;team&gt;' }
+list_machines { orgSlug: '&lt;owner/repo&gt;', team: '&lt;team&gt;' }
+// → This Mac, the team's shared machines, then your private ones</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./running-overnight.html">Running overnight →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Multi-mac distributed</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

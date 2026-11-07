@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodeSense — Failure modes</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <style>
+      body[data-page="arc-l-factory/failure-modes"] figure.hero {
+        padding: 0;
+        aspect-ratio: 16 / 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cs-muted-fg);
+        background: var(--cs-inset);
+        margin: 0;
+      }
+      body[data-page="arc-l-factory/failure-modes"] table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-size: 13px;
+      }
+      body[data-page="arc-l-factory/failure-modes"] th,
+      body[data-page="arc-l-factory/failure-modes"] td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--cs-border);
+        vertical-align: top;
+      }
+      body[data-page="arc-l-factory/failure-modes"] th {
+        color: var(--cs-muted-fg);
+        font-weight: 600;
+        background: var(--cs-inset);
+      }
+      body[data-page="arc-l-factory/failure-modes"] td code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-l-factory/failure-modes">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <section
+        data-hero
+        data-search="Failure modes — expected drama in a running factory"
+        id="hero"
+      >
+        <h1>Failure modes</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Running a factory means things fail. The question is whether the factory notices,
+          recovers, and keeps going. This page is the honest inventory: what breaks, how CodeSense
+          handles it, what you have to do.
+        </p>
+      </section>
+
+      <section data-search="Expected failure modes and recovery" id="matrix">
+        <h2>The failure matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>What breaks</th>
+              <th>How CodeSense notices</th>
+              <th>Automatic recovery</th>
+              <th>What you do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Agent crashes mid-story</strong><br /><span
+                  style="color: var(--cs-muted-fg)"
+                  >Rust panic, LLM 500, OOM</span
+                >
+              </td>
+              <td>Session marked <code>failed</code>; worktree write-lease released</td>
+              <td>Next <code>inbox_idle</code> wake reclaims the story to another Builder</td>
+              <td>Open the session log; patch the skill if the error is deterministic</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Agent stalls (loops)</strong><br /><span style="color: var(--cs-muted-fg)"
+                  >Infinite retry on a tool call</span
+                >
+              </td>
+              <td>agent-dag shades amber after 10 min with no worktree write</td>
+              <td>None by default — stalls aren't crashes</td>
+              <td>Close its tab with <code>close_terminal_tab</code>, then relaunch the agent</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Machine goes offline</strong><br /><span style="color: var(--cs-muted-fg)"
+                  >Mini unplugged; lid closed; wifi drops</span
+                >
+              </td>
+              <td>Host-agent heartbeat stops; sessions on that Mac marked <code>offline</code></td>
+              <td>None: the work waits until the Mac is back or you relaunch it elsewhere</td>
+              <td>
+                Bring the Mac back. Its worktrees are still on disk, so relaunch the agents
+                there
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Escalation stuck</strong><br /><span style="color: var(--cs-muted-fg)"
+                  >Resolver inbox growing, nobody at keyboard</span
+                >
+              </td>
+              <td>Resolver inbox count climbs on home dashboard</td>
+              <td>None — a human has to answer</td>
+              <td>Open the <code>resolver</code> inbox; answer in batch</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Routine fails to fire</strong><br /><span style="color: var(--cs-muted-fg)"
+                  >cron expression typo; agent archived</span
+                >
+              </td>
+              <td>routines-console shows last-fire time &gt; expected interval</td>
+              <td>None</td>
+              <td>Check routines-console; fix the expression; the next tick re-fires</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Worktree lock contention</strong><br /><span
+                  style="color: var(--cs-muted-fg)"
+                  >Two Builders racing on the same git lock</span
+                >
+              </td>
+              <td>agent-dag shows one Builder spinning on <code>git worktree add</code></td>
+              <td>Git's lock usually clears once the first operation finishes</td>
+              <td>If it stays stuck, close the older agent's tab with <code>close_terminal_tab</code></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Context repo diverges</strong><br /><span style="color: var(--cs-muted-fg)"
+                  >Two Macs committed to main concurrently</span
+                >
+              </td>
+              <td>Push rejected; the agent doing the sync rebases and retries (CodeSense never pushes)</td>
+              <td>The agent reports <code>report_context_sync {state: 'retrying'}</code>; the status button shows it</td>
+              <td>
+                A file both sides changed opens a conflict card: <strong>Use mine</strong>,
+                <strong>Use theirs</strong>, <strong>Keep both</strong> or
+                <strong>Hand to ‹agent›</strong>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Loop sweep finds everything stuck</strong><br /><span
+                  style="color: var(--cs-muted-fg)"
+                  >Deferred-work ledger growing unbounded</span
+                >
+              </td>
+              <td>bmad-loop-sweep output flags <code>CRITICAL</code></td>
+              <td>None — this is a planning signal, not an execution one</td>
+              <td>
+                Pause the loop; run <code>bmad-correct-course</code>; carry forward intentionally
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section data-search="The one failure mode CodeSense can't help with" id="worst">
+        <h2>The one failure mode CodeSense can't help with</h2>
+        <p>
+          <strong>A silently-wrong agent.</strong> The agent didn't crash. The DAG is green. The PR
+          looks fine. The code is wrong. CodeSense can't catch this — only review can. Keep a
+          human-reviewed PR as the merge gate, especially for anything that touches runtime behavior
+          or stored state.
+        </p>
+      </section>
+
+      <section data-search="How to do this via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <pre><code>close_terminal_tab { "handle": "&lt;handle from list_sessions&gt;" }
+list_machines { "orgSlug": "&lt;org&gt;" }          // see which machines are online
+pane_open { "id": "&lt;pane id from pane_list&gt;" }</code></pre>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc L index</a> · Next:
+        <a href="./composition-recipes.html">10 composition recipes →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc L · Failure modes</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item"
+            ><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search</span
+          >
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

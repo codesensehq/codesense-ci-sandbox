@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="git-branch" />
+    <title>CodeSense — Git is yours</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-c-workspaces-and-worktrees/"] main.cs-main {
+        max-width: 1000px;
+      }
+      .arcC-hero {
+        display: block;
+        margin: 0 0 var(--cs-docs-space-6);
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-lg);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+        padding: var(--cs-docs-space-5);
+        overflow: hidden;
+      }
+      .arcC-hero svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 260px;
+      }
+      .arcC-hero figcaption {
+        margin-top: var(--cs-docs-space-3);
+        font-size: var(--cs-docs-text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cs-faint-fg);
+      }
+      /* Does / does-not table — the headline. */
+      .arcC-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--cs-docs-space-3);
+        margin: var(--cs-docs-space-4) 0 var(--cs-docs-space-6);
+      }
+      @media (max-width: 700px) {
+        .arcC-split {
+          grid-template-columns: 1fr;
+        }
+      }
+      .arcC-split__col {
+        padding: 16px 18px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: var(--cs-surface);
+      }
+      .arcC-split__col--does {
+        border-color: color-mix(in oklab, #4fd4bb 55%, var(--cs-border));
+      }
+      .arcC-split__col--doesnt {
+        border-color: color-mix(in oklab, #ea6a5a 55%, var(--cs-border));
+      }
+      .arcC-split__col h3 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+      }
+      .arcC-split__col ul {
+        margin: 0;
+        padding-left: 1.1em;
+      }
+      .arcC-split__col li {
+        margin: 6px 0;
+        line-height: 1.5;
+      }
+      pre {
+        background: var(--cs-inset);
+        padding: 10px 12px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      .arcC-callout {
+        margin: var(--cs-docs-space-4) 0;
+        padding: 14px 16px;
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius);
+        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
+      }
+      .arcC-callout h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+      .arcC-callout p {
+        margin: 0;
+        color: var(--cs-muted-fg);
+        line-height: 1.55;
+      }
+      .arcC-shot {
+        margin: 8px 0 0;
+        padding: 10px;
+        background: var(--cs-inset);
+        border: 1px dashed var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        color: var(--cs-muted-fg);
+        font-size: var(--cs-docs-text-sm);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-c-workspaces-and-worktrees/git-is-yours">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="CodeSense never commits, pushes or merges; your agents do" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="C">Arc C · Git is yours</span>
+        </p>
+        <h1>CodeSense never commits, pushes or merges. Your agents do.</h1>
+        <p style="max-width: 62ch; color: var(--cs-muted-fg)">
+          Every commit, every branch, every push in your source repo comes from a process
+          <em>you</em> control — a Builder agent on your Mac, or your terminal, with your
+          credentials. CodeSense runs git only to set up and read your worktrees: it fetches,
+          adds and removes worktrees, reads status and history, and keeps the copies it makes
+          out of git through the clone's <code>.git/info/exclude</code>. It never authors a
+          commit, pushes, merges or rewrites history; that work is yours. This is deliberate, and it changes how you reason
+          about who did what.
+        </p>
+
+        <figure class="arcC-hero" aria-labelledby="split-cap">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 240"
+            role="img"
+            aria-label="Two columns: left column labelled CODESENSE shows directory and index icons; right column labelled YOUR AGENT shows a terminal with git commands. An arrow from CodeSense to the agent is labelled 'invoke'; no arrow goes from CodeSense directly to the repo."
+          >
+            <title>Arc C — CodeSense invokes the agent; the agent runs git</title>
+            <desc>
+              CodeSense owns workspace handles, the worktree index, and the hydration set. The
+              agent, which the user owns, is the one that executes git commands against the repo.
+            </desc>
+            <style>
+              .arcCg-surface {
+                fill: var(--cs-surface, #161b22);
+                stroke: var(--cs-border, #262c38);
+                stroke-width: 1;
+              }
+              .arcCg-text {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 11px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcCg-mono {
+                fill: var(--cs-fg, #e6edf3);
+                font:
+                  500 10.5px ui-monospace,
+                  SFMono-Regular,
+                  Menlo,
+                  monospace;
+              }
+              .arcCg-muted {
+                fill: var(--cs-muted-fg, #a3abbb);
+                font:
+                  10px -apple-system,
+                  system-ui,
+                  sans-serif;
+              }
+              .arcCg-edge {
+                stroke: color-mix(in oklab, #f6b454 70%, var(--cs-muted-fg, #a3abbb));
+                stroke-width: 1.4;
+                fill: none;
+              }
+              .arcCg-cs {
+                stroke: color-mix(
+                  in oklab,
+                  var(--cs-accent, #7aa2ff) 55%,
+                  var(--cs-border, #262c38)
+                );
+                stroke-width: 1.3;
+              }
+              .arcCg-agent {
+                stroke: color-mix(in oklab, #f6b454 60%, var(--cs-border, #262c38));
+                stroke-width: 1.3;
+              }
+            </style>
+
+            <!-- CodeSense box (left) -->
+            <g transform="translate(30 40)">
+              <rect class="arcCg-surface arcCg-cs" width="200" height="160" rx="8" />
+              <text class="arcCg-muted" x="12" y="18">CODESENSE</text>
+              <text class="arcCg-text" x="12" y="38">What it owns</text>
+              <text class="arcCg-mono" x="12" y="60">· workspace handles</text>
+              <text class="arcCg-mono" x="12" y="78">· worktree index</text>
+              <text class="arcCg-mono" x="12" y="96">· hydration set</text>
+              <text class="arcCg-mono" x="12" y="114">· routines, inboxes</text>
+              <text class="arcCg-muted" x="12" y="140">never shells to git</text>
+            </g>
+
+            <!-- Invoke edge -->
+            <path
+              class="arcCg-edge"
+              d="M230 120 C 290 120, 310 120, 400 120"
+              marker-end="url(#arrowg)"
+            />
+            <defs>
+              <marker
+                id="arrowg"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path
+                  d="M 0 0 L 10 5 L 0 10 z"
+                  fill="color-mix(in oklab, #f6b454 70%, var(--cs-muted-fg, #a3abbb))"
+                />
+              </marker>
+            </defs>
+            <text class="arcCg-muted" x="315" y="112" text-anchor="middle">invoke</text>
+            <text class="arcCg-muted" x="315" y="138" text-anchor="middle">(agent task)</text>
+
+            <!-- Agent / terminal box (right) -->
+            <g transform="translate(410 40)">
+              <rect class="arcCg-surface arcCg-agent" width="200" height="160" rx="8" />
+              <text class="arcCg-muted" x="12" y="18">YOUR AGENT</text>
+              <text class="arcCg-text" x="12" y="38">What it does</text>
+              <text class="arcCg-mono" x="12" y="60">$ git fetch origin</text>
+              <text class="arcCg-mono" x="12" y="78">$ git worktree add …</text>
+              <text class="arcCg-mono" x="12" y="96">$ git commit -m …</text>
+              <text class="arcCg-mono" x="12" y="114">$ git push</text>
+              <text class="arcCg-muted" x="12" y="140">your creds · your audit</text>
+            </g>
+          </svg>
+          <figcaption id="split-cap">CodeSense owns the index; your agent owns the git</figcaption>
+        </figure>
+      </section>
+
+      <!-- =============== Why =============== -->
+      <section data-search="Why CodeSense doesn't commit or push itself" id="why">
+        <h2>Why this is the right choice</h2>
+        <p>
+          Committing and pushing from inside an app would mean borrowing your signing keys and
+          your branch protections, and taking the blame when something went sideways. CodeSense
+          stays on the correct side of a bright line: for anything that changes history or
+          leaves your machine, it <em>asks</em> an agent to do the work. The agent is a process you launched, in a terminal
+          you own, with the identity you'd use at the command line. The git operation is
+          indistinguishable from what you'd have run yourself.
+        </p>
+      </section>
+
+      <!-- =============== Does / Doesn't =============== -->
+      <section data-search="What CodeSense does and doesn't do around git" id="split">
+        <h2>Who does what</h2>
+        <div class="arcC-split" role="list">
+          <article class="arcC-split__col arcC-split__col--does" role="listitem">
+            <h3>CodeSense does</h3>
+            <ul>
+              <li>
+                <strong>Chooses the path</strong> on disk a worktree lives at
+                (<code>../&lt;repo&gt;-wt/&lt;slug&gt;/</code>, beside the clone).
+              </li>
+              <li>
+                <strong>Resolves the branch name</strong> from the story's <code>branch</code> (or the older
+                <code>branch_name</code> / <code>dev_branch</code>), else
+                <code>branch_prefix</code> + the story file's name (<code>feat/DEMO-1-foundation</code>).
+              </li>
+              <li>
+                <strong>Copies context</strong> into the worktree when an agent launches or asks (file
+                copies, not git history), and lists those paths in the clone's
+                <code>.git/info/exclude</code>, which all worktrees of that clone share.
+              </li>
+              <li>
+                <strong>Remembers mappings</strong> — story to worktree path to branch — in its own
+                index so a second <code>open_workspace</code> reattaches instead of recreating.
+              </li>
+              <li>
+                <strong>Writes <code>worktree.yaml</code> settings</strong> via
+                <code>write_worktree_config</code> if you ask it to.
+              </li>
+            </ul>
+          </article>
+          <article class="arcC-split__col arcC-split__col--doesnt" role="listitem">
+            <h3>CodeSense does not</h3>
+            <ul>
+              <li>
+                <strong>Author a commit.</strong> It runs <code>git fetch</code>,
+                <code>git worktree add</code> and read-only commands like status, never
+                <code>git commit</code>.
+              </li>
+              <li>
+                <strong>Hold git credentials.</strong> Your SSH keys, your PATs, your signing keys
+                live where they always did.
+              </li>
+              <li>
+                <strong>Decide when to commit, push, or merge.</strong> That is always a deliberate
+                agent action with your identity on it.
+              </li>
+              <li>
+                <strong>Rewrite history.</strong> No rebase, no amend, no force-push from CodeSense
+                itself.
+              </li>
+              <li>
+                <strong>Touch the source repo without being invited.</strong> It only creates a
+                worktree when a workspace is opened against a story.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- =============== Who runs the worktree git commands =============== -->
+      <section data-search="Who runs the worktree creation git commands" id="who-runs">
+        <h2>Then who runs <code>git worktree add</code>?</h2>
+        <p>
+          CodeSense does, and it is the one place it runs git that changes anything on disk. The
+          commands worktree creation needs (<code>git fetch</code> when the remote is reachable,
+          then <code>git worktree add</code>) run on your Mac as you, with your shell, your
+          credentials and your git config, through the <strong>host-agent</strong> CodeSense
+          installs under your user account (on a remote machine, its terminal server). Setup
+          commands from <code>worktree.yaml</code> run the same way. None of them commits or
+          pushes.
+        </p>
+        <pre><code># What CodeSense invokes
+codesense.invoke('open_workspace', { target: 'DEMO-1' })
+
+# What then runs on your Mac, as you
+git -C ~/code/sample-source-repo fetch origin
+git -C ~/code/sample-source-repo \
+    worktree add ../sample-source-repo-wt/feat-DEMO-1 feat/DEMO-1</code></pre>
+        <p style="color: var(--cs-muted-fg); font-size: var(--cs-docs-text-sm)">
+          The host-agent is documented in
+          <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>; sync is covered in
+          <a href="../arc-k-sync/index.html">Arc K</a>, which walks the parts of the loop where
+          an agent you ask pulls and pushes the context repo with <code>git</code>.
+        </p>
+      </section>
+
+      <!-- =============== Audit =============== -->
+      <section data-search="Audit trail — who committed what" id="audit">
+        <h2>Your audit trail stays yours</h2>
+        <p>
+          Every commit in your source repo is authored by the identity whose agent made it: your git
+          config (for interactive sessions in a terminal tab), or the agent's configured
+          <code>git.user</code> block in its <code>agent.yaml</code> (for routine-driven builds).
+          The CodeSense app never appears as an author anywhere in your history. If you want "Amelia
+          built this" to literally mean Amelia, you set Amelia's git identity in
+          <code>agents/amelia/agent.yaml</code> and the commits say so.
+        </p>
+        <div class="arcC-callout">
+          <h3>Signing keys</h3>
+          <p>
+            Signed-commit workflows (<code>git commit -S</code>) continue to work: CodeSense never
+            fingers your signing key, and the agent that commits picks it up from the same gpg-agent
+            or ssh-agent your terminal does.
+          </p>
+        </div>
+      </section>
+
+      <!-- =============== Edges =============== -->
+      <section data-search="What this means in practice edge cases" id="edges">
+        <h2>What this means in practice</h2>
+        <ul>
+          <li>
+            <strong>Branch protections apply.</strong> If your source repo requires PRs with reviews
+            before merge, agent commits are no different — the push lands on a branch, the review
+            happens as normal.
+          </li>
+          <li>
+            <strong>Local git hooks fire.</strong> Pre-commit, pre-push, and commit-msg hooks all
+            run against the agent's shell session the way they would yours.
+          </li>
+          <li>
+            <strong>GitHub Actions attribute to the agent.</strong> Build artefacts and PR comments
+            show the identity in <code>agent.yaml</code>, not a generic "CodeSense bot".
+          </li>
+          <li>
+            <strong>Repo kill switch.</strong> If you want an agent to stop touching a repo, revoke
+            its git credentials or disable its routine. CodeSense holds no git credentials of its own
+            to revoke.
+          </li>
+          <li>
+            <strong>Nothing to migrate on first install.</strong> Your existing clones are left
+            alone. CodeSense creates worktrees beside the clone you point it at
+            (<code>../&lt;repo&gt;-wt/</code>); your original working dir stays exactly where it was.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section
+        data-search="Try this now — see who authored your worktree commits"
+        id="try-this-now"
+      >
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          List the worktrees CodeSense manages. Each one's fetch and <code>worktree add</code> ran
+          in your name; no commit or push happened. The branch and author are both yours.
+        </p>
+        <cs-try-this
+          verb="worktrees"
+          args="{}"
+          label="List my worktrees"
+          confirm=""
+        ></cs-try-this>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to inspect worktrees via MCP" id="via-mcp">
+        <h2>How to do this via MCP</h2>
+        <details>
+          <summary><strong>Agent-side equivalent</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            CodeSense surfaces the result of git operations through its own tools so agents and
+            dashboards don't shell out either. The underlying git is still yours — it ran under the
+            host-agent — but the summary is a plain JSON response.
+          </p>
+          <pre><code>// Agents inspect the fleet without touching git
+codesense.invoke('list_worktrees', {})
+// → [{ story_id, branch, path, machine, last_commit_sha, last_push_at }, ...]
+
+// Open the real repo in a terminal tab if you want to run git by hand
+codesense.invoke('open_terminal_tab', {
+  target: 'DEMO-1',
+  cwd: '$WORKTREE'
+})</code></pre>
+          <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
+            See
+            <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> and
+            <a href="../mcp-explorer.html#tool/open_terminal_tab">open_terminal_tab</a> for the live
+            schemas.
+          </p>
+        </details>
+      </section>
+
+      <p
+        style="
+          margin-top: var(--cs-docs-space-6);
+          padding-top: var(--cs-docs-space-4);
+          border-top: 1px solid var(--cs-border);
+          color: var(--cs-muted-fg);
+          font-size: var(--cs-docs-text-sm);
+        "
+      >
+        Edge cases &amp; reference →
+        <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> ·
+        <a href="../arc-d-terminals-and-machines/index.html">Arc D · the host-agent</a> ·
+        <a href="./troubleshooting.html">troubleshooting →</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc C · Git is yours</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

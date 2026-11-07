@@ -1,0 +1,70 @@
+{
+  "name": "Funny originals",
+  "faces": [
+    {
+      "id": "sysadmin-goblin",
+      "file": "sysadmin-goblin.svg",
+      "label": "Sysadmin goblin"
+    },
+    {
+      "id": "given-up-engineer",
+      "file": "given-up-engineer.svg",
+      "label": "Engineer who has given up"
+    },
+    {
+      "id": "hardhat-raccoon",
+      "file": "hardhat-raccoon.svg",
+      "label": "Raccoon in a hard hat"
+    },
+    {
+      "id": "tanktop-philosopher",
+      "file": "tanktop-philosopher.svg",
+      "label": "Tank-top philosopher"
+    },
+    {
+      "id": "yaml-wizard",
+      "file": "yaml-wizard.svg",
+      "label": "Wizard who speaks YAML"
+    },
+    {
+      "id": "tie-cat",
+      "file": "tie-cat.svg",
+      "label": "Cat in a tie"
+    },
+    {
+      "id": "skeptical-goat",
+      "file": "skeptical-goat.svg",
+      "label": "Skeptical goat"
+    },
+    {
+      "id": "coffee-bot",
+      "file": "coffee-bot.svg",
+      "label": "Robot with a coffee mug"
+    },
+    {
+      "id": "hoodie-hacker",
+      "file": "hoodie-hacker.svg",
+      "label": "Hacker in a hoodie"
+    },
+    {
+      "id": "science-alien",
+      "file": "science-alien.svg",
+      "label": "Alien science officer"
+    },
+    {
+      "id": "mad-scientist",
+      "file": "mad-scientist.svg",
+      "label": "Mad scientist"
+    },
+    {
+      "id": "fine-dog",
+      "file": "fine-dog.svg",
+      "label": "Everything's-fine dog"
+    },
+    {
+      "id": "rubber-duck",
+      "file": "rubber-duck.svg",
+      "label": "Rubber duck"
+    }
+  ]
+}

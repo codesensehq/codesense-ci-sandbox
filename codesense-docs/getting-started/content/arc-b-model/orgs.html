@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="cs:type" content="content" />
+    <meta name="codesense:icon" content="box" />
+    <title>CodeSense — Orgs</title>
+    <link rel="stylesheet" href="../_shared/cs-docs.css" />
+    <script src="../_shared/nav.js" defer></script>
+    <script src="../_shared/try-this.js" defer></script>
+    <style>
+      body[data-page^="arc-b-model/"] .cs-main {
+        max-width: 920px;
+        padding-bottom: var(--cs-docs-space-7);
+      }
+      body[data-page^="arc-b-model/"] pre {
+        background: var(--cs-inset);
+        padding: 12px 14px;
+        border-radius: var(--cs-docs-radius-sm);
+        overflow: auto;
+        font-size: 13px;
+      }
+      body[data-page^="arc-b-model/"] code {
+        font-family: var(--cs-font-mono);
+      }
+      body[data-page^="arc-b-model/"] .fieldlist {
+        border: 1px solid var(--cs-border);
+        border-radius: var(--cs-docs-radius-sm);
+        padding: 4px 0;
+        margin: 10px 0 18px;
+      }
+      body[data-page^="arc-b-model/"] .fieldlist > div {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 10px;
+        padding: 10px 14px;
+        border-top: 1px solid color-mix(in oklab, var(--cs-border) 50%, transparent);
+      }
+      body[data-page^="arc-b-model/"] .fieldlist > div:first-child {
+        border-top: 0;
+      }
+      body[data-page^="arc-b-model/"] .fieldlist .f {
+        font-family: var(--cs-font-mono);
+        font-size: 13px;
+        color: var(--cs-fg);
+      }
+      body[data-page^="arc-b-model/"] .fieldlist .r {
+        color: var(--cs-muted-fg);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      body[data-page^="arc-b-model/"] .fieldlist .req {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: color-mix(in oklab, var(--cs-accent) 20%, transparent);
+        color: var(--cs-accent);
+      }
+    </style>
+  </head>
+  <body class="cs-page cs-docs" data-page="arc-b-model/orgs">
+    <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
+    <main class="cs-main">
+      <!-- =============== Hero =============== -->
+      <section data-hero data-search="Orgs — one org is one context repo" id="hero">
+        <p>
+          <span class="cs-docs-chip" data-arc="B">Arc B · Orgs</span>
+        </p>
+        <h1>One org is one context repo.</h1>
+        <p style="color: var(--cs-muted-fg); max-width: 68ch">
+          Everything a team shares — teams, agents, routines, the list of source repos,
+          the whole shared-truth tree — lives in a single git repo on disk,
+          with a slug, a display name, and an <code>org.yml</code> at its root. One org is
+          one context repo, every time.
+        </p>
+      </section>
+
+      <!-- =============== Slug =============== -->
+      <section data-search="Org slug conventions" id="slug">
+        <h2>Slug conventions</h2>
+        <p>
+          The <strong>slug</strong> is the org's identity. It is written in the context
+          repo's <code>org.yml</code> and keys every team, agent and private file in the
+          org. The folder's name doesn't matter: CodeSense reads the identity from
+          <code>org.yml</code>.
+        </p>
+        <ul>
+          <li><strong>Format:</strong> a bare name such as <code>ledgerline</code>, or
+            <code>&lt;owner&gt;/&lt;repo&gt;</code>.</li>
+          <li><strong>Allowed:</strong> one or two safe path segments, so no spaces,
+            <code>..</code> or empty parts. The bare names <code>builtin</code>,
+            <code>local</code> and <code>_personal</code> are reserved.</li>
+          <li>
+            <strong>Fixed:</strong> renaming the workspace changes its
+            <code>display_name</code>, never the slug. Every agent, routine and private
+            file keyed by the slug would have to move, so choose it once.
+          </li>
+          <li>
+            <strong>One per slug:</strong> connecting a second folder that claims an org
+            you already have fails without replacing the first.
+          </li>
+        </ul>
+      </section>
+
+      <!-- =============== org.yml =============== -->
+      <section data-search="org.yml schema fields" id="org-yml">
+        <h2>What <code>org.yml</code> declares</h2>
+        <p>
+          One <code>org.yml</code> sits at the root of every context repo. It declares the
+          slug, display name and creation time, plus two optional blocks. Unknown keys are
+          ignored, so an older file still loads.
+        </p>
+        <div class="fieldlist" aria-label="org.yml fields">
+          <div>
+            <div class="f">slug<span class="req">required</span></div>
+            <div class="r">The org's identity (see above).</div>
+          </div>
+          <div>
+            <div class="f">display_name<span class="req">required</span></div>
+            <div class="r">Human-readable label shown in the workspace switcher.</div>
+          </div>
+          <div>
+            <div class="f">created_at<span class="req">required</span></div>
+            <div class="r">ISO-8601. Set when the org is created.</div>
+          </div>
+          <div>
+            <div class="f">config_flags.workspace_root_dir</div>
+            <div class="r">
+              Where clones that CodeSense manages for this org go. Defaults to
+              <code>~/.codesense/users/&lt;id&gt;/sources/</code>.
+            </div>
+          </div>
+          <div>
+            <div class="f">tag_schema</div>
+            <div class="r">Team-defined tag registry. Leave it out for the unopinionated default.</div>
+          </div>
+        </div>
+        <p>
+          Teams live in <code>teams.yml</code> and members in <code>people.yml</code>,
+          beside <code>org.yml</code>.
+        </p>
+        <p>
+          Live field list and validation shape — including allowed values and the Rust
+          source references — in the
+          <a href="../schema-browser.html#schema/org-yml">schema browser</a>.
+        </p>
+      </section>
+
+      <!-- =============== On disk =============== -->
+      <section data-search="Where an org lives on disk" id="on-disk">
+        <h2>What an org looks like on disk</h2>
+        <p>
+          An org is a plain git working tree: its context repo, in whatever folder you
+          cloned or created it. CodeSense doesn't clone it for you; it records where the
+          folder is in <code>~/.codesense/users/&lt;you&gt;/context-attachments.yml</code>.
+          It looks like this —
+          the <code>default</code> team is the usual starter team, and each team's files
+          live in a folder named after it.
+        </p>
+        <pre><code>~/code/team-context/       ← wherever you cloned or created it
+├── org.yml              ← slug, display_name, created_at, …
+├── teams.yml            ← one entry per team; parent chain declared here
+├── default/
+│   ├── content/         ← team content (shared truth)
+│   ├── config/agents/   ← the team's agents, each with its context list
+│   └── repos/
+│       └── github.com/acme/codesense/content/
+│                        ← repo content: only for launches in that repo
+├── platform/            ← a parent team, same shape
+└── .git/</code></pre>
+        <p>
+          Your <strong>private</strong> files for this org live outside the repo entirely,
+          in a folder under <code>~/.codesense/</code> on this Mac. They are never pushed. None of these folders is copied anywhere on its own: an
+          agent's launch copies what its <code>context</code> asks for, and the
+          <a href="./content-layers.html">content layers</a> page has the order. The <a href="./private-and-all-orgs.html">Private &amp;
+          All-orgs</a> page spells out which kinds of items belong there.
+        </p>
+      </section>
+
+      <!-- =============== Try this now =============== -->
+      <section data-search="Try this now — list orgs" id="try-this-now">
+        <h2>Try this now</h2>
+        <p style="color: var(--cs-muted-fg); max-width: 62ch">
+          Open the workspace switcher. On a fresh install it holds just this read-only
+          CodeSense docs org. <strong>Create a new context repo…</strong> makes one, and
+          <strong>Connect a context repo…</strong> adds a folder you already have; either
+          joins the list.
+        </p>
+      </section>
+
+      <!-- =============== How via MCP =============== -->
+      <section data-search="How to inspect org.yml via MCP" id="via-mcp">
+        <details>
+          <summary><strong>How to do this via MCP</strong></summary>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Agents walk the same shape:
+          </p>
+          <p><code>list_orgs_teams</code> (no arguments) returns one
+            <code>{ org, team, synced }</code> entry for each team synced on this Mac. Use
+            that <code>org</code> and <code>team</code> as the optional arguments of any
+            team-scoped tool. <code>list_context_attachments</code> lists the connected
+            context repos and where each one is.</p>
+          <p style="color: var(--cs-muted-fg); margin-top: 8px">
+            Live schema in
+            <a href="../mcp-explorer.html#tool/list_orgs_teams">mcp-explorer</a>.
+          </p>
+        </details>
+      </section>
+
+      <p style="margin-top: 24px">
+        <a href="./index.html">← Arc B index</a> ·
+        <a href="./teams.html">Teams →</a> ·
+        Edge cases &amp; reference →
+        <a href="../schema-browser.html#schema/org-yml">org.yml schema</a>
+      </p>
+    </main>
+    <footer class="cs-footer">
+      <div class="cs-footer__inner">
+        <span>CodeSense docs · Arc B · Orgs</span>
+        <span class="cs-footer__spacer"></span>
+        <span class="cs-footer__legend">
+          <span class="cs-footer__legend-item">
+            <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">K</span> search
+          </span>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
