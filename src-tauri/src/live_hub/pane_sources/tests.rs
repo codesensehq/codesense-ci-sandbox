@@ -1166,6 +1166,7 @@ fn registered_pane_recovery(shape: &str) {
             .unwrap();
         (source.revision, source.document_revision)
     };
+    let layer_scans = || hub.model.lock().unwrap().pane_sources.layer_scans;
     let before_recovery = current();
     let route = || {
         if shape.starts_with("activation") {
@@ -1198,8 +1199,22 @@ fn registered_pane_recovery(shape: &str) {
             if shape.ends_with("rescan") {
                 event = event.set_flag(Flag::Rescan);
             }
+            let scans = layer_scans();
             crate::content_engine::watcher::route_test_event(&state.dispatcher, event);
-            std::thread::sleep(Duration::from_millis(250));
+            if matches!(shape, "root" | "directory") {
+                // A team-dir event reaches the source on the pane coalescer's own thread after
+                // its quiet period. Wait for that layer scan, or it can land after a later snapshot.
+                let deadline = std::time::Instant::now() + Duration::from_secs(10);
+                while layer_scans() == scans {
+                    assert!(
+                        std::time::Instant::now() < deadline,
+                        "{shape}: the pane layer scan never ran"
+                    );
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            } else {
+                std::thread::sleep(Duration::from_millis(250));
+            }
         }
     };
     route();

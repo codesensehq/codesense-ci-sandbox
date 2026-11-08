@@ -1073,7 +1073,8 @@ pub use async_helpers::await_blocking;
 // SV-PBF-287: +1 story_totals, the batch story totals read.
 // SV-ENG-120: +1 get_log_debug_enabled, the log-level read behind the bridge-timing logs.
 // SV-PBF-230: +1 `story_default_start_point` (the base a new story branch takes). → 501.
-pub const EXPECTED_COMMAND_COUNT: usize = 501;
+// +1 `agent_inbox::unarchive_inbox_messages` (Inbox Undo for Archive). → 502.
+pub const EXPECTED_COMMAND_COUNT: usize = 502;
 
 #[cfg(test)]
 mod tests {
