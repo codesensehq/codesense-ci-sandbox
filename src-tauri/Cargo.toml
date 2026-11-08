@@ -89,7 +89,7 @@ tauri-plugin-notification = "~2.4.0"
 tauri-plugin-deep-link = "2"
 reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"] }
 reqwest_mcp = { package = "reqwest", version = "0.13.2", default-features = false, features = ["json", "stream", "rustls"] }
-tauri-plugin-log = "~2.8.0"
+tauri-plugin-log = "~2.10.1"
 log = "0.4"
 # OS keychain for credentials at rest (replaces the 0600 auth.json).
 # macOS-native store (the app's platform); the crate still compiles elsewhere
