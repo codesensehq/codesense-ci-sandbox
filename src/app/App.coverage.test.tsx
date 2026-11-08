@@ -122,6 +122,8 @@ vi.mock("@/tauri/commands", () => ({
   avatarPacksListForTeam: vi.fn().mockResolvedValue({ packs: [], warnings: [] }),
   // Custom right panes: the app-wide pane registration lists them.
   listPanes: vi.fn().mockResolvedValue({ contentRoot: "", chain: [], panes: [] }),
+  // The dock lists the built-in agent panes for the active team.
+  listBuiltinPanes: vi.fn().mockResolvedValue({ contentRoot: "", chain: [], panes: [] }),
   // Agent tabs follow their agents' names: the app reads the agents on mount.
   agentsList: vi.fn().mockResolvedValue([]),
   listMachines: vi.fn().mockResolvedValue([]),
