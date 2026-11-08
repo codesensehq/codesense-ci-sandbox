@@ -5,6 +5,8 @@ This repository is a release snapshot, synced from private development, so a
 pull request can't be merged here. Please open an issue or start a discussion
 instead. CONTRIBUTING.md explains the policy:
 https://github.com/codesensehq/codesense/blob/main/CONTRIBUTING.md
+
+This template is a dry run of the pull request checks.
 -->
 
 **We don't accept pull requests yet.** See
