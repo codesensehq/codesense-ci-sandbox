@@ -12,7 +12,7 @@ const source = readFileSync(
 );
 const appJs = /const APP_JS: &str = r#"([\s\S]*?)"#;/.exec(source)?.[1] ?? "";
 
-/** render() and its helpers as they were before the hosted list answers (origin/main 9051231d7). */
+/** render() and its helpers as they were before the hosted list answers. */
 const BASE_RENDER = `
   function el(tag, text, cls) {
     var n = document.createElement(tag);

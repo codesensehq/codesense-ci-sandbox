@@ -14,10 +14,10 @@
     "virtualList"
   ],
   "counts": {
-    "bridgeMethods": 105,
+    "bridgeMethods": 106,
     "actionVerbs": 54,
-    "readVerbs": 51,
-    "surfaceMembers": 51
+    "readVerbs": 52,
+    "surfaceMembers": 52
   },
   "sdk": [
     {
@@ -401,6 +401,14 @@
       "owner": "Surface",
       "signature": "onWorktreesChanged(cb: () => void): Unsubscribe;",
       "description": "",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
+      "feature": null
+    },
+    {
+      "name": "onPasteTargetChanged",
+      "owner": "Surface",
+      "signature": "onPasteTargetChanged(cb: () => void): Unsubscribe;",
+      "description": "Runs `cb` when the answer to canPasteToTerminal() flips between true and false.\nRe-read then.",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
       "feature": null
     },
@@ -967,6 +975,14 @@
       "feature": null
     },
     {
+      "name": "onPasteTargetChanged",
+      "owner": "Surface",
+      "signature": "onPasteTargetChanged(cb: () => void): Unsubscribe;",
+      "description": "Runs `cb` when the answer to canPasteToTerminal() flips between true and false.\nRe-read then.",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
+      "feature": null
+    },
+    {
       "name": "sprints",
       "owner": "Surface",
       "signature": "sprints(): Promise<unknown>;",
@@ -1082,6 +1098,29 @@
         "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
       },
       "action": true,
+      "confirmable": false,
+      "feature": null
+    },
+    {
+      "name": "canPasteToTerminal",
+      "owner": "VerbMethods",
+      "signature": "canPasteToTerminal(args?: Record<string, unknown>): Promise<boolean>;",
+      "description": "read · sessions:read",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
+      "class": "read",
+      "grant": "sessions:read",
+      "mcpTwin": null,
+      "presentationOnlyReason": "Pages ask it to enable a paste control; agents address sessions by handle with send_to_session.",
+      "argsSchema": {
+        "additionalProperties": true,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "resultSchema": {
+        "type": "boolean"
+      },
+      "action": false,
       "confirmable": false,
       "feature": null
     },
@@ -6035,6 +6074,27 @@
       "module": "inbox"
     },
     {
+      "name": "canPasteToTerminal",
+      "class": "read",
+      "argsSchema": {
+        "additionalProperties": true,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "resultSchema": {
+        "type": "boolean"
+      },
+      "grant": "sessions:read",
+      "inboxTarget": false,
+      "confirmable": false,
+      "mcpTwin": null,
+      "presentationOnlyReason": "Pages ask it to enable a paste control; agents address sessions by handle with send_to_session.",
+      "audited": false,
+      "action": false,
+      "module": "agent"
+    },
+    {
       "name": "closeTerminalTab",
       "class": "manage",
       "argsSchema": {
@@ -10594,6 +10654,22 @@
       "mcpTwin": null
     },
     {
+      "verb": "canPasteToTerminal",
+      "tier": "read",
+      "description": "read · sessions:read",
+      "args": {
+        "additionalProperties": true,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "result": {
+        "type": "boolean"
+      },
+      "grant": "sessions:read",
+      "mcpTwin": null
+    },
+    {
       "verb": "commands.list",
       "tier": "read",
       "description": "read · commands:run · MCP twin command_list",
@@ -13636,12 +13712,12 @@
     }
   ],
   "sources": {
-    "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts": "a48d6714751b6ebde0d2dca532e2ed7b2d8cfe7ea4309e8d2ce43442fcdf220f",
-    "src-tauri/src/verbs/registry.generated.json": "5dbd84256de4d213a93eb8afd3e955063a24d4b13d33316b27b9b60491f6f3a9",
-    "src-tauri/src/verbs/registry.rs": "3e6945361b475ab01ebda7df4e029dacc86a4a51c0c56a2141249a5b4ab81317",
+    "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts": "1998332929665052c8a9a123b7aff9119685bbeecb6e0302ce1a5a472ae7dbee",
+    "src-tauri/src/verbs/registry.generated.json": "17b7f8977808a1373e46a33c3610f87f926a67cd2930607e7bda6af8b0fb0551",
+    "src-tauri/src/verbs/registry.rs": "22fff995ac070216d16bbba3b2a244039dacd2fc4c19bd16acc9a3856fabc481",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
     "src-tauri/src/records/schema.rs": "24edc3966808bf25b3744c733aeb3ba731aba84bb5bf802fb8b9e491ab0d06c7",
-    "src-tauri/src/http/routes/viewer.rs": "8612bfbcadfea4c08b99d5ac63995077696a3960486412f54cbb997ffb464df1",
+    "src-tauri/src/http/routes/viewer.rs": "4ad626a372fd2197923eeaa684a0723aceb3180a48b06af49cca0f58bb0a75f0",
     "src-tauri/src/context_query/model.rs": "4e81c3eaa7ed4ea0dc93fe5017c7defe77655b124f0d5bc447557b646f42d345"
   }
 }

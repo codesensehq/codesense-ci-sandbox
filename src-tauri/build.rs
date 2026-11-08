@@ -128,7 +128,7 @@ fn configure_site_contract_tests() {
         println!("cargo:rerun-if-changed=../site/package.json");
         println!("cargo:rustc-cfg=cs_site");
     }
-    // The committed Claude settings drift guard needs the file, which the export also leaves out.
+    // The committed Claude settings drift guard runs only where that file exists.
     println!("cargo::rustc-check-cfg=cfg(cs_claude_settings)");
     if std::path::Path::new("../.claude/settings.json").is_file() {
         println!("cargo:rerun-if-changed=../.claude/settings.json");

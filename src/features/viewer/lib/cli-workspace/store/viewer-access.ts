@@ -24,7 +24,10 @@ export const getViewerState = (): ReturnType<typeof useViewerStore.getState> =>
 /** Listen for every viewer-store change, imperatively (outside React); returns
  *  the unsubscribe. */
 export const subscribeViewerState = (
-  listener: (state: ReturnType<typeof useViewerStore.getState>) => void,
+  listener: (
+    state: ReturnType<typeof useViewerStore.getState>,
+    prev: ReturnType<typeof useViewerStore.getState>,
+  ) => void,
 ): (() => void) => useViewerStore.subscribe(listener);
 
 // Pure store helpers the terminal seam composes with. Re-exported here so a seam

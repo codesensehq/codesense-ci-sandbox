@@ -32,8 +32,8 @@ use super::catalog::QueryDef;
 use super::manifest::{self, LiveFields, LiveQueries, MANIFEST_FILE, MAX_FILES, MAX_TITLE_CHARS};
 use super::payload::{self, FolderReader, Mode, MAX_FILE_BYTES, MAX_VERSION_BYTES};
 
-/// The entry page. The hosted viewer opens `index.html` first (the manifest's
-/// `publish.entry` is decided, DP-D34, but not built).
+/// The entry page. The hosted viewer opens `index.html` first; the manifest has
+/// no entry field.
 pub const ENTRY: &str = "index.html";
 /// The shared script every starter page loads.
 pub const SCRIPT: &str = "app.js";

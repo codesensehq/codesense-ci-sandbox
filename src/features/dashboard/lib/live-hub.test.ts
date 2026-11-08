@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { LiveHub, paneViewKey, type HubDelta, type HubRow, type HubSnapshot } from "./live-hub";
 import runReviewFixture from "../../../../tests/fixtures/run-review.json";
@@ -685,6 +687,46 @@ it("replays all affected context scopes after hidden changes in different orgs",
   expect(
     post.mock.calls.filter(([message]) => message.type === "codesense:context-changed"),
   ).toHaveLength(1);
+});
+it("never imports send-to-terminal statically: that closes a store import cycle and breaks boot", () => {
+  const source = readFileSync(resolve("src/features/dashboard/lib/live-hub.ts"), "utf8");
+  expect(source).not.toMatch(/^import[^;]*["']@\/shared\/lib\/send-to-terminal["']/m);
+  expect(source).toContain('import("@/shared/lib/send-to-terminal")');
+});
+it("nudges every frame when the paste target changes and holds it for a hidden frame", async () => {
+  hub.dispose();
+  let changed!: () => void;
+  const off = vi.fn();
+  const local = new LiveHub({
+    read,
+    listen: vi.fn(async () => () => {}),
+    readUi: async () => ({}),
+    writeUi: async (_k, p) => p,
+    watchPasteTarget: (cb) => {
+      changed = cb;
+      return off;
+    },
+  });
+  const shown = vi.fn(),
+    hidden = vi.fn();
+  local.attach("shown", "all", shown, true);
+  const frame = local.attach("hidden", "team:a/b", hidden, false);
+  changed();
+  changed();
+  expect(shown.mock.calls.map(([m]) => m.type)).toEqual([
+    "codesense:paste-target-changed",
+    "codesense:paste-target-changed",
+  ]);
+  expect(hidden.mock.calls.map(([m]) => m.type)).not.toContain("codesense:paste-target-changed");
+  // No hub data changed, so the hidden page is not told to resync.
+  expect(hidden.mock.calls.map(([m]) => m.type)).not.toContain("codesense:stale");
+  frame.visible(true);
+  expect(hidden.mock.calls.filter(([m]) => m.type === "codesense:paste-target-changed")).toEqual([
+    [{ type: "codesense:paste-target-changed" }],
+  ]);
+  local.dispose();
+  await Promise.resolve();
+  expect(off).toHaveBeenCalled();
 });
 it("uses firstPaint without duplicate rows", async () => {
   hub.seed(snapshot(4));

@@ -541,7 +541,7 @@ To customize Inbox, Notes or the agent list, use the [built-in pane recipe](../a
   file in `<team>/panes/<id>.html` shown in the right pane.
 - Its scripts get `window.codesense`, a bridge to live app data and actions. Examples:
   `codesense.queryContext(q)` and `subscribeContext(q, cb)` (context files by metadata),
-  `codesense.sessions()` (live sessions), `codesense.agents()`, `codesense.routineResult({id})`,
+  `codesense.sessions()` (live sessions), `codesense.agents()`, `codesense.routineResult({key})` (`key` is a `routines()` row's `id`),
   and `codesense.act(verb, args)` (`openWorkspace`, `runPrompt`, `runSkill`, `sendToSession`,
   `openTab`, ...). Every call returns a Promise.
 - Style with the app's theme variables (`--cs-bg`, `--cs-fg`, `--cs-accent`, ...), in a pane

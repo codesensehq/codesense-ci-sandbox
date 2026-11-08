@@ -10,7 +10,7 @@
 //! Design (per `_bmad-output/21-workspace-chat/stories/SW-WC-1-workspace-archive.md`):
 //!
 //!   * One nullable timestamp field, `archived_at_ms: Option<i64>`, keyed by
-//!     the viewer workspace id string (`root:<path>` / `story:<id>` /
+//!     the viewer workspace id string (`root:<owner>/<repo>` / `story:<id>` /
 //!     `generic:<path>` — the same form every other Tauri surface uses, see
 //!     `OpenTerminalTabParams.workspace_id` and `pty_layout::workspace_key`).
 //!   * Lives at `~/.codesense/workspace-registry.json`, atomic write via the
@@ -57,7 +57,7 @@ pub(crate) const SCHEMA_VERSION: u32 = 1;
 pub(crate) const REGISTRY_FILENAME: &str = "workspace-registry.json";
 
 /// Hard cap on a workspace id's length. The viewer id form is already short
-/// (`root:<path>` / `story:<id>` / `generic:<path>`); 256 bytes is the same
+/// (`root:<owner>/<repo>` / `story:<id>` / `generic:<path>`); 256 bytes is the same
 /// cap `WorkspaceKey::new` enforces on the pty-layout key and matches the
 /// workspace-chat design doc's §1 note.
 const WORKSPACE_ID_MAX_LEN: usize = 256;

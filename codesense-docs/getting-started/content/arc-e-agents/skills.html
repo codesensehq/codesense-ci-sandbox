@@ -432,8 +432,8 @@ default_prompt: /triage
           composition is before you create it.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "agent_preview", "args": {"name": "Example builder", "runtime": "claude", "startup": ["CLAUDE.md", ".claude/skills/bmad-build/", ".claude/skills/bmad-review/"], "defaultPrompt": "/bmad-build"}}'
+          verb="agent_preview"
+          args='{"name": "Example builder", "runtime": "claude", "startup": ["CLAUDE.md", ".claude/skills/bmad-build/", ".claude/skills/bmad-review/"], "defaultPrompt": "/bmad-build"}'
           label="Preview a builder with three skills"
           dry-run="true"
         ></cs-try-this>

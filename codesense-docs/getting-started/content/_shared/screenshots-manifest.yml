@@ -1,6 +1,6 @@
 # Screenshot manifest consumed by `scripts/capture-docs-screenshots.mjs`.
 #
-# Each entry becomes a dark + light capture written to
+# Each entry describes a dark + light capture at
 # `codesense-docs/getting-started/content/screenshots/<arc>/<slug>-{dark,light}.png`,
 # with a sibling `<slug>.meta.json` carrying the viewport + commit metadata.
 #
@@ -12,9 +12,8 @@
 #   actions: optional list of interactions to perform before the capture.
 #   annot:   optional sidecar annotation JSON path (relative to the PNG dir).
 #
-# The capture pipe is Playwright-driven. The actual Playwright MCP
-# wiring lands in a follow-up once MCP approval is complete; this manifest's
-# schema is stable so the pipe can be wired up later without rewriting entries.
+# The script validates this manifest and its annotation sidecars. It has no
+# capture runner, so it doesn't take screenshots.
 entries:
   - slug: home-hero
     arc: dashboard

@@ -146,8 +146,8 @@ revision: 7</code></pre>
 
       <section id="hermes-preview" data-search="Hermes preview installation starters">
         <h2>Hermes (preview)</h2>
-        <p>Hermes support is a preview: it is not yet available for saved agents or
-          launches, and the setup below stays inactive until it is.</p>
+        <p>Hermes support is a preview: saved agents and launches can't use it, and the
+          setup below is inactive.</p>
         <p>The prepared integration uses <code>runtime: hermes</code>, with
           <code>builtin/hermes</code> and <code>builtin/hermes-unattended</code> templates,
           selected context and a private per-session home. The unattended template
@@ -797,8 +797,8 @@ permissions:
           <code>errors</code>. Fix the named field and try again.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "agent_preview", "args": {"name": "Example triage", "runtime": "claude", "launch": "headless", "startup": ["CLAUDE.md", ".claude/skills/triage/"], "mcpServers": ["slack"], "permissions": {"claude": {"allow": ["Read", "Grep", "Glob", "mcp__slack__*"], "deny": ["Edit", "Write", "Bash"]}}, "defaultPrompt": "/triage"}}'
+          verb="agent_preview"
+          args='{"name": "Example triage", "runtime": "claude", "launch": "headless", "startup": ["CLAUDE.md", ".claude/skills/triage/"], "mcpServers": ["slack"], "permissions": {"claude": {"allow": ["Read", "Grep", "Glob", "mcp__slack__*"], "deny": ["Edit", "Write", "Bash"]}}, "defaultPrompt": "/triage"}'
           label="Preview a draft agent.yaml"
           dry-run="true"
         ></cs-try-this>

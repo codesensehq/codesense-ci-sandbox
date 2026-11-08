@@ -204,8 +204,8 @@ revision: 2</code></pre>
           the call to make.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "agent_preview", "args": {"name": "Docs helper", "id": "docs-helper", "description": "Keeps the CodeSense docs up to date and answers questions about CodeSense.", "runtime": "claude", "launch": "headless", "permissions": {"claude": {"allow": ["Read", "Skill(update-codesense-docs)", "mcp__codesense__codesense_overview", "mcp__codesense__update_codesense_docs"]}}}}'
+          verb="agent_preview"
+          args='{"name": "Docs helper", "id": "docs-helper", "description": "Keeps the CodeSense docs up to date and answers questions about CodeSense.", "runtime": "claude", "launch": "headless", "permissions": {"claude": {"allow": ["Read", "Skill(update-codesense-docs)", "mcp__codesense__codesense_overview", "mcp__codesense__update_codesense_docs"]}}}'
           label="Preview docs-helper"
           dry-run="true"
         ></cs-try-this>

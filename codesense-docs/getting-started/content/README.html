@@ -512,9 +512,8 @@
         <span class="cs-docs-home__ribbon-dot" aria-hidden="true"></span>
         <span class="cs-docs-home__ribbon-text">
           CodeSense docs
-          <span class="cs-docs-home__ribbon-meta">
-            v<span data-cs-version>&mdash;</span> · updated
-            <span data-cs-version-when>recently</span>
+          <span class="cs-docs-home__ribbon-meta" data-cs-updated hidden>
+            · updated <span data-cs-updated-when></span>
           </span>
         </span>
         <button
@@ -1577,44 +1576,65 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
       (function () {
         var cs = window.codesense;
 
-        // Version read — the update routine's last result carries the shipped
-        // version + relative "when". The field names match the docs generator;
-        // if the bridge isn't live (file:// preview) we just leave the dash.
-        if (cs && typeof cs.routineResult === "function") {
-          try {
-            var p = cs.routineResult({ id: "update-codesense-docs" });
-            if (p && typeof p.then === "function") {
-              p.then(function (res) {
-                if (!res) return;
-                var data = (res && res.data) || res;
-                var v = data && (data.version || data.commit || data.sha);
-                var when = data && (data.updatedRelative || data.updated_at || data.when);
-                if (v) {
-                  var ve = document.querySelector("[data-cs-version]");
-                  if (ve) ve.textContent = String(v);
-                }
-                if (when) {
-                  var we = document.querySelector("[data-cs-version-when]");
-                  if (we) we.textContent = String(when);
-                }
-              }).catch(function () {
-                /* keep placeholder */
-              });
+        // The update routine, found in routines() by its id so its full
+        // <org>/<team>/<id> key is never hard-coded. Its last successful run
+        // says when the docs were updated; without one (or without the bridge,
+        // as in a file:// preview) that line is hidden. Without the routine,
+        // the Update button is disabled and says why.
+        var updateBtn = document.querySelector('[data-action="update-docs"]');
+        var docsRoutine = Promise.resolve(null);
+        function readDocsRoutine() {
+          if (!cs || typeof cs.routines !== "function") return;
+          docsRoutine = Promise.resolve(cs.routines())
+            .then(function (rows) {
+              return (
+                (rows || []).find(function (r) {
+                  return typeof r.id === "string" && /\/update-codesense-docs$/.test(r.id);
+                }) || null
+              );
+            })
+            .catch(function () {
+              return null;
+            });
+          docsRoutine.then(function (routine) {
+            var run = routine && routine.last_run;
+            var at = run && run.status === "succeeded" ? Date.parse(run.at) : NaN;
+            var meta = document.querySelector("[data-cs-updated]");
+            var when = document.querySelector("[data-cs-updated-when]");
+            if (meta && when) {
+              if (!isNaN(at)) when.textContent = relativeTime(at);
+              meta.hidden = isNaN(at);
             }
-          } catch (_) {
-            /* ignore */
-          }
+            if (updateBtn) {
+              updateBtn.disabled = !routine;
+              updateBtn.title = routine
+                ? ""
+                : "This team has no update-codesense-docs routine to run.";
+            }
+          });
         }
+        var rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+        function relativeTime(at) {
+          var minutes = Math.round((at - Date.now()) / 60000);
+          if (Math.abs(minutes) < 60) return rtf.format(minutes, "minute");
+          if (Math.abs(minutes) < 60 * 24) return rtf.format(Math.round(minutes / 60), "hour");
+          return rtf.format(Math.round(minutes / (60 * 24)), "day");
+        }
+        readDocsRoutine();
+        if (cs && typeof cs.onRoutinesChanged === "function") cs.onRoutinesChanged(readDocsRoutine);
 
         // Update docs button.
-        var updateBtn = document.querySelector('[data-action="update-docs"]');
         if (updateBtn) {
           updateBtn.addEventListener("click", function () {
             if (!cs || typeof cs.routineRefresh !== "function") return;
             var label = updateBtn.querySelector(".cs-docs-home__ribbon-btn-label");
             updateBtn.setAttribute("aria-busy", "true");
             if (label) label.textContent = "Updating…";
-            Promise.resolve(cs.routineRefresh({ key: "update-codesense-docs" }))
+            docsRoutine
+              .then(function (routine) {
+                if (!routine) throw new Error("no update-codesense-docs routine");
+                return cs.routineRefresh({ key: routine.id });
+              })
               .catch(function () {
                 /* let the banner / notice system handle it */
               })

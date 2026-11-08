@@ -1105,7 +1105,7 @@
     "src-tauri/src/live_hub/agent_list/rows.rs": "86be0bbd951d279e47bd938be31f1f5a4f8c70e24c0fc9e2db4fd9d07fa6dce2",
     "src-tauri/src/live_hub/agent_list/views.rs": "0fbc27242d28517476f53c8395fab13ba460850539003dd7d5bea97b685c5ebf",
     "src-tauri/src/records/projection.rs": "ff7eb296d7dc0ec988570db058eca494c34009e9ffca8ef7de1c65d2d064d913",
-    "src/features/dashboard/lib/live-hub.ts": "2381dfbbcc96a4d538919d95be76f3d33e7627a6b52731ae9553e195ea8d5446",
+    "src/features/dashboard/lib/live-hub.ts": "f17d0e2a98eb0b8c9fbba4e93bff9d381b767d22485506ccffb99e0287b21a7a",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7"
   },
   "untypedTopics": [

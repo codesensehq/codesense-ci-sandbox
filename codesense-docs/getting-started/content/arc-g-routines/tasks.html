@@ -357,8 +357,8 @@ task: |
           warnings such as a <code>/command</code> the agent doesn't start with.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "routine_create", "args": {"name": "Morning triage", "agent": "manager", "mode": "wake", "when": "weekdays 09:00", "task": "Triage new mail.", "dryRun": true}}'
+          verb="routine_create"
+          args='{"name": "Morning triage", "agent": "manager", "mode": "wake", "when": "weekdays 09:00", "task": "Triage new mail.", "dryRun": true}'
           label="Dry-run a routine"
           dry-run="true"
         ></cs-try-this>
@@ -376,8 +376,8 @@ routine_run_now { id: 'manager-wake' }
 // Inside a woken session: finish this run, keep the session
 routine_done { sessionId, runId, outcome: 'success', summary: '…' }
 
-// Tail the run (routines-console does this live)
-codesense.subscribeContext({ topic: 'routines.runs', id: 'manager-wake' }, (ev) =&gt; { … })</code></pre>
+// Tail the run (routines-console does this live); key is its routines() row id
+codesense.onRoutinesChanged(() =&gt; codesense.routineRuns({ key }).then(render))</code></pre>
         </details>
       </section>
 

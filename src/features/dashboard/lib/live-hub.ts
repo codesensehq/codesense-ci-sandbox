@@ -80,6 +80,8 @@ type Dependencies = {
   unsubscribe?: (id: string, paused?: boolean) => Promise<void>;
   listen: (event: string, callback: (event: { payload: unknown }) => void) => Promise<UnlistenFn>;
   watchUi?: (changed: (topic: string, viewKey: string) => void) => Promise<UnlistenFn>;
+  /** Calls `changed` whenever the answer to canPasteToTerminal() changes. */
+  watchPasteTarget?: (changed: () => void) => UnlistenFn;
   readUi: (key: string) => Promise<Record<string, unknown>>;
   writeUi: (key: string, patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
 };
@@ -321,50 +323,59 @@ export class LiveHub {
       ["mcp:agent-message", "agent-activity-changed"],
       ["mcp:agent-progress", "agent-activity-changed"],
     ])
-      this.listen(event, ({ payload }) => {
-        if (type === "inbox-changed") this.joinedSessionsRead = undefined;
-        for (const frame of this.frames.values()) {
-          const message = {
-            type: `codesense:${type}`,
-            ...(type === "context-changed"
-              ? { orgs: [], allOrgs: true, truncated: true, ...(payload as object) }
-              : {}),
-          };
-          const changes = type === "inbox-changed" ? inboxChangesOf(payload) : [];
-          if (!frame.visible) {
-            // An invalidation can change data outside the delta stream, so consumers must reread.
-            const held = frame.invalidations.get(type);
-            frame.invalidations.set(
-              type,
-              type === "context-changed" && held
-                ? { ...message, allOrgs: true }
-                : type === "inbox-changed"
-                  ? {
-                      ...message,
-                      ...(changes.length || held?.changes
-                        ? {
-                            changes: unionChanges(
-                              (held?.changes as InboxChange[] | undefined) ?? [],
-                              changes,
-                            ),
-                          }
-                        : {}),
-                    }
-                  : message,
-            );
-            if (frame.hiddenLive) this.schedule();
-            else this.stale(frame);
-            continue;
-          }
-          frame.post(
-            type === "inbox-changed"
-              ? deliverable(frame, changes.length ? { ...message, changes } : message)
-              : message,
-          );
-        }
-      });
+      this.listen(event, ({ payload }) => this.invalidate(type, payload));
+    if (this.deps.watchPasteTarget) {
+      const off = this.deps.watchPasteTarget(() => this.invalidate("paste-target-changed"));
+      this.unlisteners.push(Promise.resolve(off));
+    }
     this.ready = Promise.all(this.unlisteners).then(() => {});
     return this.ready;
+  }
+  /** Posts a payloadless (or context/inbox) change nudge to every frame; a hidden frame
+   *  holds it until shown, since consumers must reread. */
+  private invalidate(type: string, payload?: unknown) {
+    if (type === "inbox-changed") this.joinedSessionsRead = undefined;
+    const message = {
+      type: `codesense:${type}`,
+      ...(type === "context-changed"
+        ? { orgs: [], allOrgs: true, truncated: true, ...(payload as object) }
+        : {}),
+    };
+    const changes = type === "inbox-changed" ? inboxChangesOf(payload) : [];
+    for (const frame of this.frames.values()) {
+      if (!frame.visible) {
+        // An invalidation can change data outside the delta stream, so consumers must reread.
+        const held = frame.invalidations.get(type);
+        frame.invalidations.set(
+          type,
+          type === "context-changed" && held
+            ? { ...message, allOrgs: true }
+            : type === "inbox-changed"
+              ? {
+                  ...message,
+                  ...(changes.length || held?.changes
+                    ? {
+                        changes: unionChanges(
+                          (held?.changes as InboxChange[] | undefined) ?? [],
+                          changes,
+                        ),
+                      }
+                    : {}),
+                }
+              : message,
+        );
+        // A paste-target flip changes no hub data, so it never makes a hidden page resync.
+        if (type === "paste-target-changed") continue;
+        if (frame.hiddenLive) this.schedule();
+        else this.stale(frame);
+        continue;
+      }
+      frame.post(
+        type === "inbox-changed"
+          ? deliverable(frame, changes.length ? { ...message, changes } : message)
+          : message,
+      );
+    }
   }
   seed(snapshot: HubSnapshot) {
     const key = keyOf(snapshot.topic, snapshot.viewKey);
@@ -1124,5 +1135,20 @@ export const liveHub = new LiveHub({
   readUi: readSharedUiState,
   writeUi: writeSharedUiState,
   watchUi: watchSharedUiState,
+  // Loaded when the hub starts: a static import of send-to-terminal (which reaches the viewer
+  // and org stores) puts live-hub in their import cycle and breaks the app's boot order.
+  watchPasteTarget: (changed) => {
+    let off: UnlistenFn | undefined,
+      stopped = false;
+    void import("@/shared/lib/send-to-terminal")
+      .then(({ subscribePasteTarget }) => {
+        if (!stopped) off = subscribePasteTarget(changed);
+      })
+      .catch((error) => logger.info("live-hub", `Cannot watch the paste target: ${String(error)}`));
+    return () => {
+      stopped = true;
+      off?.();
+    };
+  },
 });
 export type HubFrame = ReturnType<LiveHub["attach"]>;

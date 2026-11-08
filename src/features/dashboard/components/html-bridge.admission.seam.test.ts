@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 import { beforeEach, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
+import { createElement } from "react";
+import { VerbConfirmationContext } from "./verb-confirmation-context";
+import { pasteToActiveTerminal } from "@/shared/lib/send-to-terminal";
 import { frameFixture } from "../../../../tests/support/fixtures/frame";
 import { useActionGate } from "./use-action-gate";
 import { runBridgeCommand } from "./html-bridge";
@@ -12,7 +15,7 @@ import {
   getHumanStatus,
   sendPromptToAgent,
 } from "@/tauri/commands";
-import { verbDispatch } from "../lib/verb-dispatch";
+import { verbAnswer, verbDispatch } from "../lib/verb-dispatch";
 
 vi.mock("../lib/verb-dispatch", async () =>
   (await import("@/test/verb-dispatch-mock")).openVerbDispatchMock(),
@@ -26,6 +29,10 @@ vi.mock("@/tauri/commands", async (original) => ({
   listAgentUpdates: vi.fn(async () => []),
   getHumanStatus: vi.fn(async () => ({})),
   sendPromptToAgent: vi.fn(),
+}));
+vi.mock("@/shared/lib/send-to-terminal", async (original) => ({
+  ...(await original<typeof import("@/shared/lib/send-to-terminal")>()),
+  pasteToActiveTerminal: vi.fn(async () => ({ status: "typed", message: null })),
 }));
 const source = { org: "acme", team: "parent" };
 const target = { org: "acme", team: "child" };
@@ -180,3 +187,35 @@ it("a granted page sendPrompt reports the shared native spend refusal", async ()
   expect(sendPromptToAgent).toHaveBeenCalledWith("worker", null, "continue", undefined);
   expect(outcome).toMatchObject({ submitted: false, message: reason });
 });
+
+it.each([
+  ["cancel", { status: "cancelled" }, 0],
+  ["once", { status: "confirmed" }, 1],
+] as const)(
+  "an agent-authored page's terminal paste waits for the person's confirmation (%s)",
+  async (answer, outcome, pasted) => {
+    vi.mocked(verbDispatch).mockResolvedValue({ status: "pending", confirmId: "c1" } as never);
+    vi.mocked(verbAnswer).mockResolvedValue({
+      callId: "call",
+      args: { handle: "active", text: "ls", submit: false },
+    } as never);
+    const confirm = vi.fn().mockResolvedValue(answer);
+    const { result } = renderHook(
+      () =>
+        useActionGate(frame.documentPath, { frame, docPath: `${frame.contentRoot}/board.html` }),
+      {
+        wrapper: ({ children }) =>
+          createElement(VerbConfirmationContext.Provider, { value: confirm }, children),
+      },
+    );
+    await expect(
+      result.current.runGatedAction(
+        "sendPrompt",
+        { handle: "active", text: "ls", submit: false },
+        identity,
+      ),
+    ).resolves.toMatchObject(outcome);
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ verb: "sendPrompt" }));
+    expect(pasteToActiveTerminal).toHaveBeenCalledTimes(pasted);
+  },
+);

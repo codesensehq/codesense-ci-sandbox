@@ -93,7 +93,7 @@
     {
       "term": "codesense_write_file",
       "pattern": "codesense_write_file",
-      "use": "pane_write or write_content_file",
+      "use": "pane_write or create_content_file",
       "allow": []
     },
     {
@@ -105,7 +105,7 @@
     {
       "term": "mq run",
       "pattern": "\\bmq\\s+run\\b",
-      "use": "Keep internal machine queue commands out of shipped docs",
+      "use": "a plain description of the step, not a local job-runner command",
       "allow": []
     },
     {

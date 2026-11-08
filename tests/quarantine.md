@@ -5,9 +5,10 @@
 `quarantine.json` is MIT-licensed data. JSON cannot carry a comment header; this
 schema note supplies its SPDX license declaration without changing the array shape.
 The ledger tracks the reader EOF/close-gate race under full-suite load, a CLI
-version warm-up stall, headless-focus failures on macOS, and Vitest full-suite
-timeouts. The reader test retains its bounded waits while
-the public issue tracks the remaining race.
+version warm-up stall, headless-focus failures on macOS, Vitest full-suite
+timeouts, and a host-requested kill that can lose its exit status on slower
+runners. The reader test retains its bounded waits while the public issue tracks
+the remaining race.
 The deferred scheduler proof is unwritten and remains an explicit skip with a
 reason, rather than a quarantine of a failing test.
 

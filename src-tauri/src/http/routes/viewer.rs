@@ -315,10 +315,11 @@ function _csNow(){return typeof performance!=='undefined'&&performance.timeOrigi
 /// The data reads the bridge shim adds to `window.codesense` (injected right after
 /// [`LINK_INTERCEPTOR_JS`]): `routines()`, `routine({key})`, `routineRuns({key, limit?,
 /// before?})`, `routineRun({runId})`, `runs({limit?})`, `run({runId})`, `runEvidence({runId,
-/// storyId?})`, `runWorkProduct({runId})`, `worktrees()`, `machines()`, `sessionUsage({...})` and `modelRates()` invoke
-/// the bridge read verbs of the same names (each its MCP twin's or Tauri command's shape); `onRoutinesChanged` / `onMachinesChanged` / `onWorktreesChanged` run their
+/// storyId?})`, `runWorkProduct({runId})`, `worktrees()`, `machines()`, `sessionUsage({...})`, `modelRates()` and
+/// `canPasteToTerminal()` invoke the bridge read verbs of the same names (each its MCP twin's or Tauri command's shape);
+/// `onRoutinesChanged` / `onMachinesChanged` / `onWorktreesChanged` / `onPasteTargetChanged` run their
 /// callback on the payloadless `codesense:routines-changed` / `codesense:machines-changed`
-/// / `codesense:worktrees-changed` nudges the host pushes, and return an unsubscribe.
+/// / `codesense:worktrees-changed` / `codesense:paste-target-changed` nudges the host pushes, and return an unsubscribe.
 const LIVE_HUB_JS: &str = include_str!("live_hub.js");
 
 /// Puts every registry verb on `window.codesense` as a method that invokes it, after the
@@ -326,7 +327,7 @@ const LIVE_HUB_JS: &str = include_str!("live_hub.js");
 /// by `pnpm gen:verbs` with `dashboard_kit/codesense.d.ts`, which declares the same methods.
 const VERB_METHODS_JS: &str = include_str!("verb_methods.generated.js");
 
-const DATA_READS_JS: &str = r#"(function(){var c=window.codesense;if(!c)return;function on(t){return function(cb){function h(e){if(e.source===window.parent&&e.data&&e.data.type===t)cb()}window.addEventListener('message',h);return function(){window.removeEventListener('message',h)}}}var m={routines:function(){return c.invoke('routines')},routine:function(a){return c.invoke('routine',a)},routineRuns:function(a){return c.invoke('routineRuns',a)},routineRun:function(a){return c.invoke('routineRun',a)},runs:function(a){return c.invoke('runs',a||{})},run:function(a){return c.invoke('run',a)},runEvidence:function(a){return c.invoke('runEvidence',a)},runWorkProduct:function(a){return c.invoke('runWorkProduct',a)},worktrees:function(){return c.invoke('worktrees')},machines:function(){return c.invoke('machines')},sessionRead:function(a){return c.invoke('sessionRead',a)},whyLine:function(a){return c.invoke('whyLine',a)},setup:function(){return c.invoke('setup')},storyChanges:function(a){return c.invoke('storyChanges',a)},sessionUsage:function(a){return c.invoke('sessionUsage',a||{})},modelRates:function(){return c.invoke('modelRates')},onRoutinesChanged:on('codesense:routines-changed'),onMachinesChanged:on('codesense:machines-changed'),onWorktreesChanged:on('codesense:worktrees-changed')};for(var k in m)c[k]=m[k]})();"#;
+const DATA_READS_JS: &str = r#"(function(){var c=window.codesense;if(!c)return;function on(t){return function(cb){function h(e){if(e.source===window.parent&&e.data&&e.data.type===t)cb()}window.addEventListener('message',h);return function(){window.removeEventListener('message',h)}}}var m={routines:function(){return c.invoke('routines')},routine:function(a){return c.invoke('routine',a)},routineRuns:function(a){return c.invoke('routineRuns',a)},routineRun:function(a){return c.invoke('routineRun',a)},runs:function(a){return c.invoke('runs',a||{})},run:function(a){return c.invoke('run',a)},runEvidence:function(a){return c.invoke('runEvidence',a)},runWorkProduct:function(a){return c.invoke('runWorkProduct',a)},worktrees:function(){return c.invoke('worktrees')},machines:function(){return c.invoke('machines')},sessionRead:function(a){return c.invoke('sessionRead',a)},whyLine:function(a){return c.invoke('whyLine',a)},setup:function(){return c.invoke('setup')},storyChanges:function(a){return c.invoke('storyChanges',a)},sessionUsage:function(a){return c.invoke('sessionUsage',a||{})},modelRates:function(){return c.invoke('modelRates')},canPasteToTerminal:function(){return c.invoke('canPasteToTerminal')},onRoutinesChanged:on('codesense:routines-changed'),onMachinesChanged:on('codesense:machines-changed'),onWorktreesChanged:on('codesense:worktrees-changed'),onPasteTargetChanged:on('codesense:paste-target-changed')};for(var k in m)c[k]=m[k]})();"#;
 
 #[derive(Deserialize)]
 pub struct ViewerQuery {
@@ -1952,6 +1953,7 @@ mod tests {
             ("setup:function()", "'setup'"),
             ("sessionUsage:function(a)", "'sessionUsage',a||{}"),
             ("modelRates:function()", "'modelRates'"),
+            ("canPasteToTerminal:function()", "'canPasteToTerminal'"),
         ] {
             assert!(DATA_READS_JS.contains(method), "shim lacks {method}");
             assert!(
@@ -1963,6 +1965,7 @@ mod tests {
             ("onRoutinesChanged", "codesense:routines-changed"),
             ("onMachinesChanged", "codesense:machines-changed"),
             ("onWorktreesChanged", "codesense:worktrees-changed"),
+            ("onPasteTargetChanged", "codesense:paste-target-changed"),
         ] {
             assert!(DATA_READS_JS.contains(&format!("{on}:on('{event}')")));
         }

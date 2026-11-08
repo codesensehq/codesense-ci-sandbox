@@ -10,7 +10,7 @@ import type { StoryRef } from "@/shared/lib/pipeline-graph/types";
 
 // SW-FX-81: a nav StoryRow must render its title text beside the status ring.
 // The shared `StatusSelectorPopover` trigger wraps only the 14px status icon, so
-// it must HUG that icon — a full-width trigger (the 273cd6d42 canvas relayout)
+// it must HUG that icon — a full-width trigger (as in the canvas relayout)
 // takes the whole row's flex-basis and starves the adjacent `flex-1` title
 // button to zero width, blanking every story row. These are the regression guard.
 

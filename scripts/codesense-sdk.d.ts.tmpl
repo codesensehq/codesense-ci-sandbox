@@ -377,6 +377,9 @@ declare namespace CodesenseSdk {
     onRoutinesChanged(cb: () => void): Unsubscribe;
     onMachinesChanged(cb: () => void): Unsubscribe;
     onWorktreesChanged(cb: () => void): Unsubscribe;
+    /** Runs `cb` when the answer to canPasteToTerminal() flips between true and false.
+     * Re-read then. */
+    onPasteTargetChanged(cb: () => void): Unsubscribe;
     sprints(): Promise<unknown>;
     taxonomy(): Promise<unknown>;
 

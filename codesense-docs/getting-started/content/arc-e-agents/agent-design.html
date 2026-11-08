@@ -152,12 +152,12 @@
         <p>A child receives only the content its ancestors declare in their <code>config/sharing.yml</code>; each team in between must share it onward. A parent relationship is not a privacy boundary: everyone with the context repo can read every team's files. Keep personal and finance memory in private content, not team content. Changing a parent with <code>set_team_parent</code> is optional and needs the user's approval.</p>
       </section>
 
-      <section data-search="Write down design note team-design.yaml record of intent planned" id="record">
+      <section data-search="Write down design note team-design.yaml record of intent" id="record">
         <h2>8. Write the design down</h2>
         <p>Keep a short design note in content the user owns. Record goals, data sources and sensitivity, seats, tool boundaries, risk tiers, handoffs, budget, stop conditions and proof cases. Say who chose each policy and why. Include saved agent and routine ids after creation.</p>
-        <p><strong>Planned structured form:</strong> <code>team-design.yaml</code> is an optional record of intent from the planned agent-design team. It holds goals, a data map with sensitivity, the risk tier, members by id, evals and the optimization mode. <code>DESIGN.md</code> is its human-readable companion. Neither is a required runtime file. The real <code>agent.yaml</code> and <code>routine.yml</code> remain the source of truth; do not copy their launch or schedule fields into the design.</p>
-        <p>A CodeSense <strong>Designer</strong> agent that runs this process with you is planned; until it ships, follow the agent-design skill yourself.</p>
-        <p>The same planned team's <a href="#learning">learning and context loop</a> proposes improvements for a person to approve. You can use the plain design note now.</p>
+        <p><strong>Optional structured form:</strong> <code>team-design.yaml</code> is an optional record of intent. It holds goals, a data map with sensitivity, the risk tier, members by id, evals and the optimization mode. <code>DESIGN.md</code> is its human-readable companion. Neither is a required runtime file. The real <code>agent.yaml</code> and <code>routine.yml</code> remain the source of truth; do not copy their launch or schedule fields into the design.</p>
+        <p>CodeSense has no built-in designer agent; follow the agent-design skill yourself.</p>
+        <p>The <a href="#learning">learning and context loop</a> uses this note when it proposes improvements for a person to approve.</p>
       </section>
 
       <section data-search="Build preview agents roles routines panes inheritance dry run" id="build">
@@ -180,14 +180,14 @@
         <p>Open a pane with <code>pane_open</code> and check the visible result. Inspect <code>routine_runs</code> and <code>routine_run</code> for routine outcomes. Use <code>list_runs</code> and <code>read_run_evidence</code> for story-run evidence when available; a run with no recorded evidence is not proof. Show the user the result, the ids and any unverified step.</p>
       </section>
 
-      <section data-search="Iterate learning context memory pruning planned evaluator steward improvement loop" id="iterate">
+      <section data-search="Iterate learning context memory pruning evaluator steward improvement loop" id="iterate">
         <h2>11. Iterate from evidence</h2>
         <p>Watch failed runs, missed handoffs, repeated Needs you items, time to an accepted result and cost per outcome. Split a seat when it needs conflicting tools or too much context. Merge seats when handoffs cost more than the separation helps. Change one thing, replay the same cases, and compare.</p>
         <p>To stop the setup, call <code>routine_set_enabled</code> with <code>enabled: false</code> for its routines. This stops future starts. For each running session you intend to end, take its <code>handle</code> from <code>list_sessions</code>, then call <code>close_terminal_tab</code> with that handle. It ends the CLI and keeps the worktree files. Disable routines and close active sessions separately; there is no single kill switch.</p>
         <h3 id="learning">Learning and context</h3>
         <p>Keep instructions short. Load only relevant skills and sources. Record durable lessons as small notes with their source, date and confidence. Recheck old facts before loading them. Give each seat a context budget; more history is not always more useful.</p>
-        <p><strong>Planned agent-design team loop:</strong> a fresh-context Evaluator will grade agreed cases. A Steward will collect structured run and usage signals, propose a diff with evidence, then wait for human approval. A monthly prune will keep, merge, summarize or expire notes to an archive. Git history provides the audit trail. Untrusted-source facts stay quarantined until a human promotes them. Personal and finance memory stays private. These evaluator and stewardship skills are planned, not installed by this guide.</p>
-        <p>This loop uses the <a href="#record">record of intent</a>. A weekly or monthly review can be done manually today. An optional review routine needs the user's approval and may propose changes; it must not expand its own access or apply policy changes alone.</p>
+        <p><strong>An improvement loop you can build:</strong> a fresh-context evaluator grades agreed cases. A steward collects structured run and usage signals, proposes a diff with evidence, then waits for human approval. A monthly prune keeps, merges, summarizes or expires notes to an archive. Git history provides the audit trail. Untrusted-source facts stay quarantined until a human promotes them. Personal and finance memory stays private. This guide does not install evaluator or stewardship skills.</p>
+        <p>This loop uses the <a href="#record">record of intent</a>. A weekly or monthly review can be done manually. An optional review routine needs the user's approval and may propose changes; it must not expand its own access or apply policy changes alone.</p>
       </section>
 
       <section data-search="Worked examples solo founder small dev review queue family desk finance analysis" id="examples">

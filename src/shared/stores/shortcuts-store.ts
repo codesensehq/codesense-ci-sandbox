@@ -67,7 +67,7 @@ const CURRENT_SHORTCUTS_VERSION = 2;
 
 /**
  * Action-ID renames to replay against pre-version blobs, oldest first.
- * T.6 (commit 5b4a8f4) renamed two IDs through the shared
+ * T.6 renamed two IDs through the shared
  * `nav.switch-workspace` key:
  *   - old `nav.switch-workspace` (org switcher)  → `nav.switch-org`
  *   - old `nav.switch-repo`      (repo switcher) → `nav.switch-workspace`

@@ -690,6 +690,9 @@ fn a_conflict_with_no_sign_of_which_side_is_mine_is_not_settled_by_guessing() {
     f.git(&["checkout", "-q", "main"]);
     f.write("roadmap.md", "local edit\n");
     f.git(&["checkout", "-q", "-m", "other"]);
+    // git >= 2.55 autostashes the local edit during `checkout -m`, and that stash marks
+    // which side is mine. Drop it so every git version models a conflict with no sign.
+    f.git(&["update-ref", "-d", "refs/stash"]);
     assert_eq!(f.status().conflicts.len(), 1);
 
     let err = resolve_context_conflict_impl(&f.path, "roadmap.md", ConflictResolution::UseMine)

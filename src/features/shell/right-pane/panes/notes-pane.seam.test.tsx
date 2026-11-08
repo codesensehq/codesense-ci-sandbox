@@ -35,6 +35,21 @@ vi.mock("@/features/dashboard/lib/verb-dispatch", async () =>
   (await import("@/test/verb-dispatch-mock")).openVerbDispatchMock(),
 );
 vi.mock("@/shared/lib/local-profile-session", () => ({ rendererPrincipal: async () => "42" }));
+// The host's active terminal, driven per test: the paste seam is the bridge verb and nudge.
+const terminal = vi.hoisted(() => ({
+  can: false,
+  paste: vi.fn(async (_text: string) => ({ status: "typed", message: null as string | null })),
+  listeners: new Set<() => void>(),
+}));
+vi.mock("@/shared/lib/send-to-terminal", async (original) => ({
+  ...(await original<typeof import("@/shared/lib/send-to-terminal")>()),
+  canPasteToTerminal: () => terminal.can,
+  pasteToActiveTerminal: (text: string) => terminal.paste(text),
+  subscribePasteTarget: (changed: () => void) => {
+    terminal.listeners.add(changed);
+    return () => terminal.listeners.delete(changed);
+  },
+}));
 
 import { NoteSwitcherMount } from "@/features/viewer/components/note-switcher-mount";
 import { useUiStore } from "@/shared/stores/ui-store";
@@ -115,6 +130,8 @@ beforeEach(async () => {
   allowSend = true;
   sessionRows = [];
   sendResult = { status: "submitted", submitted: true, message: null };
+  terminal.can = false;
+  terminal.paste.mockClear();
   agentCommits = new Map();
   contextQuery = () => ({ rows: [], total: 0 });
   const fallback: HandlerRegistry = {
@@ -1048,7 +1065,8 @@ it("sends the note to a running agent and remembers the context preference", asy
   await agentPicker();
   expect(p!.doc.querySelector<HTMLInputElement>(".nt-send-context input")!.checked).toBe(false);
   expect(el(p!, "float").textContent).toContain("Start a new agent with this");
-  expect(el(p!, "float").textContent).not.toMatch(/terminal|Organize|Routine/i);
+  expect(el(p!, "float").textContent).toContain("Paste into terminal");
+  expect(el(p!, "float").textContent).not.toMatch(/Organize|Routine/i);
 });
 it("keeps failed delivery visible without adding an agent chip", async () => {
   sessionRows = [sender()];
@@ -1059,6 +1077,87 @@ it("keeps failed delivery visible without adding an agent chip", async () => {
   await waitFor(() => expect(el(p!, "notice").textContent).toBe("Agent is unavailable"));
   expect(el(p!, "float").hidden).toBe(false);
   expect(p!.doc.querySelector(".nt-agent-chip")).toBeNull();
+});
+describe("paste into the active terminal", () => {
+  const pasteKey = () => {
+    const root = p!.doc.querySelector<HTMLElement>(".scratch-note-editor")!;
+    const event = new p!.win.KeyboardEvent("keydown", {
+      key: "Enter",
+      metaKey: true,
+      altKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    root.dispatchEvent(event as never);
+    return event.defaultPrevented;
+  };
+  const pasteRow = () => p!.doc.querySelector<HTMLButtonElement>("#send-paste")!;
+
+  it("⌥⌘↵ types the caret's line (classic Notes' sendTargetOf) through sendPrompt", async () => {
+    terminal.can = true;
+    await open();
+    await act(async () => expect(pasteKey()).toBe(true));
+    await waitFor(() => expect(terminal.paste).toHaveBeenCalledTimes(1));
+    expect(terminal.paste).toHaveBeenCalledWith("Last");
+    expect(el(p!, "notice").hidden).toBe(true);
+  });
+
+  it("⌥⌘↵ with no terminal still asks the host, which shows classic Notes' toast", async () => {
+    terminal.paste.mockResolvedValueOnce({ status: "no-terminal", message: "No terminal active" });
+    await open();
+    await act(async () => expect(pasteKey()).toBe(true));
+    await waitFor(() => expect(terminal.paste).toHaveBeenCalledWith("Last"));
+    // The toast is the host's ("No terminal active"); the pane adds no notice of its own.
+    expect(el(p!, "notice").hidden).toBe(true);
+  });
+
+  it("the send menu's item is disabled with a tooltip until a terminal is active, live", async () => {
+    sessionRows = [sender()];
+    await open();
+    await agentPicker();
+    expect(pasteRow().textContent).toBe("Paste into terminal⌥⌘↵");
+    expect(pasteRow().getAttribute("aria-disabled")).toBe("true");
+    expect(pasteRow().title).toBe("Open a terminal to paste into it");
+    await act(async () => pasteRow().click());
+    expect(terminal.paste).not.toHaveBeenCalled();
+    expect(el(p!, "float").hidden).toBe(false);
+    // A click on the disabled row says why instead of doing nothing.
+    expect(el(p!, "notice").textContent).toBe("Open a terminal to paste into it");
+    expect(el(p!, "notice").hidden).toBe(false);
+    // The agents-only context checkbox comes after every action.
+    expect(
+      p!.doc.querySelector("#float > :last-child")?.classList.contains("nt-send-context"),
+    ).toBe(true);
+
+    terminal.can = true;
+    await act(async () => terminal.listeners.forEach((changed) => changed()));
+    await waitFor(() => expect(pasteRow().getAttribute("aria-disabled")).toBe("false"));
+    expect(pasteRow().hasAttribute("title")).toBe(false);
+    await act(async () => pasteRow().click());
+    await waitFor(() => expect(terminal.paste).toHaveBeenCalledTimes(1));
+    expect(terminal.paste.mock.calls[0][0]).toMatch(/^Read my note\. /);
+    expect(el(p!, "float").hidden).toBe(true);
+  });
+
+  it("⌥⌘↵ in the send menu's search pastes the request", async () => {
+    terminal.can = true;
+    sessionRows = [sender()];
+    await open();
+    await agentPicker();
+    await act(async () =>
+      fireEvent.keyDown(el(p!, "send-search"), { key: "Enter", metaKey: true, altKey: true }),
+    );
+    await waitFor(() => expect(terminal.paste).toHaveBeenCalledTimes(1));
+    expect(ipc.mock.calls.some(([cmd]) => cmd === "send_prompt_to_agent")).toBe(false);
+  });
+
+  it("a page without the sendPrompt grant has no paste", async () => {
+    allowSend = false;
+    terminal.can = true;
+    await open();
+    await act(async () => expect(pasteKey()).toBe(true));
+    expect(terminal.paste).not.toHaveBeenCalled();
+  });
 });
 it("hides sending when the host denies sendPrompt", async () => {
   allowSend = false;

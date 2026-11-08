@@ -4,8 +4,8 @@
 // `codesense-docs/getting-started/content/generated/recipes.json`: the
 // build-time manifest the recipes-gallery dashboard fetches at runtime
 // (SW-ODC-7). One entry per shipped recipe (agent / routine / dashboard /
-// skill) plus a small set of scaffold cards for plausible-but-not-yet-shipped
-// routines, so the gallery is honest about what works today.
+// skill) plus a small set of scaffold cards for routines that don't ship with
+// CodeSense, so the gallery is honest about what works today.
 //
 // Shape:
 //
@@ -25,7 +25,7 @@
 //         "surface": ["local" | "remote"],
 //         "useCase": ["setup" | "build" | "review" | "coordinate" | "ship"],
 //         "ships": true | false,
-//         "trigger": "cron" | "inbox_idle" | "webhook" | null,
+//         "trigger": "cron" | "inbox_idle" | "event" | null,
 //         "source": "…"  // verbatim file contents (bytes-identical)
 //       }
 //     ]
@@ -211,7 +211,7 @@ const META = {
   },
 };
 
-// Scaffold cards — plausible routines that aren't on disk yet. They render in
+// Scaffold cards — plausible routines with no file under `examples/`. They render in
 // the gallery with a "scaffold" tag; the detail sheet shows a short yaml
 // template so a reader can lift it into their own repo verbatim. New scaffolds
 // land by appending here; drop a scaffold the moment a real file lands at the
@@ -283,37 +283,6 @@ const SCAFFOLDS = [
       "policy:\n" +
       "  max_runtime: 30m\n" +
       "runs_on: each_mac\n" +
-      "revision: 1\n",
-  },
-  {
-    id: "routine-scout-ci-failures",
-    name: "scout-ci-failures",
-    summary:
-      "Watches GitHub Actions on the sample source repo; files a scout thread when a build goes red.",
-    path: "examples/agents/scout/routines/scout-ci-failures/routine.yml",
-    role: "scout",
-    surface: ["remote"],
-    useCase: ["review", "coordinate"],
-    ships: false,
-    trigger: "webhook",
-    source:
-      "# config/agents/scout/routines/scout-ci-failures/routine.yml\n" +
-      "# Scaffold: webhook triggers are not shipped yet.\n" +
-      "id: scout-ci-failures\n" +
-      "name: Scout CI failures\n" +
-      "owner: codesense\n" +
-      "mode: fresh\n" +
-      "task: |\n" +
-      "  When GitHub Actions reports a failed workflow run, file a scout thread with\n" +
-      "  the failing job name and the run URL so a human can look at it fast.\n" +
-      "where:\n" +
-      "  kind: team_workspace\n" +
-      "triggers:\n" +
-      "  - webhook:\n" +
-      "      from: github-actions\n" +
-      "      event: workflow_run.failed\n" +
-      "policy:\n" +
-      "  max_runtime: 5m\n" +
       "revision: 1\n",
   },
 ];
@@ -403,7 +372,6 @@ function routineTrigger(text) {
     if (/-\s*schedule\s*:/.test(text)) return "cron";
     if (/-\s*event\s*:/.test(text) && /inbox_idle/.test(text)) return "inbox_idle";
     if (/-\s*event\s*:/.test(text)) return "event";
-    if (/webhook/.test(text)) return "webhook";
   }
   return null;
 }
@@ -543,9 +511,9 @@ export function buildManifest() {
   }
 
   // ---- dashboards shipped under getting-started/panes/ (optional) ----
-  // Reserved for future stories: if the shipped viewer adds its own panes/
-  // directory, surface them as dashboards too. Keep the walk deterministic
-  // and skip silently when the directory is absent.
+  // If the shipped viewer has its own panes/ directory, surface its pages as
+  // dashboards too. Keep the walk deterministic and skip silently when the
+  // directory is absent.
   if (existsSync(PANES)) {
     for (const file of listHtml(PANES)) {
       const name = file.replace(/\.html$/, "");

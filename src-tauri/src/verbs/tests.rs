@@ -798,6 +798,17 @@ fn frame_presentation_verbs_have_no_mcp_twin_and_use_native_admission() {
     }
 }
 #[test]
+fn can_paste_to_terminal_is_an_unaudited_read_of_the_paste_target() {
+    let registry = Registry::default();
+    let spec = registry.get("canPasteToTerminal").unwrap();
+    assert_eq!(spec.module, "agent");
+    assert_eq!(spec.class, Class::Read);
+    assert_eq!(spec.grant, "sessions:read");
+    assert!(!spec.action && !spec.confirmable && !spec.audited && spec.mcp_twin.is_none());
+    assert!(spec.presentation_only_reason.is_some());
+    assert_eq!(spec.result_schema, json!({"type":"boolean"}));
+}
+#[test]
 fn commands_register_is_a_frame_scoped_presentation_verb() {
     let registry = Registry::default();
     let spec = registry.get("commands.register").unwrap();

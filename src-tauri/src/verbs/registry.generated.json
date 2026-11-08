@@ -87,6 +87,27 @@
     "module": "inbox"
   },
   {
+    "name": "canPasteToTerminal",
+    "class": "read",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "resultSchema": {
+      "type": "boolean"
+    },
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Pages ask it to enable a paste control; agents address sessions by handle with send_to_session.",
+    "audited": false,
+    "action": false,
+    "module": "agent"
+  },
+  {
     "name": "closeTerminalTab",
     "class": "manage",
     "argsSchema": {

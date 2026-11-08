@@ -282,12 +282,6 @@
       .cs-recipe-chip--role-reviewer {
         color: var(--cs-docs-role-reviewer);
       }
-      .cs-recipe-chip--role-scout {
-        color: var(--cs-docs-role-scout);
-      }
-      .cs-recipe-chip--role-resolver {
-        color: var(--cs-docs-role-resolver);
-      }
       .cs-recipe-chip--role-analyst {
         color: var(--cs-docs-role-analyst);
       }
@@ -468,14 +462,6 @@
         color: var(--cs-docs-role-reviewer);
         border-color: color-mix(in oklab, var(--cs-docs-role-reviewer) 40%, var(--cs-border));
       }
-      .cs-recipe-role[data-role="scout"] {
-        color: var(--cs-docs-role-scout);
-        border-color: color-mix(in oklab, var(--cs-docs-role-scout) 40%, var(--cs-border));
-      }
-      .cs-recipe-role[data-role="resolver"] {
-        color: var(--cs-docs-role-resolver);
-        border-color: color-mix(in oklab, var(--cs-docs-role-resolver) 40%, var(--cs-border));
-      }
       .cs-recipe-role[data-role="analyst"] {
         color: var(--cs-docs-role-analyst);
         border-color: color-mix(in oklab, var(--cs-docs-role-analyst) 40%, var(--cs-border));
@@ -545,12 +531,6 @@
       }
       .cs-recipe-glyph--role-reviewer .cs-recipe-glyph__role {
         fill: var(--cs-docs-role-reviewer);
-      }
-      .cs-recipe-glyph--role-scout .cs-recipe-glyph__role {
-        fill: var(--cs-docs-role-scout);
-      }
-      .cs-recipe-glyph--role-resolver .cs-recipe-glyph__role {
-        fill: var(--cs-docs-role-resolver);
       }
       .cs-recipe-glyph--role-analyst .cs-recipe-glyph__role {
         fill: var(--cs-docs-role-analyst);
@@ -1155,22 +1135,6 @@
             </button>
             <button
               type="button"
-              class="cs-recipe-chip cs-recipe-chip--role-scout"
-              data-value="scout"
-              aria-pressed="false"
-            >
-              <span class="cs-recipe-chip__dot"></span>scout
-            </button>
-            <button
-              type="button"
-              class="cs-recipe-chip cs-recipe-chip--role-resolver"
-              data-value="resolver"
-              aria-pressed="false"
-            >
-              <span class="cs-recipe-chip__dot"></span>resolver
-            </button>
-            <button
-              type="button"
               class="cs-recipe-chip cs-recipe-chip--role-analyst"
               data-value="analyst"
               aria-pressed="false"
@@ -1472,9 +1436,7 @@
                 ? "cron"
                 : trigger === "inbox_idle"
                   ? "inbox"
-                  : trigger === "webhook"
-                    ? "hook"
-                    : "event";
+                  : "event";
             inner =
               '<svg viewBox="0 0 300 72">' +
               '<circle class="cs-recipe-glyph__stroke-fg" cx="40" cy="36" r="16"/>' +

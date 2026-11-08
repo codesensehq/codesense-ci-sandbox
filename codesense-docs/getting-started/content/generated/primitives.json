@@ -2,11 +2,11 @@
   "schema": 1,
   "generatedAt": "deterministic",
   "counts": {
-    "invoke": 105,
-    "kit": 162,
+    "invoke": 106,
+    "kit": 164,
     "classes": 18,
     "tokens": 87,
-    "events": 61,
+    "events": 62,
     "contexts": 4
   },
   "invoke": [
@@ -134,6 +134,30 @@
       "sourceRef": "src-tauri/src/verbs/registry.generated.json"
     },
     {
+      "name": "canPasteToTerminal",
+      "category": "READ",
+      "write": false,
+      "readOnlyDocsSafe": true,
+      "audited": false,
+      "description": "Whether `sendPrompt({handle: \"active\", text, submit: false})` has a terminal to paste into: the selected terminal tab of the person's focused workspace. Pairs with `onPasteTargetChanged(cb)`.",
+      "args": {
+        "additionalProperties": true,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "returns": {
+        "type": "boolean"
+      },
+      "examples": [
+        {
+          "args": {},
+          "result": true
+        }
+      ],
+      "sourceRef": "src-tauri/src/verbs/registry.generated.json"
+    },
+    {
       "name": "closeTerminalTab",
       "category": "MANAGEMENT",
       "write": true,
@@ -181,7 +205,7 @@
       "write": true,
       "readOnlyDocsSafe": false,
       "audited": true,
-      "description": "Kill the handle-bound session (freeing the concurrency cap + writing one Kill audit line) AND evict its tab. Idempotent — an unbound handle is a typed no-op. `removeWorktree: true` escalates to the destructive close — reaps the managed worktree after the session closes; `discardUnsaved: true` forces that reap over uncommitted work (listed in `discardedUnsavedWork`). Remote workspaces close every tab but do not yet reap the worktree on the remote machine.",
+      "description": "Kill the handle-bound session (freeing the concurrency cap + writing one Kill audit line) AND evict its tab. Idempotent — an unbound handle is a typed no-op. `removeWorktree: true` escalates to the destructive close — reaps the managed worktree after the session closes; `discardUnsaved: true` forces that reap over uncommitted work (listed in `discardedUnsavedWork`). Remote workspaces close every tab but do not reap the worktree on the remote machine.",
       "args": {
         "additionalProperties": true,
         "properties": {
@@ -2980,10 +3004,10 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly"
+            "key": "acme/web/rt-nightly"
           },
           "result": {
-            "id": "rt-nightly",
+            "id": "acme/web/rt-nightly",
             "name": "nightly"
           }
         }
@@ -3013,7 +3037,7 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly"
+            "key": "acme/web/rt-nightly"
           },
           "result": {
             "cancelled": true
@@ -3045,7 +3069,7 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly"
+            "key": "acme/web/rt-nightly"
           },
           "result": {
             "runId": "run-99",
@@ -3061,7 +3085,7 @@
       "write": false,
       "readOnlyDocsSafe": true,
       "audited": true,
-      "description": "Current result snapshot for one routine (last successful run's output). For paginated history use `routineRuns`.",
+      "description": "Current result snapshot for one routine (last successful run's output). `key` is the routine's `routines()` row `id`, its full `<org>/<team>/<id>` key. For paginated history use `routineRuns`.",
       "args": {
         "additionalProperties": true,
         "properties": {
@@ -3078,7 +3102,7 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly"
+            "key": "acme/web/rt-nightly"
           },
           "result": {
             "ok": true,
@@ -3136,7 +3160,7 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly",
+            "key": "acme/web/rt-nightly",
             "limit": 5
           },
           "result": {
@@ -3175,7 +3199,7 @@
       "examples": [
         {
           "args": {
-            "id": "rt-nightly"
+            "key": "acme/web/rt-nightly"
           },
           "result": {
             "ok": true
@@ -3208,7 +3232,7 @@
           "args": {},
           "result": [
             {
-              "id": "rt-nightly",
+              "id": "acme/web/rt-nightly",
               "name": "nightly sweep"
             }
           ]
@@ -3451,7 +3475,7 @@
       "write": true,
       "readOnlyDocsSafe": false,
       "audited": true,
-      "description": "Type into any running agent by handle, locally or remotely. Submits by default; submit:false pastes without Enter. Needs no launch controller. An unknown delivery may have arrived: never retry automatically. Agents use send_to_session; this is the person's typed send from a page.",
+      "description": "Type into any running agent by handle, locally or remotely. Submits by default; submit:false pastes without Enter. Needs no launch controller. An unknown delivery may have arrived: never retry automatically. `handle: \"active\"` with `submit: false` pastes into the person's active terminal (text is written as typed; a newline in it acts as Enter) and returns `status` `typed`, `no-workspace` or `no-terminal`; ask `canPasteToTerminal()` first. Agents use send_to_session; this is the person's typed send from a page.",
       "args": {
         "additionalProperties": true,
         "properties": {
@@ -3474,7 +3498,22 @@
       "returns": {
         "description": "JSON result of the existing host handler; see get_live_data_contract for its fields."
       },
-      "examples": [],
+      "examples": [
+        {
+          "args": {
+            "handle": "active",
+            "text": "src/main.ts",
+            "submit": false
+          },
+          "result": {
+            "status": "typed",
+            "submitted": false,
+            "machine": null,
+            "code": null,
+            "message": null
+          }
+        }
+      ],
       "sourceRef": "src-tauri/src/verbs/registry.generated.json"
     },
     {
@@ -5244,7 +5283,7 @@
       "signature": "onRoutineResult(cb: () => void): Unsubscribe;",
       "wraps": "codesense:routines-changed listener",
       "description": "Nudge callback — fires whenever the host pushes `codesense:routines-changed`.",
-      "example": "codesense.onRoutineResult(() => codesense.routineResult({ id }).then(render));",
+      "example": "codesense.onRoutineResult(() => codesense.routineResult({ key }).then(render));",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5272,6 +5311,15 @@
       "wraps": "codesense:worktrees-changed listener",
       "description": "Nudge callback for managed worktree changes.",
       "example": "codesense.onWorktreesChanged(() => codesense.worktrees().then(render));",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
+    },
+    {
+      "name": "codesense.onPasteTargetChanged",
+      "category": "data-read",
+      "signature": "onPasteTargetChanged(cb: () => void): Unsubscribe;",
+      "wraps": "codesense:paste-target-changed listener",
+      "description": "Runs `cb` when the answer to canPasteToTerminal() flips between true and false.\nRe-read then.",
+      "example": "codesense.onPasteTargetChanged(() => codesense.canPasteToTerminal().then(render));",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5335,6 +5383,15 @@
       "wraps": "invoke('archive', args)",
       "description": "metadata · inbox:write",
       "example": "// See the exact declaration for codesense.archive.",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
+    },
+    {
+      "name": "codesense.canPasteToTerminal",
+      "category": "data-read",
+      "signature": "canPasteToTerminal(args?: Record<string, unknown>): Promise<boolean>;",
+      "wraps": "invoke('canPasteToTerminal')",
+      "description": "read · sessions:read",
+      "example": "const canPaste = await codesense.canPasteToTerminal();",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5659,7 +5716,7 @@
       "signature": "queryContext(args?: Record<string, unknown>): Promise<unknown>;",
       "wraps": "invoke('queryContext', query || {})",
       "description": "read · context:read · MCP twin query_context",
-      "example": "const { rows } = await codesense.queryContext({ scope: { org: \"codesense\" } });",
+      "example": "const { rows } = await codesense.queryContext({ where: { orgs: [\"acme\"] } });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
       "starter": true
     },
@@ -5813,7 +5870,7 @@
       "signature": "routine(args?: {\n      key?: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
       "wraps": "invoke('routine', args)",
       "description": "read · routines:read · MCP twin routine_get",
-      "example": "const r = await codesense.routine({ id: \"rt-nightly\" });",
+      "example": "const r = await codesense.routine({ key: \"acme/web/rt-nightly\" });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5822,7 +5879,7 @@
       "signature": "routineCancel(args?: {\n      key?: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
       "wraps": "invoke('routineCancel', args)",
       "description": "manage · routines:manage · confirmable",
-      "example": "await codesense.routineCancel({ id: \"rt-nightly\" });",
+      "example": "await codesense.routineCancel({ key: \"acme/web/rt-nightly\" });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5831,7 +5888,7 @@
       "signature": "routineRefresh(args?: {\n      key?: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
       "wraps": "invoke('routineRefresh', args)",
       "description": "spawn · routines:run",
-      "example": "await codesense.routineRefresh({ id: \"rt-nightly\" });",
+      "example": "await codesense.routineRefresh({ key: \"acme/web/rt-nightly\" });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5840,7 +5897,7 @@
       "signature": "routineResult(args?: {\n      key?: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
       "wraps": "invoke('routineResult', args)",
       "description": "read · routines:read · MCP twin routine_result",
-      "example": "const latest = await codesense.routineResult({ id: \"rt-nightly\" });",
+      "example": "const latest = await codesense.routineResult({ key: \"acme/web/rt-nightly\" });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5858,7 +5915,7 @@
       "signature": "routineRuns(args?: Record<string, unknown>): Promise<unknown>;",
       "wraps": "invoke('routineRuns', args)",
       "description": "read · routines:read · MCP twin routine_runs",
-      "example": "const page = await codesense.routineRuns({ id: \"rt-nightly\", limit: 20 });",
+      "example": "const page = await codesense.routineRuns({ key: \"acme/web/rt-nightly\", limit: 20 });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -5867,7 +5924,7 @@
       "signature": "routineStatus(args?: {\n      key?: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
       "wraps": "invoke('routineStatus', args)",
       "description": "read · routines:read",
-      "example": "const s = await codesense.routineStatus({ id: \"rt-nightly\" });",
+      "example": "const s = await codesense.routineStatus({ key: \"acme/web/rt-nightly\" });",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {
@@ -7803,6 +7860,15 @@
       "sourceRef": "viewer.rs"
     },
     {
+      "name": "codesense:paste-target-changed",
+      "direction": "parent-to-doc",
+      "payload": "N/A",
+      "timing": "When the person's active terminal appears, goes or the workspace changes",
+      "description": "Nudge for `canPasteToTerminal()` listeners.",
+      "example": "codesense.onPasteTargetChanged(() => codesense.canPasteToTerminal().then(render));",
+      "sourceRef": "viewer.rs"
+    },
+    {
       "name": "codesense:ping",
       "direction": "parent-to-doc",
       "payload": "{}",
@@ -7916,7 +7982,7 @@
       "payload": "N/A",
       "timing": "On routine list change",
       "description": "Nudge for routine-aware dashboards — call `codesense.routines()` or `codesense.routineResult(args)` to re-read.",
-      "example": "codesense.onRoutineResult(() => codesense.routineResult({ id }).then(render));",
+      "example": "codesense.onRoutineResult(() => codesense.routineResult({ key }).then(render));",
       "sourceRef": "viewer.rs"
     },
     {

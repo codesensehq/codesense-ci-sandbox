@@ -577,8 +577,8 @@
               <td>When a run is in <code>running</code> past expected duration.</td>
             </tr>
             <tr>
-              <td><code>subscribeContext({ topic: 'routines.runs' }, cb)</code></td>
-              <td>Live stream of fire → done events for the active team.</td>
+              <td><code>onRoutinesChanged(() =&gt; routineRuns({ key }))</code></td>
+              <td>Re-reads a routine's runs each time it or one of its runs changes.</td>
               <td>When you want to watch an inbox-idle wake live.</td>
             </tr>
           </tbody>

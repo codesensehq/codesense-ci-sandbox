@@ -7,7 +7,11 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+  BRIDGE_ARGS,
+  argNames,
+  checkDescriptions,
   checkFile,
+  checkPrimitives,
   corpus,
   extractSnippets,
   loadTruth,
@@ -15,7 +19,11 @@ import {
   topLevelKeys,
 } from "./check-docs-api-examples.mjs";
 
-// A small truth: page verbs (one tool has two twins), the Surface members, three tools.
+// A tool's params schema with these fields, each free-form unless given a schema.
+const params = (...fields) => ({
+  properties: Object.fromEntries(fields.map((f) => (typeof f === "string" ? [f, {}] : f))),
+});
+// A small truth: page verbs (one tool has two twins), the Surface members, five tools.
 const truth = {
   verbs: new Set(["worktrees", "openFile", "postMessage", "sendAsHuman"]),
   members: new Set(["invoke", "act", "queryContext", "worktrees", "openFile", "docs"]),
@@ -24,10 +32,26 @@ const truth = {
     ["send_message", ["postMessage", "sendAsHuman"]],
   ]),
   tools: new Map([
-    ["list_worktrees", new Set(["kind", "team"])],
-    ["reply", new Set(["message_id", "text", "session_id"])],
-    ["send_message", new Set(["to", "text"])],
-    ["codesense_call_tool", new Set(["name", "arguments"])],
+    ["list_worktrees", params("kind", "team")],
+    ["reply", params("message_id", "text", "session_id")],
+    ["send_message", params("to", "text")],
+    ["codesense_call_tool", params("name", ["arguments", { type: ["object", "null"] }])],
+    [
+      "save_machine",
+      params(
+        ["input", params("host", ["signIn", params("method", "keyPath")])],
+        [
+          "share",
+          {
+            oneOf: [params("kind"), params("kind", "orgSlug", "team")],
+          },
+        ],
+        [
+          "targets",
+          { anyOf: [{ type: "array", items: params("kind", "path") }, { type: "null" }] },
+        ],
+      ),
+    ],
   ]),
   aliases: new Map([["messageId", ["message_id", "messageId"]]]),
 };
@@ -113,6 +137,48 @@ test("corpus: docs content (.yaml included, generated/ excluded) and the handboo
   assert.ok(!files.some((p) => p.includes("/content/generated/")));
 });
 
+test("descriptions: each tool and parameter description is checked and named by tool and parameter", () => {
+  const descriptions = [
+    { where: "tool a", text: "Next: answer one with reply {messageId}." },
+    { where: "tool b, parameter x.y", text: "Pass reply { message_id }\nthen reply {body}." },
+    { where: "tool c", text: "See list_worktrees." },
+  ];
+  assert.deepEqual(
+    checkDescriptions({ ...truth, descriptions }).map((f) => `${f.where}: ${f.rule} ${f.message}`),
+    [
+      "tool a: R3 reply: `messageId` is an alias; use `message_id`",
+      `tool b, parameter x.y: R3 reply: \`body\` is not a parameter ${REPLY}`,
+    ],
+  );
+  // The real truth collects nested parameter descriptions by path.
+  const real = loadTruth().descriptions.map((d) => d.where);
+  assert.ok(real.includes("tool list_machines"));
+  assert.ok(
+    real.some((w) => /^tool save_machine, parameter input\.\w+$/.test(w)),
+    "nested",
+  );
+});
+
+test("CLI: a wrong argument in a served description fails the run and names the tool", () => {
+  const root = mkdtempSync(join(tmpdir(), "api-lint-"));
+  const gen = join(root, "codesense-docs/getting-started/content/generated");
+  mkdirSync(gen, { recursive: true });
+  mkdirSync(join(root, "src-tauri/src"), { recursive: true });
+  writeFileSync(join(gen, "page-sdk.json"), JSON.stringify({ verbs: [], members: [] }));
+  const tools = [
+    { name: "reply", description: "Reply.", params: params("message_id") },
+    { name: "inbox_list", description: "Answer one with reply {messageId}.", params: params() },
+  ];
+  writeFileSync(join(gen, "mcp-tools.json"), JSON.stringify({ tools }));
+  const script = fileURLToPath(new URL("./check-docs-api-examples.mjs", import.meta.url));
+  const run = spawnSync(process.execPath, [script, "--root", root], { encoding: "utf8" });
+  assert.equal(run.status, 1);
+  assert.match(
+    run.stderr,
+    /generated\/mcp-tools\.json \(tool inbox_list\): R3 reply: `messageId` is not a parameter/,
+  );
+});
+
 test("CLI: --root <dir> and --root=<dir> run; a malformed --root is a usage error", () => {
   const script = fileURLToPath(new URL("./check-docs-api-examples.mjs", import.meta.url));
   const root = fileURLToPath(new URL("..", import.meta.url));
@@ -178,6 +244,229 @@ test("R3: spreads, ellipses and shorthand pass; required fields are not enforced
     problems("a.html", html("list_worktrees { kind: 'story', team, ...rest, … }\nreply {}")),
     [],
   );
+});
+
+test("R3: nested objects and arrays of objects with a schema; free-form ones pass", () => {
+  const code = [
+    "save_machine {",
+    "  input: { host: 'h', user: 'x', signIn: { method: 'keyFile', file: 'k' } },",
+    "  share: { kind: 'team', orgSlug: 'o', team: 't', role: 'r' },",
+    "  targets: [{ kind: 'a', path: 'p' }, { kind: 'b', mode: 1 }],",
+    "}",
+  ].join("\n");
+  assert.deepEqual(problems("a.html", html(code)), [
+    "3 R3 save_machine: `input.user` is not a parameter (has: host, signIn)",
+    "3 R3 save_machine: `input.signIn.file` is not a parameter (has: method, keyPath)",
+    "4 R3 save_machine: `share.role` is not a parameter (has: kind, orgSlug, team)",
+    "5 R3 save_machine: `targets[].mode` is not a parameter (has: kind, path)",
+  ]);
+  // An array item behind a comment is still checked.
+  assert.deepEqual(
+    problems("a.html", html("save_machine { targets: [ /* one */ { mode: 1 } ] }")),
+    ["2 R3 save_machine: `targets[].mode` is not a parameter (has: kind, path)"],
+  );
+  // `arguments` is free-form here; codesense_call_tool checks it against the named tool.
+  assert.deepEqual(problems("a.html", html("list_worktrees { team: { any: 1 } }")), []);
+  assert.deepEqual(argNames({ type: "object" }), null);
+  // No fields and no other properties allowed: it takes none.
+  assert.deepEqual(argNames({ type: "object", additionalProperties: false }), new Map());
+  // Known fields plus any others: which ones is not known.
+  assert.equal(argNames({ properties: { a: {} }, additionalProperties: true }), null);
+  assert.equal(argNames({ properties: { a: {} }, additionalProperties: { type: "string" } }), null);
+  assert.deepEqual(argNames({ anyOf: [{ type: "string" }, params("a")] }), null);
+});
+
+test("R4: a page verb's object argument passes only its listed properties", () => {
+  const closed = (...keys) => ({ ...params(...keys), additionalProperties: false });
+  const withVerbs = {
+    ...truth,
+    verbs: new Set([...truth.verbs, "routineResult", "openTab"]),
+    members: new Set([...truth.members, "routineResult", "openTab"]),
+    verbArgs: new Map([
+      ["routineResult", closed("key")],
+      ["openTab", closed("workspaceId", ["target", closed("kind")])],
+    ]),
+  };
+  const r4 = (code) =>
+    checkFile("a.html", html(code), withVerbs).map((f) => `${f.line} ${f.rule} ${f.message}`);
+  const ID = "R4 codesense.routineResult: `id` is not a parameter (has: key)";
+  assert.deepEqual(
+    r4("codesense.routineResult({ key: 'rt' })\ncodesense.routineResult({ key })"),
+    [],
+  );
+  assert.deepEqual(r4("codesense.routineResult({ id: 'rt' })"), [`2 ${ID}`]);
+  assert.deepEqual(r4("cs?.routineResult({ id })\nwindow.codesense.routineResult({ id })"), [
+    `2 ${ID}`,
+    `3 ${ID}`,
+  ]);
+  assert.deepEqual(
+    r4("codesense.invoke('routineResult', { id })\nkit.call(\"routineResult\", { id })"),
+    [`2 ${ID}`, `3 ${ID}`],
+  );
+  // Nested objects with listed fields; a variable argument or a verb not in verbArgs passes.
+  assert.deepEqual(r4("codesense.openTab({ workspaceId, target: { kind, path } })"), [
+    "2 R4 codesense.openTab: `target.path` is not a parameter (has: kind)",
+  ]);
+  assert.deepEqual(r4("codesense.routineResult(args)\ncodesense.worktrees({ any: 1 })"), []);
+  // Serde aliases are MCP-side: a page verb never reports one.
+  const aliased = { ...withVerbs, aliases: new Map([["id", ["key"]]]) };
+  assert.deepEqual(
+    checkFile("a.html", html("codesense.routineResult({ id })"), aliased).map((f) => f.message),
+    ["codesense.routineResult: `id` is not a parameter (has: key)"],
+  );
+});
+
+test("R4, real truth: { id } fails on the routine result verbs; free-form, Surface and bridge-read args pass", () => {
+  const real = loadTruth();
+  const messages = (code) => checkFile("a.html", html(code), real).map((f) => f.message);
+  for (const verb of ["routineResult", "routineStatus", "routineRefresh", "routineCancel"]) {
+    assert.match(messages(`codesense.${verb}({ id: "rt" })`)[0] ?? "", /`id` is not a parameter/);
+    assert.deepEqual(messages(`codesense.${verb}({ key: "rt" })`), []);
+  }
+  assert.deepEqual(
+    messages(
+      [
+        'codesense.routineRuns({ id: "rt", limit: 5 })',
+        'codesense.routine({ id: "rt" })',
+        'codesense.routineRefresh({ key: "rt", variables: { a: "b" } })',
+        "codesense.inbox({ scope: 'all', limit: 20 })",
+        "codesense.showMenu({ anchorRect, items: [{ builtinAction: 'x' }] })",
+        "codesense.openFile({ path: 'a.md', org: 'o', team: 't' })",
+      ].join("\n"),
+    ),
+    [],
+  );
+});
+
+test("R4: a page member takes no more arguments than its signature; rest parameters take any", () => {
+  const withArity = {
+    ...truth,
+    members: new Set([...truth.members, "onRoutineResult", "invoke"]),
+    arity: new Map([
+      ["onRoutineResult", 1],
+      ["invoke", null],
+    ]),
+  };
+  const r4 = (code) => checkFile("a.html", html(code), withArity).map((f) => f.message);
+  assert.deepEqual(
+    r4("codesense.onRoutineResult(paint)\ncodesense.onRoutineResult(() => f(a, b))"),
+    [],
+  );
+  assert.deepEqual(r4("codesense.onRoutineResult(key, paint)"), [
+    "codesense.onRoutineResult: takes 1 argument, not 2",
+  ]);
+  assert.deepEqual(r4("codesense.invoke('worktrees', {}, 1, 2)\ncodesense.queryContext(1, 2)"), []);
+});
+
+test("R4, real truth: listener arity, query_context keys and the bridge-args list", () => {
+  const real = loadTruth();
+  const messages = (code) => checkFile("a.html", html(code), real).map((f) => f.message);
+  assert.deepEqual(messages("codesense.onRoutineResult({ id: 'x' }, cb)"), [
+    "codesense.onRoutineResult: takes 1 argument, not 2",
+  ]);
+  assert.deepEqual(messages("codesense.subscribeContext({ topic: 'routines.runs' }, cb)"), [
+    "codesense.subscribeContext: `topic` is not a parameter (has: cursor, filters, groupBy, limit, match, relationships, select, sort, text, where)",
+  ]);
+  assert.deepEqual(messages("codesense.queryContext({ where: {}, text: 'x' })"), []);
+  // A Surface verb: its direct call follows the Surface signature; invoke reaches the verb.
+  assert.deepEqual(messages("codesense.showMenu({ anchorRect, label: 'x' })"), []);
+  assert.match(
+    messages("codesense.invoke('showMenu', { anchorRect, label: 'x' })")[0] ?? "",
+    /^codesense\.showMenu: `label` is not a parameter/,
+  );
+  assert.deepEqual(
+    messages("codesense.invoke('showMenu', { anchorRect, nativeSurface: 'x' })"),
+    [],
+  );
+  // Each entry is a verb R4 checks, and each key one its argsSchema does not list.
+  const sdk = JSON.parse(
+    readFileSync(
+      new URL("../codesense-docs/getting-started/content/generated/page-sdk.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  for (const [verb, keys] of Object.entries(BRIDGE_ARGS)) {
+    assert.ok(real.verbArgs.has(verb), `BRIDGE_ARGS.${verb} is not a checked page verb`);
+    const listed = sdk.verbs.find((v) => v.name === verb).argsSchema.properties;
+    for (const key of keys)
+      assert.ok(!(key in listed), `BRIDGE_ARGS.${verb}.${key} is in its argsSchema now; drop it`);
+  }
+});
+
+test("primitives: verb example args (R4) and member and event example code are checked", () => {
+  const withVerbs = {
+    ...truth,
+    verbs: new Set([...truth.verbs, "routineResult"]),
+    members: new Set([...truth.members, "routineResult"]),
+    verbArgs: new Map([
+      ["routineResult", { properties: { key: {} }, additionalProperties: false }],
+    ]),
+  };
+  const primitives = {
+    invoke: [
+      { name: "routineResult", examples: [{ args: { id: "rt" } }, { args: { key: "rt" } }] },
+      { name: "worktrees", examples: [{ args: { any: 1 } }] },
+    ],
+    kit: [{ name: "codesense.x", example: "codesense.routineResult({ id })" }],
+    events: [{ name: "e", example: "codesense.openSource()" }],
+  };
+  assert.deepEqual(
+    checkPrimitives(primitives, withVerbs).map((f) => `${f.where}: ${f.rule} ${f.message}`),
+    [
+      "invoke routineResult: R4 codesense.routineResult: `id` is not a parameter (has: key)",
+      "kit codesense.x: R4 codesense.routineResult: `id` is not a parameter (has: key)",
+      "events e: R2 `codesense.openSource` is not a page member or verb",
+    ],
+  );
+});
+
+test("cs-try-this: live blocks need a page verb; a dry-run block may name a tool, its args checked", () => {
+  const block = (attrs) => `<p>x</p>\n<cs-try-this ${attrs} label="x"></cs-try-this>\n`;
+  assert.deepEqual(problems("a.html", block(`verb="worktrees" args='{"any": 1}'`)), []);
+  assert.deepEqual(problems("a.html", block(`verb="invoke" dry-run="true"`)), [
+    "2 R1 try-this `invoke` is not a page verb",
+  ]);
+  assert.deepEqual(problems("a.html", block(`verb="reply" args='{"message_id": 1}'`)), [
+    '2 R1 try-this `reply` is an MCP tool, not a page verb: mark the block dry-run="true" or use a page verb',
+  ]);
+  assert.deepEqual(
+    problems(
+      "a.html",
+      block(`verb="save_machine" dry-run="true" args='{"input": {"hots": "&quot;x&quot;"}}'`),
+    ),
+    ["2 R3 save_machine: `input.hots` is not a parameter (has: host, signIn)"],
+  );
+  // A `>` inside a quoted value does not end the tag; args that are not an object are reported.
+  assert.deepEqual(
+    problems("a.html", block(`verb="reply" args='{"text": "a -> b", "body": 1}' dry-run="true"`)),
+    [`2 R3 reply: \`body\` is not a parameter ${REPLY}`],
+  );
+  assert.deepEqual(problems("a.html", block(`verb="reply" dry-run="true" args='[1]'`)), [
+    "2 R3 try-this `reply`: args is not a JSON object",
+  ]);
+  // Attributes read as the browser reads them: any case, unquoted, never from inside a value.
+  assert.deepEqual(problems("a.html", block(`VERB="reply" DRY-RUN=true args='{"body": 1}'`)), [
+    `2 R3 reply: \`body\` is not a parameter ${REPLY}`,
+  ]);
+  assert.deepEqual(problems("a.html", block(`verb="reply" title="dry-run='true'"`)), [
+    '2 R1 try-this `reply` is an MCP tool, not a page verb: mark the block dry-run="true" or use a page verb',
+  ]);
+  assert.deepEqual(problems("a.html", block(`verb="reply" dry-run="true" args='{"text": 1} x'`)), [
+    "2 R3 try-this `reply`: args is not a JSON object",
+  ]);
+  assert.deepEqual(problems("a.html", block("")), ["2 R1 try-this has no verb"]);
+  assert.deepEqual(problems("a.html", block('verb="" dry-run="true"')), [
+    "2 R1 try-this has no verb",
+  ]);
+  // try-this.js reads only `dry-run`, with the exact value "true", in either quote style.
+  const live =
+    '2 R1 try-this `reply` is an MCP tool, not a page verb: mark the block dry-run="true" or use a page verb';
+  for (const attrs of ['dry-run="TRUE"', 'data-dry-run="true"'])
+    assert.deepEqual(problems("a.html", block(`verb="reply" ${attrs}`)), [live], attrs);
+  assert.deepEqual(problems("a.html", block(`verb="reply" dry-run='true'`)), []);
+  // In a comment or an off element, it is not checked.
+  assert.deepEqual(problems("a.html", `<!-- ${block('verb="nope"')} -->`), []);
+  assert.deepEqual(problems("a.md", block('verb="nope"')), []);
 });
 
 test("R3: a tool name counts only on the same line as its {", () => {
@@ -251,6 +540,13 @@ test("the real truth: verbs, twins, and aliases from inside and outside src-taur
   const messages = (code) => checkFile("a.html", html(code), real).map((f) => f.message);
   assert.deepEqual(messages("open_workspace { storyId: 'DEMO-1' }"), [
     "open_workspace: `storyId` is an alias; use `story_id`",
+  ]);
+  // Nested arguments and no-argument tools, against the generated schemas.
+  const [nested, ...rest] = messages("save_machine { input: { hots: 'x' } }");
+  assert.match(nested, /^save_machine: `input\.hots` is not a parameter \(has: /);
+  assert.deepEqual(rest, []);
+  assert.deepEqual(messages("terminal_server_status { team: 'x' }"), [
+    "terminal_server_status: `team` is not a parameter (has: none)",
   ]);
   // schedule_wakeup's params live in src-tauri/src/delivery, and take `sessionId`.
   assert.deepEqual(messages("schedule_wakeup { session_id: 'x' }"), [

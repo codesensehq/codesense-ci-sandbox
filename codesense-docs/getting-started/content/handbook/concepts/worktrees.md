@@ -63,7 +63,7 @@ env:
 |---|---|---|
 | `setup` | Commands run in a new worktree, in order. | none |
 | `env` | Extra environment variables for the setup commands. | none |
-| `cleanup` | Accepted and checked, but CodeSense doesn't run it yet. | none |
+| `cleanup` | CodeSense accepts and checks it but doesn't run it. | none |
 | `branch_prefix` | Prefix for branches made from story ids. | `feat/` |
 | `default_start_point` | The ref new branches start from. | `main` |
 | `worktree_dir` | Where worktrees go, relative to the clone. Only `{repo}` and `{slug}` are allowed; `{slug}` is the branch with `/` turned into `-`. | `../{repo}-wt/{slug}` |

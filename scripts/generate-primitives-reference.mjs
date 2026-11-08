@@ -227,18 +227,23 @@ const INVOKE_META = {
   },
   routines: {
     description: "Every routine this user sees. Pairs with `onRoutinesChanged(cb)` for push.",
-    examples: [{ args: {}, result: [{ id: "rt-nightly", name: "nightly sweep" }] }],
+    examples: [{ args: {}, result: [{ id: "acme/web/rt-nightly", name: "nightly sweep" }] }],
   },
   routine: {
     description: "A single routine by id.",
-    examples: [{ args: { id: "rt-nightly" }, result: { id: "rt-nightly", name: "nightly" } }],
+    examples: [
+      {
+        args: { key: "acme/web/rt-nightly" },
+        result: { id: "acme/web/rt-nightly", name: "nightly" },
+      },
+    ],
   },
   routineRuns: {
     description:
       "Paginated run history for one routine (newest first). `before` is the previous page's `nextBefore`.",
     examples: [
       {
-        args: { id: "rt-nightly", limit: 5 },
+        args: { key: "acme/web/rt-nightly", limit: 5 },
         result: { rows: [{ runId: "run-42", outcome: "ok" }], nextBefore: null },
       },
     ],
@@ -277,6 +282,11 @@ const INVOKE_META = {
     description:
       "Managed worktrees on this Mac — one row per managed checkout. Pairs with `onWorktreesChanged(cb)`.",
     examples: [{ args: {}, result: [{ id: "wt-demo-1", path: "/Users/…/worktrees/demo-1" }] }],
+  },
+  canPasteToTerminal: {
+    description:
+      'Whether `sendPrompt({handle: "active", text, submit: false})` has a terminal to paste into: the selected terminal tab of the person\'s focused workspace. Pairs with `onPasteTargetChanged(cb)`.',
+    examples: [{ args: {}, result: true }],
   },
   machines: {
     description:
@@ -470,7 +480,7 @@ const INVOKE_META = {
       "Re-run a routine right now with optional overriding variables. Subscribe via `onRoutineResult` for completion.",
     examples: [
       {
-        args: { id: "rt-nightly" },
+        args: { key: "acme/web/rt-nightly" },
         result: { runId: "run-99", startedAt: "2026-10-05T14:00:00Z" },
       },
     ],
@@ -529,7 +539,13 @@ const INVOKE_META = {
   // ── SEND (write) ────────────────────────────────────────────────────────
   sendPrompt: {
     description:
-      "Type into any running agent by handle, locally or remotely. Submits by default; submit:false pastes without Enter. Needs no launch controller. An unknown delivery may have arrived: never retry automatically. Agents use send_to_session; this is the person's typed send from a page.",
+      "Type into any running agent by handle, locally or remotely. Submits by default; submit:false pastes without Enter. Needs no launch controller. An unknown delivery may have arrived: never retry automatically. `handle: \"active\"` with `submit: false` pastes into the person's active terminal (text is written as typed; a newline in it acts as Enter) and returns `status` `typed`, `no-workspace` or `no-terminal`; ask `canPasteToTerminal()` first. Agents use send_to_session; this is the person's typed send from a page.",
+    examples: [
+      {
+        args: { handle: "active", text: "src/main.ts", submit: false },
+        result: { status: "typed", submitted: false, machine: null, code: null, message: null },
+      },
+    ],
   },
   sendToSession: {
     description:
@@ -599,10 +615,10 @@ const INVOKE_META = {
   },
   routineResult: {
     description:
-      "Current result snapshot for one routine (last successful run's output). For paginated history use `routineRuns`.",
+      "Current result snapshot for one routine (last successful run's output). `key` is the routine's `routines()` row `id`, its full `<org>/<team>/<id>` key. For paginated history use `routineRuns`.",
     examples: [
       {
-        args: { id: "rt-nightly" },
+        args: { key: "acme/web/rt-nightly" },
         result: { ok: true, finishedAt: "2026-10-05T04:00:00Z" },
       },
     ],
@@ -610,13 +626,13 @@ const INVOKE_META = {
   routineStatus: {
     description:
       "Current execution status for one routine. Alias of `routineResult` with status-slanted framing.",
-    examples: [{ args: { id: "rt-nightly" }, result: { ok: true } }],
+    examples: [{ args: { key: "acme/web/rt-nightly" }, result: { ok: true } }],
   },
 
   // ── MANAGEMENT (write-ish — kills what you opened) ──────────────────────
   closeWorkspace: {
     description:
-      "Kill the handle-bound session (freeing the concurrency cap + writing one Kill audit line) AND evict its tab. Idempotent — an unbound handle is a typed no-op. `removeWorktree: true` escalates to the destructive close — reaps the managed worktree after the session closes; `discardUnsaved: true` forces that reap over uncommitted work (listed in `discardedUnsavedWork`). Remote workspaces close every tab but do not yet reap the worktree on the remote machine.",
+      "Kill the handle-bound session (freeing the concurrency cap + writing one Kill audit line) AND evict its tab. Idempotent — an unbound handle is a typed no-op. `removeWorktree: true` escalates to the destructive close — reaps the managed worktree after the session closes; `discardUnsaved: true` forces that reap over uncommitted work (listed in `discardedUnsavedWork`). Remote workspaces close every tab but do not reap the worktree on the remote machine.",
     examples: [{ args: { target: "DEMO-5" }, result: { closed: true } }],
   },
   closeTerminalTab: {
@@ -631,7 +647,7 @@ const INVOKE_META = {
   },
   routineCancel: {
     description: "Cancel a running routine.",
-    examples: [{ args: { id: "rt-nightly" }, result: { cancelled: true } }],
+    examples: [{ args: { key: "acme/web/rt-nightly" }, result: { cancelled: true } }],
   },
 
   // ── Analyze (one-shot CLI) ──────────────────────────────────────────────
@@ -735,7 +751,7 @@ const KIT = [
     wraps: "invoke('queryContext', query || {})",
     description:
       "One-shot context metadata query. Thin wrapper over `invoke`; prefer `subscribeContext` if you want push updates.",
-    example: 'const { rows } = await codesense.queryContext({ scope: { org: "codesense" } });',
+    example: 'const { rows } = await codesense.queryContext({ where: { orgs: ["acme"] } });',
   },
   {
     name: "codesense.context",
@@ -939,14 +955,14 @@ const KIT = [
     category: "data-read",
     wraps: "invoke('routine', args)",
     description: "One routine by id.",
-    example: 'const r = await codesense.routine({ id: "rt-nightly" });',
+    example: 'const r = await codesense.routine({ key: "acme/web/rt-nightly" });',
   },
   {
     name: "codesense.routineRuns",
     category: "data-read",
     wraps: "invoke('routineRuns', args)",
     description: "Paginated run history for one routine.",
-    example: 'const page = await codesense.routineRuns({ id: "rt-nightly", limit: 20 });',
+    example: 'const page = await codesense.routineRuns({ key: "acme/web/rt-nightly", limit: 20 });',
   },
   {
     name: "codesense.routineRun",
@@ -961,35 +977,35 @@ const KIT = [
     wraps: "invoke('routineResult', args)",
     description:
       "Current result snapshot (last successful run). Pairs with `onRoutineResult(cb)` for push.",
-    example: 'const latest = await codesense.routineResult({ id: "rt-nightly" });',
+    example: 'const latest = await codesense.routineResult({ key: "acme/web/rt-nightly" });',
   },
   {
     name: "codesense.routineRefresh",
     category: "nav",
     wraps: "invoke('routineRefresh', args)",
     description: "Re-run a routine right now with optional overriding variables.",
-    example: 'await codesense.routineRefresh({ id: "rt-nightly" });',
+    example: 'await codesense.routineRefresh({ key: "acme/web/rt-nightly" });',
   },
   {
     name: "codesense.routineStatus",
     category: "data-read",
     wraps: "invoke('routineStatus', args)",
     description: "Current execution status for one routine.",
-    example: 'const s = await codesense.routineStatus({ id: "rt-nightly" });',
+    example: 'const s = await codesense.routineStatus({ key: "acme/web/rt-nightly" });',
   },
   {
     name: "codesense.routineCancel",
     category: "nav",
     wraps: "invoke('routineCancel', args)",
     description: "Cancel a running routine.",
-    example: 'await codesense.routineCancel({ id: "rt-nightly" });',
+    example: 'await codesense.routineCancel({ key: "acme/web/rt-nightly" });',
   },
   {
     name: "codesense.onRoutineResult",
     category: "data-read",
     wraps: "codesense:routines-changed listener",
     description: "Nudge callback — fires whenever the host pushes `codesense:routines-changed`.",
-    example: "codesense.onRoutineResult(() => codesense.routineResult({ id }).then(render));",
+    example: "codesense.onRoutineResult(() => codesense.routineResult({ key }).then(render));",
   },
   {
     name: "codesense.onRoutinesChanged",
@@ -1058,6 +1074,14 @@ const KIT = [
     example: "const rates = await codesense.modelRates();",
   },
   {
+    name: "codesense.canPasteToTerminal",
+    category: "data-read",
+    wraps: "invoke('canPasteToTerminal')",
+    description:
+      'Whether `sendPrompt({handle: "active", submit: false})` has a terminal to paste into.',
+    example: "const canPaste = await codesense.canPasteToTerminal();",
+  },
+  {
     name: "codesense.onMachinesChanged",
     category: "data-read",
     wraps: "codesense:machines-changed listener",
@@ -1070,6 +1094,13 @@ const KIT = [
     wraps: "codesense:worktrees-changed listener",
     description: "Nudge callback for managed worktree changes.",
     example: "codesense.onWorktreesChanged(() => codesense.worktrees().then(render));",
+  },
+  {
+    name: "codesense.onPasteTargetChanged",
+    category: "data-read",
+    wraps: "codesense:paste-target-changed listener",
+    description: "Nudge callback for when `canPasteToTerminal()` changes.",
+    example: "codesense.onPasteTargetChanged(() => codesense.canPasteToTerminal().then(render));",
   },
   {
     name: "codesense.readWorkspace",
@@ -1730,7 +1761,7 @@ const EVENT_META = {
     timing: "On routine list change",
     description:
       "Nudge for routine-aware dashboards — call `codesense.routines()` or `codesense.routineResult(args)` to re-read.",
-    example: "codesense.onRoutineResult(() => codesense.routineResult({ id }).then(render));",
+    example: "codesense.onRoutineResult(() => codesense.routineResult({ key }).then(render));",
   },
   "codesense:agents-changed": {
     direction: "parent-to-doc",
@@ -1767,6 +1798,13 @@ const EVENT_META = {
     timing: "On managed worktree change",
     description: "Nudge for `worktrees()` listeners.",
     example: "codesense.onWorktreesChanged(() => codesense.worktrees().then(render));",
+  },
+  "codesense:paste-target-changed": {
+    direction: "parent-to-doc",
+    payload: "N/A",
+    timing: "When the person's active terminal appears, goes or the workspace changes",
+    description: "Nudge for `canPasteToTerminal()` listeners.",
+    example: "codesense.onPasteTargetChanged(() => codesense.canPasteToTerminal().then(render));",
   },
   "codesense:snapshot-request": {
     direction: "parent-to-doc",

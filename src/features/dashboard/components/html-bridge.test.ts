@@ -22,6 +22,14 @@ const mockOpenFileInTeam = vi.fn();
 vi.mock("@/shared/lib/open-file-in-team", () => ({
   openFileInTeam: (...args: unknown[]) => mockOpenFileInTeam(...args),
 }));
+const mockPasteToActiveTerminal = vi.fn();
+const mockCanPasteToTerminal = vi.fn();
+vi.mock("@/shared/lib/send-to-terminal", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/lib/send-to-terminal")>()),
+  pasteToActiveTerminal: (...args: unknown[]) => mockPasteToActiveTerminal(...args),
+  canPasteToTerminal: () => mockCanPasteToTerminal(),
+  subscribePasteTarget: () => () => {},
+}));
 const mockOpenMessageTab = vi.fn();
 vi.mock("@/features/weft/components/inbox-message-dashboard", () => ({
   openMessageTab: (...args: unknown[]) => mockOpenMessageTab(...args),
@@ -191,6 +199,42 @@ describe("sendPrompt", () => {
     expect(mockSendPromptToAgent).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["typed", null],
+    ["no-workspace", "No workspace open"],
+    ["no-terminal", "No terminal active"],
+  ])(
+    'handle "active" pastes into the active terminal and reports %s honestly',
+    async (status, message) => {
+      mockPasteToActiveTerminal.mockResolvedValue({ status, message });
+      await expect(
+        runBridgeCommand("sendPrompt", { handle: "active", text: "a\n b", submit: false }),
+      ).resolves.toEqual({ status, submitted: false, machine: null, code: null, message });
+      expect(mockPasteToActiveTerminal).toHaveBeenCalledWith("a\n b");
+      expect(mockSendPromptToAgent).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([{}, { submit: true }])(
+    'handle "active" only pastes without Enter: %j is rejected',
+    async (extra) => {
+      await expect(
+        runBridgeCommand("sendPrompt", { handle: "active", text: "x", ...extra }),
+      ).rejects.toThrow(/submit:false/);
+      expect(mockPasteToActiveTerminal).not.toHaveBeenCalled();
+      expect(mockSendPromptToAgent).not.toHaveBeenCalled();
+    },
+  );
+
+  it("canPasteToTerminal is an audit-exempt read of the host's answer", async () => {
+    mockCanPasteToTerminal.mockReturnValue(true);
+    await expect(runBridgeCommand("canPasteToTerminal", undefined)).resolves.toBe(true);
+    mockCanPasteToTerminal.mockReturnValue(false);
+    await expect(runBridgeCommand("canPasteToTerminal", undefined)).resolves.toBe(false);
+    expect(READ_VERBS).toContain("canPasteToTerminal");
+    expect(ACTION_VERBS).not.toContain("canPasteToTerminal");
+  });
+
   it("preserves uncertain delivery so a page does not retry it", async () => {
     const unknown = {
       ...outcome,
@@ -216,6 +260,7 @@ describe("HTML_BRIDGE_ALLOWLIST", () => {
       "agents",
       "analyze",
       "archive",
+      "canPasteToTerminal",
       "closeTerminalTab",
       "closeWorkspace",
       "commands.list",

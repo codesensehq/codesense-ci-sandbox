@@ -315,6 +315,9 @@ fn forward(from: &mut impl Read, to: &mut impl Write) -> std::io::Result<()> {
 mod tests {
     use super::*;
     use std::os::unix::net::UnixListener;
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    use std::sync::mpsc::RecvTimeoutError;
+    use std::sync::Arc;
 
     fn args(list: &[&str]) -> Vec<String> {
         list.iter().map(|arg| arg.to_string()).collect()
@@ -380,6 +383,28 @@ mod tests {
         }
     }
 
+    /// Counts the bytes that cross a reader or writer, for the relay watchdog.
+    struct Counted<T>(T, Arc<AtomicUsize>);
+
+    impl<T: Read> Read for Counted<T> {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            let n = self.0.read(buf)?;
+            self.1.fetch_add(n, Ordering::SeqCst);
+            Ok(n)
+        }
+    }
+
+    impl<T: Write> Write for Counted<T> {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            let n = self.0.write(buf)?;
+            self.1.fetch_add(n, Ordering::SeqCst);
+            Ok(n)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.0.flush()
+        }
+    }
+
     /// Every byte crosses unchanged both ways — newlines, NULs and all 256
     /// values, well past any buffer size — and the relay ends once the host
     /// closes after its client's input ended.
@@ -391,19 +416,78 @@ mod tests {
             .unwrap();
         let path = dir.path().join("echo.sock");
         let listener = UnixListener::bind(&path).unwrap();
-        let echo = thread::spawn(move || {
-            let (mut stream, _) = listener.accept().unwrap();
-            let mut writer = stream.try_clone().unwrap();
-            std::io::copy(&mut stream, &mut writer).unwrap();
-        });
+        let socket = UnixStream::connect(&path).unwrap();
+        let (host, _) = listener.accept().unwrap();
+        let [upstream, arrived, echoed, received_count] =
+            [(); 4].map(|_| Arc::new(AtomicUsize::new(0)));
+        let echo = {
+            let mut stream = Counted(host.try_clone().unwrap(), arrived.clone());
+            let mut writer = Counted(host.try_clone().unwrap(), echoed.clone());
+            thread::spawn(move || {
+                let copied = std::io::copy(&mut stream, &mut writer);
+                // The watchdog holds a clone of this socket, so dropping ours would not close it.
+                let _ = stream.0.shutdown(std::net::Shutdown::Write);
+                copied
+            })
+        };
+
+        // A hang here once ran to the 300 s harness timeout with no evidence. After
+        // 30 s, shut both sockets so every blocked side returns, and fail with how far
+        // each direction got.
+        let (done, finished) = std::sync::mpsc::channel::<()>();
+        let timed_out = Arc::new(AtomicBool::new(false));
+        let watchdog = {
+            let sockets = [socket.try_clone().unwrap(), host];
+            let timed_out = timed_out.clone();
+            thread::spawn(move || {
+                if let Err(RecvTimeoutError::Timeout) =
+                    finished.recv_timeout(Duration::from_secs(30))
+                {
+                    timed_out.store(true, Ordering::SeqCst);
+                    for socket in &sockets {
+                        let _ = socket.shutdown(std::net::Shutdown::Both);
+                    }
+                }
+            })
+        };
 
         let sent: Vec<u8> = (0..3 * 1024 * 1024u32)
             .map(|i| (i.wrapping_mul(2_654_435_761) >> 13) as u8)
             .collect();
         let mut received = Vec::new();
-        let socket = UnixStream::connect(&path).unwrap();
-        pipe(socket, std::io::Cursor::new(sent.clone()), &mut received).unwrap();
-        echo.join().unwrap();
+        let result = pipe(
+            socket,
+            Counted(std::io::Cursor::new(sent.clone()), upstream.clone()),
+            Counted(&mut received, received_count.clone()),
+        );
+        let _ = done.send(());
+        watchdog.join().unwrap();
+        if timed_out.load(Ordering::SeqCst) {
+            let [upstream, arrived, echoed, received] =
+                [&upstream, &arrived, &echoed, &received_count]
+                    .map(|count| count.load(Ordering::SeqCst));
+            // Each count is what one side has finished with, so the first gap along the
+            // path names the side that is stuck.
+            let stage = if echoed < arrived {
+                "the host's echo is blocked writing back"
+            } else if arrived < upstream {
+                "bytes read from input have not reached the host"
+            } else if upstream < sent.len() {
+                "upstream is still reading its input"
+            } else if received < echoed {
+                "echoed bytes have not reached the output"
+            } else {
+                "every byte crossed; waiting for the host to close"
+            };
+            panic!(
+                "relay stalled for 30 s ({stage}): of {} bytes, {upstream} read from input, \
+                 {arrived} reached the host, {echoed} echoed, {received} received; \
+                 pipe returned {result:?}",
+                sent.len()
+            );
+        }
+        result.unwrap();
+        echo.join().unwrap().unwrap();
         assert_eq!(received.len(), sent.len());
         assert!(received == sent, "the relay changed the bytes");
     }

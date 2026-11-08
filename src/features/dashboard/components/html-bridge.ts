@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 import { openDiff } from "@/features/git-sync/lib/open-diff";
 import type { OpenDiffParams } from "@/features/git-sync/lib/open-diff-types";
-import { sendTextToTerminal } from "@/shared/lib/send-to-terminal";
+import {
+  canPasteToTerminal,
+  pasteToActiveTerminal,
+  type PasteStatus,
+} from "@/shared/lib/send-to-terminal";
 import { fileSurfaceCall, fileSurfacePrepareView } from "@/tauri/commands";
 import { buildTeamKey } from "@/shared/lib/team-key";
 import { openRoutineDraft } from "@/features/routines/routines-virtual-tab";
@@ -220,6 +224,9 @@ async function subscriptionView(args: Record<string, unknown>, ctx?: BridgeConte
 }
 
 export type BridgeHandler = (args: unknown, ctx?: BridgeContext) => Promise<unknown>;
+
+/** sendPrompt({handle:"active", submit:false}): the paste typed, or why it typed nothing. */
+type PasteResult = Omit<AgentPromptResult, "status"> & { status: PasteStatus };
 
 /** The calling doc's launch controller; without one in the context (a caller
  *  outside any doc) the app-wide registered one. */
@@ -1220,6 +1227,9 @@ export const HTML_BRIDGE_ALLOWLIST: Record<string, BridgeHandler> = {
   // set, by model prefix and then by day: [{modelPrefix, effectiveFrom, inputPerMtok, outputPerMtok,
   // cacheReadPerMtok, long, source}].
   modelRates: () => sessionReadModelRates(),
+  // Whether sendPrompt({handle:"active"}) has a terminal to paste into; the host nudges
+  // codesense:paste-target-changed when the answer changes.
+  canPasteToTerminal: async () => canPasteToTerminal(),
   // [list_machines] the machines the page's team sees.
   machines: async (_args, ctx) => {
     const { org, team } = await inboxTeam(ctx, "machines");
@@ -2071,13 +2081,10 @@ export const HTML_BRIDGE_ALLOWLIST: Record<string, BridgeHandler> = {
     return controller.runPrompt({ target: handle, prompt });
   },
 
-  sendPrompt: async (args): Promise<AgentPromptResult> => {
-    const active = args as { handle?: string; text?: string; submit?: boolean };
-    if (active.handle === "active" && active.submit === false && active.text?.trim()) {
-      sendTextToTerminal(active.text);
-      return { status: "typed", submitted: false, machine: null, code: null, message: null };
-    }
-
+  // handle:"active" writes into the person's active terminal (the selected tab of the focused
+  // workspace) as typed, adding no Enter (a newline in the text acts as Enter), and says
+  // honestly whether anything was typed.
+  sendPrompt: async (args): Promise<AgentPromptResult | PasteResult> => {
     const { handle, text, submit } = (args ?? {}) as {
       handle: unknown;
       text: unknown;
@@ -2091,6 +2098,13 @@ export const HTML_BRIDGE_ALLOWLIST: Record<string, BridgeHandler> = {
     }
     if (submit !== undefined && typeof submit !== "boolean") {
       throw new Error("sendPrompt: {submit} must be a boolean");
+    }
+    if (handle === "active") {
+      if (submit !== false) {
+        throw new Error('sendPrompt: handle "active" adds no Enter; pass submit:false');
+      }
+      const { status, message } = await pasteToActiveTerminal(text);
+      return { status, submitted: false, machine: null, code: null, message };
     }
     try {
       return await sendPromptToAgent(handle, null, text, submit);

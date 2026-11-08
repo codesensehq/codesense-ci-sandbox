@@ -54,11 +54,9 @@ One call to `schedule_wakeup`:
 - `list_wakeups {sessionId}` shows your timers; `cancel_wakeup {sessionId, timerId}`
   stops one. Tell the user the `nextAt` you got back.
 - Works in any interactive CodeSense session, saved agent or not, on this Mac or on a
-  connected machine. Not for headless runs (`claude -p`); Codex sessions are not supported
-  yet. Setting, listing and cancelling need the CodeSense desktop connected; timers already
+  connected machine. Not for headless runs (`claude -p`) or Codex sessions. Setting, listing and cancelling need the CodeSense desktop connected; timers already
   set on a remote machine keep firing while the desktop is away. On a remote machine, if the
-  desktop disconnects your CodeSense tools stop working for the rest of the session (a fix is
-  planned); your timers keep firing, but you can't list or cancel them until a restart.
+  desktop disconnects your CodeSense tools stop working for the rest of the session; your timers keep firing, but you can't list or cancel them until a restart.
 - Limits: 10 active timers per session, 200 per machine. There is no lifetime cap: a
   session that runs for a week can take hundreds of small wakes. A fixed safety backstop
   (120 wakes an hour per session, every source together) refuses the rest as
@@ -106,8 +104,8 @@ Wake has rules:
   `fresh` only, so a tab someone opened by hand is never typed into.
 - An agent that runs without permission checks (bypass or unattended) is woken only if its
   definition sets `allowWake: true`.
-- A headless run is never woken. Codex idle detection is not qualified yet, so wakes into
-  Codex sessions may come back `undelivered (unobservable)`.
+- A headless run is never woken. CodeSense can't tell when a Codex session is idle, so wakes
+  into Codex sessions may come back `undelivered (unobservable)`.
 - The wake text is the `task` with only `{{date}}` and `{{timestamp}}` filled in.
   `{{last_run_summary}}`, `{{last_run_at}}` and `{{trigger.*}}` fill in only for
   `fresh`; in a wake they stay literal, so don't rely on them there.

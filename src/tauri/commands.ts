@@ -9707,7 +9707,7 @@ export const listMoveIntentsBridge = () => invoke<MoveIntentView[]>("list_move_i
  *
  *  `archivedAtMs` is epoch-ms when the operator marked the workspace archived,
  *  or `null` for an active workspace. The entry is keyed by the viewer
- *  workspace id string (`root:<path>` / `story:<id>` / `generic:<path>` —
+ *  workspace id string (`root:<owner>/<repo>` / `story:<id>` / `generic:<path>` —
  *  the same form `OpenTerminalTabParams.workspaceId` carries).
  *
  *  See `_bmad-output/21-workspace-chat/stories/SW-WC-1-workspace-archive.md`.

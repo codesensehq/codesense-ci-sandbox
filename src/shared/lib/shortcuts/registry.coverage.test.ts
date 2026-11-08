@@ -12,9 +12,9 @@ import {
 } from "./registry";
 
 describe("SHORTCUT_ACTIONS", () => {
-  it("keeps Inbox in View with its persisted id, default chord and a replaceable binding", () => {
+  it("keeps Inbox in View → Panels with its persisted id, default chord and a replaceable binding", () => {
     const action = SHORTCUT_ACTIONS.find((a) => a.id === "viewer.toggle-inbox-rollup")!;
-    expect(action.menuPath).toEqual(["View", "Inbox"]);
+    expect(action.menuPath).toEqual(["View", "Panels → Inbox"]);
     expect(action.defaultKeystroke).toBe("CmdOrCtrl+Shift+I");
     const binding = resolveBindings({ [action.id]: "CmdOrCtrl+Alt+I" }).get(action.id)!;
     expect(binding.keystroke).toBe("CmdOrCtrl+Alt+I");

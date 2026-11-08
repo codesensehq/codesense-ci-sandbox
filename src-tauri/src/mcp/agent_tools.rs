@@ -1196,7 +1196,8 @@ fn draft_agent(
         None => session_runtime.ok_or_else(|| {
             Refusal::invalid(
                 Some("runtime"),
-                // Hermes is left out on purpose: it is a preview, not positioned for 0.1.0.
+                // Hermes is a preview runtime: parse_runtime accepts it, but this
+                // hint doesn't offer it.
                 "pass `runtime`: `claude`, `codex` or `opencode`. It defaults to your own CLI \
                  only when CodeSense launched you (pass your `sessionId`) and recorded which",
             )

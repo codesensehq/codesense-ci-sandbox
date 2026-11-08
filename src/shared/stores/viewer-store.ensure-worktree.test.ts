@@ -2406,7 +2406,7 @@ describe("ensureWorktree — F-29 pre-flight branch guard", () => {
   // the default branch as `overrideStartPoint`), so the new workspace is FOCUSED
   // (`activeWorkspace`) and a terminal SPAWNS in it — via the shared `onCreating`
   // hook + `finishForegroundOpen` tail, the SAME path a normal open uses (no
-  // second branch that can forget it). RED on 32b8d6de: the old create-only body
+  // second branch that can forget it). RED before this fix: the old create-only body
   // called `ensureWorktree` directly and returned the cwd UNOPENED — neither
   // `activeWorkspace` nor a terminal tab was set, so the user landed in `$HOME`.
   it("an open with a default-branch override focuses the new workspace and spawns a terminal in it", async () => {

@@ -335,8 +335,8 @@ revision: 1</code></pre>
           A <strong>saved agent</strong> with <code>launch: foreground</code>. The built-in starters
           (<code>builtin/claude</code>, <code>builtin/codex</code>) start a new session only, so a
           tab someone opened by hand is never typed into. A headless run is never woken. An agent
-          that auto-approves every tool needs <code>allowWake: true</code> in its definition. Codex
-          idle detection isn't qualified yet, so wakes into Codex sessions may come back
+          that auto-approves every tool needs <code>allowWake: true</code> in its definition. CodeSense
+          can't tell when a Codex session is idle, so wakes into Codex sessions may come back
           <em>undelivered (unobservable)</em>.
         </p>
         <p>
@@ -369,8 +369,8 @@ revision: 1</code></pre>
           hand. If the Manager is running, the task goes into its tab; if not, a Manager starts.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "routine_run_now", "args": {"id": "manager-wake"}}'
+          verb="routine_run_now"
+          args='{"id": "manager-wake"}'
           label="Run manager-wake once"
           dry-run="true"
         ></cs-try-this>

@@ -727,10 +727,11 @@ const shortcutActions: readonly ShortcutAction[] = [
     },
   },
   {
-    // Keep the persisted shortcut id while opening the Inbox pane.
+    // Keep the persisted shortcut id while opening the Inbox pane. The item sits in
+    // View's Panels submenu.
     id: "viewer.toggle-inbox-rollup",
     label: "Inbox",
-    menuPath: ["View", "Inbox"],
+    menuPath: ["View", "Panels → Inbox"],
     defaultKeystroke: "CmdOrCtrl+Shift+I",
     scope: "team",
     // ⌘ only on macOS, like ⌘I: ⌃⇧I reaches a shell as Tab.

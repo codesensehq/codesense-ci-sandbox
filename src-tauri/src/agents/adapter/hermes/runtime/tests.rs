@@ -6,6 +6,33 @@ use std::sync::{
     Arc,
 };
 
+/// Compiles `code` into the native binary `binary`, keeping its source beside it.
+fn compile_c(code: &str, binary: &Path) {
+    let source = binary.with_extension("c");
+    fs::write(&source, code).unwrap();
+    let compiled = std::process::Command::new("cc")
+        .arg(&source)
+        .arg("-o")
+        .arg(binary)
+        .output()
+        .unwrap();
+    assert!(
+        compiled.status.success(),
+        "{}: {}",
+        binary.display(),
+        String::from_utf8_lossy(&compiled.stderr)
+    );
+}
+
+/// Compiles a native interpreter inside the install that hands its script to `/bin/sh`.
+/// A relocated copy of `/bin/sh` (arm64e, ad-hoc signed) exits silently at exec on macOS 15.
+fn native_sh_trampoline(interpreter: &Path) {
+    compile_c(
+        "#include <unistd.h>\nint main(int argc, char **argv) { (void)argc; argv[0] = \"/bin/sh\"; execv(\"/bin/sh\", argv); return 127; }\n",
+        interpreter,
+    );
+}
+
 pub(crate) struct Fixture {
     home: TempHome,
     source: PathBuf,
@@ -22,16 +49,7 @@ impl Fixture {
         fs::create_dir_all(source.join("ui-tui/dist")).unwrap();
         fs::write(source.join("ui-tui/dist/entry.js"), "bundle").unwrap();
         let interpreter = install.join("python");
-        fs::copy("/bin/sh", &interpreter).unwrap();
-        // macOS refuses a relocated platform binary until it has a local signature.
-        #[cfg(target_os = "macos")]
-        assert!(std::process::Command::new("/usr/bin/codesign")
-            .args(["--force", "--sign", "-"])
-            .arg(&interpreter)
-            .output()
-            .unwrap()
-            .status
-            .success());
+        native_sh_trampoline(&interpreter);
         let program = install.join("agent");
         fs::write(&program, format!("#!{}\nprintf 'Hermes Agent v0.22.5 local 0123456789ab\\n'\nprintf 'probe\\n' >> '{}'\n", interpreter.display(), install.join("versions").display())).unwrap();
         fs::set_permissions(&program, fs::Permissions::from_mode(0o700)).unwrap();
@@ -60,7 +78,6 @@ impl Fixture {
         let metadata = serde_json::json!({"source": self.source, "version": [0,22,5], "commit": "0123456789ab"});
         // A shebang interpreter must itself be native on Darwin; a shell-script
         // interpreter silently falls through without bootstrapping this fixture.
-        let source = self.program.parent().unwrap().join("fixture-interpreter.c");
         let metadata_literal = serde_json::to_string(&metadata.to_string()).unwrap();
         let prepares_literal = serde_json::to_string(
             &self
@@ -71,9 +88,8 @@ impl Fixture {
                 .to_string_lossy(),
         )
         .unwrap();
-        fs::write(
-            &source,
-            format!(
+        compile_c(
+            &format!(
                 r#"
 #include <errno.h>
 #include <stdio.h>
@@ -101,18 +117,7 @@ int main(int argc, char **argv) {{
 }}
 "#
             ),
-        )
-        .unwrap();
-        let compiled = std::process::Command::new("cc")
-            .arg(&source)
-            .arg("-o")
-            .arg(&interpreter)
-            .output()
-            .unwrap();
-        assert!(
-            compiled.status.success(),
-            "fixture dispatcher: {}",
-            String::from_utf8_lossy(&compiled.stderr)
+            &interpreter,
         );
         let program = self.program.parent().unwrap().join("managed-agent");
         fs::write(&program, format!("#!{}\n", interpreter.display())).unwrap();

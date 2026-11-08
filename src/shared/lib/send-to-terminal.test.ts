@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { sendTextToTerminal } from "./send-to-terminal";
+import {
+  canPasteToTerminal,
+  pasteToActiveTerminal,
+  sendTextToTerminal,
+  subscribePasteTarget,
+} from "./send-to-terminal";
 import { writePty } from "@/tauri/commands";
 import { toast } from "sonner";
 import {
@@ -10,6 +15,7 @@ import {
 import { getActiveWorkspaceContext } from "@/shared/hooks/use-active-workspace-context";
 import { resolveRepo } from "@/shared/lib/resolve-repo";
 import { resolveSourceRepoPath } from "@/shared/lib/resolve-source-repo-path";
+import { useOrgStore } from "@/shared/stores/org-store";
 
 // T.6: send-to-terminal reads (teamKey, workspace, repoPath) from
 // getActiveWorkspaceContext() instead of selectedRepoPath. The mock lets
@@ -53,9 +59,14 @@ vi.mock("@/shared/hooks/use-active-workspace-context", () => ({
 }));
 
 const mockShowNoClonePrompt = vi.fn();
+const viewerListeners = new Set<(s: object, prev: object) => void>();
 vi.mock("@/shared/stores/viewer-store", () => {
   const store = () => ({});
   store.getState = () => ({ showNoClonePrompt: mockShowNoClonePrompt });
+  store.subscribe = (listener: (s: object, prev: object) => void) => {
+    viewerListeners.add(listener);
+    return () => viewerListeners.delete(listener);
+  };
   return {
     useViewerStore: store,
     promptIdentityFromRepoPath: vi.fn(() => null),
@@ -340,6 +351,137 @@ describe("sendTextToTerminal", () => {
       expect(resolveRepo).toHaveBeenCalled();
       expect(writePty).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("the active-terminal paste", () => {
+  const tabs = [{ id: "tab-1", sessionId: "sess-1", name: "Terminal 1" }];
+  const selectTab = (id: string | undefined) => {
+    (getActiveWorkspaceActiveTab as Mock).mockReturnValue(id);
+    (getActiveWorkspaceTabs as Mock).mockReturnValue(id ? tabs : []);
+  };
+
+  it("types into the selected tab without Enter and reports typed", async () => {
+    selectTab("tab-1");
+    expect(canPasteToTerminal()).toBe(true);
+    await expect(pasteToActiveTerminal("line one\n  two ✓")).resolves.toEqual({
+      status: "typed",
+      message: null,
+    });
+    expect(writePty).toHaveBeenCalledWith("sess-1", "line one\n  two ✓");
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it("reports no-terminal with classic Notes' toast when the workspace has none", async () => {
+    selectTab(undefined);
+    expect(canPasteToTerminal()).toBe(false);
+    await expect(pasteToActiveTerminal("x")).resolves.toEqual({
+      status: "no-terminal",
+      message: "No terminal active",
+    });
+    expect(writePty).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith("No terminal active", { duration: 3000 });
+  });
+
+  it("reports no-workspace when nothing is focused", async () => {
+    mockWorkspace = null;
+    selectTab("tab-1");
+    expect(canPasteToTerminal()).toBe(false);
+    await expect(pasteToActiveTerminal("x")).resolves.toEqual({
+      status: "no-workspace",
+      message: "No workspace open",
+    });
+    expect(writePty).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith("No workspace open", { duration: 3000 });
+  });
+
+  it("reports no-terminal when the session ended before the write", async () => {
+    selectTab("tab-1");
+    (writePty as Mock).mockRejectedValueOnce(new Error("write_pty: session not found: sess-1"));
+    await expect(pasteToActiveTerminal("x")).resolves.toMatchObject({ status: "no-terminal" });
+  });
+
+  it("rejects a genuine write failure instead of claiming typed", async () => {
+    selectTab("tab-1");
+    (writePty as Mock).mockRejectedValueOnce(new Error("IPC channel closed"));
+    await expect(pasteToActiveTerminal("x")).rejects.toThrow("IPC channel closed");
+  });
+
+  it("never opens the attach-a-clone prompt: it pastes exactly when it can", async () => {
+    mockWorkspace = { id: "s1", kind: "story", cwd: "/wt/s", status: "ready" };
+    mockRepoPath = "team:my-repo";
+    (resolveRepo as Mock).mockReturnValue({ id: "r" });
+    (resolveSourceRepoPath as Mock).mockReturnValueOnce(null);
+    selectTab("tab-1");
+    await expect(pasteToActiveTerminal("x")).resolves.toMatchObject({ status: "typed" });
+    expect(mockShowNoClonePrompt).not.toHaveBeenCalled();
+  });
+
+  it("returns the toast the host showed: an epic still starting its terminal", async () => {
+    mockWorkspace = { id: "e1", kind: "epic", cwd: "/epic", status: "ready" };
+    mockRepoPath = null;
+    selectTab(undefined);
+    const message = "Epic workspace is still starting its terminal — try again in a moment.";
+    await expect(pasteToActiveTerminal("x")).resolves.toEqual({ status: "no-terminal", message });
+    expect(toast.error).toHaveBeenCalledWith(message);
+  });
+
+  it("an exited tab, open read-only, is no paste target", async () => {
+    (getActiveWorkspaceActiveTab as Mock).mockReturnValue("tab-1");
+    (getActiveWorkspaceTabs as Mock).mockReturnValue([
+      { ...tabs[0], exit: { code: 0, signal: null } },
+    ]);
+    expect(canPasteToTerminal()).toBe(false);
+    await expect(pasteToActiveTerminal("x")).resolves.toMatchObject({ status: "no-terminal" });
+    expect(writePty).not.toHaveBeenCalled();
+  });
+
+  it("notifies once per change of the answer, not per store change", () => {
+    selectTab(undefined);
+    const seen: boolean[] = [];
+    const off = subscribePasteTarget((can) => seen.push(can));
+    // A layout change: the slice the subscription watches gets a new reference.
+    const changed = () =>
+      viewerListeners.forEach((listener) =>
+        listener({ terminalLayout: {} }, { terminalLayout: {} }),
+      );
+    changed();
+    selectTab("tab-1");
+    changed();
+    changed();
+    selectTab(undefined);
+    changed();
+    selectTab("tab-1");
+    changed();
+    (getActiveWorkspaceTabs as Mock).mockReturnValue([
+      { ...tabs[0], exit: { code: 0, signal: null } },
+    ]);
+    changed();
+    off();
+    selectTab("tab-1");
+    changed();
+    expect(seen).toEqual([true, false, true, false]);
+  });
+
+  it("ignores viewer-store writes that leave its slices alone (status and progress ticks)", () => {
+    selectTab(undefined);
+    const seen: boolean[] = [];
+    const off = subscribePasteTarget((can) => seen.push(can));
+    selectTab("tab-1");
+    const same = { terminalLayout: {} };
+    viewerListeners.forEach((listener) => listener(same, same));
+    off();
+    expect(seen).toEqual([]);
+  });
+
+  it("follows a team switch, which changes only the org store", () => {
+    selectTab(undefined);
+    const seen: boolean[] = [];
+    const off = subscribePasteTarget((can) => seen.push(can));
+    selectTab("tab-1");
+    useOrgStore.setState({ activeTeamName: "other" });
+    off();
+    expect(seen).toEqual([true]);
   });
 });
 

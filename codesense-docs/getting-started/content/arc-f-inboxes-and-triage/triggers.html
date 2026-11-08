@@ -251,8 +251,8 @@ revision: 1</code></pre>
           a read-only enumeration; it does not fire anything.
         </p>
         <cs-try-this
-          verb="invoke"
-          args='{"name": "routine_list", "args": {"agent": "manager"}}'
+          verb="routine_list"
+          args='{"agent": "manager"}'
           label="List the Manager's routines"
           dry-run="true"
         ></cs-try-this>
@@ -264,8 +264,9 @@ revision: 1</code></pre>
           <pre><code>// Enumerate one agent's routines
 routine_list { agent: 'manager' }
 
-// Watch for firings in real time (routines console dashboard uses this)
-codesense.subscribeContext({ topic: 'routines.runs' }, (run) => { … })
+// Watch for firings in real time (the routines console dashboard does this);
+// key is the routine's routines() row id
+codesense.onRoutinesChanged(() => codesense.routineRuns({ key }).then(render))
 
 // Fire one manually, through its own overlap rule
 routine_run_now { id: 'manager-wake' }</code></pre>

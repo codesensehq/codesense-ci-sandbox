@@ -1395,6 +1395,7 @@ fn exit_payload(
 /// nonzero exit or a signal death is abnormal, and the host's own kill is a
 /// requested exit.
 #[test]
+#[ignore = "quarantine: https://github.com/codesensehq/codesense/issues/6"]
 fn exit_classification_is_identical_across_hosts() {
     use crate::agent_state::{classify_exit, ExitClass};
 

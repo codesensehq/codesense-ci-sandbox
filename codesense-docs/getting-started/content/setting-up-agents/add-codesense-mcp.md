@@ -108,8 +108,8 @@ In the common JSON format:
 }
 ```
 
-There is no HTTP endpoint for your own agents. If a client only speaks HTTP, it can't reach
-CodeSense yet.
+There is no HTTP endpoint for your own agents. A client that only speaks HTTP can't reach
+CodeSense.
 
 ## Next
 

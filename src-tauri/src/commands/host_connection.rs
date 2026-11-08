@@ -1303,7 +1303,9 @@ mod tests {
     }
 
     async fn wait_for_diagnostic(lifecycle: &PinnedTransportLifecycle) -> String {
-        let deadline = std::time::Instant::now() + Duration::from_secs(1);
+        // The join error lands only after the panic hook prints its backtrace, which a
+        // loaded runner with RUST_BACKTRACE=1 can take over a second to symbolicate.
+        let deadline = std::time::Instant::now() + ADMIT_BUDGET;
         loop {
             if let Some(diagnostic) = lifecycle.diagnostic() {
                 return diagnostic;
@@ -1312,7 +1314,7 @@ mod tests {
                 std::time::Instant::now() < deadline,
                 "join failure diagnostic was not recorded"
             );
-            tokio::task::yield_now().await;
+            tokio::time::sleep(Duration::from_millis(5)).await;
         }
     }
 

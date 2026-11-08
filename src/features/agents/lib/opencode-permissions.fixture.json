@@ -1,5 +1,5 @@
 {
-  "provenance": "Read-only CodeSense agent_preview for OpenCode foreground, context/startup empty, declared wildcard plus read allow; no CLI/provider launch. Captured 2026-10-26. Current source generator verified at 69efc0d01.",
+  "provenance": "Read-only CodeSense agent_preview for OpenCode foreground, context/startup empty, declared wildcard plus read allow; no CLI/provider launch. Captured 2026-10-26 and checked against the current source generator.",
   "deny": {
     "permissions": [
       {

@@ -114,7 +114,7 @@ codesense.onInboxChanged(() =&gt;
   codesense.inbox({}).then(renderThreads));
 
 codesense.onRoutineResult(() =&gt;
-  codesense.routineResult({ id: "rt-nightly" }).then(renderStatus));
+  codesense.routineResult({ key: "acme/web/rt-nightly" }).then(renderStatus));
 
 codesense.onWorktreesChanged(() =&gt;
   codesense.worktrees().then(renderWorktrees));
@@ -277,21 +277,21 @@ await codesense.setPrefs?.({ details: "compact" }); // null removes a key</code>
       <section data-search="Subscription lifecycle unsubscribe cleanup" id="lifecycle">
         <h2>Lifecycle — register, unsubscribe, clean up</h2>
         <p>
-          Every subscriber returns a handle with an <code>unsubscribe()</code> method. The
+          Every <code>on…</code> listener and <code>subscribeContext</code> return an unsubscribe function. The
           viewer drops subscriptions automatically when the iframe is torn down (close the tab,
           close the pane, replace the inbox message); you only need to unsubscribe explicitly
           if your dashboard swaps views in-place:
         </p>
         <pre tabindex="0"><code>const subs = [];
 
-function mountOrgsView() {
-  const h1 = codesense.subscribeContext({ scope: "orgs" }, renderOrgs);
+function mountStoriesView() {
+  const h1 = codesense.subscribeContext({ where: { kinds: ["story"] } }, renderStories);
   const h2 = codesense.onAgentsChanged(renderRoster);
   subs.push(h1, h2);
 }
 
 function unmount() {
-  while (subs.length) subs.pop().unsubscribe();
+  while (subs.length) subs.pop()();
 }</code></pre>
         <p>
           A listener registered after the frame hides keeps working — <code>onVisibility</code>

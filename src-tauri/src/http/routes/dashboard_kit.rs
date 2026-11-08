@@ -305,7 +305,7 @@ mod tests {
             assert_eq!(TOKENS_CSS.matches(token).count(), 1, "{token}");
         }
         // SV-PLG-34 (2026-10-23): 5,388 bytes before tree mode; 10,185 after
-        // the files tree (06ccf6faa), 10,707 after 1a29b3c50, 11,066 after PLG-27.
+        // the files tree, 10,707 after the tree's opening and live-update fixes, 11,066 after PLG-27.
         // Tree flattening, ARIA, keyboard/typeahead navigation and stable-row
         // updates account for the growth. Measured gzip-9: 3,410 bytes; full kit
         // + shim, including this module: 135,845 raw / 37,932 gzip-9 bytes.

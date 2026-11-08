@@ -210,6 +210,7 @@ pub fn result_schema(name: &str) -> Value {
             json!({"type":"object","properties":{"focused":{"type":"boolean"}},"required":["focused"]})
         }
         "getDocDir" | "getEpicHandle" => json!({"type":["string","null"]}),
+        "canPasteToTerminal" => json!({"type":"boolean"}),
         "commands.list" => {
             json!({"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"label":{"type":"string"},"scope":{"enum":["global","slot-visible","slot-focused"]},"binding":{"type":"string"},"dashboard":{"type":"string"},"active":{"type":"boolean"},"humanOnly":{"type":"boolean"}},"required":["id","label","scope","binding","dashboard","active","humanOnly"]}})
         }

@@ -41,6 +41,16 @@ export const VERB_REGISTRY = [
     "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding"
   },
   {
+    "name": "canPasteToTerminal",
+    "class": "read",
+    "grant": "sessions:read",
+    "inboxTarget": false,
+    "confirmable": false,
+    "action": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Pages ask it to enable a paste control; agents address sessions by handle with send_to_session."
+  },
+  {
     "name": "closeTerminalTab",
     "class": "manage",
     "grant": "sessions:stop",

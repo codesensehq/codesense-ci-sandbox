@@ -1686,24 +1686,38 @@ esac
         let root = root.path().canonicalize().unwrap();
         let binary = root.join("bin/hermes");
         let interpreter = root.join("python");
-        std::fs::copy("/bin/sh", &interpreter).unwrap();
-        // macOS refuses a relocated platform binary until it has a local signature.
-        #[cfg(target_os = "macos")]
-        assert!(std::process::Command::new("/usr/bin/codesign")
-            .args(["--force", "--sign", "-"])
+        // A relocated copy of `/bin/sh` (arm64e, ad-hoc signed) exits silently at exec on
+        // macOS 15, so the interpreter inside the install is a native trampoline to it.
+        let source = root.join("python.c");
+        std::fs::write(
+            &source,
+            "#include <unistd.h>\nint main(int argc, char **argv) { (void)argc; argv[0] = \"/bin/sh\"; execv(\"/bin/sh\", argv); return 127; }\n",
+        )
+        .unwrap();
+        let compiled = Command::new("cc")
+            .arg(&source)
+            .arg("-o")
             .arg(&interpreter)
             .output()
-            .unwrap()
-            .status
-            .success());
+            .unwrap();
+        assert!(
+            compiled.status.success(),
+            "sh trampoline: {}",
+            String::from_utf8_lossy(&compiled.stderr)
+        );
         std::fs::write(&binary, format!("#!{}\ncase \"$*\" in *--help*) echo '-q --yolo';; *--version*) touch '{}'; exit 1;; esac\n", interpreter.display(), root.join("version-ran").display())).unwrap();
         // Preparation has already executed the real interpreter before warming its cache.
-        // Validate the relocated signed stub here too, outside the host's probe deadline.
+        // Validate the trampoline here too, outside the host's probe deadline.
         let help = Command::new(&binary)
             .args(["chat", "--help"])
             .output()
             .unwrap();
-        assert!(help.status.success());
+        assert!(
+            help.status.success(),
+            "{:?}: {}",
+            help.status,
+            String::from_utf8_lossy(&help.stderr)
+        );
         assert_eq!(String::from_utf8(help.stdout).unwrap().trim(), "-q --yolo");
         let identity =
             RuntimeIdentity::from_prepared_install((0, 22, 5), "0123456789ab", &root).unwrap();

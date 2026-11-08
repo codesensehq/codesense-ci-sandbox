@@ -4,7 +4,7 @@
 
 | Capability | Team-safe team | Team-safe message | Admitted verbs | Conditional admission |
 | --- | --- | --- | --- | --- |
-| sessions:read | true | true | agent, agents, commands.register, dismiss_agent_mark, focusOut, focusTerminal, gotoAgent, launchUnder, modelRates, moveWorkspace, openLauncher, openRoutineDraft, page, prefs, sessionRead, sessionUsage, sessions, setPrefs, setUiState, showMenu, showPopover, storyChanges, storyTotals, subscribe, unsubscribe, whyLine |  |
+| sessions:read | true | true | agent, agents, canPasteToTerminal, commands.register, dismiss_agent_mark, focusOut, focusTerminal, gotoAgent, launchUnder, modelRates, moveWorkspace, openLauncher, openRoutineDraft, page, prefs, sessionRead, sessionUsage, sessions, setPrefs, setUiState, showMenu, showPopover, storyChanges, storyTotals, subscribe, unsubscribe, whyLine |  |
 | sessions:send | true | false | runPrompt, sendPrompt, sendToSession, sendToWorkspaceTab |  |
 | sessions:stop | true | false | closeTerminalTab, closeWorkspace, stopSession |  |
 | launch | true | false | openTab, openWorkspace, runSkill |  |

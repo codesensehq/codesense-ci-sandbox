@@ -291,12 +291,13 @@ revision: 1</code></pre>
           <figure>
             <figcaption>content/sprint-digest.html (excerpt)</figcaption>
             <pre><code>&lt;script type="module"&gt;
-  const key = { id: "sprint-digest" };
+  // key: the routine's routines() row id, its full &lt;org&gt;/&lt;team&gt;/&lt;id&gt; key.
+  const routine = { key: "acme/web/sprint-digest" };
 
   // Load on open — reads the cache, never launches the agent.
   async function paint() {
     const { snapshot, latest_attempt, schema_compatible } =
-      await codesense.routineResult(key);
+      await codesense.routineResult(routine);
     if (!snapshot || !schema_compatible) {
       return render({ status: latest_attempt?.status ?? "collecting" });
     }
@@ -304,12 +305,12 @@ revision: 1</code></pre>
   }
 
   // Live update when the routine fires.
-  codesense.onRoutineResult(key, paint);
+  codesense.onRoutineResult(paint);
 
   // The Refresh button — the ONLY place the pane may launch the agent.
   document
     .querySelector("#refresh")
-    .addEventListener("click", () =&gt; codesense.routineRefresh(key));
+    .addEventListener("click", () =&gt; codesense.routineRefresh(routine));
 
   paint();
 &lt;/script&gt;</code></pre>
@@ -379,15 +380,16 @@ revision: 1</code></pre>
       <section data-search="How to do this via MCP" id="via-mcp">
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
-          <pre><code>// The dashboard reads (never launches the agent)
-codesense.routineResult({ id: 'sprint-digest' })
-codesense.routineStatus({ id: 'sprint-digest' })
+          <pre><code>// key: the routine's routines() row id, &lt;org&gt;/&lt;team&gt;/&lt;id&gt;
+// The dashboard reads (never launches the agent)
+codesense.routineResult({ key: 'acme/web/sprint-digest' })
+codesense.routineStatus({ key: 'acme/web/sprint-digest' })
 
 // Only an explicit user action may trigger this
-codesense.routineRefresh({ id: 'sprint-digest' })
+codesense.routineRefresh({ key: 'acme/web/sprint-digest' })
 
 // Live notifications when the routine publishes a new snapshot
-codesense.onRoutineResult({ id: 'sprint-digest' }, (ev) =&gt; { … })
+codesense.onRoutineResult(() =&gt; { … })
 
 // Inside the routine's agent (the publisher side)
 routine_publish_result { sessionId, payload }</code></pre>

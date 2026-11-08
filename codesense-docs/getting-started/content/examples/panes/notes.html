@@ -677,6 +677,11 @@
       .nt-row[aria-selected="true"] {
         background: color-mix(in srgb, var(--cs-fg) 8%, transparent);
       }
+      .nt-row[aria-disabled="true"] {
+        color: var(--nt-quiet);
+        background: none;
+        cursor: default;
+      }
       .nt-row .nt-icon {
         width: 14px;
         height: 14px;
@@ -1057,6 +1062,8 @@
         renamingId = null;
       let renameWrite = Promise.resolve();
       let canSend = false,
+        canPaste = false,
+        pasteRead = 0,
         includeContext = true,
         presentation = "docked",
         hoverBlock = null,
@@ -2270,19 +2277,59 @@
           run(persist);
         };
         label.append(check, document.createTextNode("Include note as context"));
-        $("float").append(input, element("div", "nt-group", "Agents in this org"), list, label);
+        $("float").append(input, element("div", "nt-group", "Agents in this org"), list);
         if (launcherAvailable())
           $("float").append(button("Start a new agent with this", startNewAgent, "nt-row"));
+        const paste = button(
+          "",
+          () => (canPaste ? pasteRequest() : notice(PASTE_UNAVAILABLE, 3000)),
+          "nt-row",
+        );
+        paste.id = "send-paste";
+        const shortcut = element("span", "nt-row-sub");
+        shortcut.append(element("kbd", "nt-kbd", "⌥⌘↵"));
+        paste.append(element("span", "nt-row-label", "Paste into terminal"), shortcut);
+        // The context choice only applies to agents, so it sits below every action.
+        $("float").append(paste, label);
+        renderPaste();
         input.oninput = renderSendAgents;
         input.onkeydown = (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            list.querySelector("button")?.click();
+            if (e.metaKey && e.altKey) run(pasteRequest);
+            else list.querySelector("button")?.click();
           }
         };
         renderSendAgents();
         positionFloat(anchor);
         input.focus();
+      }
+      const PASTE_UNAVAILABLE = "Open a terminal to paste into it";
+      // The person's active terminal: the selected terminal tab of the focused workspace.
+      async function refreshPaste() {
+        const read = ++pasteRead;
+        const next = (await cs.canPasteToTerminal?.().catch(() => false)) === true;
+        if (read !== pasteRead || disposed) return;
+        canPaste = next;
+        renderPaste();
+      }
+      function renderPaste() {
+        const paste = document.getElementById("send-paste");
+        if (!paste) return;
+        paste.setAttribute("aria-disabled", String(!canPaste));
+        if (canPaste) paste.removeAttribute("title");
+        else paste.title = PASTE_UNAVAILABLE;
+      }
+      function pasteRequest() {
+        const request = sendRequest;
+        if (!request) return;
+        sendRequest = null;
+        closeFloat(false);
+        return pasteText(request.text);
+      }
+      // Types without Enter. With no terminal the host shows the toast classic Notes shows.
+      function pasteText(text) {
+        return cs.sendPrompt?.({ handle: "active", text, submit: false });
       }
       function renderSendAgents() {
         if (menu !== "send") return;
@@ -2508,10 +2555,11 @@
           renderOutline();
         },
         onSend: (paste) => {
-          if (!paste && canSend) {
+          if (canSend) {
             const target = editor.commands.sendTarget();
-            if (target) openSend(target);
-            else notice("Put the caret on a line, or select text, to send it.", 2000);
+            if (!target) notice("Put the caret on a line, or select text, to send it.", 2000);
+            else if (paste) run(() => pasteText(target.text));
+            else openSend(target);
           }
           return true;
         },
@@ -2895,6 +2943,10 @@
         canSend = cs.has?.("sendPrompt");
         $("empty-routine").hidden = !cs.has?.("openRoutineDraft");
         $("notes").dataset.canSend = String(canSend);
+        if (canSend && cs.has?.("canPasteToTerminal")) {
+          cs.onPasteTargetChanged?.(() => run(refreshPaste));
+          run(refreshPaste);
+        } else canPaste = canSend;
         $("org-name").textContent = context.org || "";
         $("empty-title").textContent = `Notes for ${context.org || "you"}`;
         let snapshot = await cs.subscribe?.("records", { collection, onChange: recordsChanged });

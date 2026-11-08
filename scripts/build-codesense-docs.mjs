@@ -79,18 +79,15 @@ function releaseText(name) {
   return agentReleases[name];
 }
 
-// SW-ODC-V bridge-verb allowlist: every verb the shipped docs name in a
-// `<cs-try-this verb="…">` and every verb an ambient right pane (SW-ODC-P) calls
-// or dispatches via its `data-action` JSON. Hand-maintained.
-//
-// A live Try-this calls `window.codesense.invoke(verb)`, which accepts only the
-// page-bridge verbs (`HTML_BRIDGE_ALLOWLIST` in
-// src/features/dashboard/components/html-bridge.ts). MCP tool names are listed
-// here only for `dry-run="true"` buttons, which show the call an agent makes and
-// never invoke it. `subscribeContext` and `onTheme` are page-SDK methods a pane
-// may call directly.
+// SW-ODC-V bridge-verb allowlist: every verb an ambient right pane (SW-ODC-P) calls
+// or dispatches via its `data-action` JSON. Hand-maintained. A pane calls
+// `window.codesense.invoke(verb)`, which accepts only the page-bridge verbs
+// (`HTML_BRIDGE_ALLOWLIST` in src/features/dashboard/components/html-bridge.ts).
+// `<cs-try-this verb="…">` blocks are checked by scripts/check-docs-api-examples.mjs,
+// against the generated page verbs and MCP tools. `subscribeContext` and `onTheme` are
+// page-SDK methods a pane may call directly.
 const BRIDGE_VERB_ALLOWLIST = new Set([
-  // Page-bridge verbs (live Try-this buttons and panes).
+  // Page-bridge verbs.
   "context",
   "worktrees",
   "machines",
@@ -102,14 +99,6 @@ const BRIDGE_VERB_ALLOWLIST = new Set([
   "runSkill",
   "subscribeContext",
   "onTheme",
-  // MCP tool names shown by dry-run buttons only.
-  "invoke",
-  "send_message",
-  "hydrate_story",
-  "open_terminal_tab",
-  "open_remote_tab",
-  "test_machine_connection",
-  "terminal_server_status",
 ]);
 
 // SW-ODC-P: `showsOn` keys a pane manifest may use. Mirrors the taxonomy the
@@ -450,7 +439,6 @@ export function lintFactoryPlaybook(files) {
  * Rules:
  *   - Every file under `getting-started/content/arc-*\/` opens with
  *     `<section data-hero>`.
- *   - Every `<cs-try-this verb="X">` resolves to a known bridge verb.
  *   - Every `<img data-annot>` has a sibling `.annot.json` in the bundle.
  *   - Every annotated screenshot has both `-dark.png` and `-light.png`.
  *   - Zero Mermaid / D2 blocks in shipped HTML.
@@ -489,24 +477,7 @@ export function lintShippedHtml(files) {
       }
     }
 
-    // 2. <cs-try-this verb="X"> resolves to a known allowlisted verb.
-    const tryRe = /<cs-try-this\b([^>]*)>/gi;
     let m;
-    while ((m = tryRe.exec(html)) !== null) {
-      const vattr = /\bverb\s*=\s*"([^"]+)"/i.exec(m[1]);
-      if (!vattr) {
-        errors.push(`${path}: <cs-try-this> missing verb attribute.`);
-        continue;
-      }
-      if (!BRIDGE_VERB_ALLOWLIST.has(vattr[1])) {
-        errors.push(
-          `${path}: <cs-try-this verb="${vattr[1]}"> is not in the bridge-verb ` +
-            `allowlist (BRIDGE_VERB_ALLOWLIST in scripts/build-codesense-docs.mjs; ` +
-            `SW-ODC-V lint).`,
-        );
-      }
-    }
-
     // 3. <img data-annot="…"> has a sibling .annot.json in the bundle.
     const annotRe = /<img\b[^>]*\bdata-annot\s*=\s*"([^"]+)"[^>]*>/gi;
     while ((m = annotRe.exec(html)) !== null) {

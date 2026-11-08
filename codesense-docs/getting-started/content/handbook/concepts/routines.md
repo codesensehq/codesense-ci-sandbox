@@ -23,7 +23,7 @@ The **mode** says what a fire does:
 - **wake** types the task into the agent's running session once it is idle, so the agent keeps everything it already knows. It never starts a second copy. If none is running, it starts one with the task as its first prompt. It types only when the agent is idle, nobody has typed in that tab for 3 seconds, and no prompt is waiting on you. The tab's caption then says which routine woke it.
 - **start a new** (`mode: fresh` in the file) starts a new session of the agent on every fire, with the task as its whole prompt. Use it for a nightly report or a digest that wants a clean slate.
 
-A wake into a busy agent waits for it to go idle, 30 minutes by default (`max_wait`), and fires that come meanwhile fold into it. Wake works for a saved agent that launches in a tab. Idle detection for Codex isn't qualified yet, so a wake into a Codex session may come back undelivered.
+A wake into a busy agent waits for it to go idle, 30 minutes by default (`max_wait`), and fires that come meanwhile fold into it. Wake works for a saved agent that launches in a tab. CodeSense can't tell when a Codex session is idle, so a wake into a Codex session may come back undelivered.
 
 ## Limits
 
@@ -57,7 +57,7 @@ routine_create({
 
 > **Beta**
 >
-> On its schedule the agent reads each source through its own MCP servers, triages what's new into stories, and can start an agent on an urgent one with `open_workspace`. CodeSense never talks to Slack, Jira, GitHub or Datadog itself; the agent does, with the access you gave it. A full triage run like this hasn't been recorded end to end yet.
+> On its schedule the agent reads each source through its own MCP servers, triages what's new into stories, and can start an agent on an urgent one with `open_workspace`. CodeSense never talks to Slack, Jira, GitHub or Datadog itself; the agent does, with the access you gave it. No full triage run like this has been recorded end to end.
 
 ## Where a routine fires
 

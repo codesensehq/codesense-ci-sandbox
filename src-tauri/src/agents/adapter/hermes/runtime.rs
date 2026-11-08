@@ -113,26 +113,30 @@ fn run(
     let deadline = Instant::now() + timeout;
     let status = loop {
         match child.try_wait() {
-            Ok(Some(status)) => break Some(status),
+            Ok(Some(status)) => break Ok(status),
             Ok(None) if Instant::now() < deadline => std::thread::sleep(Duration::from_millis(20)),
-            _ => {
+            waited => {
                 unsafe {
                     libc::kill(-(std::process::Child::id(&child) as i32), libc::SIGKILL);
                 }
                 let _ = child.wait();
-                break None;
+                break Err(match waited {
+                    Err(e) => format!("wait failed: {e}"),
+                    _ => format!("timed out after {timeout:?}"),
+                });
             }
         }
     };
     let bytes = fs::read(&log).map_err(|e| e.to_string())?;
     let tail = String::from_utf8_lossy(&bytes[bytes.len().saturating_sub(4096)..]).into_owned();
-    if status.is_some_and(|s| s.success()) {
+    if status.as_ref().is_ok_and(|s| s.success()) {
         Ok(tail)
     } else {
         let errors = fs::read(errors).unwrap_or_default();
         let errors = String::from_utf8_lossy(&errors[errors.len().saturating_sub(4096)..]);
+        let status = status.map_or_else(|e| e, |s| s.to_string());
         Err(format!(
-            "runtime {label} failed (log {}): {tail}{errors}",
+            "runtime {label} failed ({status}; log {}): {tail}{errors}",
             Path::display(&log)
         ))
     }

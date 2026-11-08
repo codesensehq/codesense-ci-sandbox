@@ -9,7 +9,7 @@ use tauri::Manager;
 #[derive(Debug, serde::Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateLocalOrganizationParams {
-    /// Nonempty organization name; identity becomes local/<sanitized-name>.
+    /// Nonempty organization name; its sanitized form becomes the org slug.
     pub display_name: String,
     /// Absolute NEW folder beneath an existing parent. Existing folders are refused.
     pub destination_path: String,

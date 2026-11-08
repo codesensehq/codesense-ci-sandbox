@@ -3038,7 +3038,7 @@ mod tests {
             settings["permissions"].get("defaultMode").is_none(),
             "an interactive launch keeps its mode"
         );
-        // SV-CDE-8 d2e84d9c6 (#2691) intentionally adds credential deny rules.
+        // SV-CDE-8 (#2691) intentionally adds credential deny rules.
         assert_eq!(
             settings["permissions"]["deny"],
             json!(codesense_pty_core::notify_hook::deny_rules())
