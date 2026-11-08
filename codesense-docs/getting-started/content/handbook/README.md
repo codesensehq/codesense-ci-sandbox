@@ -11,7 +11,7 @@ CodeSense is a macOS app for teams that build software with coding agents: your 
 - **Coordinate:** [The Inbox](concepts/inbox.md), [Routines](concepts/routines.md).
 - **Build on the engine:** [Panes and slots](concepts/panes-and-slots.md), [Dashboards and pages](concepts/dashboards.md), [Dashboard uses](guides/dashboard-uses.md).
 - **Team and trust:** [Attribution and cost](concepts/attribution-and-cost.md), [Sharing through git](concepts/sharing.md), [Security and privacy](concepts/security-and-privacy.md).
-- **Reference:** MCP tools, Live-data API and [dashboard kit](../generated/page-sdk.md), Story fields, pipeline.yml, config files, context queries, [Key terms](getting-started/key-terms.md).
+- **Reference:** MCP tools, Live-data API and [dashboard kit](../generated/page-sdk.md), [Story fields](../generated/story-fields.md), pipeline.yml, config files, context queries, [Key terms](getting-started/key-terms.md).
 
 ## Start here
 

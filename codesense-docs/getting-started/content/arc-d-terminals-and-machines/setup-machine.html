@@ -120,7 +120,7 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// First call: no trusted fingerprint — returns the host-key fp.
-codesense.invoke('test_machine_connection', {
+test_machine_connection {
   input: {
     label: 'build-box-01',
     host:  'build-box-01.lab',
@@ -128,21 +128,26 @@ codesense.invoke('test_machine_connection', {
     username: 'sam',
     signIn: { method: 'agent' },
   },
-})
+}
 
 // Second call: confirm the fp.
-codesense.invoke('test_machine_connection', {
+test_machine_connection {
   input: { /* same */, trustedHostKeyFp: 'SHA256:…' },
   machineId: 'build-box-01-ab12cd',   // if already saved
-})
+}
 
 // Save the declaration (public).
-codesense.invoke('save_machine', {
-  label: 'build-box-01',
-  host:  'build-box-01.lab',
-  port:  22,
-  share: 'personal',   // or { team: 'ops' }
-})</code></pre>
+save_machine {
+  input: {
+    label: 'build-box-01',
+    host:  'build-box-01.lab',
+    port:  22,
+    username: 'sam',
+    signIn: { method: 'agent' },
+  },
+  share: { kind: 'personal' },   // or { kind: 'team', orgSlug: 'acme/team-context', team: 'ops' }
+  connect: true,
+}</code></pre>
         </details>
       </section>
 

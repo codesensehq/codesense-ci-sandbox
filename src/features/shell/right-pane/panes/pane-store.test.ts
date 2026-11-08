@@ -41,5 +41,12 @@ describe("pane panel ids", () => {
     expect(panePanelTitle(entry("team", "backend", "board"), "backend")).toBe("board");
     expect(panePanelTitle(entry("team", "platform", "board"), "backend")).toBe("board · platform");
     expect(panePanelTitle(entry("private", undefined, "board"), "backend")).toBe("board · Private");
+    const notes = { ...entry("private", undefined, "notes"), title: "Notes" };
+    expect(
+      panePanelTitle(
+        { ...notes, dashboardRef: { scope: "built-in", org: "acme/api", id: "notes" } },
+        "backend",
+      ),
+    ).toBe("Notes");
   });
 });

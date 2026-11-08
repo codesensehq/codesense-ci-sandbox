@@ -336,6 +336,10 @@ pub(crate) async fn validate_story_in_context_for<R: tauri::Runtime>(
         story_id_index,
         assignee_resolver,
         schema: &field_schema,
+        tag_schema: org
+            .as_ref()
+            .map(|o| &o.tag_schema)
+            .unwrap_or(&story_authoring::NO_TAGS),
     };
     Ok(story_authoring::validate_candidate_for(
         text, path, &cfg, scope,
@@ -604,6 +608,7 @@ mod tests {
             story_id_index: &story_authoring::NoStoryIdIndex,
             assignee_resolver: &story_authoring::NoAssigneeResolver,
             schema: SCHEMA.get_or_init(crate::commands::field_schema::default_schema),
+            tag_schema: &story_authoring::NO_TAGS,
         }
     }
 

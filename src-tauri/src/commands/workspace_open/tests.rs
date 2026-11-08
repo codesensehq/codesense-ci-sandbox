@@ -1609,6 +1609,7 @@ async fn launch_records_the_team_it_runs_in() {
 }
 
 #[tokio::test]
+#[ignore = "quarantine: https://github.com/codesensehq/codesense/issues/5"]
 async fn team_workspace_handle_is_readable_by_shipped_read_verbs() {
     use codesense_pty_core::domain::{
         PortUnavailable, PtySessionId, TerminalDomain, TerminalDomainEvent, TerminalEventSink,

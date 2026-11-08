@@ -1,0 +1,22 @@
+---
+title: Fixture
+---
+
+```html title="teams.html"
+<script>
+codesense.queryContext({ groupBy: "org", limit: 1 })
+codesense.invoke("listOrgsTeams", {})
+</script>
+````
+
+<div data-api-lint="off">
+
+```js
+codesense.invoke("listOrgsTeams", {})
+```
+
+</div>
+
+```js
+codesense.invoke("alsoNotAVerb", {})
+```

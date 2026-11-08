@@ -342,9 +342,9 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Set, list, cancel (always your own session)
-codesense.invoke('schedule_wakeup', { sessionId, in: '20m', name: 'Check the build', prompt: '…' })
-codesense.invoke('list_wakeups', { sessionId })
-codesense.invoke('cancel_wakeup', { sessionId, timerId })</code></pre>
+schedule_wakeup { sessionId, in: '20m', name: 'Check the build', prompt: '…' }
+list_wakeups { sessionId }
+cancel_wakeup { sessionId, timerId }</code></pre>
         </details>
       </section>
 

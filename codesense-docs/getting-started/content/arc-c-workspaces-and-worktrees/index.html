@@ -381,9 +381,9 @@
             Every page in this arc is reproducible from an agent through MCP, no UI required. A
             warm-up tour:
           </p>
-          <pre><code>codesense.invoke('list_worktrees', {})
-codesense.invoke('open_workspace', { target: 'DEMO-1' })
-codesense.invoke('read_worktree_config', { source_repo: 'acme/sample-source-repo' })</code></pre>
+          <pre><code>list_worktrees {}
+open_workspace { target: 'story', story_id: 'DEMO-1' }
+read_worktree_config { repoPath: '~/code/sample-source-repo' }</code></pre>
         </details>
       </section>
 

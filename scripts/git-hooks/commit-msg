@@ -1,0 +1,24 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Blocks a commit message with a private term when the repo has a public remote.
+# Modes (privacy-ci.mjs): private rules with an inventory; otherwise public rules
+# with a notice, or a block when the clone requires the private rules. Two switches
+# require them, both read as git booleans: env CODESENSE_PRIVACY_REQUIRED, or git
+# config codesense.privacyRequired (the most local scope wins, as usual in git).
+# Without node, fallback.sh allows with a notice (CI scans it) or blocks when required.
+# Cheap prefilter: node starts only when a remote could be public (privacy-ci.mjs
+# decides). Remotes that cannot be listed count as public, as in fallback.sh.
+if [ -z "${CODESENSE_PRIVACY_PUBLIC_REMOTES:-}" ] && remotes=$(git remote -v) &&
+  ! printf "%s\n" "$remotes" | grep -qiE 'codesensehq|github\.com'; then
+  exit 0
+fi
+here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd) || exit 1
+if ! command -v node >/dev/null 2>&1; then
+  # shellcheck source=scripts/git-hooks/fallback.sh
+  . "$here/fallback.sh"
+  if public_remote; then
+    unscanned "a commit message"
+  fi
+  exit 0
+fi
+exec node "$here/../privacy-ci.mjs" --hook commit-msg "$@"

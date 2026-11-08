@@ -399,7 +399,7 @@
         </p>
         <cs-try-this
           verb="invoke"
-          args='{"name": "list_machines", "args": {}}'
+          args='{"name": "list_machines", "args": {"orgSlug": "acme/team-context"}}'
           label="List reachable machines"
           dry-run="true"
         ></cs-try-this>
@@ -409,17 +409,18 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// List machines you can launch on. Local shows as a machine too.
-codesense.invoke('list_machines', {})
+list_machines { orgSlug: 'acme/team-context' }
 
 // Open an agent on a specific remote (same agent.yaml you'd launch locally).
-codesense.invoke('open_remote_tab', { machineId, agentId })
+// preparedWorkspaceHandle comes from prepare_remote_workspace.
+open_remote_tab { operation: 'create', requestId, machineId, teamKey, workspaceId, cwd, agentKey, preparedWorkspaceHandle }
 
 // Routine-driven launches set `machine:` on the task; see arc K.
 // For headless Codex remote agents, make sure approval_policy is set.
-codesense.invoke('agent_preview', {
+agent_preview {
   name, runtime: 'codex', launch: 'headless',
   permissions: { codex: { approval_policy: 'never', sandbox_mode: 'workspace-write' } },
-})</code></pre>
+}</code></pre>
           <p>
             See <a href="../arc-d-terminals-and-machines/index.html"
               >arc D — terminals &amp; machines</a

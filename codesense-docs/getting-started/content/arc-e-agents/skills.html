@@ -443,11 +443,11 @@ default_prompt: /triage
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// What slash commands would the agent provide?
-codesense.invoke('agent_preview', { startup, runtime })
+agent_preview { startup, runtime }
 // → { manifest: { provides: [{ name: 'bmad-build', from: '.claude/skills/bmad-build/' }, …] } }
 
 // Read a skill's SKILL.md directly to understand its description.
-codesense.invoke('read_rendered_document', { path: '.claude/skills/bmad-build/SKILL.md' })</code></pre>
+read_rendered_document { path: '.claude/skills/bmad-build/SKILL.md' }</code></pre>
         </details>
       </section>
 

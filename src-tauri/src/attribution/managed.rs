@@ -894,7 +894,7 @@ mod tests {
         assert_eq!(through_wrapper(&user, dir.path(), "user.name"), "Dummy Xdg");
         std::fs::write(
             user.home.join(".git-credentials"),
-            "https://dummy-user:dummy-password@example.invalid\n",
+            "https://dummy-user:dummy-password@example.invalid\n", // trufflehog:ignore
         )
         .unwrap();
         let mut lookup = Command::new(dir.path().join("git"))

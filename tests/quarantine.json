@@ -1,0 +1,86 @@
+[
+  {
+    "id": "cargo:codesense_lib::commands::host_connection_manager::tests::reader_eof_before_dispatcher_install_fails_attempt_and_remains_retryable",
+    "reason": "unbounded EOF/close-gate race under full-suite load",
+    "issue": "https://github.com/codesensehq/codesense/issues/1",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/pane-harness/inbox-media.spec.ts#lightbox lets the terminal shortcut bubble while Escape still closes it",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/dock.spec.ts#a successful Reload moves focus into the dock page",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#lifecycle order, visibility, slot context and default focus-in",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#focus-in skips controls in a closed dialog and other hidden or disabled controls",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#default focus reaches the first contenteditable editor",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#menus: keyboard dismissal returns closed and focus-return",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#menus: a vanished focus-return anchor falls back to the first control",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "cargo:activity::hand_typed_codex_outside_the_qualified_releases_runs_as_typed",
+    "reason": "unbounded CLI version warm-up blocked on a sleeping fake codex",
+    "issue": "https://github.com/codesensehq/codesense/issues/3",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "vitest:src/features/shell/right-pane/panes/inbox-pane.seam.test.tsx#pages cross-team role history team by team until every team ends",
+    "reason": "times out under full-suite load",
+    "issue": "https://github.com/codesensehq/codesense/issues/4",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/pane-harness/inbox-reactions.spec.ts#choosing a category moves the grid's keyboard entry to that category",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "playwright:tests/frame-security/lifecycle.spec.ts#text menus: email and number paste preserve the browser caret and input path",
+    "reason": "headless focus reports inactive on macOS",
+    "issue": "https://github.com/codesensehq/codesense/issues/2",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "cargo:codesense_lib::commands::workspace_open::tests::team_workspace_handle_is_readable_by_shipped_read_verbs",
+    "reason": "fails only in full multi-crate runs (load/env)",
+    "issue": "https://github.com/codesensehq/codesense/issues/5",
+    "added": "2026-11-07"
+  },
+  {
+    "id": "cargo:codesense_pty_core::activity::hook_block::tests::hook_block_process_returns_json_exit_two_and_never_waits_for_stdin",
+    "reason": "fails only in full multi-crate runs (load/env)",
+    "issue": "https://github.com/codesensehq/codesense/issues/5",
+    "added": "2026-11-07"
+  }
+]

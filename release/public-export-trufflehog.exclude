@@ -1,0 +1,4 @@
+# Reviewed test-file URL userinfo and manifest hashes. Production fixture lines use inline ignores.
+(^|/)EXPORT-MANIFEST\.txt$
+(^|/)src/shared/lib/pending-join\.test\.ts$
+(^|/)src-tauri/src/attribution/notes_tests\.rs$

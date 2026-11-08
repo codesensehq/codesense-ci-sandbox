@@ -323,7 +323,7 @@
           pushes.
         </p>
         <pre><code># What CodeSense invokes
-codesense.invoke('open_workspace', { target: 'DEMO-1' })
+open_workspace { target: 'story', story_id: 'DEMO-1' }
 
 # What then runs on your Mac, as you
 git -C ~/code/sample-source-repo fetch origin
@@ -417,14 +417,11 @@ git -C ~/code/sample-source-repo \
             host-agent — but the summary is a plain JSON response.
           </p>
           <pre><code>// Agents inspect the fleet without touching git
-codesense.invoke('list_worktrees', {})
+list_worktrees {}
 // → [{ story_id, branch, path, machine, last_commit_sha, last_push_at }, ...]
 
 // Open the real repo in a terminal tab if you want to run git by hand
-codesense.invoke('open_terminal_tab', {
-  target: 'DEMO-1',
-  cwd: '$WORKTREE'
-})</code></pre>
+open_terminal_tab { workspaceId: 'story:DEMO-1' }</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See
             <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> and

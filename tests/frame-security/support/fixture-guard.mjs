@@ -4,6 +4,12 @@ import console from "node:console";
 import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
+import {
+  loadEntries,
+  quarantineId,
+  validEntries,
+  quarantineReason,
+} from "../../../scripts/lib/quarantine.mjs";
 
 export const BUILD_HINT =
   "Build it with `cargo test --manifest-path src-tauri/Cargo.toml --lib --no-run`, " +
@@ -31,12 +37,24 @@ export function resolveFrameFixtureBinary({ env = process.env } = {}) {
   return { error: `Frame fixture binary not found in ${deps}. ${BUILD_HINT}` };
 }
 
-// Tests the run selected but never executed: skipped, fixme, or not run after a setup failure.
-export function unexecutedTests(tests) {
-  return tests.filter((t) => t.outcome() === "skipped");
+const quarantines = loadEntries();
+
+// Only an explicit fixme from the quarantine adapter may bypass the skip guard.
+// Setup failures and missing fixtures never acquire that annotation.
+export function unexecutedTests(tests, entries = quarantines, now = Date.now()) {
+  const valid = validEntries(entries, now);
+  return tests.filter((t) => {
+    if (t.outcome() !== "skipped") return false;
+    if (!t.location?.file) return true;
+    const id = quarantineId("playwright", t.location.file, t.titlePath().slice(3));
+    const entry = valid.find((entry) => entry.id === id);
+    if (!entry) return true;
+    const reason = quarantineReason(entry);
+    return !t.annotations?.some((a) => a.type === "fixme" && a.description === reason);
+  });
 }
 
-// Playwright reporter: a security run that skipped any selected test is a failed run.
+// Playwright reporter: unlisted skips still fail a security run.
 export default class RequireEveryTestRan {
   onBegin(_config, suite) {
     this.suite = suite;

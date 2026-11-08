@@ -1402,7 +1402,11 @@ fn exit_classification_is_identical_across_hosts() {
         ("clean", "exit 0", ExitClass::Clean),
         ("failed", "exit 5", ExitClass::Abnormal),
         ("sigkill", "kill -9 $$", ExitClass::Abnormal),
-        ("stopped", "sleep 30", ExitClass::Abnormal),
+        (
+            "stopped",
+            "echo CHILD_READY; exec sleep 30",
+            ExitClass::Abnormal,
+        ),
     ];
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
@@ -1425,6 +1429,11 @@ fn exit_classification_is_identical_across_hosts() {
         local.register(pty, registration(id, None, false)).unwrap();
         spawn(&sidecar, &client, script, registration(id, None, false));
     }
+    // Wait for both shells to start before asking either host to kill its child.
+    assert!(wait_until(|| local_events
+        .output("stopped")
+        .contains("CHILD_READY")
+        && remote_events.output("stopped").contains("CHILD_READY")));
     local.kill(&sid("stopped")).unwrap();
     client.kill(&sid("stopped")).unwrap();
 

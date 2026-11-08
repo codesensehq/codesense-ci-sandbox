@@ -28,9 +28,12 @@ export function contractInputs(root = ROOT) {
   // query/stream/action catalog, the toolkit helper and version constants in create.rs, and the
   // inbox and agents modules the catalog's entries run (a catalog edit changes the payload).
   // records/binding.rs feeds the records verb grants into the verb policy the payload serializes.
+  // The story-field registry (pipeline_format) prints the story_fields section.
   const paths = [
     "src-tauri/Cargo.toml",
     "Cargo.lock",
+    "src-tauri/src/commands/pipeline_format/fields.rs",
+    "src-tauri/src/commands/pipeline_format/mod.rs",
     "src-tauri/src/mcp/live_data_authoring.rs",
     "src-tauri/src/mcp/live-data-starter.html",
     "src-tauri/src/records/binding.rs",

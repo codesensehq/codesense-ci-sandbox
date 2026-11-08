@@ -294,23 +294,20 @@
       <section data-search="Diagnostics commands for workspace problems" id="diagnostics">
         <h2>Diagnostic one-liners</h2>
         <pre><code># All worktrees CodeSense knows about on this Mac
-codesense.invoke('list_worktrees', {})
+list_worktrees {}
 
 # Which epics have been hydrated into a given worktree
-codesense.invoke('list_hydrated', {
+list_hydrated {
   target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '&lt;your session id&gt;' }
-})
+}
 
 # The resolved worktree.yaml the host-agent will run
-codesense.invoke('read_worktree_config', {
-  source_repo: 'acme/sample-source-repo'
-})
+read_worktree_config {
+  repoPath: '~/code/sample-source-repo'
+}
 
 # Open a terminal tab in the worktree to run git by hand
-codesense.invoke('open_terminal_tab', {
-  target: 'DEMO-1',
-  cwd: '$WORKTREE'
-})</code></pre>
+open_terminal_tab { workspaceId: 'story:DEMO-1' }</code></pre>
       </section>
 
       <!-- =============== Try this now =============== -->
@@ -340,13 +337,13 @@ codesense.invoke('open_terminal_tab', {
             handle. The output is the full triage sheet for a workspace.
           </p>
           <pre><code>// Full triage of a single workspace
-await Promise.all([
-  codesense.invoke('list_worktrees', {}),
-  codesense.invoke('list_hydrated', { target: 'DEMO-1' }),
-  codesense.invoke('read_worktree_config', {
-    source_repo: 'acme/sample-source-repo'
-  }),
-])</code></pre>
+list_worktrees {}
+list_hydrated {
+  target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '&lt;your session id&gt;' }
+}
+read_worktree_config {
+  repoPath: '~/code/sample-source-repo'
+}</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See
             <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a>,

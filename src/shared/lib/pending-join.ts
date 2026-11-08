@@ -11,7 +11,7 @@
 
 const STORAGE_KEY = "codesense.pending-join";
 
-/** Never keep credentials typed into a URL (`https://user:token@host/…`). */
+/** Never keep credentials typed into a URL (`https://user:token@host/…`). */ // trufflehog:ignore
 export function stripUrlCredentials(url: string): string {
   return url.replace(/^(\s*[a-z][a-z0-9+.-]*:\/\/)[^@/\s]*@/i, "$1");
 }

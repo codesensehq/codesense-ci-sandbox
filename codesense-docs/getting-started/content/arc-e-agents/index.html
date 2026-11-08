@@ -440,17 +440,17 @@
             four you'll reach for most:
           </p>
           <pre><code>// List agents the team can see — starters, team agents, your Only-me ones.
-codesense.invoke('agent_list', { scope: 'all' })
+agent_list { scope: 'all' }
 
 // Preview a definition. Returns manifest.errors + warnings + resolved paths.
-codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions })
+agent_preview { name, runtime, startup, mcpServers, permissions }
 
 // Create it, team-scoped by default. Pass scope: "personal" + org for Only me.
-codesense.invoke('agent_create', { name, runtime, startup, dryRun: false })
+agent_create { name, runtime, startup, dryRun: false }
 
 // Update it. Pass the revision you last read as baseRevision; a conflict
 // reply means something else changed it since you read it.
-codesense.invoke('agent_update', { id, baseRevision, startup, permissions })</code></pre>
+agent_update { id, baseRevision, startup, permissions }</code></pre>
           <p>
             See <a href="../mcp-explorer.html">mcp-explorer</a> for the full
             tool catalog and

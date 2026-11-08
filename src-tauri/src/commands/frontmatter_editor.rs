@@ -26,7 +26,7 @@ use crate::commands::field_schema::FieldSchema;
 use crate::commands::files::validate_context_path_owned;
 use crate::commands::frontmatter_validation::{self as fv, FieldValidity};
 use crate::commands::pipeline_format::{
-    self, yaml_to_cs_name, FrontmatterFields, PipelineFileFormat, FIELD_NAME_MAP,
+    self, yaml_to_cs_name, FrontmatterFields, PipelineFileFormat, KNOWN_TOP_LEVEL_KEYS,
 };
 use crate::domain::{load_org, TagSchema, TagType};
 
@@ -141,30 +141,6 @@ fn format_str(fmt: PipelineFileFormat) -> &'static str {
         PipelineFileFormat::Html => "html",
     }
 }
-
-/// Canonical top-level field names known to the schema. Unknown = anything else.
-const KNOWN_TOP_LEVEL_KEYS: &[&str] = &[
-    "type",
-    "status",
-    "story_id",
-    "source_repo",
-    "work_repo", // SV-CDE-85: typed on FrontmatterFields, not an open tag
-    "dev_branch",  // SW-GS-35: story-scoped dev branch (observed; known field)
-    "branch_name", // SW-WB-1: story-scoped intended branch (editable; known field)
-    "team",
-    "depends_on",
-    "supporting_docs",
-    "tags", // SW-AU-77F: typed on StoryRef, so NOT an open tag (symmetric with cs:tags)
-    "repos",
-    "branch",
-    "scope_context", // SW-XS-5: retired, still parsed so existing docs display it
-    "scope_install", // SW-XS-5: retired, still parsed so existing docs display it
-    "sprint",        // SW-SB-1: board metadata — typed on StoryRef, so NOT an open tag
-    "points",        // SW-SB-1: without this it double-appears in `open_tags`
-    "assigned_to",   // SW-SB-1: board metadata (assignee username)
-    "rank",          // SW-SB-22: board-ordering rank — typed on StoryRef, not an open tag
-    "gate_evidence", // stamped by the retired status gate; tolerated, never an open tag
-];
 
 /// Is this doc an epic? Convention (matching `mcp::story_authoring` +
 /// `pipeline_scanner`): an epic **main doc** is identified by filename
@@ -293,27 +269,20 @@ fn render_yaml_value(v: &serde_yaml::Value) -> String {
 fn html_unknowns(content: &str) -> (bool, Vec<(String, String)>) {
     // Collect every cs:* pair, map back to canonical, and keep the ones that
     // aren't in the known schema.
-    let known_cs = known_cs_names();
     let mut unknown = Vec::new();
     for (cs_field, value) in collect_cs_meta_pairs(content) {
-        if !known_cs.iter().any(|k| k.eq_ignore_ascii_case(&cs_field)) {
+        if !is_known_cs_name(&cs_field) {
             unknown.push((format!("cs:{cs_field}"), value));
         }
     }
     (true, unknown)
 }
 
-/// The known `cs:*` field names (without the `cs:` prefix) — the closed set an
-/// open/schema tag is anything NOT in. `FIELD_NAME_MAP` holds the canonical
-/// mapping. Shared by [`html_unknowns`] and [`html_open_tag_values`].
-fn known_cs_names() -> Vec<&'static str> {
-    FIELD_NAME_MAP
-        .iter()
-        .map(|(_, cs)| *cs)
-        // Retired gate evidence meta, still tolerated in old HTML stories.
-        .chain(std::iter::once("cs:gate-evidence"))
-        .map(|cs| cs.strip_prefix("cs:").unwrap_or(cs))
-        .collect()
+/// Is this `cs:*` name (without the prefix) a known field — the closed set an
+/// open/schema tag is anything NOT in? The HTML twin of [`KNOWN_TOP_LEVEL_KEYS`].
+/// Shared by [`html_unknowns`] and [`html_open_tag_values`].
+fn is_known_cs_name(cs_field: &str) -> bool {
+    pipeline_format::known_cs_names().any(|k| k.eq_ignore_ascii_case(cs_field))
 }
 
 /// Collect `(cs_field_without_prefix, value)` pairs from HTML `<meta cs:*>`
@@ -679,10 +648,9 @@ fn markdown_open_tag_values(content: &str) -> Vec<(String, Vec<String>)> {
 /// names, each carrying its raw (possibly comma-joined) value as one item.
 /// `validate_schema_tags` splits multi_select CSV per item.
 fn html_open_tag_values(content: &str) -> Vec<(String, Vec<String>)> {
-    let known_cs = known_cs_names();
     let mut out = Vec::new();
     for (cs_field, value) in collect_cs_meta_pairs(content) {
-        if known_cs.iter().any(|k| k.eq_ignore_ascii_case(&cs_field)) {
+        if is_known_cs_name(&cs_field) {
             continue;
         }
         // cs names use hyphens (`context-level`); schema tag names use
@@ -2209,7 +2177,7 @@ mod tests {
     #[test]
     fn open_tag_values_excludes_tags_on_both_formats() {
         // SW-AU-77F (AC-4): `tags` is a named field now, so it must NOT also appear as an
-        // open tag — on markdown (KNOWN_TOP_LEVEL_KEYS) or HTML (known_cs_names), keeping
+        // open tag — on markdown (KNOWN_TOP_LEVEL_KEYS) or HTML (is_known_cs_name), keeping
         // the exclusion symmetric and preventing the double-capture into `declared`.
         let md = "---\ntype: story\ntags:\n  - infra\n  - urgent\n---\n# B\n";
         let md_vals = open_tag_values(PipelineFileFormat::Markdown, md);

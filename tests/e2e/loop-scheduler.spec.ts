@@ -17,18 +17,26 @@ import { test, expect } from "@playwright/test";
  * trusted core with the E2E deferred). Left as `fixme` so the scenario is a tracked placeholder
  * the live pass fills in — the trusted core + FE render below it are unit-tested and green.
  */
-test.describe("@P2 @E2E SW-GT-31 loop scheduler (deferred — needs Tauri backend + live PR)", () => {
-  test.fixme("review-phase mode:loop watches the PR, dispatches fixes, and exits on validator pass", async ({
-    page,
-  }) => {
-    // Live seam (requires the Tauri backend):
-    //  1. Seed a review-phase `mode: loop` step and admit the story.
-    //  2. Assert the scheduler seeds the arm and ticks: gate drawer shows "iteration N".
-    //  3. Push a new PR comment → assert a headless fix dispatch (no macOS terminal).
-    //  4. Make the validator report merged/approved → assert the loop exits, records a
-    //     Passed verdict, and the story advances past the loop node (conjunction gate).
-    //  5. Assert zero orphaned PTYs remain after exit.
-    await page.goto("/");
-    await expect(page.locator("#root")).toBeAttached();
-  });
+test.describe("@P2 @E2E loop scheduler (deferred — needs Tauri backend + live PR)", () => {
+  test.fixme(
+    "review-phase mode:loop watches the PR, dispatches fixes, and exits on validator pass",
+    {
+      annotation: {
+        type: "fixme",
+        description:
+          "Requires a real Tauri scheduler and live PR fixture; the browser-only harness cannot exercise this seam.",
+      },
+    },
+    async ({ page }) => {
+      // Live seam (requires the Tauri backend):
+      //  1. Seed a review-phase `mode: loop` step and admit the story.
+      //  2. Assert the scheduler seeds the arm and ticks: gate drawer shows "iteration N".
+      //  3. Push a new PR comment → assert a headless fix dispatch (no macOS terminal).
+      //  4. Make the validator report merged/approved → assert the loop exits, records a
+      //     Passed verdict, and the story advances past the loop node (conjunction gate).
+      //  5. Assert zero orphaned PTYs remain after exit.
+      await page.goto("/");
+      await expect(page.locator("#root")).toBeAttached();
+    },
+  );
 });

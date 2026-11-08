@@ -59,7 +59,22 @@ fn pane(org_root: &Path, team: &str, file: &str, body: &str) -> PathBuf {
     path
 }
 
-fn ids(listing: &PaneListing) -> Vec<(PaneScope, Option<String>, String)> {
+type ListedId = (PaneScope, Option<String>, String);
+
+/// The built-ins as listed after every other layer (sorted by id), less `shadowed`.
+fn builtin_ids(shadowed: &[&str]) -> Vec<ListedId> {
+    let mut ids: Vec<&str> = builtin::BUILTINS
+        .iter()
+        .map(|(id, _)| *id)
+        .filter(|id| !shadowed.contains(id))
+        .collect();
+    ids.sort_unstable();
+    ids.into_iter()
+        .map(|id| (PaneScope::Private, None, id.into()))
+        .collect()
+}
+
+fn ids(listing: &PaneListing) -> Vec<ListedId> {
     listing
         .panes
         .iter()
@@ -141,6 +156,8 @@ fn surfaces_are_declarations_in_every_scope() {
             assert_eq!(json["surface"], "human-inbox");
         } else if entry.id == "other" {
             assert_eq!(json["surface"], "dashboard");
+        } else if entry.id == "notes" {
+            assert_eq!(json["surface"], "notes");
         } else {
             assert!(json.get("surface").is_none());
         }
@@ -185,11 +202,10 @@ fn listing_walks_the_chain_nearest_first_then_private() {
             (PaneScope::Team, Some(PARENT.into()), "board".into()),
             (PaneScope::Team, Some(PARENT.into()), "risks".into()),
             (PaneScope::Private, None, "board".into()),
-            (PaneScope::Private, None, "agent-list".into()),
-            (PaneScope::Private, None, "files-tree".into()),
-            (PaneScope::Private, None, "inbox".into()),
-            (PaneScope::Private, None, "story-trail".into()),
         ]
+        .into_iter()
+        .chain(builtin_ids(&[]))
+        .collect::<Vec<_>>()
     );
     assert_eq!(child.panes[0].title, "Backend board");
     assert_eq!(
@@ -210,13 +226,10 @@ fn listing_walks_the_chain_nearest_first_then_private() {
     let other = list_panes(home.path(), &principal(), ORG, OTHER).unwrap();
     assert_eq!(
         ids(&other),
-        vec![
-            (PaneScope::Private, None, "board".into()),
-            (PaneScope::Private, None, "agent-list".into()),
-            (PaneScope::Private, None, "files-tree".into()),
-            (PaneScope::Private, None, "inbox".into()),
-            (PaneScope::Private, None, "story-trail".into()),
-        ],
+        [(PaneScope::Private, None, "board".into())]
+            .into_iter()
+            .chain(builtin_ids(&[]))
+            .collect::<Vec<_>>(),
         "an unrelated team sees none of platform's panes"
     );
 }
@@ -228,20 +241,21 @@ fn builtin_inbox(listing: &PaneListing) -> Option<&PaneEntry> {
         .find(|p| p.dashboard_ref.scope == DashboardScope::BuiltIn && p.id == "inbox")
 }
 
-/// A team with no inbox of its own lists the bundled inbox last, as the built-in
-/// of its org, served from a machine-local `panes/` dir with the fixture's bytes.
+/// A team with no inbox of its own lists the bundled inbox after every non-built-in pane, as
+/// the built-in of its org, served from a machine-local `panes/` dir with the fixture's bytes.
 #[test]
-fn a_team_without_an_inbox_lists_the_builtin_inbox_last_for_its_slot() {
+fn a_team_without_an_inbox_lists_the_builtin_inbox_after_its_own_panes() {
     let home = tempfile::tempdir().unwrap();
     let org_root = write_org(home.path());
     pane(&org_root, CHILD, "board.html", "<title>Board</title>");
 
     let listing = list_panes(home.path(), &principal(), ORG, CHILD).unwrap();
     let inbox = builtin_inbox(&listing).expect("built-in inbox listed");
-    assert_eq!(
-        listing.panes.iter().filter(|pane| pane.declaration.slots.iter().any(|slot| slot == "right-pane")).last(),
-        Some(inbox),
-        "listed last for its slot"
+    let right_pane: Vec<_> = listing.panes.iter().filter(|pane| pane.declaration.slots.iter().any(|slot| slot == "right-pane")).collect();
+    let at = right_pane.iter().position(|pane| *pane == inbox).unwrap();
+    assert!(
+        right_pane[at..].iter().all(|pane| pane.dashboard_ref.scope == DashboardScope::BuiltIn),
+        "listed after every non-built-in pane for its slot"
     );
     assert_eq!(
         inbox.dashboard_ref.key(),
@@ -376,14 +390,31 @@ fn a_team_or_private_inbox_hides_the_builtin() {
     assert!(!other.panes.iter().any(|pane| pane.path == fallback.path));
     assert_eq!(
         ids(&other),
-        vec![
-            (PaneScope::Private, None, "inbox".into()),
-            (PaneScope::Private, None, "agent-list".into()),
-            (PaneScope::Private, None, "files-tree".into()),
-            (PaneScope::Private, None, "story-trail".into()),
-        ],
+        [(PaneScope::Private, None, "inbox".into())]
+            .into_iter()
+            .chain(builtin_ids(&["inbox"]))
+            .collect::<Vec<_>>(),
         "the private inbox fork replaces only the built-in Inbox"
     );
+}
+
+/// A team's own `notes` wins over the bundled Notes, for that team only.
+#[test]
+fn a_team_notes_pane_hides_the_builtin_notes() {
+    let home = tempfile::tempdir().unwrap();
+    let org_root = write_org(home.path());
+    pane(&org_root, PARENT, "notes.html", "<title>Team notes</title>");
+    let notes = |team| {
+        list_panes(home.path(), &principal(), ORG, team)
+            .unwrap()
+            .panes
+            .into_iter()
+            .filter(|p| p.id == "notes")
+            .map(|p| p.dashboard_ref.scope)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(notes(CHILD), vec![DashboardScope::Team]);
+    assert_eq!(notes(OTHER), vec![DashboardScope::BuiltIn]);
 }
 
 /// The built-in is read-only: no write target reaches its dir, and stray edits

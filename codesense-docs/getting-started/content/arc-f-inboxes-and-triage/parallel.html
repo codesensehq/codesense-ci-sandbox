@@ -275,7 +275,7 @@
             <h3>Machine-agnostic</h3>
             <p>
               A role lives in the team workspace, not on a machine. Launch the holding session on
-              <em>any</em> Mac — <code>open_workspace {machineId}</code>.
+              <em>any</em> Mac — <code>open_workspace {machine_id}</code>.
             </p>
           </div>
           <div class="arcf-prop">
@@ -374,12 +374,12 @@ revision: 1</code></pre>
       <section data-search="Try this now — list builder shards" id="try-this-now">
         <h2>Try this now</h2>
         <p>
-          List every <code>builder-*</code> session in your editable context repo. This is the view
-          the manager uses to decide who to brief next.
+          List the sessions; the <code>builder-*</code> ones are the shards. This is the view the
+          manager uses to decide who to brief next.
         </p>
         <cs-try-this
           verb="invoke"
-          args='{"name": "list_sessions", "args": {"rolePrefix": "builder-"}}'
+          args='{"name": "list_sessions", "args": {}}'
           label="List builder shards"
           dry-run="true"
         ></cs-try-this>
@@ -388,26 +388,22 @@ revision: 1</code></pre>
       <section data-search="How to do this via MCP" id="via-mcp">
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
-          <pre><code>// Launch one shard per story
-for (const story of stories) {
-  codesense.invoke('open_workspace', {
-    target: 'story',
-    story_id: story.id,
-    name: `builder-${story.id}`,
-    agent: 'builder',
-    machine_id: pickMachine(story),
-    launched_by: managerSessionId,
-  })
+          <pre><code>// Launch one shard per story (here DEMO-1; repeat for each story)
+open_workspace {
+  target: 'story',
+  story_id: 'DEMO-1',
+  name: 'builder-DEMO-1',
+  agent: 'builder',
+  machine_id: 'mac-B',   // pick a machine per shard (list_machines)
+  launched_by: managerSessionId,
 }
 
-// Dispatch each brief addressed to the shard's role name
-for (const story of stories) {
-  codesense.invoke('send_role_message', {
-    team, role: `builder-${story.id}`,
-    text: brief(story),
-    sender: managerSessionId,
-    replyTo: 'role:manager',
-  })
+// Dispatch the story's brief to its shard's role name
+send_role_message {
+  team, role: 'builder-DEMO-1',
+  text: '…the DEMO-1 brief…',
+  sender: managerSessionId,
+  replyTo: 'role:manager',
 }</code></pre>
         </details>
       </section>

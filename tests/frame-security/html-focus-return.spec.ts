@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Frame, type Page } from "@playwright/test";
+import { expect, test, type Frame, type Page } from "../support/quarantine-playwright";
 import { viewerScript } from "../support/page-shim";
 
 // The reading position and the keyboard target must both survive the host handing focus

@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: MIT
+name: Quarantine
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quarantine-issues:
+    name: Quarantine issues and expiry
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: Validate quarantine inventory and expiry
+        run: node --test scripts/check-quarantine.node-test.mjs scripts/quarantine-inventory.node-test.mjs
+      - name: Require open quarantine issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Every ledger file, so an entry in an extra ledger cannot skip the open-issue check.
+          for ledger in tests/quarantine*.json; do
+            issues=$(jq -r '.[].issue' "$ledger")
+            while IFS= read -r issue; do
+              [ -n "$issue" ] || continue
+              state=$(gh issue view "$issue" --json state -q .state)
+              if [ "$state" != "OPEN" ]; then
+                echo "Quarantine issue must be OPEN: $issue ($state, $ledger)" >&2
+                exit 1
+              fi
+            done <<<"$issues"
+          done

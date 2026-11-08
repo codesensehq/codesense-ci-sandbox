@@ -249,7 +249,7 @@
           </p>
           <pre><code>attach_context_repository({ clonePath: "/Users/you/code/acme-context" })
 list_context_attachments({})
-list_orgs_teams()
+list_orgs_teams()  // the org slug comes from the clone's org.yml, e.g. acme-billing
 set_active_team({ org: "acme-billing", team: "billing" })
 detach_context_repository({ orgSlug: "acme-billing" })  // forgets it; files stay</code></pre>
         </details>

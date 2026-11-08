@@ -49,6 +49,8 @@ export async function startFakeHost(
 
 /** Tells the host page where frames live and collects what fixture frames report. */
 export async function prepareHostPage(page: Page, framePort: number) {
+  // A worker's warm-up page can take activation from the page under test.
+  await page.bringToFront();
   await page.addInitScript((port) => {
     (window as any).framePort = port;
     addEventListener("message", (e) => {

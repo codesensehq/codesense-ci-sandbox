@@ -1030,7 +1030,20 @@ fn local_contract_base() -> Value {
         "analyze": "invoke('analyze') uses the configured agent CLI; handle unavailable, timeout and busy errors, and render model output as text.",
         "inbox_messages": "An agent can send the human a dashboard as a message: send_message with {to:\"human\", contentType:\"html\", text:<the HTML>}. It renders in the Inbox exactly like a dashboard file — scripts, window.codesense (reads, act() through the same action gate) and pushed events — sized to its content, with Open in tab. Always pass {summary}: one plain-text line (≤280 chars) the Inbox and lists show for it, since a line derived from the markup reads badly. Team-scoped calls act in the message's team. Example text: `<p id=o>…</p><script>codesense.sessions().then(s=>{o.textContent=s.length+' sessions running'})</script>`.",
         "retired_services": "Built-in provider connections, connector polling and /api/v1/proxy are unavailable. Publish external data through a routine and read its result.",
+        "story_fields": story_fields_section(),
         "see_also": ["validate_live_data_doc", "routine_result", "routine_publish_result"]
+    })
+}
+
+/// Story fields a dashboard can read: the registered fields `get_story_format`
+/// publishes, printed from the story-field registry.
+fn story_fields_section() -> Value {
+    let fields: Vec<Value> = crate::commands::pipeline_format::contract_fields()
+        .map(|f| f.contract_entry())
+        .collect();
+    json!({
+        "what": "Story fields a dashboard can read. Use the Markdown name in codesense.queryContext filters, sort, groupBy and select, and as a row's fields key; HTML stories carry the same field as the cs_meta tag. A team's own fields, declared in content/field-schema.yml or the org's tag_schema, read the same way. Rely only on these and declared fields: validate_story flags any other key with the UNREGISTERED_FIELD advisory.",
+        "fields": fields
     })
 }
 

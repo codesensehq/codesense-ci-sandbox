@@ -17,25 +17,15 @@ use crate::domain::Principal;
 /// The folder under a user's home that holds the built-in `panes/` dir.
 const BUILTIN_PANES_DIR: &str = "builtin-panes";
 
-/// The built-in human inbox: the same bytes as the pane tests boot.
-const INBOX_ID: &str = "inbox";
-const INBOX_HTML: &str =
-    include_str!("../../../src/features/shell/right-pane/__fixtures__/inbox-pane.html");
-
-const BUILTINS: [(&str, &str); 4] = [
-    (INBOX_ID, INBOX_HTML),
-    (
-        "story-trail",
-        include_str!("../../assets/dashboards/story-trail/index.html"),
-    ),
-    (
-        "files-tree",
-        include_str!("../../../src/features/shell/slots/builtin/files-tree.html"),
-    ),
-    (
-        "agent-list",
-        include_str!("../../../src/features/shell/slots/__fixtures__/agent-list-pane.html"),
-    ),
+/// Every built-in pane, one `(id, html)` per line, in the order of `BUILTIN_PANES` in
+/// `scripts/lib/builtin-panes.mjs` (a test keeps their ids and sources equal).
+#[rustfmt::skip]
+pub(super) const BUILTINS: &[(&str, &str)] = &[
+    ("inbox", include_str!("../../../src/features/shell/right-pane/__fixtures__/inbox-pane.html")),
+    ("story-trail", include_str!("../../assets/dashboards/story-trail/index.html")),
+    ("files-tree", include_str!("../../../src/features/shell/slots/builtin/files-tree.html")),
+    ("agent-list", include_str!("../../../src/features/shell/slots/__fixtures__/agent-list-pane.html")),
+    ("notes", include_str!("../../../src/features/shell/right-pane/__fixtures__/notes-pane.html")),
 ];
 
 /// The built-in `panes/` dir for `principal`.
@@ -58,7 +48,7 @@ pub(crate) fn is_builtin_pane_path(path: &Path) -> bool {
 
 /// Write each built-in whose bytes on disk differ from the binary's.
 fn materialize(dir: &Path) -> Result<(), String> {
-    for (id, html) in BUILTINS {
+    for &(id, html) in BUILTINS {
         let path = dir.join(format!("{id}.html"));
         if std::fs::read(&path).ok().as_deref() != Some(html.as_bytes()) {
             super::write_pane(dir, id, html)?;
@@ -143,6 +133,55 @@ mod tests {
         assert_eq!(files.declaration.slots, vec!["file-nav", "right-pane"]);
         files.declaration.validate().unwrap();
         assert_eq!(files.status, super::super::PaneStatus::Ready);
+    }
+    #[test]
+    fn notes_lists_as_a_right_pane_built_in_for_the_notes_surface() {
+        let home = tempfile::tempdir().unwrap();
+        let panes = builtin_panes(home.path(), &Principal::from(42u64), "acme/api");
+        let notes = panes.iter().find(|p| p.id == "notes").unwrap();
+        assert_eq!(notes.dashboard_ref.scope, DashboardScope::BuiltIn);
+        assert_eq!(notes.declaration.slots, vec!["right-pane"]);
+        assert_eq!(notes.declaration.surface.as_deref(), Some("notes"));
+        assert_eq!(
+            notes.declaration.capabilities,
+            vec![
+                "records:read:own",
+                "records:write:own",
+                "sessions:read",
+                "sessions:send",
+                "context:read",
+                "commands:run"
+            ]
+        );
+        notes.declaration.validate().unwrap();
+        assert_eq!(notes.status, super::super::PaneStatus::Ready);
+    }
+    #[test]
+    fn rows_match_the_js_built_in_pane_table() {
+        let table = include_str!("../../../scripts/lib/builtin-panes.mjs");
+        let field = |row: &str, key: &str| {
+            let rest = &row[row.find(&format!("{key}: \"")).unwrap() + key.len() + 3..];
+            rest[..rest.find('"').unwrap()].to_owned()
+        };
+        let js: Vec<(String, String)> = table
+            .lines()
+            .map(str::trim)
+            .filter(|line| line.starts_with("{ id: \""))
+            .map(|row| (field(row, "id"), field(row, "source")))
+            .collect();
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        assert_eq!(
+            BUILTINS.iter().map(|(id, _)| *id).collect::<Vec<_>>(),
+            js.iter().map(|(id, _)| id.as_str()).collect::<Vec<_>>(),
+            "ids and order"
+        );
+        for ((id, html), (_, source)) in BUILTINS.iter().zip(&js) {
+            let bytes = std::fs::read_to_string(root.join(source)).unwrap();
+            assert_eq!(
+                *html, bytes,
+                "{id}: the Rust include_str! and the JS source differ"
+            );
+        }
     }
     #[test]
     fn file_nav_declaration_validates_and_lists_as_built_in() {

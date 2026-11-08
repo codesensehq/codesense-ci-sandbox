@@ -12,6 +12,11 @@ name = "codesense_host_proto"
 
 [features]
 test-support = []
+planted-hang = []
+
+[[test]]
+name = "nextest_timeout"
+required-features = ["planted-hang"]
 
 [dependencies]
 libc = "0.2"

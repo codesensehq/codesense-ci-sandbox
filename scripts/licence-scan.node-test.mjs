@@ -405,7 +405,8 @@ test("a GPL production dependency fails --check; dev and test dependencies are o
 });
 
 test("deny.toml [advisories]: unsound and unmaintained cover every crate; each ignore is a table with a reason", () => {
-  assert.deepEqual(advisoryConfig(read(DENY)), { ignores: [] });
+  // The live ignores are policy and may change; each must still be a table with a reason.
+  advisoryConfig(read(DENY));
   const toml = (body, scopes = 'unsound = "all"\nunmaintained = "all"') =>
     `[licenses]\nallow = []\n\n[advisories]\nversion = 2\n${scopes}\n${body}\n[x]\n`;
   assert.deepEqual(
@@ -795,11 +796,16 @@ test("--advisories writes the findings file and fails only on unaddressed blocki
     rmSync(out, { force: true });
     return { code, calls, errors, report };
   };
+  // The fixture replaces the live deny.toml ignores, so its counts do not depend on them.
+  const denyIgnoring = (cargo) => {
+    const block = /^ignore = \[(?:\]|\n[\s\S]*?^\])$/m;
+    const deny = read(DENY);
+    assert.match(deny, block);
+    return deny.replace(block, `ignore = [\n${cargo.join(",\n")}\n]`);
+  };
+  writeFileSync(join(root, DENY), denyIgnoring([]));
   const setIgnores = (cargo, npm) => {
-    writeFileSync(
-      join(root, DENY),
-      read(DENY).replace(/^ignore = \[\]$/m, `ignore = [\n${cargo.join(",\n")}\n]`),
-    );
+    writeFileSync(join(root, DENY), denyIgnoring(cargo));
     writeFileSync(join(root, NPM_IGNORES), JSON.stringify(npm));
   };
 

@@ -436,7 +436,7 @@ revision: 1</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Preview, then create. Nothing writes until agent_create fires.
-codesense.invoke('agent_preview', {
+agent_preview {
   name: 'Sprint reporter',
   runtime: 'claude', launch: 'headless',
   startup: ['CLAUDE.md', '.claude/skills/sprint-report/'],
@@ -444,12 +444,12 @@ codesense.invoke('agent_preview', {
     allow: ['Read', 'Grep', 'Glob', 'mcp__codesense__*'],
     deny:  ['Edit', 'Write', 'Bash'],
   }},
-})
+}
 
 // The three bridge calls an MCP-only reporter typically makes:
-codesense.invoke('list_sessions', { teamId })
-codesense.invoke('describe_setup', {})
-codesense.invoke('send_message', { to: 'human', body })</code></pre>
+list_sessions {}
+describe_setup {}
+send_message { to: 'human', text }</code></pre>
           <p>
             See <a href="../mcp-explorer.html">mcp-explorer</a> for every
             CodeSense tool, and

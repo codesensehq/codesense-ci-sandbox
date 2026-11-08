@@ -215,10 +215,10 @@ revision: 2</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Get the shipped definition as the viewer sees it.
-codesense.invoke('agent_get', { id: 'docs-helper' })
+agent_get { id: 'docs-helper' }
 
 // Preview these launch fields, including the shipped permission rules.
-codesense.invoke('agent_preview', {
+agent_preview {
   "name": "Docs helper",
   "id": "docs-helper",
   "description": "Keeps the CodeSense docs up to date and answers questions about CodeSense.",
@@ -234,10 +234,10 @@ codesense.invoke('agent_preview', {
       ]
     }
   }
-})
+}
 
-// Open a tab for the helper.
-codesense.invoke('open_terminal_tab', { agentId: 'docs-helper' })</code></pre>
+// Start the helper in a team workspace.
+open_workspace { target: 'team-workspace', name: 'docs', agent: 'docs-helper' }</code></pre>
           <p>
             See <a href="./context-field.html">the context resolver</a> for
             the full trace, and

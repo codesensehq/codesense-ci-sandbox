@@ -262,13 +262,13 @@ revision: 1</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Enumerate one agent's routines
-codesense.invoke('routine_list', { agent: 'manager' })
+routine_list { agent: 'manager' }
 
 // Watch for firings in real time (routines console dashboard uses this)
 codesense.subscribeContext({ topic: 'routines.runs' }, (run) => { … })
 
 // Fire one manually, through its own overlap rule
-codesense.invoke('routine_run_now', { id: 'manager-wake' })</code></pre>
+routine_run_now { id: 'manager-wake' }</code></pre>
         </details>
       </section>
 

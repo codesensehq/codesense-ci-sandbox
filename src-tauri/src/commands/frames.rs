@@ -716,6 +716,7 @@ mod tests {
             ("agent-list", "dock"),
             ("files-tree", "file-nav"),
             ("files-tree", "right-pane"),
+            ("notes", "right-pane"),
         ] {
             let mut minted = args(&path(id), slot, None);
             let (entry, binding) = builtin_frame_context(&home, &principal, &mut minted)
@@ -735,6 +736,14 @@ mod tests {
                 &entry.declaration.capabilities,
             );
             assert_eq!(frame.kind, FrameCallerKind::Builtin, "{id} in {slot}");
+            if id == "notes" {
+                for grant in ["records:read:own", "records:write:own"] {
+                    assert!(
+                        frame.effective_grant.contains(&grant.to_owned()),
+                        "notes keeps {grant}"
+                    );
+                }
+            }
         }
         // A slot the pane doesn't declare, a nested frame, and a non-built-in path are refused.
         for (path, slot, parent) in [

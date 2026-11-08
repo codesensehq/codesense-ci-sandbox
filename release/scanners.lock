@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+# Pinned scanners and test tools, installed by scripts/install-scanners.sh.
+# Each sha256 is copied from the release's own checksums file:
+#   gitleaks:   https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt
+#   trufflehog: https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.8/trufflehog_3.99.8_checksums.txt
+#   actionlint: https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt
+#   zizmor: GitHub release asset SHA-256 digests from repos/zizmorcore/zizmor/releases/tags/v1.32.0
+#   cargo-deny: GitHub release asset SHA-256 digests from repos/EmbarkStudios/cargo-deny/releases/tags/0.20.2
+#   cargo-nextest: GitHub release asset SHA-256 digests from repos/nextest-rs/nextest/releases/tags/cargo-nextest-0.9.151
+# Bumping a version: update every line for that tool from the new release's checksums file.
+# tool version platform sha256 url
+gitleaks 8.30.1 darwin-arm64 b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5 https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_darwin_arm64.tar.gz
+gitleaks 8.30.1 linux-amd64 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+trufflehog 3.99.8 darwin-arm64 85724f221bc390f6e0bdf65df245468c8426350de85aa9290ea5491c6d4ec35a https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.8/trufflehog_3.99.8_darwin_arm64.tar.gz
+trufflehog 3.99.8 linux-amd64 7c3b02f160f28929a467e29e20fba98746e0729f6e37c3c25761e4f8789abe08 https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.8/trufflehog_3.99.8_linux_amd64.tar.gz
+actionlint 1.7.12 darwin-arm64 aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_darwin_arm64.tar.gz
+actionlint 1.7.12 linux-amd64 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+zizmor 1.32.0 darwin-arm64 6efed18c4539a663fd3c851a2be9533fd8456c4e646d9416206da059154a0d3c https://github.com/zizmorcore/zizmor/releases/download/v1.32.0/zizmor-aarch64-apple-darwin.tar.gz
+zizmor 1.32.0 linux-amd64 bb110cc765eca9cd7efb2e284a956be5974c60027b0970f16397d86208a9957b https://github.com/zizmorcore/zizmor/releases/download/v1.32.0/zizmor-x86_64-unknown-linux-gnu.tar.gz
+cargo-deny 0.20.2 darwin-arm64 fe67d82a10d8597a3549364cb733a3f9cc1bfff9031b7ae46384a9f2a72090c3 https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-aarch64-apple-darwin.tar.gz
+cargo-deny 0.20.2 linux-amd64 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+cargo-nextest 0.9.151 darwin-arm64 d1d7d025d4bfc9fb154cd76aea3949bd78534829a0589abefa6e5dd4edb135dd https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.151/cargo-nextest-0.9.151-universal-apple-darwin.tar.gz
+cargo-nextest 0.9.151 linux-amd64 6b284d6fde9670dfb6ee10ea9d9abbc85f95643d3f592472d420d82e257b3a6c https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.151/cargo-nextest-0.9.151-x86_64-unknown-linux-musl.tar.gz

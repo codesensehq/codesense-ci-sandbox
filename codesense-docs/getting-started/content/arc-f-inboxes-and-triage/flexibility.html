@@ -424,7 +424,7 @@ id: worker
 runtime: claude
 default_prompt: /work-one
 # worker's /work-one skill ends with:
-#   release_role {role: "worker-pool", instance}
+#   release_role {team, role: "worker-pool", instanceId, generation}
 # so a sibling can claim the next job.</code></pre>
           </div>
         </div>
@@ -518,8 +518,8 @@ if (parentReviewVerdict !== "green") {
           </li>
           <li>
             <strong>Draw the edges.</strong> Who sends to whom. An edge is a
-            <code>send_message {to: "role:X"}</code> or a
-            <code>reply {messageId, replyTo: "role:X"}</code>.
+            <code>send_role_message {team, role: "X", text}</code>, or a <code>reply {message_id, text}</code> to a
+            message whose <code>replyTo</code> is <code>"role:X"</code>.
           </li>
           <li>
             <strong>Pick the triggers.</strong> One <code>inbox_idle</code> wake routine per role
@@ -558,9 +558,9 @@ if (parentReviewVerdict !== "green") {
             >), <code>routine.yml</code> files (<code>routine_create</code>), and the sessions that
             <code>register_role</code>. Compose by writing those three.
           </p>
-          <pre><code>codesense.invoke('agent_create', { name: 'worker', runtime: 'claude' })
-codesense.invoke('routine_create', { name: 'Wake the worker', agent: 'worker', mode: 'wake', task: '…' })
-codesense.invoke('open_workspace', { target: 'team-workspace', name: 'worker', agent: 'worker' })</code></pre>
+          <pre><code>agent_create { name: 'worker', runtime: 'claude' }
+routine_create { name: 'Wake the worker', agent: 'worker', mode: 'wake', task: '…' }
+open_workspace { target: 'team-workspace', name: 'worker', agent: 'worker' }</code></pre>
         </details>
       </section>
 

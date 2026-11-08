@@ -290,17 +290,17 @@ _personal/&lt;account&gt;/&lt;org&gt;/_scratch/agents/&lt;org&gt;~&lt;team&gt;~&
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Every routine you can see, or one agent's
-codesense.invoke('routine_list', {})
-codesense.invoke('routine_list', { agent: 'manager' })
+routine_list {}
+routine_list { agent: 'manager' }
 
 // An agent and its routines in one read
-codesense.invoke('agent_get', { id: 'manager' })
+agent_get { id: 'manager' }
 
 // Create one under its agent (checks and writes nothing with dryRun)
-codesense.invoke('routine_create', {
+routine_create {
   name: 'Morning triage', agent: 'barb', mode: 'wake',
   when: 'weekdays 09:00', task: '…', dryRun: true,
-})</code></pre>
+}</code></pre>
         </details>
       </section>
 

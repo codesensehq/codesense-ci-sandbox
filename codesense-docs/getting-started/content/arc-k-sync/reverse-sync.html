@@ -409,10 +409,10 @@
 const paths = ['.claude/skills/release-notes/SKILL.md']
 
 // 1. See exactly what would be written. Writes nothing.
-codesense.invoke('preview_reverse_sync_worktree', { target, paths })
+preview_reverse_sync_worktree { target, paths }
 
 // 2. Publish, after the user agrees.
-codesense.invoke('reverse_sync_worktree', { target, paths })</code></pre>
+reverse_sync_worktree { target, paths }</code></pre>
           <p style="margin-top: 8px">
             To build this into a skill of your own, see
             <a href="./write-your-own-sync-skill.html">write your own sync skill</a>.

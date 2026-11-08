@@ -362,7 +362,7 @@ test("re-review R2: cancelling the host confirmation restores the pending Load a
   await expect(pane.frame.getByText("Loading GIF…")).toHaveCount(0);
 });
 
-test("SV-PBF-184: lightbox lets the terminal shortcut bubble while Escape still closes it", async ({
+test("lightbox lets the terminal shortcut bubble while Escape still closes it", async ({
   mountPane,
 }) => {
   const pane = await mountPane(INBOX_PANE, fixtures(media("cached")));

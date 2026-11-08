@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Frame } from "@playwright/test";
+import { expect, test, type Frame } from "../support/quarantine-playwright";
 import { createServer, type Server } from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";

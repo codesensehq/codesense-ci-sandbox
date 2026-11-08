@@ -142,6 +142,12 @@ fn parse_count(option: &str, value: Option<String>, minimum: usize) -> Result<us
 }
 
 fn main() {
+    // This executable is a dedicated measurement gate, not a libtest suite.
+    // Enumeration (including --ignored/--exact queries) has no tests to report;
+    // the gate is invoked separately with --artifact-dir and --scenario.
+    if std::env::args().any(|arg| arg == "--list") {
+        return;
+    }
     let config = Config::parse().unwrap_or_else(|error| {
         eprintln!("COULD_NOT_MEASURE: {error}");
         std::process::exit(2);

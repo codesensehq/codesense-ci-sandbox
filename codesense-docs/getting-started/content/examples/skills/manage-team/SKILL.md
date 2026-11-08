@@ -13,7 +13,7 @@ last one stopped.
 
 ## 1. Find out who you are and join the queue
 
-1. Your session id is `$CODESENSE_TAB_SESSION_ID`. Call `who_am_i {sessionId}` for your
+1. Your session id is `$CODESENSE_TAB_SESSION_ID`. Call `who_am_i {session_id}` for your
    `handle` (how others address you) and `displayName`.
 2. Call `codesense_overview` and take `context.org` and `context.team`. Every role tool takes
    them as `team: {org, team}`.
@@ -47,10 +47,10 @@ Repeat while there is work:
    - `disposition: {kind: "no_work", noteOrReason: "..."}` for a duplicate, an FYI, or
      something that needs nothing. Say why.
 3. Act:
-   - **Small or clear.** Do it yourself, then answer the sender with `reply {messageId, text,
-     sessionId}`.
+   - **Small or clear.** Do it yourself, then answer the sender with `reply {message_id, text,
+     session_id}`.
    - **Real work.** Launch a worker (section 4).
-   - **Needs a human decision.** `send_message {to: "human", text, sessionId, kind:
+   - **Needs a human decision.** `send_message {to: "human", text, session_id, kind:
      "needs-you", replyTo: "role:manager"}` (`kind: "needs-you"` marks it as waiting on the human for agent views
      and dashboards; a Reply-To naming your own role alone reads as an update): a short markdown question with the options and your recommendation.
      When there is state to show, send `contentType: "html"`, a live dashboard, with a
@@ -69,14 +69,14 @@ set a timer on your own session with `schedule_wakeup`.
 
 ## 4. Launch and brief workers
 
-- **On this Mac:** `open_workspace {target: "story", story_id, name, agent, initialPrompt,
-  launchedBy: <your sessionId>}`, or `target: "team-workspace"` with a `name` for work that
+- **On this Mac:** `open_workspace {target: "story", story_id, name, agent, initial_prompt,
+  launched_by: <your session id>}`, or `target: "team-workspace"` with a `name` for work that
   has no story. `agent` is a saved Agent from `agent_list`.
-- **On a machine:** the same call with `machineId` from `list_machines`. A remote worker has
+- **On a machine:** the same call with `machine_id` from `list_machines`. A remote worker has
   the same tools you do.
-- `launchedBy` makes the worker yours: it nests under you in the agents list, and
-  `list_sessions {launchedBy: <your handle>}` lists it.
-- Brief it with `send_message {to: <its handle>, text, sessionId, replyTo: "role:manager"}`.
+- `launched_by` makes the worker yours: it nests under you in the agents list, and
+  `list_sessions {launched_by: <your handle>}` lists it.
+- Brief it with `send_message {to: <its handle>, text, session_id, replyTo: "role:manager"}`.
   A brief says: the task, where the context is, the constraints, and what "done" looks like.
   End every brief with this line:
 
@@ -92,11 +92,11 @@ go to: manager" under the message, so nothing is hidden.
 
 Between batches:
 
-- `list_sessions {launchedBy: <your handle>}` shows your workers with `state` (`running`,
+- `list_sessions {launched_by: <your handle>}` shows your workers with `state` (`running`,
   `idle`, `needs-you`, `exited`, `offline`), `progress` and `unread`.
 - A worker in `needs-you` waits for a permission: tell the human which one.
 - A worker `idle` with work left: `send_to_session {handle, text}` to nudge it.
-- `read_messages {sessionId}` drains mail sent to you directly.
+- `read_messages {session_id}` drains mail sent to you directly.
 
 Report to the human only when something changed that is worth a person's time: done, blocked,
 needs you. Send one digest with `send_message {to: "human", kind: "update", replyTo:

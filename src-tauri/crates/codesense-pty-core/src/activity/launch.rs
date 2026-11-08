@@ -843,7 +843,14 @@ mod tests {
             .unwrap();
             std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o700)).unwrap();
             crate::agent_cli::version_cache::seed_for_test(&program, "cached-version").unwrap();
-            let _ = version_qualified(program.as_os_str(), adapter, None);
+            // A generous budget: under full-suite load the 1 s production budget
+            // can kill the shim before it writes its marker.
+            let _ = version_qualified_within(
+                program.as_os_str(),
+                adapter,
+                None,
+                std::time::Duration::from_secs(10),
+            );
             assert!(
                 program.with_extension("ran").is_file(),
                 "{cli}: the live probe must run"

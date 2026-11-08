@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: MIT
+# Reviewed scanner fixtures, identifiers, generated data and vendored code.
+[extend]
+useDefault = true
+
+# Whole-file exemptions for generated, vendored and test files only.
+[[allowlists]]
+description = "reviewed false positives in generated, vendored and test files: identifier-like keys, base64 test bytes and secret-scanner test inputs"
+paths = [
+  '''(^|/)codesense-docs/getting-started/content/generated/live-hub\.json$''',
+  '''(^|/)codesense-docs/getting-started/content/generated/tokens\.json$''',
+  '''(^|/)patches/@xterm__addon-webgl@0\.19\.0\.patch$''',
+  '''(^|/)src-tauri/src/dashboard_publish/agents/tests\.rs$''',
+  '''(^|/)src-tauri/src/dashboard_publish/inbox/tests\.rs$''',
+  '''(^|/)src-tauri/src/dashboard_publish/toolkit/vendor/xterm\.js$''',
+  '''(^|/)src/features/agent-context/components/agent-context-pivot\.test\.tsx$''',
+  '''(^|/)src/features/agent-context/hooks/use-agent-context\.test\.ts$''',
+  '''(^|/)src/features/agent-context/lib/agent-context-model\.test\.ts$''',
+  '''(^|/)src/features/dashboard-publishing/dashboards-tab\.seam\.test\.tsx$''',
+  '''(^|/)src/features/dashboard/components/html-bridge\.caller-scope\.test\.ts$''',
+  '''(^|/)src/features/dashboard/components/html-bridge\.test\.ts$''',
+  '''(^|/)src/features/dashboard/components/html-viewer\.test\.tsx$''',
+  '''(^|/)src/features/dashboard/lib/dashboard-commands\.test\.ts$''',
+  '''(^|/)src/features/story-launch/story-agent-launch\.test\.ts$''',
+  '''(^|/)src/features/viewer/lib/attention-alerts-controller\.test\.tsx$''',
+  '''(^|/)src/shared/stores/shortcuts-store\.coverage\.test\.ts$''',
+]
+
+# Production sources, each exempted for the reason beside it. A credential added to one of these
+# files is still caught by the privacy scan's token rules, whose allow entries are bound to
+# fingerprints. Move a file to line-level exemptions when its fixtures move out of it.
+[[allowlists]]
+description = "reviewed false positives in production sources: redaction patterns, the redaction tests' fake values and shortcut identifiers"
+paths = [
+  # #[cfg(test)] module: fake GitHub-token and password values that the redaction tests feed in
+  '''(^|/)src-tauri/src/commands/dashboard_launch\.rs$''',
+  # #[cfg(test)] module: fake password and GitHub-token values for redaction
+  '''(^|/)src-tauri/src/commands/sprint_run/causation\.rs$''',
+  # #[cfg(test)] modules: fake provider-key and AWS-shaped values the relay must redact
+  '''(^|/)src-tauri/src/dashboard_publish/live\.rs$''',
+  # the redaction patterns themselves, and a fake JWS and key values in its #[cfg(test)] module
+  '''(^|/)src-tauri/src/feedback\.rs$''',
+  # the secret scanner: its PEM, JWT and token-prefix patterns and its #[cfg(test)] inputs
+  '''(^|/)src-tauri/src/shared/secret_scan\.rs$''',
+  # shortcut identifiers (`defaultKeystroke` values), not credentials
+  '''(^|/)src/shared/lib/shortcuts/registry\.ts$''',
+]

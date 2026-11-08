@@ -1,0 +1,190 @@
+{
+  "fields": [
+    {
+      "yaml": "status",
+      "csMeta": "cs:status",
+      "kind": "text",
+      "description": "Pipeline column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "type",
+      "csMeta": "cs:type",
+      "kind": "text",
+      "description": "Document type. story, bug and spike make the file a pipeline story; any other value, or none, keeps it a plain document.",
+      "enumValues": [
+        "story",
+        "bug",
+        "spike"
+      ],
+      "required": true
+    },
+    {
+      "yaml": "depends_on",
+      "csMeta": "cs:depends-on",
+      "kind": "list",
+      "description": "Story ids this story depends on. Each must resolve; drives the dependency graph.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "tags",
+      "csMeta": "cs:tags",
+      "kind": "list",
+      "description": "Free-form tags, for example [infra, urgent].",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "supporting_docs",
+      "csMeta": "cs:supporting-docs",
+      "kind": "list",
+      "description": "Relative paths to supporting documents. A path that is not found is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "story_id",
+      "csMeta": "cs:story-id",
+      "kind": "text",
+      "description": "The story's display id, for example W-5. Unique within an org.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "source_repo",
+      "csMeta": "cs:source-repo",
+      "kind": "text",
+      "description": "The repo the story's code lives in, as owner/repo. Must be a configured repo: resolve it with list_source_repos, never invent it.",
+      "enumValues": [],
+      "required": true
+    },
+    {
+      "yaml": "work_repo",
+      "csMeta": "cs:work-repo",
+      "kind": "text",
+      "description": "Optional. The repo whose history holds the story's work when that is not source_repo, as owner/repo (for example the context repo); story_changes reads it.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "dev_branch",
+      "csMeta": "cs:dev-branch",
+      "kind": "text",
+      "description": "Legacy. Read only as a fallback on older documents; use branch.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "branch_name",
+      "csMeta": "cs:branch-name",
+      "kind": "text",
+      "description": "Legacy. Read only as a fallback on older documents; use branch.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "team",
+      "csMeta": "cs:team",
+      "kind": "text",
+      "description": "The team the document belongs to. If set, it must be a configured team.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "repos",
+      "csMeta": "cs:repos",
+      "kind": "list",
+      "description": "Epics: the repos the epic spans, as owner/repo.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "branch",
+      "csMeta": "cs:branch",
+      "kind": "text",
+      "description": "Stories: the story's branch, used to create its worktree. Epics: the integration branch (by default integration/ followed by the epic id).",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "sprint",
+      "csMeta": "cs:sprint",
+      "kind": "text",
+      "description": "The sprint the story belongs to, for example 2026-08-A.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "points",
+      "csMeta": "cs:points",
+      "kind": "number",
+      "description": "Estimate in points. A non-numeric value is ignored; a value off the scale 1, 2, 3, 5, 8, 13 is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "assigned_to",
+      "csMeta": "cs:assigned-to",
+      "kind": "text",
+      "description": "Who the story is assigned to (a username). A login missing from the org roster is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "rank",
+      "csMeta": "cs:rank",
+      "kind": "text",
+      "description": "Order within a board column. The board writes it; you rarely set it by hand.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "subject_id",
+      "csMeta": "cs:subject-id",
+      "kind": "text",
+      "description": "A standalone document's automation subject id, which makes a plain document an addressable automation subject. A story uses story_id instead.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "title",
+      "csMeta": "cs:title",
+      "kind": "text",
+      "description": "The story's title. Without it, Markdown uses the first # heading and HTML uses the title tag or the first h1.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "parent_epic",
+      "csMeta": "cs:parent-epic",
+      "kind": "text",
+      "description": "The id of the epic the story belongs to. Without it, the epic folder on the story's path counts.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "epic",
+      "csMeta": "cs:epic",
+      "kind": "text",
+      "description": "Alias of parent_epic, read when parent_epic is absent.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "priority",
+      "csMeta": "cs:priority",
+      "kind": "text",
+      "description": "Priority, p0 (highest) to p4. Sorting also ranks words such as critical, high, medium and low.",
+      "enumValues": [
+        "p0",
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "required": false
+    }
+  ]
+}

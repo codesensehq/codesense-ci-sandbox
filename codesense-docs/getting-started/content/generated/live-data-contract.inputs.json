@@ -6,6 +6,8 @@
   "inputs": {
     "Cargo.lock": "277250b960f407aa883c761dc8cb4b5a4bb80572b1111f6c250cff38a022ec99",
     "src-tauri/Cargo.toml": "76fc35d76b7f8c5ed4fbe3a45d2dd4b837dec40ca6284a9f28e4fa39f21e6786",
+    "src-tauri/src/commands/pipeline_format/fields.rs": "59cb019422fce2000e89aa0de904b88587c4b99503fcc8342ade3e5728926e4f",
+    "src-tauri/src/commands/pipeline_format/mod.rs": "52ca5e1c30d80a82355723fce0c11bbd8481c575d009cfe96547f479458ba864",
     "src-tauri/src/context_query/model.rs": "4e81c3eaa7ed4ea0dc93fe5017c7defe77655b124f0d5bc447557b646f42d345",
     "src-tauri/src/dashboard_publish/agents.rs": "d23099cc81e529efe61fb42bb86ac70ff6c0040d715fdf3db83c439cc045d65b",
     "src-tauri/src/dashboard_publish/catalog.rs": "daa270f7a7ec72ef14b728ee43d0cbda7f8b4a64aea5ebc02ec0c40a16b07341",
@@ -17,7 +19,7 @@
     "src-tauri/src/dashboard_publish/toolkit/cs-live.js": "3296389ae01beebc31b4e3a67fa09e1b1de9dd505330e5d835c9d737e0340840",
     "src-tauri/src/http/routes/viewer.rs": "8612bfbcadfea4c08b99d5ac63995077696a3960486412f54cbb997ffb464df1",
     "src-tauri/src/mcp/live-data-starter.html": "5de6771ae5c84d74caf264f97a3038b3c826375147f1cf66eb12e87e868a8c61",
-    "src-tauri/src/mcp/live_data_authoring.rs": "2d37923e73eb7d95d313239ebf2cb9d0faa1969707e45801107cbd4f13f6fa4b",
+    "src-tauri/src/mcp/live_data_authoring.rs": "9e4365ccd6184aad8fd6f3f4f536fee50d7d46efe623f7d810b9065d390ffe92",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
     "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
     "src-tauri/src/verbs/commands.rs": "e850a56fb795505d67f0836d2e3646bb30b01ec1f6b52da210380813c02d1974",
@@ -30,5 +32,5 @@
     "src-tauri/src/verbs/schema.rs": "5628b1381c41665fd0b9a698a55ccefb8bb0922d1c133020f38f9f168aeebfc5",
     "src-tauri/src/verbs/tests.rs": "9c33d1d493484128463e4dbc6992abd86bd44173b357c46106a85c20d37394fe"
   },
-  "outputSha256": "4455a2f64415f1b901788806f6e0b8fa536a2c5761c17620e731fd4391c2f1d7"
+  "outputSha256": "748fdb1a37fee5ec83fbac7ba414dc971ac68c9bcf0281878a1d42f4d05f50f9"
 }

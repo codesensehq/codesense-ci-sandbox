@@ -8,7 +8,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
-    setupFiles: ["./src/test-setup.ts"],
+    setupFiles: ["./tests/support/quarantine-vitest.ts", "./src/test-setup.ts"],
     // SF-5: unit tests never have a dev server, so any resource a
     // component injects into the DOM makes happy-dom fire a real network
     // request against the default origin (http://localhost:3000) or a

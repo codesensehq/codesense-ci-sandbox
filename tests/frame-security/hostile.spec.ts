@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../support/quarantine-playwright";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import { mkdtemp, readFile, rm } from "node:fs/promises";

@@ -54,20 +54,41 @@ fn main() {
             .unwrap_or_else(|| panic!("no test {stage}"));
         return test();
     }
-    if std::env::args().any(|arg| arg == "--list") {
-        for (name, _) in TESTS {
-            println!("{name}: test");
+    let mut args = std::env::args().skip(1);
+    let mut list = false;
+    let mut exact = false;
+    let mut ignored = false;
+    let mut filter = Vec::new();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--list" => list = true,
+            "--exact" => exact = true,
+            "--ignored" => ignored = true,
+            "--format" => {
+                args.next();
+            }
+            _ if !str::starts_with(&arg, '-') => filter.push(arg),
+            _ => {}
         }
+    }
+    // None of these tests are ignored. Nextest queries this list separately.
+    if ignored {
         return;
     }
-    let filter: Vec<String> = std::env::args()
-        .skip(1)
-        .filter(|arg| !str::starts_with(arg, '-'))
-        .collect();
     let mut failed = Vec::new();
     for (name, _) in TESTS {
-        let wanted = |wanted: &String| str::contains(name, String::as_str(wanted));
+        let wanted = |wanted: &String| {
+            if exact {
+                *name == String::as_str(wanted)
+            } else {
+                str::contains(name, String::as_str(wanted))
+            }
+        };
         if !Vec::is_empty(&filter) && !filter.iter().any(wanted) {
+            continue;
+        }
+        if list {
+            println!("{name}: test");
             continue;
         }
         let status = std::process::Command::new(std::env::current_exe().unwrap())

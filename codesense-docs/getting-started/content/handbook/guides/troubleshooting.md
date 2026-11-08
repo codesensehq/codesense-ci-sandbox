@@ -24,7 +24,7 @@ Without it, the story is left out of the story index: it can't be opened as a wo
 
 **Quote values that contain `: `.** A value such as `title: Checkout: tax lines` breaks the YAML, and the story silently drops out. Write `title: "Checkout: tax lines"`.
 
-For an HTML story, the same fields go in meta tags: `cs:story-id`, `cs:source-repo`, `cs:depends-on` and so on. See Story and epic fields.
+For an HTML story, the same fields go in meta tags: `cs:story-id`, `cs:source-repo`, `cs:depends-on` and so on. See [Story and epic fields](../../generated/story-fields.md).
 
 > **Let your agent check it**
 >

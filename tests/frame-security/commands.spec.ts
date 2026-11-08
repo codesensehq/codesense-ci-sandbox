@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { shimSource } from "../support/page-shim";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "../support/quarantine-playwright";
 import { createServer, type Server } from "node:http";
 import { resolve } from "node:path";
 import { createServer as createViteServer, type ViteDevServer } from "vite";

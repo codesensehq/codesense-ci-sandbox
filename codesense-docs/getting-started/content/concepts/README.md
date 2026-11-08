@@ -88,8 +88,9 @@ schedule. `routine_run {runId}` only reads an existing run.
 
 If docs and a live tool description disagree, trust the tool description and check
 `docs.state`. Claude and Codex callers use their verified connection identity for messages, notes and records edits,
-workspace chat, feedback, agent/routine management and routine results. Omit `sessionId`;
-a supplied value must name that same caller. Launch tools derive `launchedBy` the same way.
+workspace chat, feedback, agent/routine management and routine results. Omit the session field
+(`session_id` or `sessionId`, as each schema names it); a supplied value must name that same
+caller. Launch tools derive the launcher field (`launched_by` or `launchedBy`) the same way.
 Unbound MCP calls cannot claim another session or act as the person.
 
 ## Orgs, teams and context repos
@@ -254,7 +255,7 @@ machine), `get_viewer_state` (its `terminalLayout` shows every open workspace an
 
 Tools: `list_machines` (needs `orgSlug`, optional `team`; shows connection state), `connect_machine`,
 `disconnect_machine`, `retry_machine`, `save_machine`, `prepare_remote_workspace`,
-`open_remote_tab`, `open_workspace` with `machineId`, `remote_workspace_fetch`.
+`open_remote_tab`, `open_workspace` with `machine_id`, `remote_workspace_fetch`.
 
 ## Sessions and handles
 
@@ -267,8 +268,9 @@ Tools: `list_machines` (needs `orgSlug`, optional `team`; shows connection state
   `--mcp-config` wins, and `command claude` / `command codex` runs the plain CLI.
   On a machine this needs its remote MCP permission and an up-to-date terminal server.
 - An agent learns its own session id from the environment variable
-  `$CODESENSE_TAB_SESSION_ID`. Pass it as `sessionId` wherever a tool asks who you are.
-- `who_am_i` `{sessionId}` tells a session who it is: its handle, its tab's current name
+  `$CODESENSE_TAB_SESSION_ID`. Pass it in the tool's session field (`session_id` or `sessionId`,
+  as its schema names it) wherever a tool asks who you are.
+- `who_am_i` `{session_id}` tells a session who it is: its handle, its tab's current name
   (`displayName`), machine, workspace and launcher. A tab someone opened by hand is a session
   too: its handle is its session id.
 - A session's name is its tab's current name. Its messages show under that name, and
@@ -349,19 +351,19 @@ See [Send a GIF or image](../arc-f-inboxes-and-triage/messages.html#send-media).
 
 **Instance inbox.** Every session with a handle has an inbox, kept in its team's store.
 
-- `send_message` `{to, text, sessionId}` sends to a handle from `list_sessions`, or to
+- `send_message` `{to, text, session_id}` sends to a handle from `list_sessions`, or to
   `"human"`. `reply` answers a message to whoever sent it. `read_messages` drains your own
   unread mail (it marks it read).
-- A reaction is not mail. `react {messageId, emoji, remove?}` puts one emoji on a message,
+- A reaction is not mail. `react {message_id, emoji, remove?}` puts one emoji on a message,
   once per reactor and emoji; repeating it takes it off. The sender hears about it once,
   through `reactions` in `read_messages`, and it never wakes them.
 - CodeSense binds the MCP connection to its tab at launch, for Claude and Codex, including
-  a CLI started by hand inside a CodeSense terminal. Omit `sessionId` to use that identity.
+  a CLI started by hand inside a CodeSense terminal. Omit `session_id` to use that identity.
   If supplied, it must name the same tab; another session or `human` is refused. Messages
   show the tab's current name. A connection outside CodeSense has no sender identity and
   is refused; passing a session id cannot bind it. Only the native app answers as the person.
 - For example, a bound worker can call `send_message {to:"human", text:"Checks passed"}`,
-  `read_messages {}`, `reply {messageId:7, text:"Done"}`, and
+  `read_messages {}`, `reply {message_id:7, text:"Done"}`, and
   `signal_done {status:"success", summary:"Checks passed"}` without a session id.
 - A Claude recipient that CodeSense launched or that runs in a CodeSense tab has an **inbox
   waiter**: new mail wakes it at once (an idle agent starts a turn, a busy one hears at its
@@ -419,7 +421,7 @@ special. Mail to a role is one queue shared by every live holder of that role.
 **A controller is just an agent you design.** CodeSense decides nothing about who is in
 charge: there is no built-in manager or controller. A "manager" is a saved Agent that holds a
 one-holder role (`register_role {role, sessionId, exclusive: true}`), works that role's queue,
-launches workers with `open_workspace` (`launchedBy`), tracks them with `list_sessions`, and
+launches workers with `open_workspace` (`launched_by`), tracks them with `list_sessions`, and
 asks workers to send questions with `replyTo: "role:manager"` so answers come back to its
 queue. The [manager recipe](../setting-up-agents/manager-agent.md) builds one, with a skill and
 two routines that wake it and restart it.

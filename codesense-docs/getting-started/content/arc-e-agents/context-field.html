@@ -450,16 +450,16 @@ revision: 2</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Resolve a startup list, see the trace, copy nothing.
-codesense.invoke('agent_preview', { name, runtime, startup, mcpServers })
+agent_preview { name, runtime, startup, mcpServers }
 // → manifest.resolved: [{ path, teamId, size, pulledInBy }]
 //    manifest.errors:   [{ code: "resolve", path, chainWalked }]
 //    manifest.provides: [{ kind: "skill" | "command", name, from }]
 
 // Get the current definition so you can diff before and after.
-codesense.invoke('agent_get', { id: 'docs-helper' })
+agent_get { id: 'docs-helper' }
 
 // See the chain yourself: describe_setup lists each team and its parent.
-codesense.invoke('describe_setup', {})</code></pre>
+describe_setup {}</code></pre>
           <p>
             See <a href="../mcp-explorer.html">mcp-explorer</a> for every
             field and

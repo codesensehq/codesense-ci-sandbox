@@ -204,13 +204,13 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// What agents are on this team right now?
-codesense.invoke('agent_list', { scope: 'team' })
+agent_list { scope: 'team' }
 
 // Preview the recipe's agent.yaml before saving.
-codesense.invoke('agent_preview', { name, runtime, launch, startup, defaultPrompt })
+agent_preview { name, runtime, launch, startup, defaultPrompt }
 
 // Create it, team-scoped. Pass scope: "personal" + org for Only me.
-codesense.invoke('agent_create', { name, runtime, startup, scope: 'team' })</code></pre>
+agent_create { name, runtime, startup, scope: 'team' }</code></pre>
           <p>
             Each recipe page lists the exact tools and arguments it uses.
           </p>

@@ -1,0 +1,3 @@
+id: reviewer
+# then: reply {message_id, text}
+# never: list_worktrees {repo: "x"}

@@ -337,13 +337,13 @@
           <pre><code>const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
 
 // Bring named files or folders in.
-codesense.invoke('hydrate_worktree', { target, sets: ['.claude/skills'] })
+hydrate_worktree { target, sets: ['.claude/skills'] }
 
 // Bring a story's epic in.
-codesense.invoke('hydrate_story', { target, storyId: 'DEMO-1' })
+hydrate_story { target, storyId: 'DEMO-1' }
 
 // What is here, and where did it come from?
-codesense.invoke('list_hydrated', { target })</code></pre>
+list_hydrated { target }</code></pre>
           <p style="margin-top: 8px">
             To build this into a skill of your own, see
             <a href="./write-your-own-sync-skill.html">write your own sync skill</a>.

@@ -236,7 +236,7 @@
               <code>alreadyHeld</code> if someone else is already there.
             </p>
             <pre><code>// MCP tool: register_role
-{"team":{"org":"acme","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}</code></pre>
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}</code></pre>
           </div>
         </div>
 
@@ -249,7 +249,7 @@
               <code>deliveryId</code> + <code>claimToken</code> you'll need to accept and ack.
             </p>
             <pre><code>// MCP tool: claim_role_messages — use instanceId and generation from register_role
-{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1,"limit":10}</code></pre>
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1,"limit":10}</code></pre>
           </div>
         </div>
 
@@ -275,7 +275,7 @@
               next holder. CodeSense also releases automatically when the session ends.
             </p>
             <pre><code>// MCP tool: release_role — use instanceId and generation from register_role
-{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
           </div>
         </div>
       </section>
@@ -330,13 +330,13 @@ revision: 1</code></pre>
         <pre><code>id: reviewer
 name: Review
 icon: builtin-chess:knight
-defaultHandler: acme/dev/reviewer</code></pre>
+defaultHandler: acme/team-context/dev/reviewer</code></pre>
         <p>Call these MCP tools with the shown arguments:</p>
         <pre><code>// role_save
-{"teamKey":"acme:dev","config":{"id":"reviewer","name":"Review","icon":"builtin-chess:knight","defaultHandler":"acme/dev/reviewer"}}
+{"teamKey":"acme/team-context:dev","config":{"id":"reviewer","name":"Review","icon":"builtin-chess:knight","defaultHandler":"acme/team-context/dev/reviewer"}}
 
 // roles_list
-{"teamKey":"acme:dev"}</code></pre>
+{"teamKey":"acme/team-context:dev"}</code></pre>
         <p><code>name</code> must be nonblank. <code>icon</code> is a face reference such as
           <code>builtin-chess:knight</code>, or null for the default chess piece.
           <code>defaultHandler</code> is one saved-agent key or null. It records a preferred handler;
@@ -359,7 +359,7 @@ defaultHandler: acme/dev/reviewer</code></pre>
 // Override that membership by adding: "queueRole":"builder"
 // Opt out by adding: "queueRole":null</code></pre>
         <p>To join or recover a live registration explicitly, use <code>register_role</code> with
-          <code>team: {org:"acme",team:"dev"}</code>, role and your sessionId. Keep its
+          <code>team: {org:"acme/team-context",team:"dev"}</code>, role and your sessionId. Keep its
           <code>instanceId</code> and <code>generation</code> for <code>claim_role_messages</code>,
           <code>accept_role_message</code> and <code>ack_role_message</code>.
           <code>role_state</code> inspects the queue without claiming anything.</p>
@@ -377,16 +377,16 @@ defaultHandler: acme/dev/reviewer</code></pre>
             your <code>CODESENSE_TAB_SESSION_ID</code>, and use the returned <code>instanceId</code>
             and <code>generation</code> in later calls (the values below are illustrative).</p>
           <pre><code>// MCP tool: role_state — inspect one role
-{"team":{"org":"acme","team":"dev"},"role":"manager"}
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager"}
 
 // MCP tool: register_role — join the role
-{"team":{"org":"acme","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager","sessionId":"YOUR_SESSION_ID","exclusive":true}
 
 // MCP tool: role_state — inspect all roles
-{"team":{"org":"acme","team":"dev"}}
+{"team":{"org":"acme/team-context","team":"dev"}}
 
 // MCP tool: release_role — finish this registration
-{"team":{"org":"acme","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
+{"team":{"org":"acme/team-context","team":"dev"},"role":"manager","instanceId":"YOUR_INSTANCE_ID","generation":1}</code></pre>
         </details>
       </section>
 

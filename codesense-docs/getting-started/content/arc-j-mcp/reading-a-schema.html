@@ -369,9 +369,9 @@
       <section data-search="Worked example — add_source_repo schema" id="example">
         <h2>Worked example</h2>
         <p>Call:</p>
-        <pre><code>codesense.invoke('codesense_get_tool_schema', {
+        <pre><code>codesense_get_tool_schema {
   name: 'add_source_repo'
-})</code></pre>
+}</code></pre>
         <p>Reply (abridged for shape):</p>
         <pre><code>{
   "name": "add_source_repo",
@@ -411,7 +411,7 @@
 
       <section data-search="Edge — an unknown name" id="edge">
         <h2>Edge: unknown name</h2>
-        <pre><code>codesense.invoke('codesense_get_tool_schema', { name: 'add-source-repo' })
+        <pre><code>codesense_get_tool_schema { name: 'add-source-repo' }
 // → { status: "unknown", name: "add-source-repo" }</code></pre>
         <p>
           Underscores, not hyphens. Nothing throws; you get a shape your agent can branch on and
@@ -429,7 +429,6 @@
           verb="invoke"
           args='{"name": "codesense_get_tool_schema", "args": {"name": "add_source_repo"}}'
           label="Read add_source_repo's schema"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -438,16 +437,13 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Always pair with a search first — don't guess names.
-const { tools } = await codesense.invoke('codesense_search_tools', {
-  query: 'add source repo'
-})
-const schema = await codesense.invoke('codesense_get_tool_schema', {
-  name: tools[0].name
-})
+codesense_search_tools { query: 'add source repo' }
+// → { tools: [{ name: 'add_source_repo', … }, …] }
+codesense_get_tool_schema { name: 'add_source_repo' }
 
 // Unknown name is a plain reply, not a throw.
-const r = await codesense.invoke('codesense_get_tool_schema', { name: 'nope' })
-if (r.status === 'unknown') { /* retry search */ }</code></pre>
+codesense_get_tool_schema { name: 'nope' }
+// → { status: 'unknown', … }: search again</code></pre>
           <p>
             Deep-link into the explorer:
             <a href="../mcp-explorer.html#tool/codesense_get_tool_schema"

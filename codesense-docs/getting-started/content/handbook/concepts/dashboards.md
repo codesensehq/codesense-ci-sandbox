@@ -55,9 +55,9 @@ Any `.html` file in your context repo is a live page. It reads your stories, ses
 <div id="out">Loading…</div>
 <script>
 function reload() {
-  codesense.invoke("listOrgsTeams", {}).then(function (data) {
+  codesense.queryContext({ groupBy: "org", limit: 0 }).then(function (r) {
     var out = document.getElementById("out");
-    out.textContent = data.orgs.map(function (o) { return o.name; }).join(", ");
+    out.textContent = r.groups.map(function (g) { return g.value; }).filter(Boolean).join(", ");
   });
 }
 reload();

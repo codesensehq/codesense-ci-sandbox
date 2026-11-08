@@ -469,11 +469,11 @@
             <code>prepare_remote_workspace</code>).
           </p>
           <pre><code>// Hydrate a story's epic, plus the epics it references (one hop).
-codesense.invoke('hydrate_story', {
+hydrate_story {
   target: { kind: 'local', codeRepoPath: process.cwd(), sessionId: process.env.CODESENSE_TAB_SESSION_ID },
   storyId: 'DEMO-1',
   policy: { referenceDepth: 1, ancestryLevels: 0, siblingBreadth: false, maxMembers: 10 },
-})
+}
 // → { operationId, status: 'ready',            // or 'failed' / 'cancelled'
 //     wanted: 4, written: 4, unchanged: 0,
 //     keptModified: [], skippedTracked: [], failed: [], …,
@@ -481,7 +481,7 @@ codesense.invoke('hydrate_story', {
 //     story: { storyId: 'DEMO-1', epicDir: '…/sample-epic', filesScoped: 4, outsideTeamContent: 0 } }
 
 // Which epics this workspace has hydrated so far
-codesense.invoke('list_hydrated', { target })</code></pre>
+list_hydrated { target }</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See
             <a href="../mcp-explorer.html#tool/hydrate_story">hydrate_story</a>,

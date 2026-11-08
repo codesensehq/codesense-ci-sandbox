@@ -2759,7 +2759,7 @@ mod tests {
     /// scan (the scan pays this N times). Machine-dependent → `#[ignore]`d. Run:
     /// `cargo test -p codesense --lib rf_perf9_measure_build_story_ref -- --ignored --nocapture`.
     #[test]
-    #[ignore]
+    #[ignore = "manual story-reference construction benchmark; run explicitly with --ignored --nocapture"]
     fn rf_perf9_measure_build_story_ref() {
         use std::time::Instant;
 
@@ -2854,7 +2854,7 @@ mod tests {
     /// wall-clock + load-flaky by nature — hence `#[ignore]` (never a CI gate).
     /// Run: `cargo test -p codesense --lib rf_perf11_measure_scan_at_scale -- --ignored --nocapture`
     #[test]
-    #[ignore]
+    #[ignore = "manual pipeline scan benchmark; run explicitly with --ignored --nocapture"]
     fn rf_perf11_measure_scan_at_scale() {
         use crate::install::frontmatter_cache::FrontmatterCache;
         use std::time::Instant;

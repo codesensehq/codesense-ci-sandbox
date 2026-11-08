@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { readFileSync } from "node:fs";
-import { expect, test, type Frame } from "@playwright/test";
+import { expect, test, type Frame } from "../support/quarantine-playwright";
 import { viewerScript } from "../support/page-shim";
 import { prepareHostPage, startFakeHost, warmHost, type FakeHost } from "./support/fake-host";
 

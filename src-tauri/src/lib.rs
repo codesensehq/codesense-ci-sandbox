@@ -106,6 +106,8 @@ mod runtime;
 pub mod sanitizer_canary;
 mod shared;
 mod terminal;
+#[cfg(test)]
+mod test_logger;
 /// SW-WV-B1: the `weft::` ledger substrate — the sole module that reads and
 /// writes the `wv_*` tables in a single per-team `weft.sqlite3`, through the
 /// sanctioned write path (one writer per record, live-max/AUTOINCREMENT id

@@ -94,7 +94,7 @@ Label `context repo` at `(105, 350)`, `caption` `(105, 370)` reading
 
 | id       | icon       | x   | y   | w   | h  | label             | caption                      | fill    | stroke          |
 | -------- | ---------- | --- | --- | --- | -- | ----------------- | ---------------------------- | ------- | --------------- |
-| `call`   | `plug-zap` | 380 | 200 | 220 | 110| `open_workspace`  | `target: 'DEMO-1'`        | surface | `--arc-agent` 2px|
+| `call`   | `plug-zap` | 380 | 200 | 220 | 110| `open_workspace`  | `story_id: 'DEMO-1'`        | surface | `--arc-agent` 2px|
 
 ### 3.2 Launcher caption
 

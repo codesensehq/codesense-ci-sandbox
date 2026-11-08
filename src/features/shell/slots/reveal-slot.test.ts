@@ -326,6 +326,29 @@ it("offers a right-pane panel only for panes that declare the right pane (or dec
   expect(defs.map((d) => d.id)).toEqual(["pane:acme:dev/board", "pane:acme:dev/plain"]);
 });
 
+it("never offers a Notes pane beside classic Notes: Settings chooses between them", () => {
+  const notes = {
+    id: "notes",
+    title: "Notes",
+    scope: "private",
+    path: "/builtin/notes.html",
+    panesDir: "/builtin",
+    panelId: "pane:private:acme/notes",
+    surface: "notes",
+    dashboardRef: { scope: "built-in", org: "acme", id: "notes" },
+    declaration: { slots: ["right-pane"], surface: "notes", capabilities: [] },
+  } as never;
+  const defs = paneDefinitions(
+    "acme",
+    "dev",
+    { contentRoot: "/ctx", chain: [], panes: [notes] },
+    defaultRightPaneLayout(),
+  );
+  expect(defs).toEqual([
+    expect.objectContaining({ id: "pane:private:acme/notes", offerable: false }),
+  ]);
+});
+
 it.each(["right-pane", "dock", "file-nav"] as const)(
   "tab-only built-ins are ineligible for %s, including saved placements",
   (slot) => {

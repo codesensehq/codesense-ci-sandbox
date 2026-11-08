@@ -53,7 +53,7 @@ The same rules apply as for markdown:
 - List values such as `cs:depends-on` and `cs:tags` are comma-separated.
 - A page with no `cs:` meta tags at all is an ordinary HTML doc, not a story.
 
-The full mapping is in Story and epic fields.
+The full mapping is in [Story and epic fields](../../generated/story-fields.md).
 
 The story's title comes from `<title>`, or from the first `<h1>` if there's no title.
 

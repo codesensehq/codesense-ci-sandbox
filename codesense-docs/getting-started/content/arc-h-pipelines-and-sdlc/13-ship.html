@@ -128,10 +128,10 @@
               <summary><strong>How to do this via MCP</strong></summary>
               <pre><code>// Preview, then publish the workspace's context edits.
 const target = { kind: 'local', codeRepoPath: '&lt;worktree&gt;', sessionId: '&lt;session&gt;' }
-codesense.invoke('preview_reverse_sync_worktree', { target })
-codesense.invoke('reverse_sync_worktree', { target })
+preview_reverse_sync_worktree { target }
+reverse_sync_worktree { target }
 // Then run git yourself (commit, push) and report how it went.
-codesense.invoke('report_context_sync', { state: 'ok' })</code></pre>
+report_context_sync { state: 'ok' }</code></pre>
             </details>
           </section>
 

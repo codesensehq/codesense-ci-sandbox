@@ -21,7 +21,7 @@
       "crumb": "CodeSense — Connect a context repo",
       "kind": "section",
       "href": "./arc-a-first-touch/connect-a-context-repo.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent A local agent can connect a clone, list what's connected and switch team without the UI: attach_context_repository({ clonePath: \"/Users/you/code/acme-context\" }) list_context_attachments({}) list_orgs_teams() set_active_team({ org: \"acme-billing\", team: \"billing\" }) detach_context_repository({ orgSlug: \"acme-billing\" }) // forgets it; files stay"
+      "text": "How to do this via MCP Agent-side equivalent A local agent can connect a clone, list what's connected and switch team without the UI: attach_context_repository({ clonePath: \"/Users/you/code/acme-context\" }) list_context_attachments({}) list_orgs_teams() // the org slug comes from the clone's org.yml, e.g. acme-billing set_active_team({ org: \"acme-billing\", team: \"billing\" }) detach_context_repository({ orgSlug: \"acme-billing\" }) // forgets it; files stay"
     },
     {
       "title": "When to pick this path",
@@ -504,7 +504,7 @@
       "crumb": "CodeSense — Arc A · First touch",
       "kind": "section",
       "href": "./arc-a-first-touch/index.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent Every step in this arc is reproducible from an agent through MCP — no UI required. For the first-launch primer: list_orgs_teams {} create_local_organization { displayName: \"Acme\", destinationPath: \"/Users/you/CodeSense/acme\" } set_active_team { org: \"acme\", team: \"billing\" } See each tool's live schema in mcp-explorer ."
+      "text": "How to do this via MCP Agent-side equivalent Every step in this arc is reproducible from an agent through MCP — no UI required. For the first-launch primer: list_orgs_teams {} create_local_organization { displayName: \"Acme\", destinationPath: \"/Users/you/CodeSense/acme\" } commit_registry_edit_local { orgSlug: \"acme\", edit: { type: \"CreateTeam\", team_name: \"billing\" } } set_active_team { org: \"acme\", team: \"billing\" } See each tool's live schema in mcp-explorer ."
     },
     {
       "title": "Between install and your first useful minute.",
@@ -700,7 +700,7 @@
       "crumb": "CodeSense — Content layers",
       "kind": "section",
       "href": "./arc-b-model/content-layers.html#via-mcp",
-      "text": "How to do this via MCP agent_preview resolves an agent's context through this stack without copying anything, and names the place each file came from: codesense.invoke('agent_preview', { agent: 'reviewer', repo: 'acme/payments' }) // → each resolved file with its tier: repo, personal, or team (and which team) Live schema in mcp-explorer ."
+      "text": "How to do this via MCP agent_preview resolves an agent's context through this stack without copying anything, and names the place each file came from: agent_preview { agent: 'reviewer', repo: 'acme/payments' } // → each resolved file with its tier: repo, personal, or team (and which team) Live schema in mcp-explorer ."
     },
     {
       "title": "Editing an inherited file",
@@ -1372,14 +1372,14 @@
       "crumb": "CodeSense — Git is yours",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/git-is-yours.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent CodeSense surfaces the result of git operations through its own tools so agents and dashboards don't shell out either. The underlying git is still yours — it ran under the host-agent — but the summary is a plain JSON response. // Agents inspect the fleet without touching git codesense.invoke('list_worktrees', {}) // → [{ story_id, branch, path, machine, last_commit_sha, last_push_at }, ...] // Open the real repo in a terminal tab if you want to run git by hand codesense.invoke('open_terminal_tab', { target: 'DEMO-1', cwd: '$WORKTREE' }) See list_worktrees and open_terminal_tab for the live schemas."
+      "text": "How to do this via MCP Agent-side equivalent CodeSense surfaces the result of git operations through its own tools so agents and dashboards don't shell out either. The underlying git is still yours — it ran under the host-agent — but the summary is a plain JSON response. // Agents inspect the fleet without touching git list_worktrees {} // → [{ story_id, branch, path, machine, last_commit_sha, last_push_at }, ...] // Open the real repo in a terminal tab if you want to run git by hand open_terminal_tab { workspaceId: 'story:DEMO-1' } See list_worktrees and open_terminal_tab for the live schemas."
     },
     {
       "title": "Then who runs git worktree add ?",
       "crumb": "CodeSense — Git is yours",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/git-is-yours.html#who-runs",
-      "text": "Then who runs git worktree add ? CodeSense does, and it is the one place it runs git that changes anything on disk. The commands worktree creation needs ( git fetch when the remote is reachable, then git worktree add ) run on your Mac as you, with your shell, your credentials and your git config, through the host-agent CodeSense installs under your user account (on a remote machine, its terminal server). Setup commands from worktree.yaml run the same way. None of them commits or pushes. # What CodeSense invokes codesense.invoke('open_workspace', { target: 'DEMO-1' }) # What then runs on your Mac, as you git -C ~/code/sample-source-repo fetch origin git -C ~/code/sample-source-repo \\ worktree add ../sample-source-repo-wt/feat-DEMO-1 feat/DEMO-1 The host-agent is documented in Arc D ; sync is covered in Arc K , which walks the parts of the loop where an agent you ask pulls and pushes the context repo with git ."
+      "text": "Then who runs git worktree add ? CodeSense does, and it is the one place it runs git that changes anything on disk. The commands worktree creation needs ( git fetch when the remote is reachable, then git worktree add ) run on your Mac as you, with your shell, your credentials and your git config, through the host-agent CodeSense installs under your user account (on a remote machine, its terminal server). Setup commands from worktree.yaml run the same way. None of them commits or pushes. # What CodeSense invokes open_workspace { target: 'story', story_id: 'DEMO-1' } # What then runs on your Mac, as you git -C ~/code/sample-source-repo fetch origin git -C ~/code/sample-source-repo \\ worktree add ../sample-source-repo-wt/feat-DEMO-1 feat/DEMO-1 The host-agent is documented in Arc D ; sync is covered in Arc K , which walks the parts of the loop where an agent you ask pulls and pushes the context repo with git ."
     },
     {
       "title": "Why this is the right choice",
@@ -1505,7 +1505,7 @@
       "crumb": "CodeSense — Hydration",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/hydration.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent The target names the workspace: {kind:\"local\", codeRepoPath, sessionId} on this Mac, or {kind:\"remote\", machineId, workspaceHandle} on a machine (the handle from prepare_remote_workspace ). // Hydrate a story's epic, plus the epics it references (one hop). codesense.invoke('hydrate_story', { target: { kind: 'local', codeRepoPath: process.cwd(), sessionId: process.env.CODESENSE_TAB_SESSION_ID }, storyId: 'DEMO-1', policy: { referenceDepth: 1, ancestryLevels: 0, siblingBreadth: false, maxMembers: 10 }, }) // → { operationId, status: 'ready', // or 'failed' / 'cancelled' // wanted: 4, written: 4, unchanged: 0, // keptModified: [], skippedTracked: [], failed: [], …, // writtenPaths: ['sample-epic/DEMO-1.md', …], note: '…', // story: { storyId: 'DEMO-1', epicDir: '…/sample-epic', filesScoped: 4, outsideTeamContent: 0 } } // Which epics this workspace has hydrated so far codesense.invoke('list_hydrated', { target }) See hydrate_story , hydrate_worktree and list_hydrated for the live schemas."
+      "text": "How to do this via MCP Agent-side equivalent The target names the workspace: {kind:\"local\", codeRepoPath, sessionId} on this Mac, or {kind:\"remote\", machineId, workspaceHandle} on a machine (the handle from prepare_remote_workspace ). // Hydrate a story's epic, plus the epics it references (one hop). hydrate_story { target: { kind: 'local', codeRepoPath: process.cwd(), sessionId: process.env.CODESENSE_TAB_SESSION_ID }, storyId: 'DEMO-1', policy: { referenceDepth: 1, ancestryLevels: 0, siblingBreadth: false, maxMembers: 10 }, } // → { operationId, status: 'ready', // or 'failed' / 'cancelled' // wanted: 4, written: 4, unchanged: 0, // keptModified: [], skippedTracked: [], failed: [], …, // writtenPaths: ['sample-epic/DEMO-1.md', …], note: '…', // story: { storyId: 'DEMO-1', epicDir: '…/sample-epic', filesScoped: 4, outsideTeamContent: 0 } } // Which epics this workspace has hydrated so far list_hydrated { target } See hydrate_story , hydrate_worktree and list_hydrated for the live schemas."
     },
     {
       "title": "What hydration is",
@@ -1645,7 +1645,7 @@
       "crumb": "CodeSense — Workspaces & worktrees",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/index.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent Every page in this arc is reproducible from an agent through MCP, no UI required. A warm-up tour: codesense.invoke('list_worktrees', {}) codesense.invoke('open_workspace', { target: 'DEMO-1' }) codesense.invoke('read_worktree_config', { source_repo: 'acme/sample-source-repo' })"
+      "text": "How to do this via MCP Agent-side equivalent Every page in this arc is reproducible from an agent through MCP, no UI required. A warm-up tour: list_worktrees {} open_workspace { target: 'story', story_id: 'DEMO-1' } read_worktree_config { repoPath: '~/code/sample-source-repo' }"
     },
     {
       "title": "Why workspaces exist",
@@ -1855,7 +1855,7 @@
       "crumb": "CodeSense — Parallelism",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/parallelism.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent An orchestrator fans out five open_workspace calls in parallel. Each one settles independently — opened or alreadyLive — and the Builder loop picks up every ready worktree the next time inbox_idle fires. // Fan out — one call per sibling, concurrent is fine await Promise.all(['DEMO-2','DEMO-3','DEMO-4','DEMO-5'] .map(id => codesense.invoke('open_workspace', { target: id }))) // Inspect the fleet codesense.invoke('list_worktrees', {}) // → [{ story_id: 'DEMO-1', path: '../sample-source-repo-wt/feat-DEMO-1-foundation', status: 'ready', ... }, ...] See open_workspace and list_worktrees for the live schemas."
+      "text": "How to do this via MCP Agent-side equivalent An orchestrator fans out five open_workspace calls in parallel. Each one settles independently — opened or alreadyLive — and the Builder loop picks up every ready worktree the next time inbox_idle fires. // Fan out — one call per sibling, concurrent is fine open_workspace { target: 'story', story_id: 'DEMO-2' } open_workspace { target: 'story', story_id: 'DEMO-3' } open_workspace { target: 'story', story_id: 'DEMO-4' } open_workspace { target: 'story', story_id: 'DEMO-5' } // Inspect the fleet list_worktrees {} // → [{ story_id: 'DEMO-1', path: '../sample-source-repo-wt/feat-DEMO-1-foundation', status: 'ready', ... }, ...] See open_workspace and list_worktrees for the live schemas."
     },
     {
       "title": "Why five tabs instead of one",
@@ -1953,7 +1953,7 @@
       "crumb": "CodeSense — Troubleshooting worktrees",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/troubleshooting.html#diagnostics",
-      "text": "Diagnostic one-liners # All worktrees CodeSense knows about on this Mac codesense.invoke('list_worktrees', {}) # Which epics have been hydrated into a given worktree codesense.invoke('list_hydrated', { target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '<your session id>' } }) # The resolved worktree.yaml the host-agent will run codesense.invoke('read_worktree_config', { source_repo: 'acme/sample-source-repo' }) # Open a terminal tab in the worktree to run git by hand codesense.invoke('open_terminal_tab', { target: 'DEMO-1', cwd: '$WORKTREE' })"
+      "text": "Diagnostic one-liners # All worktrees CodeSense knows about on this Mac list_worktrees {} # Which epics have been hydrated into a given worktree list_hydrated { target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '<your session id>' } } # The resolved worktree.yaml the host-agent will run read_worktree_config { repoPath: '~/code/sample-source-repo' } # Open a terminal tab in the worktree to run git by hand open_terminal_tab { workspaceId: 'story:DEMO-1' }"
     },
     {
       "title": "When a workspace is being difficult",
@@ -1981,7 +1981,7 @@
       "crumb": "CodeSense — Troubleshooting worktrees",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/troubleshooting.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent An escalation routine (or a human operator) runs the same four tools against the same handle. The output is the full triage sheet for a workspace. // Full triage of a single workspace await Promise.all([ codesense.invoke('list_worktrees', {}), codesense.invoke('list_hydrated', { target: 'DEMO-1' }), codesense.invoke('read_worktree_config', { source_repo: 'acme/sample-source-repo' }), ]) See list_worktrees , list_hydrated , and read_worktree_config for the live schemas."
+      "text": "How to do this via MCP Agent-side equivalent An escalation routine (or a human operator) runs the same four tools against the same handle. The output is the full triage sheet for a workspace. // Full triage of a single workspace list_worktrees {} list_hydrated { target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '<your session id>' } } read_worktree_config { repoPath: '~/code/sample-source-repo' } See list_worktrees , list_hydrated , and read_worktree_config for the live schemas."
     },
     {
       "title": "Where to look first",
@@ -2310,7 +2310,7 @@
       "crumb": "CodeSense — Workspace kinds",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/workspace-kinds.html#via-mcp",
-      "text": "How to do this via MCP One tool, four kinds of target open_workspace opens a story workspace from a story_id ; with a target it launches an agent in a story or a team workspace. Agent launches settle with a typed status ( opened · alreadyLive · busy · invalid ). // Story — creates the worktree if it doesn't exist yet codesense.invoke('open_workspace', { story_id: 'DEMO-1' }) // → { handle, mode, headed, reconciled } // Launch an agent in that story's worktree, in a new tab codesense.invoke('open_workspace', { target: 'story', story_id: 'DEMO-1', name: 'review', agent: 'reviewer' }) // Launch an agent in a team workspace codesense.invoke('open_workspace', { target: 'team-workspace', name: 'sprint-triage' })"
+      "text": "How to do this via MCP One tool, four kinds of target open_workspace opens a story workspace from a story_id ; with a target it launches an agent in a story or a team workspace. Agent launches settle with a typed status ( opened · alreadyLive · busy · invalid ). // Story — creates the worktree if it doesn't exist yet open_workspace { story_id: 'DEMO-1' } // → { handle, mode, headed, reconciled } // Launch an agent in that story's worktree, in a new tab open_workspace { target: 'story', story_id: 'DEMO-1', name: 'review', agent: 'reviewer' } // Launch an agent in a team workspace open_workspace { target: 'team-workspace', name: 'sprint-triage' }"
     },
     {
       "title": "Which kind do you want?",
@@ -2408,7 +2408,7 @@
       "crumb": "CodeSense — Worktree creation",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/worktree-creation.html#hero",
-      "text": "Arc C · Worktree creation How a worktree appears You choose Open CLI on a story, or an agent calls open_workspace . If the worktree already exists, you land in it immediately. If it doesn't, CodeSense creates one: it resolves the branch (fetching from the remote when it can), lays the directory, links it to the story, and runs the worktree.yaml setup. Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when an agent launches there (its context ) or when an agent asks for more with hydrate_story or hydrate_worktree . Create a story worktree · timeline BEFORE CALL DURING AFTER DEMO-1 story · depends_on: [] context repo codesense/docs No worktree yet · nothing on disk open_workspace target: 'DEMO-1' any agent · any user ensure_story_worktree does the work STEP 1 git fetch (if reachable) STEP 2 git worktree add STEP 3 link the story STEP 4 run worktree.yaml · setup setup time varies CodeSense runs these git steps for you ../repo-wt/feat-DEMO-1/ source repo cloned branch story link no context copied worktree.yaml setup ran · exit 0 ready index entry written · agent attaches created worktree frame source repo story link agent / MCP This is the shape; the live workspaces/worktree-create.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Arc C · Worktree creation How a worktree appears You choose Open CLI on a story, or an agent calls open_workspace . If the worktree already exists, you land in it immediately. If it doesn't, CodeSense creates one: it resolves the branch (fetching from the remote when it can), lays the directory, links it to the story, and runs the worktree.yaml setup. Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when an agent launches there (its context ) or when an agent asks for more with hydrate_story or hydrate_worktree . Create a story worktree · timeline BEFORE CALL DURING AFTER DEMO-1 story · depends_on: [] context repo codesense/docs No worktree yet · nothing on disk open_workspace story_id: 'DEMO-1' any agent · any user ensure_story_worktree does the work STEP 1 git fetch (if reachable) STEP 2 git worktree add STEP 3 link the story STEP 4 run worktree.yaml · setup setup time varies CodeSense runs these git steps for you ../repo-wt/feat-DEMO-1/ source repo cloned branch story link no context copied worktree.yaml setup ran · exit 0 ready index entry written · agent attaches created worktree frame source repo story link agent / MCP This is the shape; the live workspaces/worktree-create.excalidraw canvas has the editable version — click the diagram to open it."
     },
     {
       "title": "What you see in the UI",
@@ -2436,7 +2436,7 @@
       "crumb": "CodeSense — Worktree creation",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/worktree-creation.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent An agent calls open_workspace directly; the trusted-side spine runs the four steps and settles with a typed result. codesense.invoke('open_workspace', { storyId: 'DEMO-1' }) // → { handle: 'DEMO-1', mode: 'headed', headed: true, reconciled: null } // Peek at a worktree's config before letting it run setup commands codesense.invoke('read_worktree_config', { source_repo: 'acme/api' }) See open_workspace and read_worktree_config for the live schemas."
+      "text": "How to do this via MCP Agent-side equivalent An agent calls open_workspace directly; the trusted-side spine runs the four steps and settles with a typed result. open_workspace { story_id: 'DEMO-1' } // → { handle: 'DEMO-1', mode: 'headed', headed: true, reconciled: null } // Peek at a worktree's config before letting it run setup commands read_worktree_config { repoPath: '~/code/api' } See open_workspace and read_worktree_config for the live schemas."
     },
     {
       "title": "When this happens",
@@ -2541,7 +2541,7 @@
       "crumb": "CodeSense — Add machine user",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/add-machine-user.html#team-share",
-      "text": "Make the machine visible to the team Independently from the SSH authorization, the machine declaration itself (label, host, port, pinned host key) can be shared with your team so every teammate sees the machine in their Machines list and binds their own account to it: codesense.invoke('save_machine', { label: 'build-box-01', host: 'build-box-01.lab', port: 22, share: { team: 'ops' }, }) The declaration is a team file like any other: it reaches teammates when an agent pushes the context repo and they next pull. Teammates' bindings (their key, their user name) never sync and never leave their own Mac."
+      "text": "Make the machine visible to the team Independently from the SSH authorization, the machine declaration itself (label, host, port, pinned host key) can be shared with your team so every teammate sees the machine in their Machines list and binds their own account to it: save_machine { input: { label: 'build-box-01', host: 'build-box-01.lab', port: 22, username: 'sam', signIn: { method: 'agent' }, }, share: { kind: 'team', orgSlug: 'acme/team-context', team: 'ops' }, connect: true, } The declaration is a team file like any other: it reaches teammates when an agent pushes the context repo and they next pull. Teammates' bindings (their key, their user name) never sync and never leave their own Mac."
     },
     {
       "title": "Try this now",
@@ -2555,7 +2555,7 @@
       "crumb": "CodeSense — Add machine user",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/add-machine-user.html#via-mcp",
-      "text": "How to do this via MCP Launch the Machine-setup agent and send it the skill command: // Open the agent in a tab (or address an existing one via list_sessions). codesense.invoke('open_terminal_tab', { requestId: crypto.randomUUID(), launch: { agentKey: 'machine-setup' }, headed: true, }) // Drive the skill. codesense.invoke('run_in_terminal_tab', { tab: 'Machine setup', command: '/add-machine-user', })"
+      "text": "How to do this via MCP Launch the Machine-setup agent and send it the skill command: // Start the agent with the skill command as its first prompt. open_workspace { target: 'team-workspace', name: 'machine-setup', agent: 'machine-setup', initial_prompt: '/add-machine-user', } // Or drive an agent that is already running (find its tab via list_sessions). run_in_terminal_tab { tab: 'Machine setup', command: '/add-machine-user', }"
     },
     {
       "title": "Walking it",
@@ -2653,7 +2653,7 @@
       "crumb": "CodeSense — Terminals & machines",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/index.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('list_machines', {}) Returns each machine's id, label, host, port, and whether it has been set up for the current user."
+      "text": "How to do this via MCP list_machines { orgSlug: 'acme/team-context' } Returns each machine's id, label, host, port, and whether it has been set up for the current user."
     },
     {
       "title": "One mental model for local and remote machines",
@@ -2737,7 +2737,7 @@
       "crumb": "CodeSense — Local machine",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/local-machine.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('open_terminal_tab', { requestId: crypto.randomUUID(), workspaceId: '<current workspace>', launch: 'shell', // or 'claude' / 'codex' / an agentKey headed: true, }) Omit machineId and the tab opens on this Mac. Supply a machineId and it goes remote — same shape, different host."
+      "text": "How to do this via MCP open_terminal_tab { workspaceId: '<current workspace>', headed: true, } // → { handle } // Type into it. run_in_terminal_tab { handle: '<handle>', command: 'git status' } The tab opens in that workspace on this Mac. For a tab on another machine, use open_remote_tab with its machineId ."
     },
     {
       "title": "Why local",
@@ -3024,7 +3024,7 @@
       "crumb": "CodeSense — Machines",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/machines.html#via-mcp",
-      "text": "How to do this via MCP // List codesense.invoke('list_machines', {}) // Save a new remote machine (public declaration) codesense.invoke('save_machine', { label: 'build-box-01', host: 'build-box-01.lab', port: 22, share: 'personal', // or { team: 'ops' } })"
+      "text": "How to do this via MCP // List list_machines { orgSlug: 'acme/team-context' } // Save a new remote machine (public declaration) save_machine { input: { label: 'build-box-01', host: 'build-box-01.lab', port: 22, username: 'sam', signIn: { method: 'agent' }, }, share: { kind: 'personal' }, // or { kind: 'team', orgSlug: 'acme/team-context', team: 'ops' } connect: true, }"
     },
     {
       "title": "What a machine is",
@@ -3101,7 +3101,7 @@
       "crumb": "CodeSense — Local ⇄ Remote parity matrix",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/parity-matrix.html#matrix",
-      "text": "The matrix Workflow Local Remote Notes Open terminal ✓ ✓ open_terminal_tab for local, open_remote_tab for remote. Same args, same handle shape, same scrollback contract. First remote open per account spins up the terminal server if it isn't there yet. Run an agent CLI ( claude , codex ) ✓ ⚠ Launch is identical ( launch: 'claude' ). Caveat: each person signs in to the agent CLI on each machine; CodeSense never copies agent sign-ins across machines. On the remote, the first --dangerously-skip-permissions may show the agent's one-time confirmation (answer it via run_in_terminal_tab ). Run OpenCode ( opencode ) ✓ ✕ OpenCode runs on your Mac only, typed or launched as builtin/opencode . Remote tabs and remote agent launches run a shell, Claude Code or Codex. Workaround: run OpenCode on this Mac. Launch a saved agent (foreground / background) ✓ ⚠ launch: { agentKey } works on either side. Caveat: remote launches require preparedWorkspaceHandle from a verified hydration (not just a path), and the account's runtime + sign-in must be present. The terminal server pins its identity; permissionMode: 'bypass' needs an up-to-date server. Hydrate a worktree ✓ ✓ Hydration runs on whichever machine the workspace targets, and only when an agent launches or asks. The first remote open performs the git clone/fetch on the remote; later opens reuse that worktree. Same frontmatter; same depends_on ; same handle contract. Open workspace ✓ ✓ open_workspace picks the machine when the workspace is remote; the resulting workspace handle addresses tabs and files the same way local workspaces do. Run a routine ✓ ⚠ Routines execute in whichever account owns the triggering workspace. Caveat: cron-style schedules depend on the owner being online — your Mac for local-owned routines, the remote account's terminal server for remote-owned ones. If you want \"always on\", own the routine on the always-on machine. Serve a dashboard (HTML viewer) ✓ ✓ The viewer renders in the CodeSense window on your Mac regardless of where the context lives. For a…"
+      "text": "The matrix Workflow Local Remote Notes Open terminal ✓ ✓ open_terminal_tab for local, open_remote_tab for remote. Same args, same handle shape, same scrollback contract. First remote open per account spins up the terminal server if it isn't there yet. Run an agent CLI ( claude , codex ) ✓ ⚠ Launch is identical ( launch: 'claude' ). Caveat: each person signs in to the agent CLI on each machine; CodeSense never copies agent sign-ins across machines. On the remote, the first --dangerously-skip-permissions may show the agent's one-time confirmation (answer it via run_in_terminal_tab ). Run OpenCode ( opencode ) ✓ ✕ OpenCode runs on your Mac only, typed or launched as builtin/opencode . Remote tabs and remote agent launches run a shell, Claude Code or Codex. Workaround: run OpenCode on this Mac. Launch a saved agent (foreground / background) ✓ ⚠ A saved agent launches on either side ( agent on open_workspace , agentKey on open_remote_tab ). Caveat: remote launches require preparedWorkspaceHandle from a verified hydration (not just a path), and the account's runtime + sign-in must be present. The terminal server pins its identity; permissionMode: 'bypass' needs an up-to-date server. Hydrate a worktree ✓ ✓ Hydration runs on whichever machine the workspace targets, and only when an agent launches or asks. The first remote open performs the git clone/fetch on the remote; later opens reuse that worktree. Same frontmatter; same depends_on ; same handle contract. Open workspace ✓ ✓ open_workspace picks the machine when the workspace is remote; the resulting workspace handle addresses tabs and files the same way local workspaces do. Run a routine ✓ ⚠ Routines execute in whichever account owns the triggering workspace. Caveat: cron-style schedules depend on the owner being online — your Mac for local-owned routines, the remote account's terminal server for remote-owned ones. If you want \"always on\", own the routine on the always-on machine. Serve a dashboard (HTML viewer) ✓ ✓ The viewer renders in the CodeSense window on your…"
     },
     {
       "title": "Try this now",
@@ -3171,7 +3171,7 @@
       "crumb": "CodeSense — Remote (private account)",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/remote-private-account.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('open_remote_tab', { requestId: crypto.randomUUID(), machineId: 'build-box-01-ab12cd', teamKey: 'ops', workspaceId: '<workspace>', hostCwd: '/home/sam/work/my-repo', launch: 'shell', // or 'claude' / 'codex' / an agentKey headed: true, }) For a saved agent, pass launch: {agentKey} and preparedWorkspaceHandle from a verified hydration."
+      "text": "How to do this via MCP open_remote_tab { operation: 'create', requestId: crypto.randomUUID(), machineId: 'build-box-01-ab12cd', teamKey: 'acme/team-context:ops', workspaceId: '<workspace>', cwd: '/home/sam/work/my-repo', launch: 'shell', // or 'claude' / 'codex' headed: true, } For a saved agent, add agentKey and preparedWorkspaceHandle from a verified hydration."
     },
     {
       "title": "A remote tab, start to finish",
@@ -3325,7 +3325,7 @@
       "crumb": "CodeSense — Setup machine",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/setup-machine.html#via-mcp",
-      "text": "How to do this via MCP // First call: no trusted fingerprint — returns the host-key fp. codesense.invoke('test_machine_connection', { input: { label: 'build-box-01', host: 'build-box-01.lab', port: 22, username: 'sam', signIn: { method: 'agent' }, }, }) // Second call: confirm the fp. codesense.invoke('test_machine_connection', { input: { /* same */, trustedHostKeyFp: 'SHA256:…' }, machineId: 'build-box-01-ab12cd', // if already saved }) // Save the declaration (public). codesense.invoke('save_machine', { label: 'build-box-01', host: 'build-box-01.lab', port: 22, share: 'personal', // or { team: 'ops' } })"
+      "text": "How to do this via MCP // First call: no trusted fingerprint — returns the host-key fp. test_machine_connection { input: { label: 'build-box-01', host: 'build-box-01.lab', port: 22, username: 'sam', signIn: { method: 'agent' }, }, } // Second call: confirm the fp. test_machine_connection { input: { /* same */, trustedHostKeyFp: 'SHA256:…' }, machineId: 'build-box-01-ab12cd', // if already saved } // Save the declaration (public). save_machine { input: { label: 'build-box-01', host: 'build-box-01.lab', port: 22, username: 'sam', signIn: { method: 'agent' }, }, share: { kind: 'personal' }, // or { kind: 'team', orgSlug: 'acme/team-context', team: 'ops' } connect: true, }"
     },
     {
       "title": "What the setup-machine skill does",
@@ -3570,7 +3570,7 @@
       "crumb": "CodeSense — Terminal tabs",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/terminal-tabs.html#via-mcp",
-      "text": "How to do this via MCP // Inventory. codesense.invoke('list_sessions', {}) // Snapshot a tab's scrollback. codesense.invoke('read_terminal_tab', { tab: 'Machine setup', // or { handle: '…' } view: 'scrollback', // 'screen' for a live alt-screen frame }) // Type into a tab. codesense.invoke('run_in_terminal_tab', { tab: 'Machine setup', command: '/setup-machine', })"
+      "text": "How to do this via MCP // Inventory. list_sessions {} // Snapshot a tab's scrollback. read_terminal_tab { tab: 'Machine setup', // or { handle: '…' } view: 'scrollback', // 'screen' for a live alt-screen frame } // Type into a tab. run_in_terminal_tab { tab: 'Machine setup', command: '/setup-machine', }"
     },
     {
       "title": "What a terminal tab is",
@@ -3710,7 +3710,7 @@
       "crumb": "CodeSense — Troubleshooting",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/troubleshooting.html#via-mcp",
-      "text": "How to diagnose via MCP // Who's talking to whom. codesense.invoke('list_machines', { orgSlug: '…' }) codesense.invoke('list_sessions', {}) // Health of this Mac's terminal server. codesense.invoke('terminal_server_status', {}) // Remote terminal servers: list_machines shows each machine's terminalServer. // Replace a stale terminal server. codesense.invoke('prepare_machine_terminal_server_replacement', { machineId: '…' }) codesense.invoke('restart_machine_terminal_server', { machineId: '…' })"
+      "text": "How to diagnose via MCP // Who's talking to whom. list_machines { orgSlug: '…' } list_sessions {} // Health of this Mac's terminal server. terminal_server_status {} // Remote terminal servers: list_machines shows each machine's terminalServer. // Replace a stale terminal server. prepare_machine_terminal_server_replacement { machineId: '…' } // → a one-use serverToken restart_machine_terminal_server { machineId: '…', serverToken: '…', confirmEndSessions: true }"
     },
     {
       "title": "Troubleshooting posture",
@@ -4179,7 +4179,7 @@
       "crumb": "CodeSense — agent.yaml",
       "kind": "section",
       "href": "./arc-e-agents/agent-yaml.html#via-mcp",
-      "text": "How to do this via MCP // Preview before you create — same inputs as agent_create. codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions }) // → { manifest: {totals, errors, provides}, warnings, resolved: {account} } // Create it. dryRun returns the same reply and writes nothing. codesense.invoke('agent_create', { name, runtime, startup, scope: 'team', dryRun: true }) // Update it. Pass only the fields that change; keep the revision you last read. codesense.invoke('agent_update', { id, baseRevision, startup, permissions }) // Get the current definition + revision. codesense.invoke('agent_get', { id })"
+      "text": "How to do this via MCP // Preview before you create — same inputs as agent_create. agent_preview { name, runtime, startup, mcpServers, permissions } // → { manifest: {totals, errors, provides}, warnings, resolved: {account} } // Create it. dryRun returns the same reply and writes nothing. agent_create { name, runtime, startup, scope: 'team', dryRun: true } // Update it. Pass only the fields that change; keep the revision you last read. agent_update { id, baseRevision, startup, permissions } // Get the current definition + revision. agent_get { id }"
     },
     {
       "title": "What agent.yaml is",
@@ -4326,7 +4326,7 @@
       "crumb": "CodeSense — Bundled example (docs-helper)",
       "kind": "section",
       "href": "./arc-e-agents/bundled-example.html#via-mcp",
-      "text": "How to do this via MCP // Get the shipped definition as the viewer sees it. codesense.invoke('agent_get', { id: 'docs-helper' }) // Preview these launch fields, including the shipped permission rules. codesense.invoke('agent_preview', { \"name\": \"Docs helper\", \"id\": \"docs-helper\", \"description\": \"Keeps the CodeSense docs up to date and answers questions about CodeSense.\", \"runtime\": \"claude\", \"launch\": \"headless\", \"permissions\": { \"claude\": { \"allow\": [ \"Read\", \"Skill(update-codesense-docs)\", \"mcp__codesense__codesense_overview\", \"mcp__codesense__update_codesense_docs\" ] } } }) // Open a tab for the helper. codesense.invoke('open_terminal_tab', { agentId: 'docs-helper' }) See the context resolver for the full trace, and mcp-explorer for every tool."
+      "text": "How to do this via MCP // Get the shipped definition as the viewer sees it. agent_get { id: 'docs-helper' } // Preview these launch fields, including the shipped permission rules. agent_preview { \"name\": \"Docs helper\", \"id\": \"docs-helper\", \"description\": \"Keeps the CodeSense docs up to date and answers questions about CodeSense.\", \"runtime\": \"claude\", \"launch\": \"headless\", \"permissions\": { \"claude\": { \"allow\": [ \"Read\", \"Skill(update-codesense-docs)\", \"mcp__codesense__codesense_overview\", \"mcp__codesense__update_codesense_docs\" ] } } } // Start the helper in a team workspace. open_workspace { target: 'team-workspace', name: 'docs', agent: 'docs-helper' } See the context resolver for the full trace, and mcp-explorer for every tool."
     },
     {
       "title": "Check, update, report",
@@ -4417,7 +4417,7 @@
       "crumb": "CodeSense — CLAUDE.md & AGENTS.md",
       "kind": "section",
       "href": "./arc-e-agents/claude-md-agents-md.html#via-mcp",
-      "text": "How to do this via MCP // Which team on the chain has CLAUDE.md? Preview is the honest answer — // it runs the same resolver as a real launch. codesense.invoke('agent_preview', { name: 'probe', runtime: 'claude', startup: ['CLAUDE.md'], }) // → { manifest: { entries: [{ path: 'CLAUDE.md', source: 'teams/backend/...', bytes: 4821 }] } } // The chain itself (which teams, in order): describe_setup lists each team and its parent. codesense.invoke('describe_setup', {})"
+      "text": "How to do this via MCP // Which team on the chain has CLAUDE.md? Preview is the honest answer — // it runs the same resolver as a real launch. agent_preview { name: 'probe', runtime: 'claude', startup: ['CLAUDE.md'], } // → { manifest: { entries: [{ path: 'CLAUDE.md', source: 'teams/backend/...', bytes: 4821 }] } } // The chain itself (which teams, in order): describe_setup lists each team and its parent. describe_setup {}"
     },
     {
       "title": "How much is too much",
@@ -4536,7 +4536,7 @@
       "crumb": "CodeSense — The context resolver",
       "kind": "section",
       "href": "./arc-e-agents/context-field.html#via-mcp",
-      "text": "How to do this via MCP // Resolve a startup list, see the trace, copy nothing. codesense.invoke('agent_preview', { name, runtime, startup, mcpServers }) // → manifest.resolved: [{ path, teamId, size, pulledInBy }] // manifest.errors: [{ code: \"resolve\", path, chainWalked }] // manifest.provides: [{ kind: \"skill\" | \"command\", name, from }] // Get the current definition so you can diff before and after. codesense.invoke('agent_get', { id: 'docs-helper' }) // See the chain yourself: describe_setup lists each team and its parent. codesense.invoke('describe_setup', {}) See mcp-explorer for every field and schema-browser → agent.yaml for the resolver's own rules."
+      "text": "How to do this via MCP // Resolve a startup list, see the trace, copy nothing. agent_preview { name, runtime, startup, mcpServers } // → manifest.resolved: [{ path, teamId, size, pulledInBy }] // manifest.errors: [{ code: \"resolve\", path, chainWalked }] // manifest.provides: [{ kind: \"skill\" | \"command\", name, from }] // Get the current definition so you can diff before and after. agent_get { id: 'docs-helper' } // See the chain yourself: describe_setup lists each team and its parent. describe_setup {} See mcp-explorer for every field and schema-browser → agent.yaml for the resolver's own rules."
     },
     {
       "title": "What the context resolver is",
@@ -4725,7 +4725,7 @@
       "crumb": "CodeSense — Agents",
       "kind": "section",
       "href": "./arc-e-agents/index.html#via-mcp",
-      "text": "How to do this via MCP Every lifecycle action on an agent has a matching MCP tool. The four you'll reach for most: // List agents the team can see — starters, team agents, your Only-me ones. codesense.invoke('agent_list', { scope: 'all' }) // Preview a definition. Returns manifest.errors + warnings + resolved paths. codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions }) // Create it, team-scoped by default. Pass scope: \"personal\" + org for Only me. codesense.invoke('agent_create', { name, runtime, startup, dryRun: false }) // Update it. Pass the revision you last read as baseRevision; a conflict // reply means something else changed it since you read it. codesense.invoke('agent_update', { id, baseRevision, startup, permissions }) See mcp-explorer for the full tool catalog and schema-browser → agent.yaml for every field."
+      "text": "How to do this via MCP Every lifecycle action on an agent has a matching MCP tool. The four you'll reach for most: // List agents the team can see — starters, team agents, your Only-me ones. agent_list { scope: 'all' } // Preview a definition. Returns manifest.errors + warnings + resolved paths. agent_preview { name, runtime, startup, mcpServers, permissions } // Create it, team-scoped by default. Pass scope: \"personal\" + org for Only me. agent_create { name, runtime, startup, dryRun: false } // Update it. Pass the revision you last read as baseRevision; a conflict // reply means something else changed it since you read it. agent_update { id, baseRevision, startup, permissions } See mcp-explorer for the full tool catalog and schema-browser → agent.yaml for every field."
     },
     {
       "title": "What an agent is in CodeSense",
@@ -5047,7 +5047,7 @@
       "crumb": "CodeSense — MCP-only agents",
       "kind": "section",
       "href": "./arc-e-agents/mcp-only-agents.html#via-mcp",
-      "text": "How to do this via MCP // Preview, then create. Nothing writes until agent_create fires. codesense.invoke('agent_preview', { name: 'Sprint reporter', runtime: 'claude', launch: 'headless', startup: ['CLAUDE.md', '.claude/skills/sprint-report/'], permissions: { claude: { allow: ['Read', 'Grep', 'Glob', 'mcp__codesense__*'], deny: ['Edit', 'Write', 'Bash'], }}, }) // The three bridge calls an MCP-only reporter typically makes: codesense.invoke('list_sessions', { teamId }) codesense.invoke('describe_setup', {}) codesense.invoke('send_message', { to: 'human', body }) See mcp-explorer for every CodeSense tool, and designing for a role when the agent you want needs more than the bridge."
+      "text": "How to do this via MCP // Preview, then create. Nothing writes until agent_create fires. agent_preview { name: 'Sprint reporter', runtime: 'claude', launch: 'headless', startup: ['CLAUDE.md', '.claude/skills/sprint-report/'], permissions: { claude: { allow: ['Read', 'Grep', 'Glob', 'mcp__codesense__*'], deny: ['Edit', 'Write', 'Bash'], }}, } // The three bridge calls an MCP-only reporter typically makes: list_sessions {} describe_setup {} send_message { to: 'human', text } See mcp-explorer for every CodeSense tool, and designing for a role when the agent you want needs more than the bridge."
     },
     {
       "title": "What an MCP-only agent is",
@@ -5264,7 +5264,7 @@
       "crumb": "CodeSense — Remote agents",
       "kind": "section",
       "href": "./arc-e-agents/remote-agents.html#via-mcp",
-      "text": "How to do this via MCP // List machines you can launch on. Local shows as a machine too. codesense.invoke('list_machines', {}) // Open an agent on a specific remote (same agent.yaml you'd launch locally). codesense.invoke('open_remote_tab', { machineId, agentId }) // Routine-driven launches set `machine:` on the task; see arc K. // For headless Codex remote agents, make sure approval_policy is set. codesense.invoke('agent_preview', { name, runtime: 'codex', launch: 'headless', permissions: { codex: { approval_policy: 'never', sandbox_mode: 'workspace-write' } }, }) See arc D — terminals & machines for the machine model and mcp-explorer for every tool."
+      "text": "How to do this via MCP // List machines you can launch on. Local shows as a machine too. list_machines { orgSlug: 'acme/team-context' } // Open an agent on a specific remote (same agent.yaml you'd launch locally). // preparedWorkspaceHandle comes from prepare_remote_workspace. open_remote_tab { operation: 'create', requestId, machineId, teamKey, workspaceId, cwd, agentKey, preparedWorkspaceHandle } // Routine-driven launches set `machine:` on the task; see arc K. // For headless Codex remote agents, make sure approval_policy is set. agent_preview { name, runtime: 'codex', launch: 'headless', permissions: { codex: { approval_policy: 'never', sandbox_mode: 'workspace-write' } }, } See arc D — terminals & machines for the machine model and mcp-explorer for every tool."
     },
     {
       "title": "What a remote agent is",
@@ -5383,7 +5383,7 @@
       "crumb": "CodeSense — Skills",
       "kind": "section",
       "href": "./arc-e-agents/skills.html#via-mcp",
-      "text": "How to do this via MCP // What slash commands would the agent provide? codesense.invoke('agent_preview', { startup, runtime }) // → { manifest: { provides: [{ name: 'bmad-build', from: '.claude/skills/bmad-build/' }, …] } } // Read a skill's SKILL.md directly to understand its description. codesense.invoke('read_rendered_document', { path: '.claude/skills/bmad-build/SKILL.md' })"
+      "text": "How to do this via MCP // What slash commands would the agent provide? agent_preview { startup, runtime } // → { manifest: { provides: [{ name: 'bmad-build', from: '.claude/skills/bmad-build/' }, …] } } // Read a skill's SKILL.md directly to understand its description. read_rendered_document { path: '.claude/skills/bmad-build/SKILL.md' }"
     },
     {
       "title": "What a skill is",
@@ -5684,7 +5684,7 @@
       "crumb": "CodeSense — User recipes",
       "kind": "section",
       "href": "./arc-e-agents/user-recipes.html#via-mcp",
-      "text": "How to do this via MCP // What agents are on this team right now? codesense.invoke('agent_list', { scope: 'team' }) // Preview the recipe's agent.yaml before saving. codesense.invoke('agent_preview', { name, runtime, launch, startup, defaultPrompt }) // Create it, team-scoped. Pass scope: \"personal\" + org for Only me. codesense.invoke('agent_create', { name, runtime, startup, scope: 'team' }) Each recipe page lists the exact tools and arguments it uses."
+      "text": "How to do this via MCP // What agents are on this team right now? agent_list { scope: 'team' } // Preview the recipe's agent.yaml before saving. agent_preview { name, runtime, launch, startup, defaultPrompt } // Create it, team-scoped. Pass scope: \"personal\" + org for Only me. agent_create { name, runtime, startup, scope: 'team' } Each recipe page lists the exact tools and arguments it uses."
     },
     {
       "title": "Why they're not duplicated here",
@@ -5768,7 +5768,7 @@
       "crumb": "CodeSense — Decisions & escalation",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/decisions-and-escalation.html#hero",
-      "text": "Escalate once. Resume. builder hits ambiguous spec resolver human or Resolver agent verdict in-thread reply send_message · role:resolver decide reply · threaded · builder resumes with the fact pinned to the story The thread is the memory. The builder never guesses — it waits, decides, moves on."
+      "text": "Escalate once. Resume. builder hits ambiguous spec resolver human or Resolver agent verdict in-thread reply send_role_message · resolver decide reply · threaded · builder resumes with the fact pinned to the story The thread is the memory. The builder never guesses — it waits, decides, moves on."
     },
     {
       "title": "How to escalate well",
@@ -5789,7 +5789,7 @@
       "crumb": "CodeSense — Decisions & escalation",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/decisions-and-escalation.html#via-mcp",
-      "text": "How to do this via MCP // Builder escalates codesense.invoke('send_message', { to: 'role:resolver', text: `Escalating ${storyId} AC-2 — options: (A) …, (B) …; recommend (B). Blocked.`, sessionId, replyTo: `role:builder-${storyId}`, }) // Resolver claims and answers const { deliveries } = codesense.invoke('claim_role_messages', { team, role: 'resolver', instanceId, generation, limit: 10, }) for (const d of deliveries) { codesense.invoke('accept_role_message', { ..., disposition: { kind: 'work' } }) codesense.invoke('reply', { messageId: d.messageId, text: verdict, sessionId }) codesense.invoke('ack_role_message', { ..., receiptId }) }"
+      "text": "How to do this via MCP // Builder escalates send_role_message { team, role: 'resolver', text: `Escalating ${storyId} AC-2 — options: (A) …, (B) …; recommend (B). Blocked.`, replyTo: `role:builder-${storyId}`, } // Resolver claims and answers claim_role_messages { team, role: 'resolver', instanceId, generation, limit: 10, } // → { deliveries }; for each delivery d: accept_role_message { ..., disposition: { kind: 'work' } } reply { message_id: d.messageId, text: verdict } ack_role_message { ..., receiptId }"
     },
     {
       "title": "What the resolver pattern solves",
@@ -5852,7 +5852,7 @@
       "crumb": "CodeSense — Build your own flow",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/flexibility.html#how",
-      "text": "How to build your own Name the roles. One name per seat. Exclusive if it holds state, non-exclusive if it's a pool. Draw the edges. Who sends to whom. An edge is a send_message {to: \"role:X\"} or a reply {messageId, replyTo: \"role:X\"} . Pick the triggers. One inbox_idle wake routine per role that has sleeping holders. One cron routine for anything that needs liveness without a queue (e.g. CI polls). Open the composer. inbox-flows 's Build-your-own card has a visual palette for roles and edges, and exports matching routine.yml + agent.yaml you drop into your editable context repo."
+      "text": "How to build your own Name the roles. One name per seat. Exclusive if it holds state, non-exclusive if it's a pool. Draw the edges. Who sends to whom. An edge is a send_role_message {team, role: \"X\", text} , or a reply {message_id, text} to a message whose replyTo is \"role:X\" . Pick the triggers. One inbox_idle wake routine per role that has sleeping holders. One cron routine for anything that needs liveness without a queue (e.g. CI polls). Open the composer. inbox-flows 's Build-your-own card has a visual palette for roles and edges, and exports matching routine.yml + agent.yaml you drop into your editable context repo."
     },
     {
       "title": "Shape C · Review-then-ship",
@@ -5866,7 +5866,7 @@
       "crumb": "CodeSense — Build your own flow",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/flexibility.html#round-robin",
-      "text": "Shape B · Round-robin worker pool dispatcher w1 w2 w3 w4 Dispatcher + idempotent workers A dispatcher holds a dispatch role queue. Four workers share a single worker-pool role (non-exclusive). Each incoming job gets handed to the first idle worker — role_state tells the dispatcher who's free. When a job's done it posts back to role:dispatch , closing the loop. # agent.yaml — non-exclusive pool holder id: worker runtime: claude default_prompt: /work-one # worker's /work-one skill ends with: # release_role {role: \"worker-pool\", instance} # so a sibling can claim the next job."
+      "text": "Shape B · Round-robin worker pool dispatcher w1 w2 w3 w4 Dispatcher + idempotent workers A dispatcher holds a dispatch role queue. Four workers share a single worker-pool role (non-exclusive). Each incoming job gets handed to the first idle worker — role_state tells the dispatcher who's free. When a job's done it posts back to role:dispatch , closing the loop. # agent.yaml — non-exclusive pool holder id: worker runtime: claude default_prompt: /work-one # worker's /work-one skill ends with: # release_role {team, role: \"worker-pool\", instanceId, generation} # so a sibling can claim the next job."
     },
     {
       "title": "Try this now",
@@ -5880,7 +5880,7 @@
       "crumb": "CodeSense — Build your own flow",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/flexibility.html#via-mcp",
-      "text": "How to do this via MCP There is no \"shape\" primitive. A shape is agent.yaml files ( agent_create ), routine.yml files ( routine_create ), and the sessions that register_role . Compose by writing those three. codesense.invoke('agent_create', { name: 'worker', runtime: 'claude' }) codesense.invoke('routine_create', { name: 'Wake the worker', agent: 'worker', mode: 'wake', task: '…' }) codesense.invoke('open_workspace', { target: 'team-workspace', name: 'worker', agent: 'worker' })"
+      "text": "How to do this via MCP There is no \"shape\" primitive. A shape is agent.yaml files ( agent_create ), routine.yml files ( routine_create ), and the sessions that register_role . Compose by writing those three. agent_create { name: 'worker', runtime: 'claude' } routine_create { name: 'Wake the worker', agent: 'worker', mode: 'wake', task: '…' } open_workspace { target: 'team-workspace', name: 'worker', agent: 'worker' }"
     },
     {
       "title": "Why the kit is a kit",
@@ -6083,7 +6083,7 @@
       "crumb": "CodeSense — Local vs remote",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/local-vs-remote.html#all-local",
-      "text": "Shape A · All local this Mac manager builder-1 builder-2 reviewer Everything on your Mac Simplest shape. Every role's holder session runs on the same machine the user is on. Fast, deterministic, and the only shape that works with no network. The inbox-flows dashboard and factory-playbook render this when the Local↔Remote toggle is set to Local . // Launch every worker on this Mac codesense.invoke('open_workspace', { target: 'story', storyId, name: 'builder-DEMO-1', agent: 'builder', // machineId omitted → defaults to the local machine })"
+      "text": "Shape A · All local this Mac manager builder-1 builder-2 reviewer Everything on your Mac Simplest shape. Every role's holder session runs on the same machine the user is on. Fast, deterministic, and the only shape that works with no network. The inbox-flows dashboard and factory-playbook render this when the Local↔Remote toggle is set to Local . // Launch every worker on this Mac open_workspace { target: 'story', story_id: 'DEMO-1', name: 'builder-DEMO-1', agent: 'builder', // machine_id omitted → defaults to the local machine }"
     },
     {
       "title": "Any role. Any machine.",
@@ -6097,7 +6097,7 @@
       "crumb": "CodeSense — Local vs remote",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/local-vs-remote.html#hybrid",
-      "text": "Shape B · Local triager, remote workers this Mac remote (private-account) manager resolver builder-1 builder-2 builder-3 reviewer Keep the human-facing roles close; farm out the heavy lifting The manager and resolver stay on your Mac so you can see and interrupt them. The builder-* shards run on remote machines in private-account mode — more cores, more RAM, no interruption to your dev loop. Replies arrive in your inbox like any other message; the dashboards show a machine badge next to each session. // Local manager — default codesense.invoke('open_workspace', { target: 'team-workspace', name: 'manager', agent: 'manager' }) // Remote builders — one per story shard codesense.invoke('open_workspace', { target: 'story', storyId, name: `builder-${storyId}`, agent: 'builder', machineId: pickRemote(storyId), // picks a remote by id from list_machines })"
+      "text": "Shape B · Local triager, remote workers this Mac remote (private-account) manager resolver builder-1 builder-2 builder-3 reviewer Keep the human-facing roles close; farm out the heavy lifting The manager and resolver stay on your Mac so you can see and interrupt them. The builder-* shards run on remote machines in private-account mode — more cores, more RAM, no interruption to your dev loop. Replies arrive in your inbox like any other message; the dashboards show a machine badge next to each session. // Local manager — default open_workspace { target: 'team-workspace', name: 'manager', agent: 'manager' } // Remote builders — one per story shard open_workspace { target: 'story', story_id: storyId, name: `builder-${storyId}`, agent: 'builder', machine_id: pickRemote(storyId), // picks a remote by id from list_machines }"
     },
     {
       "title": "Parity gaps",
@@ -6118,14 +6118,14 @@
       "crumb": "CodeSense — Local vs remote",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/local-vs-remote.html#try-this-now",
-      "text": "Try this now List the machines registered on your team workspace. Each entry is a potential machineId for the next open_workspace call."
+      "text": "Try this now List the machines registered on your team workspace. Each entry is a potential machine_id for the next open_workspace call."
     },
     {
       "title": "How to do this via MCP",
       "crumb": "CodeSense — Local vs remote",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/local-vs-remote.html#via-mcp",
-      "text": "How to do this via MCP // Where could I run a session? codesense.invoke('list_machines', {}) // → [{ id: 'mac-A', local: true, awake: true }, // { id: 'mac-B', local: false, awake: true, kind: 'private-account' }, // { id: 'remote-1', local: false, awake: false, kind: 'private-account' }] // Launch a shard on a specific machine codesense.invoke('open_workspace', { target: 'story', storyId, name: `builder-${storyId}`, agent: 'builder', machineId: 'mac-B', }) // A routine with runs_on: each_mac deploys to every machine automatically."
+      "text": "How to do this via MCP // Where could I run a session? list_machines { orgSlug: 'acme/team-context' } // → [{ id: 'mac-A', local: true, awake: true }, // { id: 'mac-B', local: false, awake: true, kind: 'private-account' }, // { id: 'remote-1', local: false, awake: false, kind: 'private-account' }] // Launch a shard on a specific machine open_workspace { target: 'story', story_id: storyId, name: `builder-${storyId}`, agent: 'builder', machine_id: 'mac-B', } // A routine with runs_on: each_mac deploys to every machine automatically."
     },
     {
       "title": "How role names decouple from machines",
@@ -6209,7 +6209,7 @@
       "crumb": "CodeSense — Messages",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/messages.html#hero",
-      "text": "A message. analyst (sender) send_message to: role:builder body · markdown builder (role queue) amelia (session) send claim accept reply · threaded A message travels four hops: send → queue → claim → accept. Replies follow the thread back."
+      "text": "A message. analyst (sender) send_role_message role: builder text · markdown builder (role queue) amelia (session) send claim accept reply · threaded A message travels four hops: send → queue → claim → accept. Replies follow the thread back."
     },
     {
       "title": "React with an emoji",
@@ -6328,7 +6328,7 @@
       "crumb": "CodeSense — Messages",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/messages.html#via-mcp",
-      "text": "How to do this via MCP Claude and Codex use the verified identity of their CodeSense terminal tab, including when started by hand in that tab. Omit sessionId ; if supplied, it must name that same tab. An outside or unbound connection is refused. Only the native app can answer as the person. // Send to a session handle, or \"human\" codesense.invoke('send_message', { to: 'human', text: 'Which refund flow should DEMO-1 follow?', kind: 'needs-you', // marks a question for agent views and dashboards contentType: 'markdown', replyTo: 'role:manager', // optional: route replies to a role queue }) // Send to a role's queue codesense.invoke('send_role_message', { team, role: 'builder', text: 'DEMO-1 — ACs in the story file.', }) // Read your own direct mail codesense.invoke('read_messages', {}) // List mail waiting on a role codesense.invoke('inbox_list', { role: 'builder' }) // Reply in-thread codesense.invoke('reply', { messageId, text }) // React to a message with one emoji (again with the same emoji to take it back) codesense.invoke('react', { messageId, emoji: '👍' }) // Report completion as your bound tab codesense.invoke('signal_done', { status: 'success', summary: 'Checks passed' })"
+      "text": "How to do this via MCP Claude and Codex use the verified identity of their CodeSense terminal tab, including when started by hand in that tab. Omit sessionId ; if supplied, it must name that same tab. An outside or unbound connection is refused. Only the native app can answer as the person. // Send to a session handle, or \"human\" send_message { to: 'human', text: 'Which refund flow should DEMO-1 follow?', kind: 'needs-you', // marks a question for agent views and dashboards contentType: 'markdown', replyTo: 'role:manager', // optional: route replies to a role queue } // Send to a role's queue send_role_message { team, role: 'builder', text: 'DEMO-1 — ACs in the story file.', } // Read your own direct mail read_messages {} // List mail waiting on a role inbox_list { role: 'builder' } // Reply in-thread reply { message_id, text } // React to a message with one emoji (again with the same emoji to take it back) react { message_id, emoji: '👍' } // Report completion as your bound tab signal_done { status: 'success', summary: 'Checks passed' }"
     },
     {
       "title": "What a message is — shape and intent",
@@ -6405,7 +6405,7 @@
       "crumb": "CodeSense — Massively parallel workers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/parallel.html#props",
-      "text": "Why it scales One holder per role exclusive: true gives each shard a dedicated inbox. Zero contention; no \"which builder picked it up\" ambiguity. Queue persistence A builder session dies — the queue is intact. The next register_role resumes with acceptedUnacked in hand. Machine-agnostic A role lives in the team workspace, not on a machine. Launch the holding session on any Mac — open_workspace {machineId} . Reactive, not polled A wake routine on inbox_idle wakes its agent's session that has the mail. Idle shards cost nothing."
+      "text": "Why it scales One holder per role exclusive: true gives each shard a dedicated inbox. Zero contention; no \"which builder picked it up\" ambiguity. Queue persistence A builder session dies — the queue is intact. The next register_role resumes with acceptedUnacked in hand. Machine-agnostic A role lives in the team workspace, not on a machine. Launch the holding session on any Mac — open_workspace {machine_id} . Reactive, not polled A wake routine on inbox_idle wakes its agent's session that has the mail. Idle shards cost nothing."
     },
     {
       "title": "Routine & agent — matching snippet",
@@ -6426,14 +6426,14 @@
       "crumb": "CodeSense — Massively parallel workers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/parallel.html#try-this-now",
-      "text": "Try this now List every builder-* session in your editable context repo. This is the view the manager uses to decide who to brief next."
+      "text": "Try this now List the sessions; the builder-* ones are the shards. This is the view the manager uses to decide who to brief next."
     },
     {
       "title": "How to do this via MCP",
       "crumb": "CodeSense — Massively parallel workers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/parallel.html#via-mcp",
-      "text": "How to do this via MCP // Launch one shard per story for (const story of stories) { codesense.invoke('open_workspace', { target: 'story', story_id: story.id, name: `builder-${story.id}`, agent: 'builder', machine_id: pickMachine(story), launched_by: managerSessionId, }) } // Dispatch each brief addressed to the shard's role name for (const story of stories) { codesense.invoke('send_role_message', { team, role: `builder-${story.id}`, text: brief(story), sender: managerSessionId, replyTo: 'role:manager', }) }"
+      "text": "How to do this via MCP // Launch one shard per story (here DEMO-1; repeat for each story) open_workspace { target: 'story', story_id: 'DEMO-1', name: 'builder-DEMO-1', agent: 'builder', machine_id: 'mac-B', // pick a machine per shard (list_machines) launched_by: managerSessionId, } // Dispatch the story's brief to its shard's role name send_role_message { team, role: 'builder-DEMO-1', text: '…the DEMO-1 brief…', sender: managerSessionId, replyTo: 'role:manager', }"
     },
     {
       "title": "Why one role per story scales",
@@ -6643,7 +6643,7 @@
       "crumb": "CodeSense — Queues",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/queues.html#via-mcp",
-      "text": "How to do this via MCP // Peek: counts.pending, counts.claimed, live registrations codesense.invoke('role_state', { team, role: 'builder' }) // Full loop let { deliveries } = codesense.invoke('claim_role_messages', { team, role: 'builder', instanceId, generation, limit: 10, }) for (const d of deliveries) { const full = codesense.invoke('inbox_list', { role: 'builder', messageId: d.messageId }) const { receiptId } = codesense.invoke('accept_role_message', { team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, disposition: { kind: 'work' }, }) // … do the work, reply, launch a worker, whatever … codesense.invoke('ack_role_message', { team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, receiptId, }) }"
+      "text": "How to do this via MCP // Peek: counts.pending, counts.claimed, live registrations role_state { team, role: 'builder' } // Full loop claim_role_messages { team, role: 'builder', instanceId, generation, limit: 10, } // → { deliveries }; for each delivery d: inbox_list { role: 'builder', include: ['text'] } // full bodies; d.messageId picks d's accept_role_message { team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, disposition: { kind: 'work' }, } // → { receiptId } // … do the work, reply, launch a worker, whatever … ack_role_message { team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, receiptId, }"
     },
     {
       "title": "What a queue is",
@@ -6685,14 +6685,14 @@
       "crumb": "CodeSense — Roles: role_save, roles_list and queue configuration",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/roles.html#agent-role",
-      "text": "Choose the queue a session joins A saved agent's agent.yaml field role: reviewer is its default queue membership. On open_workspace , omitted queueRole inherits that saved default, queueRole: \"builder\" overrides it, and queueRole: null joins no queue. The launch argument role is a display label; it does not join a queue. On a story launch, a role that names a reviewer also types the launch's task review (see Tasks). Changing role configuration never changes the saved agent's default role. // open_workspace: with acme as the active org, inherit the saved agent's role {\"target\":\"team-workspace\",\"team\":\"dev\",\"name\":\"review\",\"agent\":\"reviewer\"} // Override that membership by adding: \"queueRole\":\"builder\" // Opt out by adding: \"queueRole\":null To join or recover a live registration explicitly, use register_role with team: {org:\"acme\",team:\"dev\"} , role and your sessionId. Keep its instanceId and generation for claim_role_messages , accept_role_message and ack_role_message . role_state inspects the queue without claiming anything. Send new work with send_role_message , using separate team and role arguments. send_message addresses a running session handle or human . Its replyTo: \"role:reviewer\" remains valid and routes a later reply to the durable queue. See parallel workers , the agent design guide and its skill for choosing responsibilities."
+      "text": "Choose the queue a session joins A saved agent's agent.yaml field role: reviewer is its default queue membership. On open_workspace , omitted queueRole inherits that saved default, queueRole: \"builder\" overrides it, and queueRole: null joins no queue. The launch argument role is a display label; it does not join a queue. On a story launch, a role that names a reviewer also types the launch's task review (see Tasks). Changing role configuration never changes the saved agent's default role. // open_workspace: with acme as the active org, inherit the saved agent's role {\"target\":\"team-workspace\",\"team\":\"dev\",\"name\":\"review\",\"agent\":\"reviewer\"} // Override that membership by adding: \"queueRole\":\"builder\" // Opt out by adding: \"queueRole\":null To join or recover a live registration explicitly, use register_role with team: {org:\"acme/team-context\",team:\"dev\"} , role and your sessionId. Keep its instanceId and generation for claim_role_messages , accept_role_message and ack_role_message . role_state inspects the queue without claiming anything. Send new work with send_role_message , using separate team and role arguments. send_message addresses a running session handle or human . Its replyTo: \"role:reviewer\" remains valid and routes a later reply to the durable queue. See parallel workers , the agent design guide and its skill for choosing responsibilities."
     },
     {
       "title": "Roles registry: role_save and roles_list",
       "crumb": "CodeSense — Roles: role_save, roles_list and queue configuration",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/roles.html#configuration",
-      "text": "Roles registry: role_save and roles_list A role has a stable queue id and optional shared display settings. role_save writes <team>/content/roles/<id>.yaml ; ids with special characters use percent-encoded filenames. The role id remains the queue address. Any teammate may edit these settings. They change neither queued messages nor existing holders. id: reviewer name: Review icon: builtin-chess:knight defaultHandler: acme/dev/reviewer Call these MCP tools with the shown arguments: // role_save {\"teamKey\":\"acme:dev\",\"config\":{\"id\":\"reviewer\",\"name\":\"Review\",\"icon\":\"builtin-chess:knight\",\"defaultHandler\":\"acme/dev/reviewer\"}} // roles_list {\"teamKey\":\"acme:dev\"} name must be nonblank. icon is a face reference such as builtin-chess:knight , or null for the default chess piece. defaultHandler is one saved-agent key or null. It records a preferred handler; it does not automatically launch an agent. roles_list returns configured settings, while role_state returns live holders, counts and delivery state. See the generated role schema and JSON Schema ."
+      "text": "Roles registry: role_save and roles_list A role has a stable queue id and optional shared display settings. role_save writes <team>/content/roles/<id>.yaml ; ids with special characters use percent-encoded filenames. The role id remains the queue address. Any teammate may edit these settings. They change neither queued messages nor existing holders. id: reviewer name: Review icon: builtin-chess:knight defaultHandler: acme/team-context/dev/reviewer Call these MCP tools with the shown arguments: // role_save {\"teamKey\":\"acme/team-context:dev\",\"config\":{\"id\":\"reviewer\",\"name\":\"Review\",\"icon\":\"builtin-chess:knight\",\"defaultHandler\":\"acme/team-context/dev/reviewer\"}} // roles_list {\"teamKey\":\"acme/team-context:dev\"} name must be nonblank. icon is a face reference such as builtin-chess:knight , or null for the default chess piece. defaultHandler is one saved-agent key or null. It records a preferred handler; it does not automatically launch an agent. roles_list returns configured settings, while role_state returns live holders, counts and delivery state. See the generated role schema and JSON Schema ."
     },
     {
       "title": "Worked example — the Manager",
@@ -6713,7 +6713,7 @@
       "crumb": "CodeSense — Roles: role_save, roles_list and queue configuration",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/roles.html#moves",
-      "text": "Four seat moves 1 Register An agent joins the queue. Use exclusive: true for a single holder, such as a resolver; omit it for a shared worker pool. An exclusive registration returns alreadyHeld if someone else is already there. // MCP tool: register_role {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\",\"sessionId\":\"YOUR_SESSION_ID\",\"exclusive\":true} 2 Claim Pull a batch off the role's queue. Each delivery hands back a deliveryId + claimToken you'll need to accept and ack. // MCP tool: claim_role_messages — use instanceId and generation from register_role {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1,\"limit\":10} 3 Hand off You don't literally hand the role to another session; you just reply with replyTo: \"role:manager\" . The reply lands on the role queue, so whoever's holding it next picks it up. The thread survives the handoff. 4 Release When the human says stop, finish the current delivery, then release_role . Claimed-but-not-accepted work goes back to pending for the next holder. CodeSense also releases automatically when the session ends. // MCP tool: release_role — use instanceId and generation from register_role {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1}"
+      "text": "Four seat moves 1 Register An agent joins the queue. Use exclusive: true for a single holder, such as a resolver; omit it for a shared worker pool. An exclusive registration returns alreadyHeld if someone else is already there. // MCP tool: register_role {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\",\"sessionId\":\"YOUR_SESSION_ID\",\"exclusive\":true} 2 Claim Pull a batch off the role's queue. Each delivery hands back a deliveryId + claimToken you'll need to accept and ack. // MCP tool: claim_role_messages — use instanceId and generation from register_role {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1,\"limit\":10} 3 Hand off You don't literally hand the role to another session; you just reply with replyTo: \"role:manager\" . The reply lands on the role queue, so whoever's holding it next picks it up. The thread survives the handoff. 4 Release When the human says stop, finish the current delivery, then release_role . Claimed-but-not-accepted work goes back to pending for the next holder. CodeSense also releases automatically when the session ends. // MCP tool: release_role — use instanceId and generation from register_role {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1}"
     },
     {
       "title": "Try this now",
@@ -6727,7 +6727,7 @@
       "crumb": "CodeSense — Roles: role_save, roles_list and queue configuration",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/roles.html#via-mcp",
-      "text": "How to do this via MCP Call the named MCP tool with its JSON argument object. Replace the session id with your CODESENSE_TAB_SESSION_ID , and use the returned instanceId and generation in later calls (the values below are illustrative). // MCP tool: role_state — inspect one role {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\"} // MCP tool: register_role — join the role {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\",\"sessionId\":\"YOUR_SESSION_ID\",\"exclusive\":true} // MCP tool: role_state — inspect all roles {\"team\":{\"org\":\"acme\",\"team\":\"dev\"}} // MCP tool: release_role — finish this registration {\"team\":{\"org\":\"acme\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1}"
+      "text": "How to do this via MCP Call the named MCP tool with its JSON argument object. Replace the session id with your CODESENSE_TAB_SESSION_ID , and use the returned instanceId and generation in later calls (the values below are illustrative). // MCP tool: role_state — inspect one role {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\"} // MCP tool: register_role — join the role {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\",\"sessionId\":\"YOUR_SESSION_ID\",\"exclusive\":true} // MCP tool: role_state — inspect all roles {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"}} // MCP tool: release_role — finish this registration {\"team\":{\"org\":\"acme/team-context\",\"team\":\"dev\"},\"role\":\"manager\",\"instanceId\":\"YOUR_INSTANCE_ID\",\"generation\":1}"
     },
     {
       "title": "What a role is",
@@ -6839,7 +6839,7 @@
       "crumb": "CodeSense — inbox_idle triggers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/triggers.html#via-mcp",
-      "text": "How to do this via MCP // Enumerate one agent's routines codesense.invoke('routine_list', { agent: 'manager' }) // Watch for firings in real time (routines console dashboard uses this) codesense.subscribeContext({ topic: 'routines.runs' }, (run) => { … }) // Fire one manually, through its own overlap rule codesense.invoke('routine_run_now', { id: 'manager-wake' })"
+      "text": "How to do this via MCP // Enumerate one agent's routines routine_list { agent: 'manager' } // Watch for firings in real time (routines console dashboard uses this) codesense.subscribeContext({ topic: 'routines.runs' }, (run) => { … }) // Fire one manually, through its own overlap rule routine_run_now { id: 'manager-wake' }"
     },
     {
       "title": "What inbox_idle is",
@@ -6923,7 +6923,7 @@
       "crumb": "CodeSense — Wake an agent",
       "kind": "section",
       "href": "./arc-g-routines/agent-wake.html#via-mcp",
-      "text": "How to do this via MCP // A wake routine on a saved agent, every weekday at 9 codesense.invoke('routine_create', { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: 'Triage new issues, then call routine_done with a one-line summary.', }) // Fire it once, then read how it went (delivered / queued / undelivered / unknown) codesense.invoke('routine_run_now', { id: 'morning-triage' }) codesense.invoke('routine_runs', { id: 'morning-triage', limit: 5 }) // Inside the woken session: finish just this run, keep working codesense.invoke('routine_done', { sessionId, runId, outcome: 'success', summary: '4 triaged' })"
+      "text": "How to do this via MCP // A wake routine on a saved agent, every weekday at 9 routine_create { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: 'Triage new issues, then call routine_done with a one-line summary.', } // Fire it once, then read how it went (delivered / queued / undelivered / unknown) routine_run_now { id: 'morning-triage' } routine_runs { id: 'morning-triage', limit: 5 } // Inside the woken session: finish just this run, keep working routine_done { sessionId, runId, outcome: 'success', summary: '4 triaged' }"
     },
     {
       "title": "Who can be woken",
@@ -7105,7 +7105,7 @@
       "crumb": "CodeSense — Routines",
       "kind": "section",
       "href": "./arc-g-routines/index.html#via-mcp",
-      "text": "How to do this via MCP // Every routine you can see, or one agent's codesense.invoke('routine_list', {}) codesense.invoke('routine_list', { agent: 'manager' }) // Make one for Barb: wake her running session every weekday at 9 codesense.invoke('routine_create', { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: '…', }) // Or, for your own session only, a timer codesense.invoke('schedule_wakeup', { sessionId, in: '20m', prompt: '…' }) // Fire a routine once by hand codesense.invoke('routine_run_now', { id: 'manager-wake' }) See mcp-explorer for the full tool catalog."
+      "text": "How to do this via MCP // Every routine you can see, or one agent's routine_list {} routine_list { agent: 'manager' } // Make one for Barb: wake her running session every weekday at 9 routine_create { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: '…', } // Or, for your own session only, a timer schedule_wakeup { sessionId, in: '20m', prompt: '…' } // Fire a routine once by hand routine_run_now { id: 'manager-wake' } See mcp-explorer for the full tool catalog."
     },
     {
       "title": "What a routine is — a schedule-shape, not a daemon",
@@ -7203,14 +7203,14 @@
       "crumb": "CodeSense — Routines on remote machines",
       "kind": "section",
       "href": "./arc-g-routines/remote.html#machine",
-      "text": "Wake an agent that runs on another machine runs_on says which Mac's clock fires a routine. where.machine says where its agent is: local (this Mac, the default), a machine id from list_machines , or any connected machine. Wake on a machine. The desktop hands the task to that machine, and the machine types it into the agent's session when it is idle. The wait happens there, so the wake still lands if your desktop drops meanwhile. Nobody running there. A wake starts the agent on that machine, in its prepared workspace, with the task as its first prompt. any with no agent running anywhere starts it on this Mac. Machine offline. A session last seen there still counts as live, so nothing starts a duplicate: the run is undelivered (machine_offline) and the next fire tries again. A machine this desktop doesn't know is undelivered (machine_unknown) , with a fix. An old terminal server. Wakes and timers need a current one; the run says \"Update the terminal server on ‹machine›\". config/agents/amelia-builder/routines/builder-wake/routine.yml id: builder-wake name: Wake the Builder on the build box owner: you mode: wake task: | Claim the next story with claim_role_messages for the builder role and carry on with /bmad-build. Nothing pending: say so and wait. where: kind: team_workspace machine: build-box # a machine id from list_machines triggers: - schedule: cron: \"*/30 * * * *\" tz: UTC policy: max_runtime: 30m revision: 1 Reading how it went codesense.invoke('routine_runs', { id: 'builder-wake', limit: 5 }) // → delivered | queued | coalesced // | undelivered (machine_offline, busy_timeout, …) // | unknown (never re-sent: check the terminal first) With runs_on , an each_mac routine must use machine: local (or leave it out), except that a fresh one may use any (each Mac starts its own); a machine id is refused in either mode, since every teammate's Mac would wake or start the same agent there. To have the machine's own clock fire a routine, arm it there with routine_arm_on and a machine id: its terminal server fires it on…"
+      "text": "Wake an agent that runs on another machine runs_on says which Mac's clock fires a routine. where.machine says where its agent is: local (this Mac, the default), a machine id from list_machines , or any connected machine. Wake on a machine. The desktop hands the task to that machine, and the machine types it into the agent's session when it is idle. The wait happens there, so the wake still lands if your desktop drops meanwhile. Nobody running there. A wake starts the agent on that machine, in its prepared workspace, with the task as its first prompt. any with no agent running anywhere starts it on this Mac. Machine offline. A session last seen there still counts as live, so nothing starts a duplicate: the run is undelivered (machine_offline) and the next fire tries again. A machine this desktop doesn't know is undelivered (machine_unknown) , with a fix. An old terminal server. Wakes and timers need a current one; the run says \"Update the terminal server on ‹machine›\". config/agents/amelia-builder/routines/builder-wake/routine.yml id: builder-wake name: Wake the Builder on the build box owner: you mode: wake task: | Claim the next story with claim_role_messages for the builder role and carry on with /bmad-build. Nothing pending: say so and wait. where: kind: team_workspace machine: build-box # a machine id from list_machines triggers: - schedule: cron: \"*/30 * * * *\" tz: UTC policy: max_runtime: 30m revision: 1 Reading how it went routine_runs { id: 'builder-wake', limit: 5 } // → delivered | queued | coalesced // | undelivered (machine_offline, busy_timeout, …) // | unknown (never re-sent: check the terminal first) With runs_on , an each_mac routine must use machine: local (or leave it out), except that a fresh one may use any (each Mac starts its own); a machine id is refused in either mode, since every teammate's Mac would wake or start the same agent there. To have the machine's own clock fire a routine, arm it there with routine_arm_on and a machine id: its terminal server fires it on schedule whether or not…"
     },
     {
       "title": "Two modes: each_mac vs one_mac",
       "crumb": "CodeSense — Routines on remote machines",
       "kind": "section",
       "href": "./arc-g-routines/remote.html#modes",
-      "text": "Two modes: each_mac vs one_mac runs_on: each_mac A recipe each teammate turns on for their own Mac. Fires per Mac that armed it, each with its own schedule, its own history, and its own {{last_run_summary}} . Starts off on every Mac — including the author's — unless the routine ships with enabled: true . Use for per-person work: \"my morning digest\", \"PRs waiting on me\". Use for inbox_idle wakes (sessions are per Mac). Use for sweeping remote fleets — one definition, N independent fires. runs_on: one_mac (the default) A shared job that runs once for the team, from exactly one Mac — the one it was armed on. Perfect for anything that must happen once (a Slack digest, a release-cut check), and the thing that should move to the always-on remote box when you want \"never skipped\". Use for team-wide must-fire schedules. Arm it on the remote account for always-on behavior. Switching the arming Mac is a routine_update from the target Mac."
+      "text": "Two modes: each_mac vs one_mac runs_on: each_mac A recipe each teammate turns on for their own Mac. Fires per Mac that armed it, each with its own schedule, its own history, and its own {{last_run_summary}} . Starts off on every Mac — including the author's — unless the routine ships with enabled: true . Use for per-person work: \"my morning digest\", \"PRs waiting on me\". Use for inbox_idle wakes (sessions are per Mac). Use for sweeping remote fleets — one definition, N independent fires. runs_on: one_mac (the default) A shared job that runs once for the team, from exactly one Mac — the one it was armed on. Perfect for anything that must happen once (a Slack digest, a release-cut check), and the thing that should move to the always-on remote box when you want \"never skipped\". Use for team-wide must-fire schedules. Arm it on the remote account for always-on behavior. Switching the arming Mac is a routine_arm_on {id, machine: 'this_mac'} from the target Mac."
     },
     {
       "title": "Parity caveats",
@@ -7224,7 +7224,7 @@
       "crumb": "CodeSense — Routines on remote machines",
       "kind": "section",
       "href": "./arc-g-routines/remote.html#switch",
-      "text": "The per-Mac switch enabled on a routine is a per-Mac field: it names whether this Mac fires the routine. Flipping it is routine_set_enabled , which is a local edit to the Mac's state (never a git change, never shared). // Turn the routine on for THIS Mac codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: true }) // Turn it off for THIS Mac — other Macs that armed it are unaffected codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: false }) // Which Macs is it armed on? routine_get on each; each Mac answers for itself. codesense.invoke('routine_get', { id: 'builder-wake' }) // → { ..., armed_here: true, next_run_at: \"2026-10-06T19:05:00Z\" } For a one_mac routine, exactly one Mac has armed_here: true at a time. Switching the arming Mac is a routine_update from the target — \"pull the arming to this Mac\", not a flip on the current one."
+      "text": "The per-Mac switch enabled on a routine is a per-Mac field: it names whether this Mac fires the routine. Flipping it is routine_set_enabled , which is a local edit to the Mac's state (never a git change, never shared). // Turn the routine on for THIS Mac routine_set_enabled { id: 'builder-wake', enabled: true } // Turn it off for THIS Mac — other Macs that armed it are unaffected routine_set_enabled { id: 'builder-wake', enabled: false } // Which Macs is it armed on? routine_get on each; each Mac answers for itself. routine_get { id: 'builder-wake' } // → { ..., armed_here: true, next_run_at: \"2026-10-06T19:05:00Z\" } For a one_mac routine, exactly one Mac has armed_here: true at a time. Switching the arming Mac is a routine_arm_on from the target — \"pull the arming to this Mac\", not a flip on the current one."
     },
     {
       "title": "Try this now",
@@ -7238,7 +7238,7 @@
       "crumb": "CodeSense — Routines on remote machines",
       "kind": "section",
       "href": "./arc-g-routines/remote.html#via-mcp",
-      "text": "How to do this via MCP // Every routine, each Mac's arming state codesense.invoke('routine_list', {}) // A specific routine, with armed_here + next_run_at from THIS Mac's view codesense.invoke('routine_get', { id: 'builder-wake' }) // Flip this Mac's per-Mac switch (local, never a git change) codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: true }) // Move the arming of a one_mac routine to THIS Mac codesense.invoke('routine_update', { id: 'nightly-digest', baseRevision: 3, armHere: true, }) // Fire it once (through its own overlap rule) codesense.invoke('routine_run_now', { id: 'builder-wake' })"
+      "text": "How to do this via MCP // Every routine, each Mac's arming state routine_list {} // A specific routine, with armed_here + next_run_at from THIS Mac's view routine_get { id: 'builder-wake' } // Flip this Mac's per-Mac switch (local, never a git change) routine_set_enabled { id: 'builder-wake', enabled: true } // Move the arming of a one_mac routine to THIS Mac routine_arm_on { id: 'nightly-digest', machine: 'this_mac' } // Fire it once (through its own overlap rule) routine_run_now { id: 'builder-wake' }"
     },
     {
       "title": "Why remote routines are their own concern",
@@ -7546,7 +7546,7 @@
       "crumb": "CodeSense — Session timers",
       "kind": "section",
       "href": "./arc-g-routines/session-timers.html#via-mcp",
-      "text": "How to do this via MCP // Set, list, cancel (always your own session) codesense.invoke('schedule_wakeup', { sessionId, in: '20m', name: 'Check the build', prompt: '…' }) codesense.invoke('list_wakeups', { sessionId }) codesense.invoke('cancel_wakeup', { sessionId, timerId })"
+      "text": "How to do this via MCP // Set, list, cancel (always your own session) schedule_wakeup { sessionId, in: '20m', name: 'Check the build', prompt: '…' } list_wakeups { sessionId } cancel_wakeup { sessionId, timerId }"
     },
     {
       "title": "Timer or routine — your session or Barb",
@@ -7644,7 +7644,7 @@
       "crumb": "CodeSense — Where routines live",
       "kind": "section",
       "href": "./arc-g-routines/storage.html#via-mcp",
-      "text": "How to do this via MCP // Every routine you can see, or one agent's codesense.invoke('routine_list', {}) codesense.invoke('routine_list', { agent: 'manager' }) // An agent and its routines in one read codesense.invoke('agent_get', { id: 'manager' }) // Create one under its agent (checks and writes nothing with dryRun) codesense.invoke('routine_create', { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: '…', dryRun: true, })"
+      "text": "How to do this via MCP // Every routine you can see, or one agent's routine_list {} routine_list { agent: 'manager' } // An agent and its routines in one read agent_get { id: 'manager' } // Create one under its agent (checks and writes nothing with dryRun) routine_create { name: 'Morning triage', agent: 'barb', mode: 'wake', when: 'weekdays 09:00', task: '…', dryRun: true, }"
     },
     {
       "title": "Why routines belong to agents",
@@ -7756,7 +7756,7 @@
       "crumb": "CodeSense — Routine tasks",
       "kind": "section",
       "href": "./arc-g-routines/tasks.html#via-mcp",
-      "text": "How to do this via MCP // Check without writing codesense.invoke('routine_create', { name: '…', agent: 'manager', mode: 'wake', task: '…', dryRun: true }) // Live fire codesense.invoke('routine_run_now', { id: 'manager-wake' }) // Inside a woken session: finish this run, keep the session codesense.invoke('routine_done', { sessionId, runId, outcome: 'success', summary: '…' }) // Tail the run (routines-console does this live) codesense.subscribeContext({ topic: 'routines.runs', id: 'manager-wake' }, (ev) => { … })"
+      "text": "How to do this via MCP // Check without writing routine_create { name: '…', agent: 'manager', mode: 'wake', task: '…', dryRun: true } // Live fire routine_run_now { id: 'manager-wake' } // Inside a woken session: finish this run, keep the session routine_done { sessionId, runId, outcome: 'success', summary: '…' } // Tail the run (routines-console does this live) codesense.subscribeContext({ topic: 'routines.runs', id: 'manager-wake' }, (ev) => { … })"
     },
     {
       "title": "What a task is",
@@ -8344,7 +8344,7 @@
       "crumb": "CodeSense — Routines that write dashboards",
       "kind": "section",
       "href": "./arc-g-routines/writes-dashboards.html#via-mcp",
-      "text": "How to do this via MCP // The dashboard reads (never launches the agent) codesense.routineResult({ id: 'sprint-digest' }) codesense.routineStatus({ id: 'sprint-digest' }) // Only an explicit user action may trigger this codesense.routineRefresh({ id: 'sprint-digest' }) // Live notifications when the routine publishes a new snapshot codesense.onRoutineResult({ id: 'sprint-digest' }, (ev) => { … }) // Inside the routine's agent (the publisher side) codesense.invoke('routine_publish_result', { sessionId, payload }) See mcp-explorer for the full catalog of routine_* tools."
+      "text": "How to do this via MCP // The dashboard reads (never launches the agent) codesense.routineResult({ id: 'sprint-digest' }) codesense.routineStatus({ id: 'sprint-digest' }) // Only an explicit user action may trigger this codesense.routineRefresh({ id: 'sprint-digest' }) // Live notifications when the routine publishes a new snapshot codesense.onRoutineResult({ id: 'sprint-digest' }, (ev) => { … }) // Inside the routine's agent (the publisher side) routine_publish_result { sessionId, payload } See mcp-explorer for the full catalog of routine_* tools."
     },
     {
       "title": "Why — reactive dashboards without polling",
@@ -8736,7 +8736,7 @@
       "crumb": "CodeSense — Phase 3 · Architecture",
       "kind": "section",
       "href": "./arc-h-pipelines-and-sdlc/03-architecture.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'bmad-architecture' }) codesense.invoke('apply_canvas', { path: 'diagrams/kill-ladder.excalidraw', elements: [...] }) codesense.invoke('render_canvas', { path: 'diagrams/kill-ladder.excalidraw' })"
+      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'bmad-architecture' }) apply_canvas { path: 'diagrams/kill-ladder.excalidraw', elements: [...] } render_canvas { path: 'diagrams/kill-ladder.excalidraw' }"
     },
     {
       "title": "What this phase is for",
@@ -8869,7 +8869,7 @@
       "crumb": "CodeSense — Phase 4 · UX design",
       "kind": "section",
       "href": "./arc-h-pipelines-and-sdlc/04-ux-design.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'impeccable' }) codesense.invoke('apply_canvas', { path: 'designs/kill-button.excalidraw', elements: [...] })"
+      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'impeccable' }) apply_canvas { path: 'designs/kill-button.excalidraw', elements: [...] }"
     },
     {
       "title": "What this phase is for",
@@ -9002,7 +9002,7 @@
       "crumb": "CodeSense — Phase 5 · Story graph",
       "kind": "section",
       "href": "./arc-h-pipelines-and-sdlc/05-stories.html#via-mcp",
-      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'bmad-create-epics-and-stories' }) // Then check each story the skill wrote. codesense.invoke('validate_story', { path: 'content/<epic>/<story>.md' })"
+      "text": "How to do this via MCP codesense.invoke('runSkill', { skill: 'bmad-create-epics-and-stories' }) // Then check each story the skill wrote. validate_story { path: 'content/<epic>/<story>.md' }"
     },
     {
       "title": "What this phase is for",
@@ -10094,7 +10094,7 @@
       "crumb": "CodeSense — Phase 13 · Ship",
       "kind": "section",
       "href": "./arc-h-pipelines-and-sdlc/13-ship.html#via-mcp",
-      "text": "How to do this via MCP // Preview, then publish the workspace's context edits. const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } codesense.invoke('preview_reverse_sync_worktree', { target }) codesense.invoke('reverse_sync_worktree', { target }) // Then run git yourself (commit, push) and report how it went. codesense.invoke('report_context_sync', { state: 'ok' })"
+      "text": "How to do this via MCP // Preview, then publish the workspace's context edits. const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } preview_reverse_sync_worktree { target } reverse_sync_worktree { target } // Then run git yourself (commit, push) and report how it went. report_context_sync { state: 'ok' }"
     },
     {
       "title": "What this phase is for",
@@ -11291,7 +11291,7 @@
       "crumb": "CodeSense — Customize the built-in panes",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/customize-built-in-panes.html#fork",
-      "text": "Save and preview your fork Read the selected example as text. Give its <title> a recognizable name, such as Backend triage . Before overwriting an existing custom pane, call pane_list for the intended org/team, find that fork’s returned path , and use ordinary local filesystem access to read it and copy a backup outside every panes/ directory . A backup HTML left in panes/ becomes another discoverable pane. There is no pane-read MCP tool; do not assume read_content_file accepts pane paths. Use a distinct id for the first preview, such as backend-triage-preview . For a right-pane preview of the agent list, change its codesense:slots from dock to right-pane dock . Keep Notes’ right-pane declaration. Inbox uses its human-inbox surface. Keep the original capabilities, commands, event handlers, visibility handling and cleanup. Check declarations , SDK methods , exact typings , grants and slot ceilings rather than copying a permission table. Declaring a capability requests it; policy and the slot still bound the effective grant. Notes reads your private records; a team-safe pane may be denied them. Never work around a denial by broadening policy. Call validate_live_data_doc with { content: html } for the edited HTML (or { path: localFilePath } to validate a local file), resolve its diagnostics, then pane_write with the whole document. pane_write overwrites a file; it does not merge edits. Use scope: \"personal\" only when the user requests a private fork; the tool calls this scope “personal”, while discovery labels it “private”. Call pane_open with the same id and scope. Confirm placed: true ; otherwise switch to the named team or a child team (or the private fork’s org), then call it again. The fork is a separate panel. Use View → Panels and its title to show it again. // Agent-side MCP calls. html is the complete copied and edited document. mcp.call(\"validate_live_data_doc\", { content: html }) mcp.call(\"pane_write\", { org: \"acme/api\", scope: \"personal\", id: \"backend-triage-preview\", html }) mcp.call(\"pane_open\", {…"
+      "text": "Save and preview your fork Read the selected example as text. Give its <title> a recognizable name, such as Backend triage . Before overwriting an existing custom pane, call pane_list for the intended org/team, find that fork’s returned path , and use ordinary local filesystem access to read it and copy a backup outside every panes/ directory . A backup HTML left in panes/ becomes another discoverable pane. There is no pane-read MCP tool; do not assume read_content_file accepts pane paths. Use a distinct id for the first preview, such as backend-triage-preview . For a right-pane preview of the agent list, change its codesense:slots from dock to right-pane dock . Keep Notes’ right-pane declaration, but remove its codesense:surface meta while previewing: a pane serving the Notes surface is not offered in View → Panels and is swapped for the selected Notes, so only the preview without it stays a separate panel. Put it back in the canonical notes fork. Inbox uses its human-inbox surface. Keep the original capabilities, commands, event handlers, visibility handling and cleanup. Check declarations , SDK methods , exact typings , grants and slot ceilings rather than copying a permission table. Declaring a capability requests it; policy and the slot still bound the effective grant. Notes reads your private records; a team-safe pane may be denied them. Never work around a denial by broadening policy. Call validate_live_data_doc with { content: html } for the edited HTML (or { path: localFilePath } to validate a local file), resolve its diagnostics, then pane_write with the whole document. pane_write overwrites a file; it does not merge edits. Use scope: \"personal\" only when the user requests a private fork; the tool calls this scope “personal”, while discovery labels it “private”. Call pane_open with the same id and scope. Confirm placed: true ; otherwise switch to the named team or a child team (or the private fork’s org), then call it again. The fork is a separate panel. Use View → Panels and its title to show it…"
     },
     {
       "title": "Customize the built-in panes",
@@ -11326,7 +11326,7 @@
       "crumb": "CodeSense — Customize the built-in panes",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/customize-built-in-panes.html#sources",
-      "text": "Start with the shipped source These are read-only examples, generated from the current implementations. Each begins with a “Fork me” provenance comment; every remaining byte matches its source. Copy the whole file, including its scripts and declarations, into your own pane. Editing an example in the docs team does not customize the app. Inbox HTML — src/features/shell/right-pane/__fixtures__/inbox-pane.html . This is the built-in HTML Inbox the app ships. Notes HTML — src/features/shell/right-pane/__fixtures__/notes-pane.html . An HTML alternative; the app can also use classic Notes. Agent list HTML — src/features/shell/slots/__fixtures__/agent-list-pane.html . An HTML alternative; the default dock is native. You need no application checkout. Follow the function names in these copies and apply the edits below. The source paths explain provenance, not a dependency on a developer workspace."
+      "text": "Start with the shipped source These are read-only examples, generated from the current implementations. Each begins with a “Fork me” provenance comment; every remaining byte matches its source. Copy the whole file, including its scripts and declarations, into your own pane. Editing an example in the docs team does not customize the app. Inbox HTML — src/features/shell/right-pane/__fixtures__/inbox-pane.html . This is the built-in HTML Inbox the app ships. Notes HTML — src/features/shell/right-pane/__fixtures__/notes-pane.html . The app ships this HTML Notes as a built-in; classic Notes stays the default. Agent list HTML — src/features/shell/slots/__fixtures__/agent-list-pane.html . An HTML alternative; the default dock is native. You need no application checkout. Follow the function names in these copies and apply the edits below. The source paths explain provenance, not a dependency on a developer workspace."
     },
     {
       "title": "Keep the fork current",
@@ -12887,7 +12887,7 @@
       "crumb": "CodeSense — codesense_call_tool",
       "kind": "section",
       "href": "./arc-j-mcp/calling-by-name.html#direct-vs-wrapped",
-      "text": "Two ways to call Direct — recommended codesense.invoke('add_source_repo', { org: 'acme', team: 'default', url: 'acme/sample' }) Wrapped — escape hatch codesense.invoke('codesense_call_tool', { name: 'add_source_repo', arguments: { org: 'acme', team: 'default', url: 'acme/sample' } }) Both reach the same handler, both return the same { status, data } . Prefer the direct path — one fewer layer, one fewer place to typo, cleaner logs."
+      "text": "Two ways to call Direct — recommended add_source_repo { org: 'acme/team-context', team: 'default', url: 'acme/sample' } Wrapped — escape hatch codesense_call_tool { name: 'add_source_repo', arguments: { org: 'acme/team-context', team: 'default', url: 'acme/sample' } } Both reach the same handler, both return the same { status, data } . Prefer the direct path — one fewer layer, one fewer place to typo, cleaner logs."
     },
     {
       "title": "Every tool is listed",
@@ -12901,7 +12901,7 @@
       "crumb": "CodeSense — codesense_call_tool",
       "kind": "section",
       "href": "./arc-j-mcp/calling-by-name.html#example",
-      "text": "Worked example — same call, both ways Create an agent two ways. Both return { status: \"ok\", data: { id, revision, …} } . // Direct — in-app, Claude Code, Codex. codesense.invoke('agent_create', { name: 'Docs reader', runtime: 'claude', startup: ['CLAUDE.md'], dryRun: true }) // Wrapped — hosts that need it. codesense.invoke('codesense_call_tool', { name: 'agent_create', arguments: { name: 'Docs reader', runtime: 'claude', startup: ['CLAUDE.md'], dryRun: true } })"
+      "text": "Worked example — same call, both ways Create an agent two ways. Both return { status: \"ok\", data: { id, revision, …} } . // Direct — in-app, Claude Code, Codex. agent_create { name: 'Docs reader', runtime: 'claude', startup: ['CLAUDE.md'], dryRun: true } // Wrapped — hosts that need it. codesense_call_tool { name: 'agent_create', arguments: { name: 'Docs reader', runtime: 'claude', startup: ['CLAUDE.md'], dryRun: true } }"
     },
     {
       "title": "Any tool, by name.",
@@ -12922,7 +12922,7 @@
       "crumb": "CodeSense — codesense_call_tool",
       "kind": "section",
       "href": "./arc-j-mcp/calling-by-name.html#via-mcp",
-      "text": "How to do this via MCP // Simplest form. codesense.invoke('codesense_call_tool', { name: 'who_am_i' }) // Full form. codesense.invoke('codesense_call_tool', { name: 'send_message', arguments: { to: 'role:builder', body: 'wake up' } }) // Prefer direct dispatch when the host allows it. codesense.invoke('send_message', { to: 'role:builder', body: 'wake up' }) Deep-link into the explorer: mcp-explorer#tool/codesense_call_tool ."
+      "text": "How to do this via MCP // Simplest form. codesense_call_tool { name: 'who_am_i' } // Full form. codesense_call_tool { name: 'send_role_message', arguments: { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: 'wake up' } } // Prefer direct dispatch when the host allows it. send_role_message { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: 'wake up' } Deep-link into the explorer: mcp-explorer#tool/codesense_call_tool ."
     },
     {
       "title": "When to use the wrapper",
@@ -12999,7 +12999,7 @@
       "crumb": "CodeSense — codesense_search_tools",
       "kind": "section",
       "href": "./arc-j-mcp/finding-a-tool.html#example",
-      "text": "Worked example You're writing an agent that onboards a new team. Step one: wire a source repo. You don't know the tool name. Run: codesense.invoke('codesense_search_tools', { query: 'add source repo', limit: 10 }) Reply (abridged): { \"tools\": [ { \"name\": \"add_source_repo\", \"description\": \"Add a source repo to a team. Pass `org` (owner/repo) and `team`, …\" }, { \"name\": \"attach_source_repo_path\", \"description\": \"Bind a local git clone to a tracked source repo on a team …\" }, { \"name\": \"remove_source_repo\", \"description\": \"Remove a tracked source repo from a team …\" } ] } add_source_repo is the one. Pick it, read the schema, call it. Done."
+      "text": "Worked example You're writing an agent that onboards a new team. Step one: wire a source repo. You don't know the tool name. Run: codesense_search_tools { query: 'add source repo', limit: 10 } Reply (abridged): { \"tools\": [ { \"name\": \"add_source_repo\", \"description\": \"Add a source repo to a team. Pass `org` (owner/repo) and `team`, …\" }, { \"name\": \"attach_source_repo_path\", \"description\": \"Bind a local git clone to a tracked source repo on a team …\" }, { \"name\": \"remove_source_repo\", \"description\": \"Remove a tracked source repo from a team …\" } ] } add_source_repo is the one. Pick it, read the schema, call it. Done."
     },
     {
       "title": "Describe the verb. Find the tool.",
@@ -13041,7 +13041,7 @@
       "crumb": "CodeSense — codesense_search_tools",
       "kind": "section",
       "href": "./arc-j-mcp/finding-a-tool.html#via-mcp",
-      "text": "How to do this via MCP // Default limit is 20. Max is 100. codesense.invoke('codesense_search_tools', { query: 'add source repo' }) // Narrow further. codesense.invoke('codesense_search_tools', { query: 'routine list', limit: 5 }) // Chain: discover → schema → call const { tools } = await codesense.invoke('codesense_search_tools', { query: 'send message' }) const schema = await codesense.invoke('codesense_get_tool_schema', { name: tools[0].name }) // now call tools[0].name by name Deep-link into the explorer: mcp-explorer#tool/codesense_search_tools ."
+      "text": "How to do this via MCP // Default limit is 20. Max is 100. codesense_search_tools { query: 'add source repo' } // Narrow further. codesense_search_tools { query: 'routine list', limit: 5 } // Chain: discover → schema → call codesense_search_tools { query: 'send message' } // → { tools: [{ name: 'send_message', … }, …] } codesense_get_tool_schema { name: 'send_message' } // now call send_message by name Deep-link into the explorer: mcp-explorer#tool/codesense_search_tools ."
     },
     {
       "title": "Describe the verb. Find the tool.",
@@ -13118,7 +13118,7 @@
       "crumb": "CodeSense — Arc J · MCP",
       "kind": "section",
       "href": "./arc-j-mcp/index.html#via-mcp",
-      "text": "How to do this via MCP The whole arc, in four calls. Every tool here is in tools/list , so a host can call add_source_repo directly once it knows the name. // 1. Where am I? codesense.invoke('codesense_overview', {}) // 2. Find the verb I need. codesense.invoke('codesense_search_tools', { query: 'add source repo' }) // 3. Read the contract. codesense.invoke('codesense_get_tool_schema', { name: 'add_source_repo' }) // 4. Call it — directly if your host can, else via codesense_call_tool. codesense.invoke('add_source_repo', { org: 'acme/team-context', team: 'default', url: '…' })"
+      "text": "How to do this via MCP The whole arc, in four calls. Every tool here is in tools/list , so a host can call add_source_repo directly once it knows the name. // 1. Where am I? codesense_overview {} // 2. Find the verb I need. codesense_search_tools { query: 'add source repo' } // 3. Read the contract. codesense_get_tool_schema { name: 'add_source_repo' } // 4. Call it — directly if your host can, else via codesense_call_tool. add_source_repo { org: 'acme/team-context', team: 'default', url: '…' }"
     },
     {
       "title": "Why discovery tools",
@@ -13223,14 +13223,14 @@
       "crumb": "CodeSense — codesense_overview",
       "kind": "section",
       "href": "./arc-j-mcp/overview-call.html#via-mcp",
-      "text": "How to do this via MCP // The one call every agent should make first. codesense.invoke('codesense_overview', {}) // Everything else branches off the reply: const { teams, source_repos, sessions, inboxes } = overview // Example: route a message to the busiest role. const busiest = Object.entries(inboxes) .sort(([, a], [, b]) => b - a)[0][0] codesense.invoke('send_message', { to: `role:${busiest}`, body: '…' }) Deep-link into the explorer: mcp-explorer#tool/codesense_overview ."
+      "text": "How to do this via MCP // The one call every agent should make first. codesense_overview {} // Everything else branches off the reply's sections: context, machines, sessions, // agents, routines, inbox, roleQueues, workspaces, docs. // Example: roleQueues shows builder has the most pending work, so message that role. send_role_message { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: '…' } Deep-link into the explorer: mcp-explorer#tool/codesense_overview ."
     },
     {
       "title": "When overview is enough on its own",
       "crumb": "CodeSense — codesense_overview",
       "kind": "section",
       "href": "./arc-j-mcp/overview-call.html#when-enough",
-      "text": "When overview is enough on its own Any read of structure. \"Which teams does this user have?\" — right there. Routing a message. You know the role queues exist and have depth; send_message takes it from there. Picking the active team. It's named — no second call to confirm. When not enough: you need per-item detail — every story in the pipeline, every message in an inbox, every field of one agent. Then search for the right verb ( query_context , inbox_list , agent_get ) and call it."
+      "text": "When overview is enough on its own Any read of structure. \"Which teams does this user have?\" — right there. Routing a message. You know the role queues exist and have depth; send_role_message takes it from there. Picking the active team. It's named — no second call to confirm. When not enough: you need per-item detail — every story in the pipeline, every message in an inbox, every field of one agent. Then search for the right verb ( query_context , inbox_list , agent_get ) and call it."
     },
     {
       "title": "Why it's the universal starting point",
@@ -13314,7 +13314,7 @@
       "crumb": "CodeSense — Progressive discovery",
       "kind": "section",
       "href": "./arc-j-mcp/progressive-discovery.html#via-mcp",
-      "text": "How to do this via MCP // 1. Where am I? codesense_overview {} // 2. Find a verb. codesense_search_tools { query: 'add source repo' } // 3. Read the contract. codesense_get_tool_schema { name: 'add_source_repo' } // 4. Call it. add_source_repo { org: 'acme', team: 'default', url: 'owner/repo' } Deep-link into the explorer: mcp-explorer#tool/codesense_overview , …/codesense_search_tools , …/codesense_get_tool_schema , …/codesense_call_tool ."
+      "text": "How to do this via MCP // 1. Where am I? codesense_overview {} // 2. Find a verb. codesense_search_tools { query: 'add source repo' } // 3. Read the contract. codesense_get_tool_schema { name: 'add_source_repo' } // 4. Call it. add_source_repo { org: 'acme/team-context', team: 'default', url: 'owner/repo' } Deep-link into the explorer: mcp-explorer#tool/codesense_overview , …/codesense_search_tools , …/codesense_get_tool_schema , …/codesense_call_tool ."
     },
     {
       "title": "When to reach for each",
@@ -13398,14 +13398,14 @@
       "crumb": "CodeSense — codesense_get_tool_schema",
       "kind": "section",
       "href": "./arc-j-mcp/reading-a-schema.html#edge",
-      "text": "Edge: unknown name codesense.invoke('codesense_get_tool_schema', { name: 'add-source-repo' }) // → { status: \"unknown\", name: \"add-source-repo\" } Underscores, not hyphens. Nothing throws; you get a shape your agent can branch on and retry a search with."
+      "text": "Edge: unknown name codesense_get_tool_schema { name: 'add-source-repo' } // → { status: \"unknown\", name: \"add-source-repo\" } Underscores, not hyphens. Nothing throws; you get a shape your agent can branch on and retry a search with."
     },
     {
       "title": "Worked example",
       "crumb": "CodeSense — codesense_get_tool_schema",
       "kind": "section",
       "href": "./arc-j-mcp/reading-a-schema.html#example",
-      "text": "Worked example Call: codesense.invoke('codesense_get_tool_schema', { name: 'add_source_repo' }) Reply (abridged for shape): { \"name\": \"add_source_repo\", \"description\": \"Add a source repo to a team. Pass `org` (owner/repo) and `team`, plus exactly one of `url` (a remote — https://…, git@…, host/owner/repo, or GitHub shorthand owner/repo — tracked on the team) or `path` (the absolute path of a folder on this machine, which is then bound as the repo's local clone) … Returns { status:\\\"ok\\\", data:{ owner, repo, provider, host, remoteKey, localPath, remoteName, remoteUrl } }; unknown or archived team returns { status:\\\"unauthorizedTeam\\\" }; a bad URL or folder, a duplicate, or invalid source identity returns { status:\\\"validation\\\", message }.\", \"inputSchema\": { \"type\": \"object\", \"required\": [\"org\", \"team\"], \"properties\": { \"org\": { \"type\": \"string\", \"description\": \"Team's org handle.\" }, \"team\": { \"type\": \"string\", \"description\": \"Team slug.\" }, \"url\": { \"type\": \"string\", \"description\": \"A remote URL or owner/repo shorthand.\" }, \"path\": { \"type\": \"string\", \"description\": \"Absolute path on this machine.\" } }, \"oneOf\": [ { \"required\": [\"url\"] }, { \"required\": [\"path\"] } ] } } Reading it: org and team are always needed. Pass exactly one of url / path . Reply shape (from the description): {status: \"ok\", data: {owner, repo, …}} on success, named error statuses on failure."
+      "text": "Worked example Call: codesense_get_tool_schema { name: 'add_source_repo' } Reply (abridged for shape): { \"name\": \"add_source_repo\", \"description\": \"Add a source repo to a team. Pass `org` (owner/repo) and `team`, plus exactly one of `url` (a remote — https://…, git@…, host/owner/repo, or GitHub shorthand owner/repo — tracked on the team) or `path` (the absolute path of a folder on this machine, which is then bound as the repo's local clone) … Returns { status:\\\"ok\\\", data:{ owner, repo, provider, host, remoteKey, localPath, remoteName, remoteUrl } }; unknown or archived team returns { status:\\\"unauthorizedTeam\\\" }; a bad URL or folder, a duplicate, or invalid source identity returns { status:\\\"validation\\\", message }.\", \"inputSchema\": { \"type\": \"object\", \"required\": [\"org\", \"team\"], \"properties\": { \"org\": { \"type\": \"string\", \"description\": \"Team's org handle.\" }, \"team\": { \"type\": \"string\", \"description\": \"Team slug.\" }, \"url\": { \"type\": \"string\", \"description\": \"A remote URL or owner/repo shorthand.\" }, \"path\": { \"type\": \"string\", \"description\": \"Absolute path on this machine.\" } }, \"oneOf\": [ { \"required\": [\"url\"] }, { \"required\": [\"path\"] } ] } } Reading it: org and team are always needed. Pass exactly one of url / path . Reply shape (from the description): {status: \"ok\", data: {owner, repo, …}} on success, named error statuses on failure."
     },
     {
       "title": "Hand it a name. Get the contract.",
@@ -13433,7 +13433,7 @@
       "crumb": "CodeSense — codesense_get_tool_schema",
       "kind": "section",
       "href": "./arc-j-mcp/reading-a-schema.html#via-mcp",
-      "text": "How to do this via MCP // Always pair with a search first — don't guess names. const { tools } = await codesense.invoke('codesense_search_tools', { query: 'add source repo' }) const schema = await codesense.invoke('codesense_get_tool_schema', { name: tools[0].name }) // Unknown name is a plain reply, not a throw. const r = await codesense.invoke('codesense_get_tool_schema', { name: 'nope' }) if (r.status === 'unknown') { /* retry search */ } Deep-link into the explorer: mcp-explorer#tool/codesense_get_tool_schema ."
+      "text": "How to do this via MCP // Always pair with a search first — don't guess names. codesense_search_tools { query: 'add source repo' } // → { tools: [{ name: 'add_source_repo', … }, …] } codesense_get_tool_schema { name: 'add_source_repo' } // Unknown name is a plain reply, not a throw. codesense_get_tool_schema { name: 'nope' } // → { status: 'unknown', … }: search again Deep-link into the explorer: mcp-explorer#tool/codesense_get_tool_schema ."
     },
     {
       "title": "Edge: unknown name",
@@ -13517,7 +13517,7 @@
       "crumb": "CodeSense — Writing an MCP-only agent",
       "kind": "section",
       "href": "./arc-j-mcp/writing-an-mcp-agent.html#calls",
-      "text": "The four calls 1 list_orgs_teams read Discovery first. Returns every org / team the local user is a member of and whose content is synced. We're looking for { org: \"acme\", team: \"default\" } ; if that's not in the reply, the agent stops — the user hasn't joined the team yet. const { entries } = await codesense.invoke('list_orgs_teams', {}) const target = entries.find(e => e.org === 'acme' && e.team === 'default') if (!target) throw new Error('team not synced to this Mac') 2 set_active_team write Switch the backend focus. The same move as clicking the team switcher: the backend re-targets watchers and the UI follows. Changes org if needed. const switched = await codesense.invoke('set_active_team', { org: 'acme', team: 'default' }) // { status: \"ok\", data: { orgSlug: \"acme\", team: \"default\" } } if (switched.status !== 'ok') throw new Error(switched.status) 3 add_source_repo write Attach the source repo by remote shorthand owner/repo . CodeSense never clones — if the Mac doesn't have a local clone yet, the repo is tracked remote-only until a worktree is opened or attach_source_repo_path is called with the clone's path. const added = await codesense.invoke('add_source_repo', { org: 'acme', team: 'default', url: 'acme/sample' }) // { status: \"ok\", data: { owner, repo, provider, host, remoteKey, remoteName } } if (added.status === 'validation') throw new Error(added.message) 4 list_worktrees read Confirm. Lists every managed worktree on this Mac — story worktrees, epic-integration worktrees, orphans. For a brand new source there are no worktrees yet; the result is { rows: [], reaped: 0 } . That empty answer is the \"done\" signal. const trees = await codesense.invoke('list_worktrees', {}) return { team: switched.data, source: added.data, worktrees: trees.rows.length, }"
+      "text": "The four calls 1 list_orgs_teams read Discovery first. Returns every org / team the local user is a member of and whose content is synced. We're looking for { org: \"acme/team-context\", team: \"default\" } ; if that's not in the reply, the agent stops — the user hasn't joined the team yet. list_orgs_teams {} // → { entries: [{ org: \"acme/team-context\", team: \"default\", synced: true }, …] } // No acme/team-context + default entry: stop, the team isn't synced to this Mac. 2 set_active_team write Switch the backend focus. The same move as clicking the team switcher: the backend re-targets watchers and the UI follows. Changes org if needed. set_active_team { org: 'acme/team-context', team: 'default' } // → { status: \"ok\", data: { orgSlug: \"acme/team-context\", team: \"default\" } } // Any other status: stop and report it. 3 add_source_repo write Attach the source repo by remote shorthand owner/repo . CodeSense never clones — if the Mac doesn't have a local clone yet, the repo is tracked remote-only until a worktree is opened or attach_source_repo_path is called with the clone's path. add_source_repo { org: 'acme/team-context', team: 'default', url: 'acme/sample' } // → { status: \"ok\", data: { owner, repo, provider, host, remoteKey, remoteName } } // status \"validation\": stop and report its message. 4 list_worktrees read Confirm. Lists every managed worktree on this Mac — story worktrees, epic-integration worktrees, orphans. For a brand new source there are no worktrees yet; the result is { rows: [], reaped: 0 } . That empty answer is the \"done\" signal. list_worktrees {} // → { rows: [], reaped: 0 } // Report the team, the source and the worktree count."
     },
     {
       "title": "Error paths worth handling",
@@ -13552,7 +13552,7 @@
       "crumb": "CodeSense — Writing an MCP-only agent",
       "kind": "section",
       "href": "./arc-j-mcp/writing-an-mcp-agent.html#transcript",
-      "text": "A sample run agent output → list_orgs_teams {} ← { entries: [ { org: \"acme\", team: \"default\", synced: true }, { org: \"acme\", team: \"docs\", synced: true }, { org: \"codesense-docs\", team: \"getting-started\", synced: true } ]} → set_active_team { org: \"acme\", team: \"default\" } ← { status: \"ok\", data: { orgSlug: \"acme\", team: \"default\" } } → add_source_repo { org: \"acme\", team: \"default\", url: \"acme/sample\" } ← { status: \"ok\", data: { owner: \"acme\", repo: \"sample\", provider: \"github\", host: \"github.com\", remoteKey: \"github.com/acme/sample\", remoteName: \"origin\", localPath: null } } → list_worktrees {} ← { rows: [], reaped: 0 } done — team active, source attached, 0 worktrees so far."
+      "text": "A sample run agent output → list_orgs_teams {} ← { entries: [ { org: \"acme/team-context\", team: \"default\", synced: true }, { org: \"acme/team-context\", team: \"docs\", synced: true }, { org: \"codesense/docs\", team: \"getting-started\", synced: true } ]} → set_active_team { org: \"acme/team-context\", team: \"default\" } ← { status: \"ok\", data: { orgSlug: \"acme/team-context\", team: \"default\" } } → add_source_repo { org: \"acme/team-context\", team: \"default\", url: \"acme/sample\" } ← { status: \"ok\", data: { owner: \"acme\", repo: \"sample\", provider: \"github\", host: \"github.com\", remoteKey: \"github.com/acme/sample\", remoteName: \"origin\", localPath: null } } → list_worktrees {} ← { rows: [], reaped: 0 } done — team active, source attached, 0 worktrees so far."
     },
     {
       "title": "Try this now",
@@ -13566,7 +13566,7 @@
       "crumb": "CodeSense — Writing an MCP-only agent",
       "kind": "section",
       "href": "./arc-j-mcp/writing-an-mcp-agent.html#via-mcp",
-      "text": "How to do this via MCP (the full agent body) async function onboardTeam({ org, team, repo }) { const { entries } = await codesense.invoke('list_orgs_teams', {}) const target = entries.find(e => e.org === org && e.team === team) if (!target) throw new Error(`team ${org}/${team} not synced here`) const switched = await codesense.invoke('set_active_team', { org, team }) if (switched.status !== 'ok') throw new Error(switched.status) const added = await codesense.invoke('add_source_repo', { org, team, url: repo, }) if (added.status === 'validation' && !/already tracked/.test(added.message)) { throw new Error(added.message) } const trees = await codesense.invoke('list_worktrees', {}) return { team: switched.data, source: added.data, worktrees: trees.rows.length, } } onboardTeam({ org: 'acme', team: 'default', repo: 'acme/sample' }) See Arc E's MCP-only agents for the agent-shape write-up, and the mcp-explorer for every tool this agent reaches for."
+      "text": "How to do this via MCP (the full agent body) // Onboard team default of acme/team-context with the source repo acme/sample. list_orgs_teams {} // Stop unless entries has { org: 'acme/team-context', team: 'default' }. set_active_team { org: 'acme/team-context', team: 'default' } // Stop unless status is \"ok\". add_source_repo { org: 'acme/team-context', team: 'default', url: 'acme/sample' } // Stop on status \"validation\", unless its message says \"already tracked\". list_worktrees {} // Report: the team (set_active_team's data), the source (add_source_repo's data) // and the worktree count (rows.length). See Arc E's MCP-only agents for the agent-shape write-up, and the mcp-explorer for every tool this agent reaches for."
     },
     {
       "title": "A sample run",
@@ -13685,7 +13685,7 @@
       "crumb": "CodeSense — Agent-driven git",
       "kind": "section",
       "href": "./arc-k-sync/agent-driven-git.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent An agent reads the same state the status button shows, does the git itself, and reports back: // Branch, ahead/behind, conflicts, sync state. Read-only. codesense.invoke('context_repo_status', {}) // Uncommitted files, grouped. Read-only. codesense.invoke('get_publish_set', {}) // Commit history. codesense.invoke('context_repo_history', { limit: 20 }) // After running git: tell the status button how it went. codesense.invoke('report_context_sync', { state: 'ok' })"
+      "text": "How to do this via MCP Agent-side equivalent An agent reads the same state the status button shows, does the git itself, and reports back: // Branch, ahead/behind, conflicts, sync state. Read-only. context_repo_status {} // Uncommitted files, grouped. Read-only. get_publish_set {} // Commit history. context_repo_history { limit: 20 } // After running git: tell the status button how it went. report_context_sync { state: 'ok' }"
     },
     {
       "title": "Why the app doesn't push, pull or merge",
@@ -13965,7 +13965,7 @@
       "crumb": "CodeSense — Hydration",
       "kind": "section",
       "href": "./arc-k-sync/hydration.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } // Bring named files or folders in. codesense.invoke('hydrate_worktree', { target, sets: ['.claude/skills'] }) // Bring a story's epic in. codesense.invoke('hydrate_story', { target, storyId: 'DEMO-1' }) // What is here, and where did it come from? codesense.invoke('list_hydrated', { target }) To build this into a skill of your own, see write your own sync skill ."
+      "text": "How to do this via MCP Agent-side equivalent const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } // Bring named files or folders in. hydrate_worktree { target, sets: ['.claude/skills'] } // Bring a story's epic in. hydrate_story { target, storyId: 'DEMO-1' } // What is here, and where did it come from? list_hydrated { target } To build this into a skill of your own, see write your own sync skill ."
     },
     {
       "title": "What hydration does",
@@ -14434,7 +14434,7 @@
       "crumb": "CodeSense — Reverse sync",
       "kind": "section",
       "href": "./arc-k-sync/reverse-sync.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalent const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } const paths = ['.claude/skills/release-notes/SKILL.md'] // 1. See exactly what would be written. Writes nothing. codesense.invoke('preview_reverse_sync_worktree', { target, paths }) // 2. Publish, after the user agrees. codesense.invoke('reverse_sync_worktree', { target, paths }) To build this into a skill of your own, see write your own sync skill ."
+      "text": "How to do this via MCP Agent-side equivalent const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } const paths = ['.claude/skills/release-notes/SKILL.md'] // 1. See exactly what would be written. Writes nothing. preview_reverse_sync_worktree { target, paths } // 2. Publish, after the user agrees. reverse_sync_worktree { target, paths } To build this into a skill of your own, see write your own sync skill ."
     },
     {
       "title": "What a publish does",
@@ -14525,7 +14525,7 @@
       "crumb": "CodeSense — When to sync",
       "kind": "section",
       "href": "./arc-k-sync/when-to-sync.html#via-mcp",
-      "text": "How to do this via MCP Agent-side equivalents const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } // Preview each publish first with preview_reverse_sync_worktree and the same inputs. // Phase 02 · Spec codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/<epic>/spec.md'] }) // Phase 05 · Stories codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/<epic>/stories/'] }) // Phase 08 · Build (share a new skill) codesense.invoke('reverse_sync_worktree', { target, sets: ['.claude/skills/story-helper'] }) // Phase 10 · Review and 13 · Ship: run git yourself, then report codesense.invoke('report_context_sync', { state: 'ok' }) // Reorient: branch, ahead/behind, conflicts codesense.invoke('context_repo_status', {})"
+      "text": "How to do this via MCP Agent-side equivalents const target = { kind: 'local', codeRepoPath: '<worktree>', sessionId: '<session>' } // Preview each publish first with preview_reverse_sync_worktree and the same inputs. // Phase 02 · Spec reverse_sync_worktree { target, paths: ['_bmad-output/<epic>/spec.md'] } // Phase 05 · Stories reverse_sync_worktree { target, paths: ['_bmad-output/<epic>/stories/'] } // Phase 08 · Build (share a new skill) reverse_sync_worktree { target, sets: ['.claude/skills/story-helper'] } // Phase 10 · Review and 13 · Ship: run git yourself, then report report_context_sync { state: 'ok' } // Reorient: branch, ahead/behind, conflicts context_repo_status {}"
     },
     {
       "title": "When not to sync",

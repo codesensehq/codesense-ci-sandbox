@@ -923,31 +923,11 @@ mod tests {
 
     #[test]
     fn workspace_gc_size_and_foreign_warning_emission() {
-        // Follow the crate's existing capture pattern: another test may own the
-        // process-global logger in full-suite runs. The focused module run owns it.
-        static LOGS: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
-        struct Capture;
-        impl log::Log for Capture {
-            fn enabled(&self, _: &log::Metadata) -> bool {
-                true
-            }
-            fn log(&self, record: &log::Record) {
-                if record.target() == "content_engine::git_exclude"
-                    && record.level() == log::Level::Warn
-                {
-                    LOGS.lock().unwrap().push(record.args().to_string());
-                }
-            }
-            fn flush(&self) {}
-        }
-        static CAPTURE: Capture = Capture;
-        let captured = log::set_logger(&CAPTURE).is_ok();
-        log::set_max_level(log::LevelFilter::Warn);
+        crate::test_logger::clear("content_engine::git_exclude");
         let dir = TempDir::new().unwrap();
         let exclude = dir.path().join("size-warning");
         let matching = || {
-            LOGS.lock()
-                .unwrap()
+            crate::test_logger::lines("content_engine::git_exclude")
                 .iter()
                 .filter(|line| line.contains(&exclude.display().to_string()))
                 .cloned()
@@ -965,7 +945,7 @@ mod tests {
             .unwrap();
             assert_eq!(fs::metadata(&exclude).unwrap().len(), size as u64);
         }
-        if captured {
+        {
             let logs = matching();
             assert_eq!(
                 logs.len(),
@@ -987,7 +967,7 @@ mod tests {
         )
         .unwrap();
         assert!(fs::read_to_string(&exclude).unwrap().starts_with(foreign));
-        if captured {
+        {
             let logs = matching();
             assert_eq!(logs.len(), 2);
             assert!(logs[1].contains("skipping workspace exclude GC"));
@@ -1018,7 +998,7 @@ mod tests {
             );
             result.unwrap();
             assert_eq!(fs::read_to_string(&exclude).unwrap(), protected);
-            if captured {
+            {
                 let logs = matching();
                 assert_eq!(
                     logs.len(),
@@ -1043,7 +1023,7 @@ mod tests {
     /// ~O(manifest²) full re-add, hundreds of ms, robust to noise and the number the F10
     /// go/no-go rests on. The sub-10ms (b)/(c) figures are single-shot and indicative only.
     #[test]
-    #[ignore]
+    #[ignore = "manual performance measurement; run explicitly with --ignored --nocapture"]
     fn measure_add_entries_fanout_cost() {
         use std::time::Instant;
         const MANIFEST: usize = 9_400;

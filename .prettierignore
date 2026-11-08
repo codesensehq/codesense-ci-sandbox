@@ -38,6 +38,8 @@ site/
 # byte-offset and deep-equal tests (TS, Rust, Python). Keep as recorded.
 tests/fixtures/terminal/**/*.json
 tests/fixtures/private-reconnect-replay.json
+# Docs API lint fixtures: quote styles, fence lengths and line numbers are the test input.
+scripts/fixtures/docs-api-examples/
 scripts/tests/fixtures/rm4f-docker28-*.json
 # The shipped docs context repo (codesense-docs/) is docs output, like docs/
 # and site/: authored HTML/CSS pages, Excalidraw sketches, recorded visual

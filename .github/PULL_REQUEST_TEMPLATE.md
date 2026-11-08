@@ -5,6 +5,11 @@ This repository is a release snapshot, synced from private development, so a
 pull request can't be merged here. Please open an issue or start a discussion
 instead. CONTRIBUTING.md explains the policy:
 https://github.com/codesensehq/codesense/blob/main/CONTRIBUTING.md
+
+Privacy scans inspect every commit, plus branch names and request metadata.
+If an earlier commit contains private data that was later removed, start a fresh
+branch from current main and reapply only the clean changes. Never add history-only
+allow entries or paste private values while explaining a failure.
 -->
 
 **We don't accept pull requests yet.** See

@@ -909,6 +909,7 @@ export function HtmlViewer({
   // Whether the doc now loaded has announced itself; pushes wait for it, and a
   // new load announces again.
   const docReadyRef = useRef(false);
+  const loadedDocumentKey = useRef<string | null>(null);
   const documentLoads = useRef(0);
 
   const slotStartup = !!pane;
@@ -1525,6 +1526,7 @@ export function HtmlViewer({
   }, [endpoint, focusElement, postToFrame, presented, prepareIntent]);
   useLayoutEffect(() => {
     docReadyRef.current = false;
+    loadedDocumentKey.current = null;
     menuActionsEnabled.current = false;
     menuLifetime.current.abort();
     menuLifetime.current = new AbortController();
@@ -1538,6 +1540,23 @@ export function HtmlViewer({
       postToFrame(endpoint(), { type: "codesense:theme", theme, applyScheme: embedded });
     }
   }, [theme, embedded, endpoint, docVisible, postToFrame]);
+  const requestReadyAgain = useCallback(() => {
+    const target = endpoint();
+    const loaded = hostedFrame
+      ? !!hostedWindow.current
+      : loadedDocumentKey.current === currentDocumentKey.current;
+    if (
+      !visibleRef.current ||
+      docReadyRef.current ||
+      !loaded ||
+      !live ||
+      !frameRecord ||
+      !target?.contentWindow
+    )
+      return;
+    bridgeTiming(() => `hello doc=${currentDocumentKey.current} t=${nowMs()}`);
+    target.contentWindow.postMessage({ type: "codesense:hello" }, frameRecord.origin);
+  }, [endpoint, hostedFrame, live, frameRecord]);
   useEffect(() => {
     visibleRef.current = docVisible;
     bridgeTiming(
@@ -1550,18 +1569,14 @@ export function HtmlViewer({
     if (!docVisible) return;
     // Shown: a page whose `ready` never reached us is asked to say it again, and every read
     // held while hidden runs now. A second `ready` for a handshake already done is ignored.
-    const target = endpoint();
-    if (!docReadyRef.current && live && frameRecord && target?.contentWindow) {
-      bridgeTiming(() => `hello doc=${currentDocumentKey.current} t=${nowMs()}`);
-      target.contentWindow.postMessage({ type: "codesense:hello" }, frameRecord.origin);
-    }
+    requestReadyAgain();
     const held = heldReads.current.splice(0);
     for (const entry of held) {
       if (entry.documentKey !== currentDocumentKey.current) continue;
       const result = entry.invoke();
       for (const answer of entry.answers) answer(result);
     }
-  }, [docVisible, endpoint, postToFrame, live, frameRecord]);
+  }, [docVisible, endpoint, postToFrame, requestReadyAgain]);
   const onBadgeRef = useRef(onBadge);
   const onContentSizeRef = useRef(onContentSize);
   useEffect(() => {
@@ -2197,6 +2212,10 @@ export function HtmlViewer({
   // restore listener at parse time (script is prepended), so it is ready by
   // the time `load` fires. Buffered replacements inherit the outgoing offset.
   const handleIframeLoad = useCallback(() => {
+    loadedDocumentKey.current = currentDocumentKey.current;
+    // A new iframe inherits the host origin until navigation commits. Recover a
+    // missed ready only after load, when the pinned frame origin can receive it.
+    requestReadyAgain();
     if (viewerUrl) onPageLoadRef.current?.();
     hashLoaded.current = true;
     applyPendingHash();
@@ -2210,7 +2229,7 @@ export function HtmlViewer({
         { type: "codesense:restore-scroll", y: scrollYRef.current },
         "*",
       );
-  }, [rejectCaptures, viewerUrl, endpoint, postToFrame, live, applyPendingHash]);
+  }, [rejectCaptures, viewerUrl, endpoint, postToFrame, live, requestReadyAgain, applyPendingHash]);
 
   // SW-FX-38: route through the shared `closeActiveFileTab` primitive — a
   // slug-less workspace (repoPath null) must STILL close its tab; `repoPath`

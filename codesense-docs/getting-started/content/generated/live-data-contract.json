@@ -1618,5 +1618,176 @@
     "routine_result",
     "routine_publish_result"
   ],
-  "snapshot": "codesense.snapshot captures a frozen record; never execute saved snapshot state."
+  "snapshot": "codesense.snapshot captures a frozen record; never execute saved snapshot state.",
+  "story_fields": {
+    "fields": [
+      {
+        "cs_meta": "cs:status",
+        "description": "Pipeline column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
+        "kind": "text",
+        "name": "status",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:type",
+        "description": "Document type. story, bug and spike make the file a pipeline story; any other value, or none, keeps it a plain document.",
+        "kind": "text",
+        "name": "type",
+        "required": true,
+        "values": [
+          "story",
+          "bug",
+          "spike"
+        ]
+      },
+      {
+        "cs_meta": "cs:depends-on",
+        "description": "Story ids this story depends on. Each must resolve; drives the dependency graph.",
+        "kind": "list",
+        "name": "depends_on",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:tags",
+        "description": "Free-form tags, for example [infra, urgent].",
+        "kind": "list",
+        "name": "tags",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:supporting-docs",
+        "description": "Relative paths to supporting documents. A path that is not found is advisory.",
+        "kind": "list",
+        "name": "supporting_docs",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:story-id",
+        "description": "The story's display id, for example W-5. Unique within an org.",
+        "kind": "text",
+        "name": "story_id",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:source-repo",
+        "description": "The repo the story's code lives in, as owner/repo. Must be a configured repo: resolve it with list_source_repos, never invent it.",
+        "kind": "text",
+        "name": "source_repo",
+        "required": true
+      },
+      {
+        "cs_meta": "cs:work-repo",
+        "description": "Optional. The repo whose history holds the story's work when that is not source_repo, as owner/repo (for example the context repo); story_changes reads it.",
+        "kind": "text",
+        "name": "work_repo",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:dev-branch",
+        "description": "Legacy. Read only as a fallback on older documents; use branch.",
+        "kind": "text",
+        "name": "dev_branch",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:branch-name",
+        "description": "Legacy. Read only as a fallback on older documents; use branch.",
+        "kind": "text",
+        "name": "branch_name",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:team",
+        "description": "The team the document belongs to. If set, it must be a configured team.",
+        "kind": "text",
+        "name": "team",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:repos",
+        "description": "Epics: the repos the epic spans, as owner/repo.",
+        "kind": "list",
+        "name": "repos",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:branch",
+        "description": "Stories: the story's branch, used to create its worktree. Epics: the integration branch (by default integration/ followed by the epic id).",
+        "kind": "text",
+        "name": "branch",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:sprint",
+        "description": "The sprint the story belongs to, for example 2026-08-A.",
+        "kind": "text",
+        "name": "sprint",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:points",
+        "description": "Estimate in points. A non-numeric value is ignored; a value off the scale 1, 2, 3, 5, 8, 13 is advisory.",
+        "kind": "number",
+        "name": "points",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:assigned-to",
+        "description": "Who the story is assigned to (a username). A login missing from the org roster is advisory.",
+        "kind": "text",
+        "name": "assigned_to",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:rank",
+        "description": "Order within a board column. The board writes it; you rarely set it by hand.",
+        "kind": "text",
+        "name": "rank",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:subject-id",
+        "description": "A standalone document's automation subject id, which makes a plain document an addressable automation subject. A story uses story_id instead.",
+        "kind": "text",
+        "name": "subject_id",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:title",
+        "description": "The story's title. Without it, Markdown uses the first # heading and HTML uses the title tag or the first h1.",
+        "kind": "text",
+        "name": "title",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:parent-epic",
+        "description": "The id of the epic the story belongs to. Without it, the epic folder on the story's path counts.",
+        "kind": "text",
+        "name": "parent_epic",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:epic",
+        "description": "Alias of parent_epic, read when parent_epic is absent.",
+        "kind": "text",
+        "name": "epic",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:priority",
+        "description": "Priority, p0 (highest) to p4. Sorting also ranks words such as critical, high, medium and low.",
+        "kind": "text",
+        "name": "priority",
+        "required": false,
+        "values": [
+          "p0",
+          "p1",
+          "p2",
+          "p3",
+          "p4"
+        ]
+      }
+    ],
+    "what": "Story fields a dashboard can read. Use the Markdown name in codesense.queryContext filters, sort, groupBy and select, and as a row's fields key; HTML stories carry the same field as the cs_meta tag. A team's own fields, declared in content/field-schema.yml or the org's tag_schema, read the same way. Rely only on these and declared fields: validate_story flags any other key with the UNREGISTERED_FIELD advisory."
+  }
 }

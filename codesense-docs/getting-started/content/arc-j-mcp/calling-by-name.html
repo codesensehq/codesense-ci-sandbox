@@ -327,22 +327,22 @@
         <div class="arcj-pair">
           <div class="box recommended">
             <h3>Direct — recommended</h3>
-            <pre><code>codesense.invoke('add_source_repo', {
-  org: 'acme',
+            <pre><code>add_source_repo {
+  org: 'acme/team-context',
   team: 'default',
   url:  'acme/sample'
-})</code></pre>
+}</code></pre>
           </div>
           <div class="box">
             <h3>Wrapped — escape hatch</h3>
-            <pre><code>codesense.invoke('codesense_call_tool', {
+            <pre><code>codesense_call_tool {
   name: 'add_source_repo',
   arguments: {
-    org: 'acme',
+    org: 'acme/team-context',
     team: 'default',
     url:  'acme/sample'
   }
-})</code></pre>
+}</code></pre>
           </div>
         </div>
         <p>
@@ -405,15 +405,15 @@
           <code>{ status: "ok", data: { id, revision, …} }</code>.
         </p>
         <pre><code>// Direct — in-app, Claude Code, Codex.
-codesense.invoke('agent_create', {
+agent_create {
   name: 'Docs reader',
   runtime: 'claude',
   startup: ['CLAUDE.md'],
   dryRun: true
-})
+}
 
 // Wrapped — hosts that need it.
-codesense.invoke('codesense_call_tool', {
+codesense_call_tool {
   name: 'agent_create',
   arguments: {
     name: 'Docs reader',
@@ -421,7 +421,7 @@ codesense.invoke('codesense_call_tool', {
     startup: ['CLAUDE.md'],
     dryRun: true
   }
-})</code></pre>
+}</code></pre>
       </section>
 
       <section data-search="Try this now — call_tool a read" id="try-this-now">
@@ -434,7 +434,6 @@ codesense.invoke('codesense_call_tool', {
           verb="invoke"
           args='{"name": "codesense_call_tool", "args": {"name": "who_am_i", "arguments": {}}}'
           label="Call who_am_i via the wrapper"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -443,16 +442,16 @@ codesense.invoke('codesense_call_tool', {
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Simplest form.
-codesense.invoke('codesense_call_tool', { name: 'who_am_i' })
+codesense_call_tool { name: 'who_am_i' }
 
 // Full form.
-codesense.invoke('codesense_call_tool', {
-  name: 'send_message',
-  arguments: { to: 'role:builder', body: 'wake up' }
-})
+codesense_call_tool {
+  name: 'send_role_message',
+  arguments: { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: 'wake up' }
+}
 
 // Prefer direct dispatch when the host allows it.
-codesense.invoke('send_message', { to: 'role:builder', body: 'wake up' })</code></pre>
+send_role_message { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: 'wake up' }</code></pre>
           <p>
             Deep-link into the explorer:
             <a href="../mcp-explorer.html#tool/codesense_call_tool"

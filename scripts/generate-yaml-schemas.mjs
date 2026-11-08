@@ -122,7 +122,7 @@ const SCHEMAS = [
     validator: null,
     fields: [],
     example:
-      "id: reviewer\nname: Review\nicon: builtin-chess:knight\ndefaultHandler: acme/dev/reviewer\n",
+      "id: reviewer\nname: Review\nicon: builtin-chess:knight\ndefaultHandler: acme/team-context/dev/reviewer\n",
   },
 
   {

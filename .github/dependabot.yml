@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: MIT
+# Keeps the GitHub Actions, Cargo and npm dependencies up to date.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+  - package-ecosystem: cargo
+    # Cargo.lock is at the workspace root, including src-tauri's dependencies.
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    # Dependabot uses the existing pnpm-lock.yaml.
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5

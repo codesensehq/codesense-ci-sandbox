@@ -163,7 +163,8 @@
               <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--ok">✓</span></span></td>
               <td><span class="parity-cell"><span class="cs-docs-chip cs-docs-chip--warn">⚠</span></span></td>
               <td class="parity-notes">
-                <code>launch: { agentKey }</code> works on either side. Caveat:
+                A saved agent launches on either side (<code>agent</code> on
+                <code>open_workspace</code>, <code>agentKey</code> on <code>open_remote_tab</code>). Caveat:
                 remote launches require <code>preparedWorkspaceHandle</code> from a
                 verified hydration (not just a path), and the account's runtime +
                 sign-in must be present. The terminal server pins its identity;

@@ -6,7 +6,7 @@ CodeSense runs locally on macOS. There's no CodeSense account: you don't sign in
 
 ## Install and open
 
-CodeSense is for Macs with Apple Silicon. It isn't released yet: the [download page](https://codesense.ai/download) will have the build when it is. Open the app, then follow the dependency check if Git is missing. Install the agent CLI you want to use, Claude Code, Codex or OpenCode, and sign in to it with that CLI's own instructions.
+CodeSense is for Macs with Apple Silicon. Download it from the [download page](https://codesense.ai/download), open the DMG and drag CodeSense to Applications. Or with Homebrew: `brew install --cask codesensehq/tap/codesense`. Open the app, then follow the dependency check if Git is missing. Install the agent CLI you want to use, Claude Code, Codex or OpenCode, and sign in to it with that CLI's own instructions.
 
 The first time it opens, CodeSense opens **CodeSense Docs**: a read-only context repo of these docs that ships with every install, open at its README. There's no welcome screen or setup wizard.
 

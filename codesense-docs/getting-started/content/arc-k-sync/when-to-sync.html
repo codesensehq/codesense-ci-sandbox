@@ -351,19 +351,19 @@
 // Preview each publish first with preview_reverse_sync_worktree and the same inputs.
 
 // Phase 02 · Spec
-codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/&lt;epic&gt;/spec.md'] })
+reverse_sync_worktree { target, paths: ['_bmad-output/&lt;epic&gt;/spec.md'] }
 
 // Phase 05 · Stories
-codesense.invoke('reverse_sync_worktree', { target, paths: ['_bmad-output/&lt;epic&gt;/stories/'] })
+reverse_sync_worktree { target, paths: ['_bmad-output/&lt;epic&gt;/stories/'] }
 
 // Phase 08 · Build (share a new skill)
-codesense.invoke('reverse_sync_worktree', { target, sets: ['.claude/skills/story-helper'] })
+reverse_sync_worktree { target, sets: ['.claude/skills/story-helper'] }
 
 // Phase 10 · Review and 13 · Ship: run git yourself, then report
-codesense.invoke('report_context_sync', { state: 'ok' })
+report_context_sync { state: 'ok' }
 
 // Reorient: branch, ahead/behind, conflicts
-codesense.invoke('context_repo_status', {})</code></pre>
+context_repo_status {}</code></pre>
         </details>
       </section>
 

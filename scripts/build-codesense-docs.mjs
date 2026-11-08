@@ -45,6 +45,11 @@ const bundle = JSON.parse(readFileSync(join(TEMPLATE, "bundle.json"), "utf8"));
 const TEAM = bundle.team;
 const CONTENT = `${TEAM}/content`;
 const PAGE_SDK_REFERENCE = "generated/page-sdk.md";
+/** Site reference pages that ship as a generated page, by their site path. */
+const GENERATED_REFERENCES = {
+  "reference/page-sdk": PAGE_SDK_REFERENCE,
+  "reference/story-fields": "generated/story-fields.md",
+};
 /** The handbook as it ships, committed: generated from the site MDX, which only a private
  *  checkout has, so a build from source ships it as is. Never edit it by hand. */
 const HANDBOOK_SNAPSHOT_LABEL = `codesense-docs/${CONTENT}/handbook`;
@@ -163,11 +168,7 @@ function rewriteLink(href, fromFile, available) {
   const match = /^\/(?:docs|handbook)\/?([^#)]*?)\/?(#[^)]*)?$/.exec(href);
   if (!match) return href;
   const page =
-    match[1] === "reference/page-sdk"
-      ? PAGE_SDK_REFERENCE
-      : match[1]
-        ? `handbook/${match[1]}.md`
-        : "handbook/README.md";
+    GENERATED_REFERENCES[match[1]] ?? (match[1] ? `handbook/${match[1]}.md` : "handbook/README.md");
   if (!available.has(page)) return null;
   const rel = posix.relative(posix.dirname(fromFile), page);
   return `${rel}${match[2] ?? ""}`;
@@ -250,7 +251,10 @@ export function convertHandbook() {
       }
     }
   }
-  const available = new Set([...pages.map(([, out]) => out), PAGE_SDK_REFERENCE]);
+  const available = new Set([
+    ...pages.map(([, out]) => out),
+    ...Object.values(GENERATED_REFERENCES),
+  ]);
   return new Map(
     pages.map(([source, out]) => [
       out,

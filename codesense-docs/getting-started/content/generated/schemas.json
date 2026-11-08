@@ -729,7 +729,7 @@
           "sourceRef": null
         }
       ],
-      "example": "id: reviewer\nname: Review\nicon: builtin-chess:knight\ndefaultHandler: acme/dev/reviewer\n"
+      "example": "id: reviewer\nname: Review\nicon: builtin-chess:knight\ndefaultHandler: acme/team-context/dev/reviewer\n"
     },
     {
       "slug": "routine-yml",

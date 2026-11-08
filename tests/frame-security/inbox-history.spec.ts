@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../support/quarantine-playwright";
 import { readFileSync } from "node:fs";
 
 const fixture = readFileSync("src/features/shell/right-pane/__fixtures__/inbox-pane.html", "utf8");

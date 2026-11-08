@@ -475,7 +475,6 @@
           verb="invoke"
           args='{"name": "codesense_search_tools", "args": {"query": "add source repo"}}'
           label="Search for add_source_repo"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -494,7 +493,7 @@ codesense_get_tool_schema { name: 'add_source_repo' }
 
 // 4. Call it.
 add_source_repo {
-  org: 'acme',
+  org: 'acme/team-context',
   team: 'default',
   url: 'owner/repo'
 }</code></pre>

@@ -413,7 +413,7 @@
           </li>
           <li>
             <strong>Routing a message.</strong> You know the role queues exist and have depth;
-            <code>send_message</code> takes it from there.
+            <code>send_role_message</code> takes it from there.
           </li>
           <li><strong>Picking the active team.</strong> It's named — no second call to confirm.</li>
         </ul>
@@ -434,7 +434,6 @@
           verb="invoke"
           args='{"name": "codesense_overview", "args": {}}'
           label="Run codesense_overview"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -443,15 +442,13 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// The one call every agent should make first.
-codesense.invoke('codesense_overview', {})
+codesense_overview {}
 
-// Everything else branches off the reply:
-const { teams, source_repos, sessions, inboxes } = overview
+// Everything else branches off the reply's sections: context, machines, sessions,
+// agents, routines, inbox, roleQueues, workspaces, docs.
 
-// Example: route a message to the busiest role.
-const busiest = Object.entries(inboxes)
-  .sort(([, a], [, b]) =&gt; b - a)[0][0]
-codesense.invoke('send_message', { to: `role:${busiest}`, body: '…' })</code></pre>
+// Example: roleQueues shows builder has the most pending work, so message that role.
+send_role_message { team: { org: 'acme/team-context', team: 'dev' }, role: 'builder', text: '…' }</code></pre>
           <p>
             Deep-link into the explorer:
             <a href="../mcp-explorer.html#tool/codesense_overview"

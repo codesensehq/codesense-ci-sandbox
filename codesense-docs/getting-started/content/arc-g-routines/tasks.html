@@ -368,13 +368,13 @@ task: |
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Check without writing
-codesense.invoke('routine_create', { name: '…', agent: 'manager', mode: 'wake', task: '…', dryRun: true })
+routine_create { name: '…', agent: 'manager', mode: 'wake', task: '…', dryRun: true }
 
 // Live fire
-codesense.invoke('routine_run_now', { id: 'manager-wake' })
+routine_run_now { id: 'manager-wake' }
 
 // Inside a woken session: finish this run, keep the session
-codesense.invoke('routine_done', { sessionId, runId, outcome: 'success', summary: '…' })
+routine_done { sessionId, runId, outcome: 'success', summary: '…' }
 
 // Tail the run (routines-console does this live)
 codesense.subscribeContext({ topic: 'routines.runs', id: 'manager-wake' }, (ev) =&gt; { … })</code></pre>

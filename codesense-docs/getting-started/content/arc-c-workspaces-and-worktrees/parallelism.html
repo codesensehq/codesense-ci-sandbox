@@ -466,11 +466,13 @@
             <code>inbox_idle</code> fires.
           </p>
           <pre><code>// Fan out — one call per sibling, concurrent is fine
-await Promise.all(['DEMO-2','DEMO-3','DEMO-4','DEMO-5']
-  .map(id => codesense.invoke('open_workspace', { target: id })))
+open_workspace { target: 'story', story_id: 'DEMO-2' }
+open_workspace { target: 'story', story_id: 'DEMO-3' }
+open_workspace { target: 'story', story_id: 'DEMO-4' }
+open_workspace { target: 'story', story_id: 'DEMO-5' }
 
 // Inspect the fleet
-codesense.invoke('list_worktrees', {})
+list_worktrees {}
 // → [{ story_id: 'DEMO-1', path: '../sample-source-repo-wt/feat-DEMO-1-foundation', status: 'ready', ... }, ...]</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See

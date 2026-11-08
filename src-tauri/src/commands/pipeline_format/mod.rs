@@ -10,8 +10,14 @@
 //!   2. A new `PipelineFileFormat` variant + match arms in each dispatch fn
 //!   3. Extension(s) added to `PIPELINE_EXTENSIONS`
 
+pub mod fields;
 pub mod html;
 pub mod markdown;
+
+pub use fields::{
+    contract_fields, known_cs_names, StoryField, FIELD_NAME_MAP, KNOWN_TOP_LEVEL_KEYS,
+    METADATA_CONTRACT_FIELDS, STORY_FIELDS,
+};
 
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -264,73 +270,6 @@ pub fn rewrite_list_field(
 
 // ----- Shared types --------------------------------------------------------
 
-/// Mapping from YAML-style field names to HTML `cs:*` meta tag names.
-/// Used by the HTML format module for both extraction and rewriting.
-pub const FIELD_NAME_MAP: &[(&str, &str)] = &[
-    ("status", "cs:status"),
-    ("type", "cs:type"),
-    ("depends_on", "cs:depends-on"),
-    // SW-AU-77F: `tags` is a first-class built-in list field. This one entry makes it
-    // an official field (`official_fields()`), adds `cs:tags` to the HTML open-tag
-    // exclusion set (`known_cs_names()`), and round-trips the HTML meta. Single word —
-    // no dash. It must land together with `KNOWN_TOP_LEVEL_KEYS`'s `tags` so the
-    // markdown and HTML exclusion sets stay symmetric.
-    ("tags", "cs:tags"),
-    ("supporting_docs", "cs:supporting-docs"),
-    ("story_id", "cs:story-id"),
-    ("source_repo", "cs:source-repo"),
-    // SV-CDE-85: where the work lands when it is not `source_repo` (e.g. the context repo).
-    ("work_repo", "cs:work-repo"),
-    // SW-GS-35: story-scoped dev branch (distinct from epic `branch` below).
-    ("dev_branch", "cs:dev-branch"),
-    // SW-WB-1: story-scoped INTENDED branch (editable; drives the worktree).
-    ("branch_name", "cs:branch-name"),
-    ("team", "cs:team"),
-    // SLW-MD-1 (FIX 3): epic list/scalar fields — without these, an HTML epic
-    // doc's SetList/SetField/ClearField on `repos`/`branch`/`scope_context`/
-    // `scope_install` mapped to `None` and silently no-op'd while the band
-    // reported "saved". Dash convention matches the other cs:* names.
-    ("repos", "cs:repos"),
-    ("branch", "cs:branch"),
-    ("scope_context", "cs:scope-context"),
-    ("scope_install", "cs:scope-install"),
-    // SW-SB-1: board metadata fields — without these an HTML story's
-    // `points`/`sprint`/`assigned_to` never parse (a serde field does not
-    // auto-populate for HTML) so the board sees `.md` stories only.
-    ("sprint", "cs:sprint"),
-    ("points", "cs:points"),
-    ("assigned_to", "cs:assigned-to"),
-    // SW-SB-22: board-ordering rank — same HTML round-trip need as the SB-1 fields
-    // above; without this an HTML story's rank write no-ops and never reads back.
-    ("rank", "cs:rank"),
-    // SW-AU-77H: a standalone doc/report declares its automation subject id as
-    // `<meta name="cs:subject-id">` — the HTML twin of the `subject_id` frontmatter
-    // key, so both formats resolve to the same identity (AC-3 format parity).
-    ("subject_id", "cs:subject-id"),
-];
-
-/// Fields that affect CodeSense routing, display or flow. Legacy scope fields
-/// remain readable, but are not part of the validation contract.
-pub const METADATA_CONTRACT_FIELDS: &[&str] = &{
-    let mut fields = [""; FIELD_NAME_MAP.len() + 2];
-    let mut source = 0;
-    let mut target = 0;
-    while source < FIELD_NAME_MAP.len() {
-        let name = FIELD_NAME_MAP[source].0;
-        // These are the two retired fields in the HTML mapping.
-        if !matches!(name.as_bytes(), b"scope_context" | b"scope_install") {
-            fields[target] = name;
-            target += 1;
-        }
-        source += 1;
-    }
-    fields[target] = "title";
-    fields[target + 1] = "parent_epic";
-    fields[target + 2] = "epic";
-    fields[target + 3] = "priority";
-    fields
-};
-
 /// The top-level metadata key of a (possibly nested) field name: `done.completed_at`
 /// → `done`, `status` → `status`. The one home for the nested-key-collapse convention
 /// shared by [`extract_metadata_keys`] (HTML side) and the SW-GT-18 field-schema
@@ -432,7 +371,8 @@ pub fn truncate_to_char_boundary(body: &str, n: usize) -> String {
 /// no schema-mirroring update needed in `CacheEntry`. The accessor methods
 /// on `CacheEntry` (`status()`, `story_id()`, etc.) thinly proxy to this
 /// struct's fields, so adding a new YAML field only requires:
-///   1. New field here.
+///   1. New field here, and its [`STORY_FIELDS`] row made [`fields::FieldRole::Typed`]
+///      (a parity test fails until both exist and the HTML reader fills it).
 ///   2. (Optional) New accessor method on `CacheEntry` for ergonomic access.
 ///   3. Bump `CACHE_VERSION` if the field's serde shape isn't `#[serde(default)]`
 ///      backward-compat.
@@ -444,7 +384,7 @@ pub struct FrontmatterFields {
     /// from `tags:` frontmatter (markdown serde) and `<meta name="cs:tags">` (HTML,
     /// CSV-split in `extract_meta_fields`). Typed here rather than left to `open_tags`
     /// so the value is captured identically on both formats once `cs:tags` joins
-    /// `FIELD_NAME_MAP`'s HTML exclusion set. Additive `#[serde(default)]`, but it lands
+    /// the known-key (non-open-tag) set. Additive `#[serde(default)]`, but it lands
     /// in `CacheEntry.fields` (R-14 rule), so a `CACHE_VERSION` bump is required to
     /// re-scan already-cached stories and populate it.
     #[serde(default)]
@@ -946,7 +886,8 @@ mod tests {
     // is an f64, the strings are plain scalars.
     #[test]
     fn markdown_board_metadata_deserialized() {
-        let md = "---\nstatus: todo\nsprint: 2026-08-A\npoints: 5\nassigned_to: octocat-dev\n---\n# T\n";
+        let md =
+            "---\nstatus: todo\nsprint: 2026-08-A\npoints: 5\nassigned_to: octocat-dev\n---\n# T\n";
         let fm = extract_meta(PipelineFileFormat::Markdown, md);
         assert_eq!(fm.sprint.as_deref(), Some("2026-08-A"));
         assert_eq!(fm.points, Some(5.0));
@@ -1269,10 +1210,7 @@ mod tests {
             slugs[0],
             SourceRepoSlug::new("alderco", "codesense").unwrap()
         );
-        assert_eq!(
-            slugs[1],
-            SourceRepoSlug::new("alderco", "install").unwrap()
-        );
+        assert_eq!(slugs[1], SourceRepoSlug::new("alderco", "install").unwrap());
     }
 
     #[test]

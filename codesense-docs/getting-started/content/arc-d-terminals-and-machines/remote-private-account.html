@@ -147,7 +147,7 @@
         </p>
         <cs-try-this
           verb="open_remote_tab"
-          args='{"launch":"shell"}'
+          args='{"operation":"create","requestId":"00000000-0000-4000-8000-000000000000","machineId":"build-box-01-ab12cd","teamKey":"acme/team-context:ops","workspaceId":"root:acme/app","cwd":"/home/sam/work/my-repo","launch":"shell"}'
           label="Open a remote terminal tab"
           dry-run="true"
         ></cs-try-this>
@@ -156,17 +156,18 @@
       <section data-search="How to open a remote tab via MCP" id="via-mcp">
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
-          <pre><code>codesense.invoke('open_remote_tab', {
+          <pre><code>open_remote_tab {
+  operation: 'create',
   requestId: crypto.randomUUID(),
   machineId: 'build-box-01-ab12cd',
-  teamKey: 'ops',
+  teamKey: 'acme/team-context:ops',
   workspaceId: '&lt;workspace&gt;',
-  hostCwd: '/home/sam/work/my-repo',
-  launch: 'shell',       // or 'claude' / 'codex' / an agentKey
+  cwd: '/home/sam/work/my-repo',
+  launch: 'shell',       // or 'claude' / 'codex'
   headed: true,
-})</code></pre>
+}</code></pre>
           <p>
-            For a saved agent, pass <code>launch: {agentKey}</code> and
+            For a saved agent, add <code>agentKey</code> and
             <code>preparedWorkspaceHandle</code> from a verified hydration.
           </p>
         </details>

@@ -314,14 +314,14 @@ _epic/per-agent-kill-switch</code></pre>
             <code>alreadyLive</code> · <code>busy</code> · <code>invalid</code>).
           </p>
           <pre><code>// Story — creates the worktree if it doesn't exist yet
-codesense.invoke('open_workspace', { story_id: 'DEMO-1' })
+open_workspace { story_id: 'DEMO-1' }
 // → { handle, mode, headed, reconciled }
 
 // Launch an agent in that story's worktree, in a new tab
-codesense.invoke('open_workspace', { target: 'story', story_id: 'DEMO-1', name: 'review', agent: 'reviewer' })
+open_workspace { target: 'story', story_id: 'DEMO-1', name: 'review', agent: 'reviewer' }
 
 // Launch an agent in a team workspace
-codesense.invoke('open_workspace', { target: 'team-workspace', name: 'sprint-triage' })</code></pre>
+open_workspace { target: 'team-workspace', name: 'sprint-triage' }</code></pre>
         </details>
       </section>
 

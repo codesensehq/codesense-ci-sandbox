@@ -66,7 +66,9 @@ use crate::context_repo::TEAM_CONTENT_DIR;
 /// present at once rather than only after each file's mtime changes.
 /// Version 10 recovers plain colon values, preserves their badge diagnostic,
 /// and removes the unused completed-date timestamp from cached entries.
-const CACHE_VERSION: u32 = 10;
+/// Version 11: the known-key set now comes from the story-field registry, so a
+/// Markdown `subject_id` is no longer cached as an open tag (matching HTML).
+const CACHE_VERSION: u32 = 11;
 
 // ---------------------------------------------------------------------------
 // CacheEntry
@@ -2479,7 +2481,7 @@ mod tests {
         assert_eq!(entry.story_id(), Some("REC-A"));
         assert_eq!(entry.status(), Some("todo"));
         assert_eq!(entry.fields.depends_on.as_ref().unwrap(), &["REC-B"]);
-        assert_eq!(loaded.version, 10);
+        assert_eq!(loaded.version, CACHE_VERSION);
         assert!(entry
             .metadata_parse_error
             .as_deref()
@@ -3041,7 +3043,7 @@ mod tests {
     /// `sw_sy7_measure_claim_walk_breakdown`. Run:
     /// `cargo test -p codesense --lib rf_perf9_measure_frontmatter_lookups -- --ignored --nocapture`.
     #[test]
-    #[ignore]
+    #[ignore = "manual frontmatter lookup benchmark; run explicitly with --ignored --nocapture"]
     fn rf_perf9_measure_frontmatter_lookups() {
         use std::time::Instant;
         const REPS: u32 = 2000;

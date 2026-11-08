@@ -297,22 +297,22 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Peek: counts.pending, counts.claimed, live registrations
-codesense.invoke('role_state', { team, role: 'builder' })
+role_state { team, role: 'builder' }
 
 // Full loop
-let { deliveries } = codesense.invoke('claim_role_messages', {
+claim_role_messages {
   team, role: 'builder', instanceId, generation, limit: 10,
-})
-for (const d of deliveries) {
-  const full = codesense.invoke('inbox_list', { role: 'builder', messageId: d.messageId })
-  const { receiptId } = codesense.invoke('accept_role_message', {
-    team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation,
-    disposition: { kind: 'work' },
-  })
-  // … do the work, reply, launch a worker, whatever …
-  codesense.invoke('ack_role_message', {
-    team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, receiptId,
-  })
+}
+// → { deliveries }; for each delivery d:
+inbox_list { role: 'builder', include: ['text'] }   // full bodies; d.messageId picks d's
+accept_role_message {
+  team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation,
+  disposition: { kind: 'work' },
+}
+// → { receiptId }
+// … do the work, reply, launch a worker, whatever …
+ack_role_message {
+  team, deliveryId: d.deliveryId, claimToken: d.claimToken, instanceId, generation, receiptId,
 }</code></pre>
         </details>
       </section>

@@ -16,9 +16,9 @@ your design.
 | Is the only manager                | `register_role {role: "manager", sessionId, exclusive: true}`. A second session gets `{status: "alreadyHeld", instance}`, naming the holding session.                                                                                                |
 | Stays the manager                  | CodeSense keeps a registration alive while its session runs and releases it when the session ends. The agent never heartbeats.                                                                                                |
 | Takes work safely                  | `claim_role_messages`, `accept_role_message`, `ack_role_message`. A manager that dies after accepting leaves the work as `acceptedUnacked`, and the next manager adopts it.                                                   |
-| Knows who it is                    | `who_am_i {sessionId}` gives its handle and name.                                                                                                                                                                             |
-| Launches workers                   | `open_workspace` (on this Mac or with `machineId` on a machine), passing `launchedBy`. Its workers nest under it in the agents list.                                                                                          |
-| Tracks workers                     | `list_sessions {launchedBy}` shows each worker's state, progress and unread mail.                                                                                                                                             |
+| Knows who it is                    | `who_am_i {session_id}` gives its handle and name.                                                                                                                                                                             |
+| Launches workers                   | `open_workspace` (on this Mac or with `machine_id` on a machine), passing `launched_by`. Its workers nest under it in the agents list.                                                                                          |
+| Tracks workers                     | `list_sessions {launched_by}` shows each worker's state, progress and unread mail.                                                                                                                                             |
 | Gets the answers                   | `replyTo: "role:manager"` on a message. Whoever replies, the human included, answers into the manager queue, not to the session that asked. It works after that session has exited. The Inbox shows "Replies go to: manager". |
 | Tells you things                   | `send_message {to: "human"}`, as markdown or as a live HTML dashboard: `kind: "needs-you"` for a decision, `kind: "update"` for a digest. Both kinds appear in conversations and count as unread human mail; kind marks whether they wait on you for agent views and dashboards. A digest with `replyTo: "role:manager"` from the manager is an update either way. |
 | Wakes up when mail arrives         | The **Wake the manager** routine (`inbox_idle` trigger, `mode: wake`) types into the manager's own idle session. No second agent does the waking.                                                                            |
@@ -94,7 +94,7 @@ It copies the skill and both routine files, creates the agent with `agent_previe
   claims its own deliveries from the same queue.
 - **A manager per epic.** Copy the agent as `manager-billing` (any id), change `role` in the
   skill and the routines to match, and send that epic's work to its role.
-- **A remote manager.** Launch it on a machine with `open_workspace {machineId}`. The ensure
+- **A remote manager.** Launch it on a machine with `open_workspace {machine_id}`. The ensure
   routine's `machine: any` already finds and wakes it there; set `machine` to that machine's
   id to also start it there when none runs. It has the same tools as a local one. While that
   machine is offline its manager still counts as running: the ensure fire is

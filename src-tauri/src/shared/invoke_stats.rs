@@ -626,8 +626,16 @@ mod tests {
 
     #[test]
     fn global_snapshot_shape() {
-        count("stubbed_command_for_test");
         let v = snapshot_json(true);
+        assert!(v["windowSecs"].is_number() && v["sinceStartSecs"].is_number());
+        assert!(v["top"].is_array());
+    }
+
+    #[test]
+    fn registry_snapshot_shape() {
+        let registry = Registry::new();
+        registry.count_at(Kind::Invoke, "stubbed_command_for_test", secs(1));
+        let v = registry.snapshot_json_at(secs(1), true);
         assert!(v["windowSecs"].is_number() && v["sinceStartSecs"].is_number());
         assert!(v["top"]
             .as_array()

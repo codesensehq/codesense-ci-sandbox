@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { expect, test, type Frame, type Page } from "@playwright/test";
+import { expect, test, type Frame, type Page } from "../support/quarantine-playwright";
 import { createServer, type Server } from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -93,6 +93,7 @@ async function open(page: Page, query = "page=dock-ok") {
     (window as any).framePort = port;
   }, framePort);
   loads.clear();
+  await page.bringToFront();
   await page.goto(`${base}?${query}`, { waitUntil: "domcontentloaded" });
 }
 async function ready(page: Page) {

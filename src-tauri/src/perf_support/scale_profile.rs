@@ -512,7 +512,7 @@ mod tests {
     /// convoy F9 targets. Run with:
     /// `cargo test -p codesense --lib scale_profile::tests::measure_changed_reprovision_p99 -- --ignored --nocapture`.
     #[test]
-    #[ignore]
+    #[ignore = "manual changed-reprovision baseline measurement; run explicitly with --ignored --nocapture"]
     fn measure_changed_reprovision_p99() {
         print_reprovision("F8-MEASURE", &run_changed_reprovision(false, false));
     }
@@ -520,7 +520,7 @@ mod tests {
     /// SW-IS-F9 (AC-5 gate): the SAME harness via the targeted `apply_entry_changes` — the
     /// per-op writer-lock hold drops from read+decode of the whole manifest to one row op.
     #[test]
-    #[ignore]
+    #[ignore = "manual targeted reprovision measurement; run explicitly with --ignored --nocapture"]
     fn measure_changed_reprovision_p99_targeted() {
         print_reprovision("F9-MEASURE", &run_changed_reprovision(true, false));
     }
@@ -528,14 +528,14 @@ mod tests {
     /// SW-IS-F9 (AC-5): staggered-arrival variant of the baseline — models production fan-out
     /// skew (not a synchronized herd), so the convoy is not over-stated.
     #[test]
-    #[ignore]
+    #[ignore = "manual staggered baseline measurement; run explicitly with --ignored --nocapture"]
     fn measure_changed_reprovision_staggered_baseline() {
         print_reprovision("F8-MEASURE-STAGGER", &run_changed_reprovision(false, true));
     }
 
     /// SW-IS-F9 (AC-5): staggered-arrival variant of the targeted path.
     #[test]
-    #[ignore]
+    #[ignore = "manual staggered targeted measurement; run explicitly with --ignored --nocapture"]
     fn measure_changed_reprovision_staggered_targeted() {
         print_reprovision("F9-MEASURE-STAGGER", &run_changed_reprovision(true, true));
     }

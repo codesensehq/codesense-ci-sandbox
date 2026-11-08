@@ -1,0 +1,13 @@
+const cs = window.codesense;
+cs.act("worktrees", {});
+cs.invoke(`${verb}`, {});
+window.codesense.nope();
+window.codesense?.queryContext?.({});
+globalThis.codesense.alsoNope();
+window.codesense?.bogus?.();
+self.codesense.bogus();
+cs?.invoke('list_worktrees', {});
+cs.act?.('listOrgsTeams', {});
+var html = '<div data-api-lint="off">';
+codesense.nope3();
+html += '</div>';

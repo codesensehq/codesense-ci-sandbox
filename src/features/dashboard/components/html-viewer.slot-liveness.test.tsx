@@ -212,6 +212,7 @@ const filesSnapshot = (args: any) => ({
   snapshot: [{ id: "row", kind: "file", name: `${args.viewKey.split("|")[0]}.md` }],
 });
 it("keeps a cold replacement file-nav frame delivering after a pane source save", async () => {
+  vi.useFakeTimers();
   const base = ipc.getMockImplementation()!;
   const records = new Map<string, typeof record>();
   let minted = 0;
@@ -247,8 +248,11 @@ it("keeps a cold replacement file-nav frame delivering after a pane source save"
       visible
     />
   );
-  const mounted = render(view("2026-10-23T00:00:00Z"));
-  await waitFor(() => expect(document.querySelectorAll("iframe")).toHaveLength(1));
+  let mounted!: ReturnType<typeof render>;
+  await act(async () => {
+    mounted = render(view("2026-10-23T00:00:00Z"));
+  });
+  expect(document.querySelectorAll("iframe")).toHaveLength(1);
   const first = document.querySelector("iframe")!;
   const sendSubscribe = (frame: HTMLIFrameElement, token: string, id: number) =>
     window.dispatchEvent(
@@ -264,15 +268,23 @@ it("keeps a cold replacement file-nav frame delivering after a pane source save"
         },
       }),
     );
-  mounted.rerender(view("2026-10-23T00:01:00Z"));
-  await waitFor(() => expect(document.querySelectorAll("iframe")).toHaveLength(2));
+  await act(async () => {
+    mounted.rerender(view("2026-10-23T00:01:00Z"));
+  });
+  // Source saves debounce for 150 ms and wait up to 300 ms for outgoing writes.
+  // This cold fixture has no flush responder. Drive both deadlines explicitly
+  // rather than racing them against waitFor's wall-clock timeout.
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(300);
+  });
+  expect(document.querySelectorAll("iframe")).toHaveLength(2);
   const candidate = [...document.querySelectorAll("iframe")].find((frame) => frame !== first)!;
   const candidatePost = vi.fn();
   Object.defineProperty(candidate, "contentWindow", {
     value: { postMessage: candidatePost },
     configurable: true,
   });
-  await waitFor(() => expect(records.size).toBe(2));
+  expect(records.size).toBe(2);
   const candidateToken = [...records.keys()][1];
   act(() =>
     window.dispatchEvent(
@@ -283,14 +295,12 @@ it("keeps a cold replacement file-nav frame delivering after a pane source save"
       }),
     ),
   );
-  act(() => sendSubscribe(candidate, candidateToken, 2));
-  await waitFor(() => expect(reads).toHaveLength(1));
+  await act(async () => sendSubscribe(candidate, candidateToken, 2));
+  expect(reads).toHaveLength(1);
   expect(reads.map(([topic]) => topic)).toEqual(["files"]);
-  await waitFor(() =>
-    expect(candidatePost).toHaveBeenCalledWith(
-      filesReply(2, "team:acme/dev"),
-      new URL(candidate.src).origin,
-    ),
+  expect(candidatePost).toHaveBeenCalledWith(
+    filesReply(2, "team:acme/dev"),
+    new URL(candidate.src).origin,
   );
 });
 it("delivers a hidden cold file-nav subscription when the pane is shown", async () => {

@@ -6,7 +6,7 @@
  * stand in for the app: sessions, inbox, other live-hub topics, the intent, the theme and
  * the frame's grant. The returned handle drives lifecycle events from the host side.
  */
-import { test as base, expect, type Frame, type Page } from "@playwright/test";
+import { test as base, expect, type Frame, type Page } from "../support/quarantine-playwright";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, extname, resolve, sep } from "node:path";
 

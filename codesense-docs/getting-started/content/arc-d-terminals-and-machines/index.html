@@ -140,7 +140,7 @@
       <section data-search="How to list machines via MCP" id="via-mcp">
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
-          <pre><code>codesense.invoke('list_machines', {})</code></pre>
+          <pre><code>list_machines { orgSlug: 'acme/team-context' }</code></pre>
           <p>
             Returns each machine's id, label, host, port, and whether it has been
             set up for the current user.

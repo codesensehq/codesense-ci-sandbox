@@ -258,7 +258,7 @@
             <!-- Column 2 · CALL -->
             <rect class="node n-agent" x="380" y="200" width="220" height="110" rx="10" />
             <text class="lbl" x="490" y="248" text-anchor="middle">open_workspace</text>
-            <text class="sub" x="490" y="276" text-anchor="middle">target: 'DEMO-1'</text>
+            <text class="sub" x="490" y="276" text-anchor="middle">story_id: 'DEMO-1'</text>
             <text class="mut" x="490" y="358" text-anchor="middle">any agent · any user</text>
             <text class="mut" x="490" y="580" text-anchor="middle">ensure_story_worktree does the work</text>
             <!-- edge: story → call -->
@@ -514,15 +514,15 @@ worktree path: ../api-wt/feat-DEMO-1/</code></pre>
             An agent calls <code>open_workspace</code> directly; the trusted-side spine runs the
             four steps and settles with a typed result.
           </p>
-          <pre><code>codesense.invoke('open_workspace', {
-  storyId: 'DEMO-1'
-})
+          <pre><code>open_workspace {
+  story_id: 'DEMO-1'
+}
 // → { handle: 'DEMO-1', mode: 'headed', headed: true, reconciled: null }
 
 // Peek at a worktree's config before letting it run setup commands
-codesense.invoke('read_worktree_config', {
-  source_repo: 'acme/api'
-})</code></pre>
+read_worktree_config {
+  repoPath: '~/code/api'
+}</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See
             <a href="../mcp-explorer.html#tool/open_workspace">open_workspace</a> and

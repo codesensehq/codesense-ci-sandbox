@@ -330,7 +330,7 @@
             <code>agent_preview</code> resolves an agent's context through this stack
             without copying anything, and names the place each file came from:
           </p>
-          <pre><code>codesense.invoke('agent_preview', { agent: 'reviewer', repo: 'acme/payments' })
+          <pre><code>agent_preview { agent: 'reviewer', repo: 'acme/payments' }
 // → each resolved file with its tier: repo, personal, or team (and which team)</code></pre>
           <p style="color: var(--cs-muted-fg); margin-top: 8px">
             Live schema in

@@ -109,12 +109,17 @@
           every teammate sees the machine in their Machines list and binds their own
           account to it:
         </p>
-        <pre><code>codesense.invoke('save_machine', {
-  label: 'build-box-01',
-  host:  'build-box-01.lab',
-  port:  22,
-  share: { team: 'ops' },
-})</code></pre>
+        <pre><code>save_machine {
+  input: {
+    label: 'build-box-01',
+    host:  'build-box-01.lab',
+    port:  22,
+    username: 'sam',
+    signIn: { method: 'agent' },
+  },
+  share: { kind: 'team', orgSlug: 'acme/team-context', team: 'ops' },
+  connect: true,
+}</code></pre>
         <p>
           The declaration is a team file like any other: it reaches teammates when an agent
           pushes the context repo and they next pull. Teammates'
@@ -142,18 +147,19 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <p>Launch the Machine-setup agent and send it the skill command:</p>
-          <pre><code>// Open the agent in a tab (or address an existing one via list_sessions).
-codesense.invoke('open_terminal_tab', {
-  requestId: crypto.randomUUID(),
-  launch: { agentKey: 'machine-setup' },
-  headed: true,
-})
+          <pre><code>// Start the agent with the skill command as its first prompt.
+open_workspace {
+  target: 'team-workspace',
+  name: 'machine-setup',
+  agent: 'machine-setup',
+  initial_prompt: '/add-machine-user',
+}
 
-// Drive the skill.
-codesense.invoke('run_in_terminal_tab', {
+// Or drive an agent that is already running (find its tab via list_sessions).
+run_in_terminal_tab {
   tab: 'Machine setup',
   command: '/add-machine-user',
-})</code></pre>
+}</code></pre>
         </details>
       </section>
 

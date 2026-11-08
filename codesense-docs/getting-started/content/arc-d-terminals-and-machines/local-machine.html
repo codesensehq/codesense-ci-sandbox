@@ -108,7 +108,7 @@
         <p>Open a fresh terminal tab in your current workspace.</p>
         <cs-try-this
           verb="open_terminal_tab"
-          args='{"launch":"shell"}'
+          args='{"workspaceId":"root:acme/app"}'
           label="Open a local terminal tab"
           dry-run="true"
         ></cs-try-this>
@@ -117,15 +117,17 @@
       <section data-search="How to open a local tab via MCP" id="via-mcp">
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
-          <pre><code>codesense.invoke('open_terminal_tab', {
-  requestId: crypto.randomUUID(),
+          <pre><code>open_terminal_tab {
   workspaceId: '&lt;current workspace&gt;',
-  launch: 'shell',   // or 'claude' / 'codex' / an agentKey
   headed: true,
-})</code></pre>
+}
+// → { handle }
+
+// Type into it.
+run_in_terminal_tab { handle: '&lt;handle&gt;', command: 'git status' }</code></pre>
           <p>
-            Omit <code>machineId</code> and the tab opens on this Mac. Supply a
-            <code>machineId</code> and it goes remote — same shape, different host.
+            The tab opens in that workspace on this Mac. For a tab on another machine, use
+            <code>open_remote_tab</code> with its <code>machineId</code>.
           </p>
         </details>
       </section>

@@ -448,6 +448,7 @@
           </p>
           <pre><code>list_orgs_teams {}
 create_local_organization { displayName: "Acme", destinationPath: "/Users/you/CodeSense/acme" }
+commit_registry_edit_local { orgSlug: "acme", edit: { type: "CreateTeam", team_name: "billing" } }
 set_active_team { org: "acme", team: "billing" }</code></pre>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             See each tool's live schema in

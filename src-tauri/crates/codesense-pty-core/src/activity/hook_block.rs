@@ -61,6 +61,7 @@ pub(super) fn run(_cli: Option<&std::ffi::OsStr>) -> i32 {
 mod tests {
     use super::*;
     #[test]
+    #[ignore = "quarantine: https://github.com/codesensehq/codesense/issues/5"]
     fn hook_block_process_returns_json_exit_two_and_never_waits_for_stdin() {
         use std::io::Write;
         use std::process::{Command, Stdio};

@@ -344,43 +344,8 @@ async fn respawn_allowed_after_worker_exits() {
 
 // ---------- AC-7: bridge-only MCP server projection ----------
 
-/// `mcp_scope` log lines, tagged with the thread that emitted them so a test reads
-/// only its own lines while other tests log concurrently.
-fn mcp_scope_log() -> &'static Mutex<Vec<(std::thread::ThreadId, String)>> {
-    static LINES: std::sync::OnceLock<Mutex<Vec<(std::thread::ThreadId, String)>>> =
-        std::sync::OnceLock::new();
-    static LOGGER: Capture = Capture;
-    struct Capture;
-    impl log::Log for Capture {
-        fn enabled(&self, meta: &log::Metadata<'_>) -> bool {
-            meta.target() == "mcp_scope"
-        }
-        fn log(&self, record: &log::Record<'_>) {
-            if self.enabled(record.metadata()) {
-                mcp_scope_log()
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .push((std::thread::current().id(), record.args().to_string()));
-            }
-        }
-        fn flush(&self) {}
-    }
-    LINES.get_or_init(|| {
-        let _ = log::set_logger(&LOGGER);
-        log::set_max_level(log::LevelFilter::Warn);
-        Mutex::default()
-    })
-}
-
 fn this_thread_mcp_scope_lines() -> Vec<String> {
-    let me = std::thread::current().id();
-    mcp_scope_log()
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .iter()
-        .filter(|(tid, _)| *tid == me)
-        .map(|(_, line)| line.clone())
-        .collect()
+    crate::test_logger::lines("mcp_scope")
 }
 
 /// Removes a projected scope dir even when an assertion fails mid-loop.
@@ -399,7 +364,7 @@ impl Drop for ScopeDirGuard {
 #[test]
 fn every_worker_subclass_projects_bridge_only_without_warnings() {
     let _home_env = crate::routines::test_support::TempHome::new();
-    let log = mcp_scope_log();
+    crate::test_logger::clear("mcp_scope");
     // Prove the capture is live before trusting an empty result.
     log::warn!(target: "mcp_scope", "capture probe");
     assert_eq!(
@@ -407,7 +372,7 @@ fn every_worker_subclass_projects_bridge_only_without_warnings() {
         vec!["capture probe".to_string()],
         "the mcp_scope log capture must be installed"
     );
-    log.lock().unwrap_or_else(|e| e.into_inner()).clear();
+    crate::test_logger::clear("mcp_scope");
 
     let home = tempfile::tempdir().unwrap();
     let principal = crate::domain::Principal::from(7u64);

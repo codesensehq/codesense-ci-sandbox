@@ -173,7 +173,7 @@
             </g>
 
             <path class="glyph-edge" d="M180 180 L 260 180" />
-            <text x="200" y="170" class="glyph-mbadge">send_message · role:resolver</text>
+            <text x="200" y="170" class="glyph-mbadge">send_role_message · resolver</text>
             <path class="glyph-edge" d="M400 180 L 480 180" />
             <text x="420" y="170" class="glyph-mbadge">decide</text>
 
@@ -327,22 +327,20 @@ revision: 1</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Builder escalates
-codesense.invoke('send_message', {
-  to: 'role:resolver',
+send_role_message {
+  team, role: 'resolver',
   text: `Escalating ${storyId} AC-2 — options: (A) …, (B) …; recommend (B). Blocked.`,
-  sessionId,
   replyTo: `role:builder-${storyId}`,
-})
+}
 
 // Resolver claims and answers
-const { deliveries } = codesense.invoke('claim_role_messages', {
+claim_role_messages {
   team, role: 'resolver', instanceId, generation, limit: 10,
-})
-for (const d of deliveries) {
-  codesense.invoke('accept_role_message', { ..., disposition: { kind: 'work' } })
-  codesense.invoke('reply', { messageId: d.messageId, text: verdict, sessionId })
-  codesense.invoke('ack_role_message', { ..., receiptId })
-}</code></pre>
+}
+// → { deliveries }; for each delivery d:
+accept_role_message { ..., disposition: { kind: 'work' } }
+reply { message_id: d.messageId, text: verdict }
+ack_role_message { ..., receiptId }</code></pre>
         </details>
       </section>
 

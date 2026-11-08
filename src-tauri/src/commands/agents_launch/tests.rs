@@ -1191,6 +1191,11 @@ fn builtin_adapter_launches_match_the_recorded_golden() {
                         crate::agents::service::read_current(&home, &alice(), &key)
                             .expect("registered conformance fixture")
                     });
+                    // A starter's revision is the app version; pin it so a release
+                    // bump does not drift the golden.
+                    if key.is_builtin() {
+                        definition.revision = 1;
+                    }
                     let resolved = if definition.runtime == AgentCli::Hermes {
                         definition.launch = match mode {
                             LaunchMode::Interactive => crate::agents::model::LaunchMode::Foreground,

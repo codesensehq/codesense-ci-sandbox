@@ -380,18 +380,18 @@ revision: 1</code></pre>
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// A wake routine on a saved agent, every weekday at 9
-codesense.invoke('routine_create', {
+routine_create {
   name: 'Morning triage', agent: 'barb', mode: 'wake',
   when: 'weekdays 09:00',
   task: 'Triage new issues, then call routine_done with a one-line summary.',
-})
+}
 
 // Fire it once, then read how it went (delivered / queued / undelivered / unknown)
-codesense.invoke('routine_run_now', { id: 'morning-triage' })
-codesense.invoke('routine_runs', { id: 'morning-triage', limit: 5 })
+routine_run_now { id: 'morning-triage' }
+routine_runs { id: 'morning-triage', limit: 5 }
 
 // Inside the woken session: finish just this run, keep working
-codesense.invoke('routine_done', { sessionId, runId, outcome: 'success', summary: '4 triaged' })</code></pre>
+routine_done { sessionId, runId, outcome: 'success', summary: '4 triaged' }</code></pre>
         </details>
       </section>
 

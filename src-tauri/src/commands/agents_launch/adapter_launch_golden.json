@@ -1660,7 +1660,7 @@
         "servers": []
       },
       "name": "Hermes",
-      "revision": 25,
+      "revision": 1,
       "runtime": "hermes",
       "startup": [
         "AGENTS.md"
@@ -1876,7 +1876,7 @@
         "servers": []
       },
       "name": "Hermes",
-      "revision": 25,
+      "revision": 1,
       "runtime": "hermes",
       "startup": [
         "AGENTS.md"
@@ -2090,7 +2090,7 @@
       },
       "name": "Hermes (unattended)",
       "permissions": {},
-      "revision": 25,
+      "revision": 1,
       "runtime": "hermes",
       "startup": [
         "AGENTS.md"
@@ -2308,7 +2308,7 @@
       },
       "name": "Hermes (unattended)",
       "permissions": {},
-      "revision": 25,
+      "revision": 1,
       "runtime": "hermes",
       "startup": [
         "AGENTS.md"

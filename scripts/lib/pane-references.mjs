@@ -15,6 +15,7 @@ import {
   productionPart,
 } from "./rust.mjs";
 import { buildPageSdk, pageSdkMarkdown } from "./page-sdk.mjs";
+import { contractFields, readStoryFields } from "./story-fields.mjs";
 export const GENERATED = "codesense-docs/getting-started/content/generated/";
 export const json = (value) => JSON.stringify(value, null, 2) + "\n";
 export function sourceTree(root) {
@@ -688,8 +689,32 @@ export function tokenOutputs(app) {
     "codesense-docs/getting-started/content/_shared/kit-fallback.css": fallback,
   };
 }
+/** The story-fields page: the fields get_story_format publishes, from the same registry. */
+export function storyFieldsOutputs(app) {
+  // No source hashes: the page changes only when a field does.
+  const fields = contractFields(readStoryFields(app)).map(({ role, ...field }) => field);
+  return ref(
+    "story-fields",
+    { fields },
+    "# Story fields\n\n" +
+      'A story is a Markdown file with YAML frontmatter, or an HTML file with `<meta name="cs:…">` tags. Both formats carry the same fields; in HTML a list is one comma-separated value. These are the registered fields, the same list `get_story_format` returns. Dashboards read them by their Markdown name.\n\n' +
+      "`validate_story` gives any other key the advisory `UNREGISTERED_FIELD`. A team that uses its own field declares it in its `content/field-schema.yml` (or the org in its `tag_schema`), and the advisory stops.\n\n" +
+      table(
+        ["Markdown key", "HTML meta name", "Kind", "Required", "Values", "What it's for"],
+        fields.map((f) => [
+          f.yaml,
+          f.csMeta,
+          f.kind,
+          f.required ? "yes" : "",
+          f.enumValues.join(", "),
+          f.description,
+        ]),
+      ),
+  );
+}
 export const builders = {
   "page-sdk": pageSdkOutputs,
+  "story-fields": storyFieldsOutputs,
   "pane-declarations": declarationOutputs,
   capabilities: capabilityOutputs,
   slots: slotOutputs,

@@ -159,7 +159,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore]
+    #[ignore = "manual staging publish walk requires staging credentials and explicit operator authorization"]
     async fn staging_walk_publish() {
         host();
         let dir = walk_dir();
@@ -214,7 +214,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore]
+    #[ignore = "manual staging takedown walk requires the prior publish fixture and explicit operator authorization"]
     async fn staging_walk_takedown() {
         host();
         let dir = walk_dir();

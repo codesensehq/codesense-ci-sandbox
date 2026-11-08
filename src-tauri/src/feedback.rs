@@ -72,7 +72,7 @@ mod tests {
     use super::*;
 
     const TOKEN: &str = "csb_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abcde";
-    const JWS_SAMPLE: &str = "eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiJhY3RpdmUifQ.c2lnbmF0dXJlLWJ5dGVz";
+    const JWS_SAMPLE: &str = "eyJhbGciOiJFZERTQSJ9.eyJzdGF0dXMiOiJhY3RpdmUifQ.c2lnbmF0dXJlLWJ5dGVz"; // trufflehog:ignore
 
     #[test]
     fn redaction_removes_install_tokens_and_signed_tokens() {

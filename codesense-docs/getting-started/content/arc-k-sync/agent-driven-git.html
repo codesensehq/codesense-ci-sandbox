@@ -417,13 +417,13 @@
             back:
           </p>
           <pre><code>// Branch, ahead/behind, conflicts, sync state. Read-only.
-codesense.invoke('context_repo_status', {})
+context_repo_status {}
 // Uncommitted files, grouped. Read-only.
-codesense.invoke('get_publish_set', {})
+get_publish_set {}
 // Commit history.
-codesense.invoke('context_repo_history', { limit: 20 })
+context_repo_history { limit: 20 }
 // After running git: tell the status button how it went.
-codesense.invoke('report_context_sync', { state: 'ok' })</code></pre>
+report_context_sync { state: 'ok' }</code></pre>
         </details>
       </section>
 

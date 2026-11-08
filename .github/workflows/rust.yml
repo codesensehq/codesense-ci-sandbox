@@ -1,0 +1,199 @@
+# SPDX-License-Identifier: MIT
+name: Rust tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  rust-macos:
+    name: Rust (macOS arm64)
+    runs-on: macos-14
+    timeout-minutes: 75
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_INCREMENTAL: "0"
+      RUST_BACKTRACE: "1"
+      CARGO_TERM_COLOR: always
+      RUST_PACKAGES: -p codesense-guards -p codesense -p codesense-host-proto -p codesense-pty-core -p codesense-fs-core -p codesense-session-server
+    steps:
+      # All paths below are relative to this repository's checkout.
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "CodeSense CI"
+          git config --global user.email "security@codesense.ai"
+      - name: Prepare logs
+        run: mkdir -p "$RUNNER_TEMP/rust-ci-logs"
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/pnpm-install.log"
+      - name: Set up Rust
+        # Matches ci.yml; rustup's proxies read the channel in rust-toolchain.toml.
+        run: rustup toolchain install stable --profile minimal 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/rustup.log"
+      - name: Install pinned nextest
+        run: |
+          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --tool cargo-nextest
+          echo "$RUNNER_TEMP/rust-ci-tools" >> "$GITHUB_PATH"
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: rust-macos
+          save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          cache-on-failure: true
+      - name: Fetch git-ai
+        run: bash scripts/fetch-git-ai.sh 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/fetch-git-ai.log"
+      - name: Build session-server sidecar
+        # This also builds the bridge sidecar, so a separate bridge build is unnecessary.
+        # Native host only: build-emulator.sh fetches checksum-pinned Bun itself.
+        # Docker is only used for uninstalled cross targets, which are not requested.
+        run: bash scripts/build-session-server.sh 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/build-session-server.log"
+      - name: Compile macOS tests
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo nextest run --profile ci "${packages[@]}" --no-run \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-compile.log"
+      - name: Test macOS crates
+        # Exercise macOS cfg tests in the host crates as well as the desktop app.
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo nextest run --profile ci "${packages[@]}" \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-test.log"
+      - name: Test macOS doctests
+        timeout-minutes: 15
+        if: success() || failure()
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo test --doc "${packages[@]}" --no-fail-fast \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-doctest.log"
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-macos-junit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/ci/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Check tracked files are unchanged
+        if: success() || failure()
+        run: git diff --exit-code 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/tracked-files.log"
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-macos-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rust-ci-logs/
+          retention-days: 7
+          if-no-files-found: warn
+
+  rust-linux:
+    name: Rust (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_INCREMENTAL: "0"
+      RUST_BACKTRACE: "1"
+      CARGO_TERM_COLOR: always
+      RUST_PACKAGES: -p codesense-host-proto -p codesense-pty-core -p codesense-fs-core -p codesense-session-server
+    steps:
+      # All paths below are relative to this repository's checkout.
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "CodeSense CI"
+          git config --global user.email "security@codesense.ai"
+      - name: Prepare logs
+        run: mkdir -p "$RUNNER_TEMP/rust-ci-logs"
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/pnpm-install.log"
+      - name: Set up Rust
+        # Matches ci.yml; rustup's proxies read the channel in rust-toolchain.toml.
+        run: rustup toolchain install stable --profile minimal 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/rustup.log"
+      - name: Install pinned nextest
+        run: |
+          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --tool cargo-nextest
+          echo "$RUNNER_TEMP/rust-ci-tools" >> "$GITHUB_PATH"
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: rust-linux
+          save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          cache-on-failure: true
+      - name: Build emulator worker
+        # PTY tests use the real worker and committed terminal recordings.
+        # The script downloads checksum-pinned Bun; no Docker or global Bun needed.
+        run: bash scripts/build-emulator.sh 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/build-emulator.log"
+      - name: Compile Linux tests
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo nextest run --profile ci "${packages[@]}" --no-run \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-compile.log"
+      - name: Test Linux crates
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo nextest run --profile ci "${packages[@]}" \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-test.log"
+      - name: Test Linux doctests
+        timeout-minutes: 15
+        if: success() || failure()
+        run: |
+          read -r -a packages <<< "$RUST_PACKAGES"
+          cargo test --doc "${packages[@]}" --no-fail-fast \
+          2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-doctest.log"
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-linux-junit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/ci/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Check tracked files are unchanged
+        if: success() || failure()
+        run: git diff --exit-code 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/tracked-files.log"
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-linux-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rust-ci-logs/
+          retention-days: 7
+          if-no-files-found: warn

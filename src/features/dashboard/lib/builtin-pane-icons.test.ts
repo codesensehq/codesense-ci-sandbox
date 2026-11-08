@@ -4,13 +4,12 @@ import ts from "typescript";
 import { expect, it } from "vitest";
 // @ts-expect-error -- the generator is a plain Node ESM script.
 import { KIT_ICONS } from "../../../../scripts/gen-dashboard-kit-icons.mjs";
+// @ts-expect-error -- the built-in pane table is a plain Node ESM script.
+import { BUILTIN_PANES } from "../../../../scripts/lib/builtin-panes.mjs";
 
-const panes = [
-  "src/features/shell/slots/__fixtures__/agent-list-pane.html",
-  "src/features/shell/slots/builtin/files-tree.html",
-  ...["inbox", "notes", "parity"].map(
-    (name) => `src/features/shell/right-pane/__fixtures__/${name}-pane.html`,
-  ),
+const panes: string[] = [
+  ...BUILTIN_PANES.map(({ source }: { source: string }) => source),
+  "src/features/shell/right-pane/__fixtures__/parity-pane.html",
 ];
 
 function missingKitIcons(html: string) {

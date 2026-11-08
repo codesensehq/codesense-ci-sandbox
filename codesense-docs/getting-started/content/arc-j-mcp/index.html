@@ -346,7 +346,6 @@
           verb="invoke"
           args='{"name": "codesense_overview", "args": {}}'
           label="Run codesense_overview"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -359,16 +358,16 @@
             can call <code>add_source_repo</code> directly once it knows the name.
           </p>
           <pre><code>// 1. Where am I?
-codesense.invoke('codesense_overview', {})
+codesense_overview {}
 
 // 2. Find the verb I need.
-codesense.invoke('codesense_search_tools', { query: 'add source repo' })
+codesense_search_tools { query: 'add source repo' }
 
 // 3. Read the contract.
-codesense.invoke('codesense_get_tool_schema', { name: 'add_source_repo' })
+codesense_get_tool_schema { name: 'add_source_repo' }
 
 // 4. Call it — directly if your host can, else via codesense_call_tool.
-codesense.invoke('add_source_repo', { org: 'acme/team-context', team: 'default', url: '…' })</code></pre>
+add_source_repo { org: 'acme/team-context', team: 'default', url: '…' }</code></pre>
         </details>
       </section>
 

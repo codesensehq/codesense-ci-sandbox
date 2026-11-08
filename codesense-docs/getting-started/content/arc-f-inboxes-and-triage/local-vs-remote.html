@@ -396,11 +396,11 @@
               <strong>Local</strong>.
             </p>
             <pre><code>// Launch every worker on this Mac
-codesense.invoke('open_workspace', {
-  target: 'story', storyId, name: 'builder-DEMO-1',
+open_workspace {
+  target: 'story', story_id: 'DEMO-1', name: 'builder-DEMO-1',
   agent: 'builder',
-  // machineId omitted → defaults to the local machine
-})</code></pre>
+  // machine_id omitted → defaults to the local machine
+}</code></pre>
           </div>
         </div>
       </section>
@@ -504,14 +504,14 @@ codesense.invoke('open_workspace', {
               to each session.
             </p>
             <pre><code>// Local manager — default
-codesense.invoke('open_workspace', { target: 'team-workspace', name: 'manager', agent: 'manager' })
+open_workspace { target: 'team-workspace', name: 'manager', agent: 'manager' }
 
 // Remote builders — one per story shard
-codesense.invoke('open_workspace', {
-  target: 'story', storyId, name: `builder-${storyId}`,
+open_workspace {
+  target: 'story', story_id: storyId, name: `builder-${storyId}`,
   agent: 'builder',
-  machineId: pickRemote(storyId),   // picks a remote by id from list_machines
-})</code></pre>
+  machine_id: pickRemote(storyId),   // picks a remote by id from list_machines
+}</code></pre>
           </div>
         </div>
       </section>
@@ -620,11 +620,11 @@ triggers:
         <h2>Try this now</h2>
         <p>
           List the machines registered on your team workspace. Each entry is a potential
-          <code>machineId</code> for the next <code>open_workspace</code> call.
+          <code>machine_id</code> for the next <code>open_workspace</code> call.
         </p>
         <cs-try-this
           verb="invoke"
-          args='{"name": "list_machines", "args": {}}'
+          args='{"name": "list_machines", "args": {"orgSlug": "acme/team-context"}}'
           label="List machines"
           dry-run="true"
         ></cs-try-this>
@@ -634,17 +634,17 @@ triggers:
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Where could I run a session?
-codesense.invoke('list_machines', {})
+list_machines { orgSlug: 'acme/team-context' }
 // → [{ id: 'mac-A', local: true, awake: true },
 //    { id: 'mac-B', local: false, awake: true, kind: 'private-account' },
 //    { id: 'remote-1', local: false, awake: false, kind: 'private-account' }]
 
 // Launch a shard on a specific machine
-codesense.invoke('open_workspace', {
-  target: 'story', storyId, name: `builder-${storyId}`,
+open_workspace {
+  target: 'story', story_id: storyId, name: `builder-${storyId}`,
   agent: 'builder',
-  machineId: 'mac-B',
-})
+  machine_id: 'mac-B',
+}
 
 // A routine with runs_on: each_mac deploys to every machine automatically.</code></pre>
         </details>

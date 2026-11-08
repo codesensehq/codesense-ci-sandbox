@@ -357,10 +357,10 @@
           You're writing an agent that onboards a new team. Step one: wire a source repo. You don't
           know the tool name. Run:
         </p>
-        <pre><code>codesense.invoke('codesense_search_tools', {
+        <pre><code>codesense_search_tools {
   query: 'add source repo',
   limit: 10
-})</code></pre>
+}</code></pre>
         <p>Reply (abridged):</p>
         <pre><code>{
   "tools": [
@@ -449,7 +449,6 @@
           verb="invoke"
           args='{"name": "codesense_search_tools", "args": {"query": "list orgs teams"}}'
           label="Search for list_orgs_teams"
-          dry-run="false"
           dry-run="true"
         ></cs-try-this>
       </section>
@@ -458,24 +457,21 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Default limit is 20. Max is 100.
-codesense.invoke('codesense_search_tools', {
+codesense_search_tools {
   query: 'add source repo'
-})
+}
 
 // Narrow further.
-codesense.invoke('codesense_search_tools', {
+codesense_search_tools {
   query: 'routine list',
   limit: 5
-})
+}
 
 // Chain: discover → schema → call
-const { tools } = await codesense.invoke('codesense_search_tools', {
-  query: 'send message'
-})
-const schema = await codesense.invoke('codesense_get_tool_schema', {
-  name: tools[0].name
-})
-// now call tools[0].name by name</code></pre>
+codesense_search_tools { query: 'send message' }
+// → { tools: [{ name: 'send_message', … }, …] }
+codesense_get_tool_schema { name: 'send_message' }
+// now call send_message by name</code></pre>
           <p>
             Deep-link into the explorer:
             <a href="../mcp-explorer.html#tool/codesense_search_tools"

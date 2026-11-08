@@ -245,17 +245,18 @@
         <details>
           <summary><strong>How to diagnose via MCP</strong></summary>
           <pre><code>// Who's talking to whom.
-codesense.invoke('list_machines', { orgSlug: '…' })
-codesense.invoke('list_sessions', {})
+list_machines { orgSlug: '…' }
+list_sessions {}
 
 // Health of this Mac's terminal server.
-codesense.invoke('terminal_server_status', {})
+terminal_server_status {}
 
 // Remote terminal servers: list_machines shows each machine's terminalServer.
 
 // Replace a stale terminal server.
-codesense.invoke('prepare_machine_terminal_server_replacement', { machineId: '…' })
-codesense.invoke('restart_machine_terminal_server',             { machineId: '…' })</code></pre>
+prepare_machine_terminal_server_replacement { machineId: '…' }
+// → a one-use serverToken
+restart_machine_terminal_server { machineId: '…', serverToken: '…', confirmEndSessions: true }</code></pre>
         </details>
       </section>
 

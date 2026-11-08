@@ -1,0 +1,35 @@
+<!doctype html>
+<p>Prose is not code: reply { body }</p>
+<pre><code>// Agent side: right
+list_worktrees { kind: 'story' }
+reply { message_id: 7, text: 'ok' }
+// Agent side: wrong
+codesense.invoke('list_worktrees', {})
+reply { <span class="tok-k">messageId</span>: 7, body: &quot;x&quot; }</code></pre>
+<pre>
+codesense.queryContext({ limit: 1 })
+codesense.openSource('x')
+<span data-api-lint="off">reply { body }   // deliberately wrong, inside a pre</span>
+</pre>
+<pre data-api-lint="off"><code>reply { body }   // deliberately wrong</code></pre>
+<PRE>reply { to: 'x' }</PRE>
+<script>codesense.invoke('list_worktrees', {}); var s = '<pre>' + 'reply { body }' + '</pre>';</script>
+<!-- <code>reply { body }</code> -->
+<style>.x::after { content: "<code>reply { body }</code>"; }</style>
+<script>var t = '<code>reply { body }</code>', u = '<pre data-api-lint="off">';</script>
+<template><code>reply { body }</code></template>
+<textarea><code>reply { body }</code></textarea>
+<!-- <div data-api-lint="off"> -->
+<code>reply { kind: 1 }</code>
+<PRE DATA-API-LINT="OFF">reply { body }</PRE>
+<div data-api-lint=off><code>reply { body }</code></div>
+<div data-api-lint="off"></div-x><code>reply { body }</code></div>
+<div data-api-lint = "off"><code>reply { body }</code></div>
+<!-- <section data-api-lint="off"> -->
+<code>reply { kind: 2 }</code>
+</section>
+<script>var p = '<span data-api-lint="off">';</script>
+<code>reply { kind: 3 }</code></span>
+<div my-data-api-lint="off"><code>reply { kind: 4 }</code></div>
+<div data-api-lint="off"><div data-api-lint="off"><code>reply { body }</code></div><code>reply { body }</code></div>
+<code>reply { kind: 5 }</code>

@@ -1220,7 +1220,7 @@ mod git_diagnostic_tests {
 
     #[test]
     fn credentials_in_a_git_url_are_not_reported() {
-        let err = failing("echo \"fatal: unable to access 'https://user:s3cret@example.com/repo.git/'\" >&2; exit 128");
+        let err = failing("echo \"fatal: unable to access 'https://user:s3cret@example.com/repo.git/'\" >&2; exit 128"); // trufflehog:ignore
         assert!(!err.contains("s3cret") && !err.contains("user:"), "{err}");
         assert!(err.contains("https://example.com/repo.git/"), "{err}");
     }

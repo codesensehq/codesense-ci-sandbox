@@ -277,7 +277,8 @@
               <li>Use for team-wide must-fire schedules.</li>
               <li>Arm it on the remote account for always-on behavior.</li>
               <li>
-                Switching the arming Mac is a <code>routine_update</code> from the target Mac.
+                Switching the arming Mac is a
+                <code>routine_arm_on {id, machine: 'this_mac'}</code> from the target Mac.
               </li>
             </ul>
           </div>
@@ -336,7 +337,7 @@ revision: 1</code></pre>
           </figure>
           <figure>
             <figcaption>Reading how it went</figcaption>
-            <pre><code>codesense.invoke('routine_runs', { id: 'builder-wake', limit: 5 })
+            <pre><code>routine_runs { id: 'builder-wake', limit: 5 }
 // → delivered | queued | coalesced
 //   | undelivered (machine_offline, busy_timeout, …)
 //   | unknown  (never re-sent: check the terminal first)</code></pre>
@@ -363,17 +364,17 @@ revision: 1</code></pre>
           local edit to the Mac's state (never a git change, never shared).
         </p>
         <pre><code>// Turn the routine on for THIS Mac
-codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: true })
+routine_set_enabled { id: 'builder-wake', enabled: true }
 
 // Turn it off for THIS Mac — other Macs that armed it are unaffected
-codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: false })
+routine_set_enabled { id: 'builder-wake', enabled: false }
 
 // Which Macs is it armed on? routine_get on each; each Mac answers for itself.
-codesense.invoke('routine_get', { id: 'builder-wake' })
+routine_get { id: 'builder-wake' }
 //   → { ..., armed_here: true, next_run_at: "2026-10-06T19:05:00Z" }</code></pre>
         <p>
           For a <code>one_mac</code> routine, exactly one Mac has <code>armed_here: true</code> at a
-          time. Switching the arming Mac is a <code>routine_update</code> from the target — "pull
+          time. Switching the arming Mac is a <code>routine_arm_on</code> from the target — "pull
           the arming to this Mac", not a flip on the current one.
         </p>
       </section>
@@ -424,23 +425,19 @@ codesense.invoke('routine_get', { id: 'builder-wake' })
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Every routine, each Mac's arming state
-codesense.invoke('routine_list', {})
+routine_list {}
 
 // A specific routine, with armed_here + next_run_at from THIS Mac's view
-codesense.invoke('routine_get', { id: 'builder-wake' })
+routine_get { id: 'builder-wake' }
 
 // Flip this Mac's per-Mac switch (local, never a git change)
-codesense.invoke('routine_set_enabled', { id: 'builder-wake', enabled: true })
+routine_set_enabled { id: 'builder-wake', enabled: true }
 
 // Move the arming of a one_mac routine to THIS Mac
-codesense.invoke('routine_update', {
-  id: 'nightly-digest',
-  baseRevision: 3,
-  armHere: true,
-})
+routine_arm_on { id: 'nightly-digest', machine: 'this_mac' }
 
 // Fire it once (through its own overlap rule)
-codesense.invoke('routine_run_now', { id: 'builder-wake' })</code></pre>
+routine_run_now { id: 'builder-wake' }</code></pre>
         </details>
       </section>
 

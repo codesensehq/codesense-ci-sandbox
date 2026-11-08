@@ -115,7 +115,7 @@ describe("GeneralSection — notify when an agent needs you", () => {
     expect(resolveSlot("right-pane", { surface: "inbox" }).dashboard?.dashboardRef).toEqual(
       ref("inbox"),
     );
-    expect(screen.getByText(/The classic Notes will be removed soon/)).toBeInTheDocument();
+    expect(screen.getByText("Turn off to use the new Notes.")).toBeInTheDocument();
   });
 
   it("shows the selected inherited Notes pane even when a new child pane is listed first", async () => {

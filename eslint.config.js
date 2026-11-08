@@ -215,6 +215,7 @@ export default tseslint.config(
   // Ignore patterns
   {
     ignores: [
+      "**/*.sh", // shell scripts (e.g. *.test.sh) are not JS
       "dist/",
       "node_modules/",
       "src-tauri/",

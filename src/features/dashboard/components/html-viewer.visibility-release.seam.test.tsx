@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
-import { render, waitFor, cleanup, act } from "@testing-library/react";
+import { render, waitFor, cleanup, act, fireEvent } from "@testing-library/react";
 const { ipc } = vi.hoisted(() => ({ ipc: vi.fn() }));
 vi.mock("@tauri-apps/api/core", async (original) => ({
   ...(await original<typeof import("@tauri-apps/api/core")>()),
@@ -11,6 +11,7 @@ vi.mock("@/shared/lib/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn(), trace: vi.fn() },
 }));
 import { HtmlViewer } from "./html-viewer";
+import { frameFixture } from "../../../../tests/support/fixtures/frame";
 import { liveHub } from "@/features/dashboard/lib/live-hub";
 
 const record = {
@@ -117,7 +118,9 @@ it("a hidden reload holds reads, then one flush on show answers every invoke", a
 
 it("a page whose ready was lost is asked to say it again on show, and the repeat is idempotent", async () => {
   const { rerender } = await mount(false);
-  const page = hook(document.querySelector("iframe")!);
+  const frame = document.querySelector("iframe")!;
+  const page = hook(frame);
+  fireEvent.load(frame);
   expect(page.types()).not.toContain("codesense:hello");
   rerender(view(true));
   await waitFor(() => expect(page.types()).toContain("codesense:hello"));
@@ -169,4 +172,53 @@ it("a call from a replaced document is refused before it runs", async () => {
   release();
   await act(async () => {});
   expect(admittedReads).toBe(0);
+});
+
+it("waits for navigation load before probing a visible frame's pinned origin", async () => {
+  const { rerender } = await mount(false);
+  const frame = document.querySelector("iframe")!;
+  const page = hook(frame);
+  await act(async () => rerender(view(true)));
+  expect(page.types()).not.toContain("codesense:hello");
+  fireEvent.load(frame);
+  expect(page.postMessage).toHaveBeenCalledWith({ type: "codesense:hello" }, record.origin);
+  page.send({ type: "codesense:ready", retry: true });
+  await waitFor(() => expect(page.types()).toContain("codesense:theme"));
+});
+
+it("recovers a hosted child's lost ready when it is shown", async () => {
+  const child = frameFixture(
+    {
+      parentFrame: "parent",
+      documentPath: "/ctx/content/message.html",
+      contentRoot: "/ctx/content",
+      slot: "message",
+      message: { org: "org", team: "team", messageId: 7 },
+    },
+    9321,
+  );
+  const childView = (visible: boolean) => (
+    <HtmlViewer
+      filePath={child.documentPath}
+      teamContentPath={child.contentRoot}
+      hostedFrame={child}
+      visible={visible}
+    />
+  );
+  const mounted = render(childView(false));
+  const postMessage = vi.fn();
+  const source = { postMessage } as unknown as Window;
+  // An authenticated scroll message identifies the hosted window even if ready was lost.
+  await act(async () => {
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source,
+        origin: child.origin,
+        data: { type: "codesense:scroll", y: 0, token: child.token },
+      }),
+    );
+  });
+  expect(postMessage.mock.calls.some(([m]) => m.type === "codesense:hello")).toBe(false);
+  await act(async () => mounted.rerender(childView(true)));
+  expect(postMessage).toHaveBeenCalledWith({ type: "codesense:hello" }, child.origin);
 });

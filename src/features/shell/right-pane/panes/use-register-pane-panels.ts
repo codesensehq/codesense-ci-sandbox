@@ -23,7 +23,7 @@ import {
   revealSlot,
   servesSurface,
 } from "../../slots/reveal-slot";
-import { nativeSurface } from "../../slots/slot-registry";
+import { nativeSurface, SLOT_REGISTRY } from "../../slots/slot-registry";
 import { listen } from "@tauri-apps/api/event";
 import type { LucideIcon } from "lucide-react";
 import { createElement, useEffect, useRef, useState } from "react";
@@ -65,6 +65,8 @@ import { paneInView, paneListingCache, parsePanePanelId, usePaneStore } from "./
 /** A pane's panel title: its `<title>`, with the layer it comes from unless it
  *  is the active team's own, so two panes of one id in two layers read apart. */
 export function panePanelTitle(entry: PaneEntry, activeTeam: string): string {
+  // A built-in lists in the private layer but is the app's own, not the user's private pane.
+  if (entry.dashboardRef?.scope === "built-in") return entry.title;
   if (entry.scope === "private") return `${entry.title} · Private`;
   return entry.team && entry.team !== activeTeam ? `${entry.title} · ${entry.team}` : entry.title;
 }
@@ -85,6 +87,14 @@ function placedPaneIds(layout: RightPaneLayout | undefined): string[] {
   return (layout?.sections ?? []).flatMap((s) => s.group.panelIds).filter(isDurablePaneId);
 }
 
+/** Right-pane surfaces Settings chooses between a native panel and a pane serving it. */
+const SURFACES = Object.keys(SLOT_REGISTRY["right-pane"].nativeDefault);
+
+/** The Inbox and surface panes take the place of their native panel instead of being offered
+ *  beside it: Settings and the surface's own entry point choose which one shows. */
+const chosenBySurface = (p: PaneEntry) =>
+  isInboxDashboard(p) || SURFACES.some((surface) => servesSurface(p, surface));
+
 /** The panel definitions for `listing` plus placeholders for in-view placements
  *  whose file is gone. */
 export function paneDefinitions(
@@ -101,7 +111,7 @@ export function paneDefinitions(
         isInboxDashboard(p) ? "Inbox" : panePanelTitle(p, team),
         paneIcon(p.icon),
       ),
-      ...(isInboxDashboard(p) ? { offerable: false } : {}),
+      ...(chosenBySurface(p) ? { offerable: false } : {}),
     }));
   const listed = new Set(defs.map((d) => d.id));
   const chainKeys = new Set([team, ...listing.chain].map((t) => buildTeamKey(org, t)));
@@ -120,7 +130,7 @@ export function paneDefinitions(
             : `${ref?.id ?? panelId} (missing)`,
         paneIcon(known?.icon),
       ),
-      ...(known && isInboxDashboard(known) ? { offerable: false } : {}),
+      ...(known && chosenBySurface(known) ? { offerable: false } : {}),
     });
   }
   return defs;
@@ -165,7 +175,6 @@ export function useRegisterPanePanels(): void {
     // Whether a live listing has applied: the first one reconciles placements, even after the
     // cached listing this team came back with.
     let live = false;
-    const surfaces = ["notes"] as const;
     const apply = (
       listing: PaneListing,
       sync = true,
@@ -194,7 +203,7 @@ export function useRegisterPanePanels(): void {
           paneInView(p.panelId, org, chain),
         ),
       ];
-      for (const surface of registerOnly ? [] : surfaces) {
+      for (const surface of registerOnly ? [] : SURFACES) {
         const nativeId = nativeSurface("right-pane", surface)!.panelId!;
         const resolved = resolveSlot("right-pane", { surface });
         const native = getPanel(nativeId);
@@ -365,7 +374,7 @@ export function useRegisterPanePanels(): void {
     });
     const unsubscribeLayout = useViewerStore.subscribe((state) => {
       const next = placedKey(state.rightPaneLayout);
-      const needsSwap = surfaces.some(
+      const needsSwap = SURFACES.some(
         (surface) =>
           !!resolveSlot("right-pane", { surface }).dashboard &&
           state.rightPaneLayout.sections.some((s) =>

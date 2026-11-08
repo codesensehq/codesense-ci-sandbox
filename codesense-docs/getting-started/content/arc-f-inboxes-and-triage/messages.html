@@ -189,10 +189,10 @@
                 text-anchor="middle"
                 style="fill: var(--cs-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                send_message
+                send_role_message
               </text>
-              <text x="70" y="40" text-anchor="middle" class="glyph-mbadge">to: role:builder</text>
-              <text x="70" y="52" text-anchor="middle" class="glyph-mbadge">body · markdown</text>
+              <text x="70" y="40" text-anchor="middle" class="glyph-mbadge">role: builder</text>
+              <text x="70" y="52" text-anchor="middle" class="glyph-mbadge">text · markdown</text>
             </g>
 
             <g class="glyph-node" data-role="builder" transform="translate(370 150)">
@@ -414,34 +414,34 @@ react({ message_id: 42, emoji: "👍", remove: true })  // takes it back, and do
             if supplied, it must name that same tab. An outside or unbound connection
             is refused. Only the native app can answer as the person.</p>
           <pre><code>// Send to a session handle, or "human"
-codesense.invoke('send_message', {
+send_message {
   to: 'human',
   text: 'Which refund flow should DEMO-1 follow?',
   kind: 'needs-you',            // marks a question for agent views and dashboards
   contentType: 'markdown',
   replyTo: 'role:manager',      // optional: route replies to a role queue
-})
+}
 
 // Send to a role's queue
-codesense.invoke('send_role_message', {
+send_role_message {
   team, role: 'builder',
   text: 'DEMO-1 — ACs in the story file.',
-})
+}
 
 // Read your own direct mail
-codesense.invoke('read_messages', {})
+read_messages {}
 
 // List mail waiting on a role
-codesense.invoke('inbox_list', { role: 'builder' })
+inbox_list { role: 'builder' }
 
 // Reply in-thread
-codesense.invoke('reply', { messageId, text })
+reply { message_id, text }
 
 // React to a message with one emoji (again with the same emoji to take it back)
-codesense.invoke('react', { messageId, emoji: '👍' })
+react { message_id, emoji: '👍' }
 
 // Report completion as your bound tab
-codesense.invoke('signal_done', { status: 'success', summary: 'Checks passed' })</code></pre>
+signal_done { status: 'success', summary: 'Checks passed' }</code></pre>
         </details>
       </section>
 

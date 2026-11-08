@@ -808,17 +808,17 @@ permissions:
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Preview before you create — same inputs as agent_create.
-codesense.invoke('agent_preview', { name, runtime, startup, mcpServers, permissions })
+agent_preview { name, runtime, startup, mcpServers, permissions }
 // → { manifest: {totals, errors, provides}, warnings, resolved: {account} }
 
 // Create it. dryRun returns the same reply and writes nothing.
-codesense.invoke('agent_create', { name, runtime, startup, scope: 'team', dryRun: true })
+agent_create { name, runtime, startup, scope: 'team', dryRun: true }
 
 // Update it. Pass only the fields that change; keep the revision you last read.
-codesense.invoke('agent_update', { id, baseRevision, startup, permissions })
+agent_update { id, baseRevision, startup, permissions }
 
 // Get the current definition + revision.
-codesense.invoke('agent_get', { id })</code></pre>
+agent_get { id }</code></pre>
         </details>
       </section>
 

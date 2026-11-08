@@ -166,19 +166,19 @@
         <details>
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Inventory.
-codesense.invoke('list_sessions', {})
+list_sessions {}
 
 // Snapshot a tab's scrollback.
-codesense.invoke('read_terminal_tab', {
+read_terminal_tab {
   tab: 'Machine setup',   // or { handle: '…' }
   view: 'scrollback',     // 'screen' for a live alt-screen frame
-})
+}
 
 // Type into a tab.
-codesense.invoke('run_in_terminal_tab', {
+run_in_terminal_tab {
   tab: 'Machine setup',
   command: '/setup-machine',
-})</code></pre>
+}</code></pre>
         </details>
       </section>
 
