@@ -56,14 +56,14 @@
     "src-tauri/src/mcp/dispatch.rs": "a522351523ecef156473b34e8b33f8e3ec5c8c72943c432e03249452d85fef1a",
     "src-tauri/src/mcp/feedback_tool.rs": "3bfd3c954ae0eae4b7f2d01cddd0e0f8076f40489c4dc84638052fc8c73e5cf5",
     "src-tauri/src/mcp/flat_params.rs": "e117e4759f6dfaf98256eaa76472960ca4227ccd459ceb751540a82d27de8e96",
-    "src-tauri/src/mcp/handler.rs": "8f4ade813789ca12ead49be052a4c7668c8ca81a699ce4b9d4fb1fa48fb939e3",
+    "src-tauri/src/mcp/handler.rs": "3eaf5fdb77daef1f52e9865190df64c04e57c295f27440db1947c0476e1265b7",
     "src-tauri/src/mcp/handler/caller_scope_tests.rs": "c2e1aa648ca85ae70497b803d83b67e505b7ec36f694c198eac099eb7f9a456f",
     "src-tauri/src/mcp/handler/cp2_inventory_tests.rs": "e2e68a4d1696684de257c44bfbdb2163e18f890228d8ee4634ad4eba2da17cf6",
     "src-tauri/src/mcp/handler/cp2_mutation_tests.rs": "2a0cef8d12acabbdc81fc9aafd0294a35bc31a69cab9a848335187b560baf1e8",
     "src-tauri/src/mcp/identity_guard.rs": "8d020daa401493f58ff9674b41373d7436929988dd678a156130aab5b24b40bd",
     "src-tauri/src/mcp/identity_tools.rs": "dcb11a8e3374c33d462c2f4506e4f8af5813680221ef1545eb62b1a472437c9b",
     "src-tauri/src/mcp/identity_tools/tests/engine_identity_tests.rs": "2a0c8b3f12478bd17c6d5c4d725c1d6d6b6031bf60e83970d44da020796e615a",
-    "src-tauri/src/mcp/live_data_authoring.rs": "03e0b3e1ef496c2da1bfb26ecdb872bdc67a2998bc04b4b8804f30fda9b36ca3",
+    "src-tauri/src/mcp/live_data_authoring.rs": "55f1677108c00a785eb4676c75125dcf6190c8e48e8e767279f4a79e8c096fbb",
     "src-tauri/src/mcp/local_identity.rs": "9bd9f4a5aa0bb5a1b9d15799ad83d8204700f290767b6991393122ee70e9e435",
     "src-tauri/src/mcp/local_mcp_relay/config.rs": "345b3c98cdb456b4789e96c1395ffa18620c7fc01a0193bd5da6ece6476cc43f",
     "src-tauri/src/mcp/local_mcp_relay/http.rs": "707fa73c6967054e82cbc919b1fcbdc3e821109dc5008a16e445dbc15649c251",
@@ -146,12 +146,12 @@
     "src-tauri/src/session_usage/story_changes.rs": "059f3d2c867166b085abbe072f4c7f8d5cbf8b3bdf8f177619a2dd7ee9b53a94",
     "src-tauri/src/session_usage/story_changes/agent.rs": "d0453ea0945a3e6760657026e481518fdb741180c36351eaf08a0d5ce80bfe36",
     "src-tauri/src/session_usage/story_totals.rs": "c7d3267f3931f21e520b197b717b631c71ecb7a3e15e5df0e454b10435aa335f",
-    "src-tauri/src/verbs/schema.rs": "9c42885dadd18d51f382e06205a2c3da78ccac7d557a5712f5da098e61692bba",
-    "src-tauri/src/weft/inbox.rs": "8dced869587c516f2de42de4340017ae47639f2982e76151ea5476a615cf007e",
+    "src-tauri/src/verbs/schema.rs": "9a7becb6701c9929d35f4e0a2cc0688b373cb3f8a3eb916eb221d4dbd5cb36b0",
+    "src-tauri/src/weft/inbox.rs": "f900eedac49a9143d84f1477b030c6a8d7930ff4feddb824c9d841bdb5543b79",
     "src-tauri/src/weft/tier_picker.rs": "0ae5e6eb9cad474060a923a2b501b07f5aa286f3a9eb029640edbf1b28d656a3"
   },
   "payloads": {
-    "default": "846bb8bec393c1046810af292569a4c8d6ead5cfa0c9cb13b1d346a1b91f0f15",
-    "dashboard-publish": "b24af016ca1cecfa4f37c957087db637c22afd4751e769cab980a53dad364d4b"
+    "default": "a0c6abcc1478ae38dfcb476f9d86291da37572c7c6765ec63bfff31f1614529d",
+    "dashboard-publish": "9fb8243155c03443340c0d7fcd77c7bd3ff77bba811aaf9f0515c4abe1b60074"
   }
 }

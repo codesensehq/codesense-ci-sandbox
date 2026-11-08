@@ -155,7 +155,7 @@ pub(super) fn action_target(caller: &Caller, verb: &str, args: &Value) -> Option
         "loadMedia" | "replyAsHuman" | "react" | "openMessage" => args["messageId"]
             .as_number()
             .map(|id| format!("message {id}")),
-        "archive" | "markRead" | "markUnread" => args["messageIds"]
+        "archive" | "unarchive" | "markRead" | "markUnread" => args["messageIds"]
             .as_array()
             .map(|messages| format!("{} messages", messages.len())),
         "setHumanStatus" => string("status"),

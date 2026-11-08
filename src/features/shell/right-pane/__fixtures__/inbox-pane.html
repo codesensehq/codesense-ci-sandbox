@@ -8,7 +8,7 @@
     <meta name="codesense:slots" content="right-pane" />
     <!-- Policy: the Inbox keeps its unread badge live while hidden. -->
     <meta name="codesense:badge" content="live" />
-    <!-- Policy: inbox:write admits markRead, markUnread, archive and react under open and team-safe. -->
+    <!-- Policy: inbox:write admits markRead, markUnread, archive, unarchive and react under open and team-safe. -->
     <meta
       name="codesense:capabilities"
       content="sessions:read inbox:read:team inbox:read:all-teams inbox:write context:read commands:run"
@@ -2555,7 +2555,7 @@
             id="conversations"
             role="listbox"
             aria-label="Conversations"
-            aria-keyshortcuts="U Shift+F10"
+            aria-keyshortcuts="E U Shift+F10"
             tabindex="0"
           ></ul>
         </section>
@@ -2669,10 +2669,15 @@
           agentDefinitions = [];
         let listHidden = false;
         // A read or an Undo holds a conversation's unread count until the server agrees, so a
-        // refresh that started before the write landed cannot flash the badge.
+        // refresh that started before the write landed cannot flash the badge. An Undo of an
+        // archive also holds the conversation's summary, which such a refresh would not list.
         const readHolds = new Map();
-        const holdUnread = (c, unread) =>
-          readHolds.set(historyKey(c.with, c.team), { last: c.lastMessageId, unread });
+        const holdUnread = (c, unread, restored = false) =>
+          readHolds.set(historyKey(c.with, c.team), {
+            last: c.lastMessageId,
+            unread,
+            ...(restored ? { summary: { ...c } } : {}),
+          });
         // A read can trail the write it follows, so a landed hold still waits for the server to
         // agree; it lets go a few seconds after landing, so a count the server never reaches
         // cannot pin the badge.
@@ -2683,16 +2688,31 @@
           hold.landedAt = Date.now();
           setTimeout(scheduleRefresh, HOLD_SETTLE_MS + 50);
         }
+        const holdSettled = (hold) =>
+          hold.landedAt !== undefined && Date.now() - hold.landedAt > HOLD_SETTLE_MS;
         // Newer mail always wins: the server's count then stands.
         function applyHold(c) {
           const key = historyKey(c.with, c.team);
           const hold = readHolds.get(key);
           if (hold === undefined) return;
-          const agrees = hold.unread ? c.unread >= hold.unread : !c.unread;
-          const settled =
-            hold.landedAt !== undefined && Date.now() - hold.landedAt > HOLD_SETTLE_MS;
-          if (c.lastMessageId > hold.last || agrees || settled) readHolds.delete(key);
-          else c.unread = hold.unread;
+          const agrees =
+            (hold.unread ? c.unread >= hold.unread : !c.unread) &&
+            !(c.messageCount < hold.summary?.messageCount);
+          if (c.lastMessageId > hold.last || agrees || holdSettled(hold)) readHolds.delete(key);
+          else {
+            c.unread = hold.unread;
+            if (hold.summary) c.messageCount = hold.summary.messageCount;
+          }
+        }
+        // After applyHold: a held, unarchived conversation the server did not list yet.
+        function restoreHeld(list) {
+          const listed = new Set(list.map((c) => historyKey(c.with, c.team)));
+          for (const [key, hold] of readHolds) {
+            if (!hold.summary || listed.has(key)) continue;
+            if (holdSettled(hold)) readHolds.delete(key);
+            else list.push({ ...hold.summary, unread: hold.unread });
+          }
+          return list;
         }
         const releaseHold = (c) => readHolds.delete(historyKey(c.with, c.team));
         // An unread-only change must not read as new history on the next refresh.
@@ -5785,7 +5805,11 @@
         // clears at once; a failed write says so and the next refresh restores the truth.
         async function readConversation(t) {
           if (explicitlyUnread.has(t.key)) return;
-          await readThreads([t]).catch((e) => composerError("Could not mark read: " + e.message));
+          await readThreads([t]).then(
+            ({ failed }) =>
+              failed.size && composerError(`Could not mark read in ${teamNames(failed)}.`),
+            (e) => composerError("Could not mark read: " + e.message),
+          );
         }
         // Pages of one conversation's mail to you, newest first, each row tagged with its team.
         async function* toYouPages(c) {
@@ -5803,10 +5827,26 @@
             if (!result.hasMore || !before) return;
           }
         }
+        // One write per team. A team that fails leaves the others' writes standing: resolves to
+        // the failed teams' keys, and rejects only when no write landed.
+        async function actPerTeam(verb, rows, args = batchArgs) {
+          const batches = teamBatches(rows);
+          const results = await Promise.allSettled(batches.map((b) => cs.act(verb, args(b))));
+          const failed = batches.filter((_, i) => results[i].status === "rejected");
+          if (failed.length && failed.length === batches.length)
+            throw results.find((r) => r.status === "rejected").reason;
+          return new Set(failed.map((b) => teamKey(b[0].team)));
+        }
+        const failedIn = (failed, team) => crossTeam && failed.has(teamKey(team));
+        const teamNames = (failed) =>
+          allTeams.filter((t) => failed.has(teamKey(t))).map(teamLabel).join(", ");
+        const retryIn = (failed, state) =>
+          `Couldn't mark the conversations in ${teamNames(failed)} ${state}. Try again.`;
         // Reads every listed conversation through the bulk verb (one write per team) and
-        // resolves to the rows it marked, so Undo can mark exactly those unread again.
+        // resolves to the rows it marked, so Undo can mark exactly those unread again, and
+        // to the teams it could not mark.
         async function readThreads(list) {
-          if (!visible || !list.length) return [];
+          if (!visible || !list.length) return { rows: [], failed: new Set() };
           if (list.some((t) => t.key === selected)) readDone = true;
           // Snapshot the counts: the optimistic zeroing below must not end the paging early.
           const work = list.map((t) => ({
@@ -5844,13 +5884,21 @@
               // A Mark unread made while older pages loaded wins over this scan.
               if (!explicitlyUnread.has(t.key)) rows.push(...loaded, ...extra);
             }
-            await Promise.all(
-              teamBatches(rows).map((batch) => cs.act("markRead", batchArgs(batch))),
-            );
+            const failed = await actPerTeam("markRead", rows);
+            const missed = rows.filter((m) => failedIn(failed, m.team));
+            const marked = rows.filter((m) => !missed.includes(m));
+            for (const { t, summaries } of work)
+              for (const c of summaries.filter((c) => failedIn(failed, c.team))) {
+                releaseHold(c);
+                const key = historyKey(c.with, c.team);
+                const live = t.summaries.find((x) => historyKey(x.with, x.team) === key);
+                if (live) live.unread = c.unread;
+              }
+            setUnread(missed, true);
             holds.forEach(holdLanded);
             for (const { t } of work) t.summaries.forEach(signSummary);
-            setUnread(rows, false);
-            return rows;
+            setUnread(marked, false);
+            return { rows: marked, failed };
           } catch (e) {
             holds.forEach(releaseHold);
             throw e;
@@ -5874,11 +5922,18 @@
           setUnread(rows, true);
           drawList();
           try {
-            await Promise.all(
-              teamBatches(rows).map((batch) => cs.act("markUnread", batchArgs(batch))),
+            const failed = await actPerTeam("markUnread", rows);
+            for (const c of touched.filter((c) => failedIn(failed, c.team))) {
+              releaseHold(c);
+              c.unread -= counts.get(convKey(c.with, c.team));
+            }
+            setUnread(
+              rows.filter((m) => failedIn(failed, m.team)),
+              false,
             );
             touched.forEach(holdLanded);
             touched.forEach(signSummary);
+            return failed;
           } catch (e) {
             touched.forEach(releaseHold);
             throw e;
@@ -5892,24 +5947,30 @@
           if (!list.length) return;
           const explicit = list.filter((t) => explicitlyUnread.delete(t.key)).map((t) => t.key);
           const restoreExplicit = () => explicit.forEach((key) => explicitlyUnread.add(key));
-          let rows = null;
+          let result = null;
           try {
-            rows = await readThreads(list);
+            result = await readThreads(list);
           } catch {}
-          if (!rows?.length) {
+          if (!result?.rows.length) {
             restoreExplicit();
-            if (!rows) showToast("Couldn't mark read. Try again.");
+            if (!result) showToast("Couldn't mark read. Try again.");
             return;
           }
+          const { rows, failed } = result;
           const read = new Set(rows.map((m) => convKey(m.conversation, m.team)));
           const n = list.filter((t) =>
             t.summaries.some((c) => read.has(convKey(c.with, c.team))),
           ).length;
-          showToast(`Marked ${n} conversation${n === 1 ? "" : "s"} read.`, async () => {
+          const missed = failed.size
+            ? ` Couldn't mark the conversations in ${teamNames(failed)} read.`
+            : "";
+          showToast(`Marked ${n} conversation${n === 1 ? "" : "s"} read.${missed}`, async () => {
             try {
-              await unreadRows(rows);
+              const stillRead = await unreadRows(rows);
               restoreExplicit();
               drawLatest();
+              if (stillRead.size)
+                showToast(retryIn(stillRead, "unread"));
             } catch {
               showToast("Couldn't mark unread. Try again.");
             }
@@ -5930,8 +5991,9 @@
             for (const c of t.summaries)
               for await (const page of toYouPages(c))
                 rows.push(...page.filter((m) => unread({ ...m, unread: true }) && !m.unread));
-            if (rows.length) await unreadRows(rows);
-            else {
+            const failed = rows.length ? await unreadRows(rows) : null;
+            if (failed?.size) showToast(retryIn(failed, "unread"));
+            if (!failed) {
               explicitlyUnread.delete(t.key);
               drawLatest();
             }
@@ -5947,27 +6009,34 @@
         function toggleRead(t) {
           if (!t.unread) return void unreadThread(t);
           explicitlyUnread.delete(t.key);
-          readThreads([t]).catch(() => showToast("Couldn't mark read. Try again."));
+          readThreads([t]).then(
+            ({ failed }) =>
+              failed.size && showToast(retryIn(failed, "read")),
+            () => showToast("Couldn't mark read. Try again."),
+          );
         }
         // One toast at a time: 6 seconds, with an optional Undo. A new toast commits the one
         // before it, and hiding the pane commits it too; committing only drops the Undo.
+        const TOAST_MS = 6000;
         let toastTimer;
-        function showToast(text, undo) {
+        function showToast(text, action, label = "Undo") {
           dismissToast();
           const box = $("toast");
           box.append(h("span", "", text));
-          if (undo)
-            box.append(
-              button("Undo", "link", () => {
-                dismissToast();
-                undo();
-              }),
-            );
+          if (action) {
+            const b = button(label, "link", () => {
+              dismissToast();
+              action();
+            });
+            // The visible label leads the name, which says what it acts on.
+            b.setAttribute("aria-label", `${label}: ${text}`);
+            box.append(b);
+          }
           armToast();
         }
         function armToast() {
           clearTimeout(toastTimer);
-          toastTimer = setTimeout(dismissToast, 6000);
+          toastTimer = setTimeout(dismissToast, TOAST_MS);
         }
         {
           const box = $("toast");
@@ -6073,7 +6142,8 @@
           drawConversationView();
           archiveError = null;
           drawNotice();
-          const failed = [];
+          const failed = [],
+            undos = [];
           try {
             const received = [];
             for (const summary of t.summaries) {
@@ -6100,21 +6170,34 @@
             await Promise.all(
               teamBatches(t.messages).map(async (batch) => {
                 try {
+                  const unreadBefore = batch.filter(unread);
                   await cs.act("archive", batchArgs(batch));
+                  // What Undo puts back: each summary and sent-mail watermark before and after.
+                  const undo = { batch, unread: unreadBefore, summaries: [], marks: {} };
                   for (const c of t.summaries) {
                     const archived = batch.filter(
                       (m) => m.toHuman && !m.archivedAtMs && inConversation(m, c),
                     );
+                    const before = { messageCount: c.messageCount, unread: c.unread };
                     c.messageCount = Math.max(0, c.messageCount - archived.length);
                     c.unread = Math.max(0, c.unread - archived.filter(unread).length);
+                    if (archived.length)
+                      undo.summaries.push({
+                        c,
+                        before,
+                        after: { messageCount: c.messageCount, unread: c.unread },
+                      });
                   }
                   for (const m of batch.filter((m) => m.from === human)) {
                     const key = historyKey(m.conversation, m.team || activeTeam);
+                    undo.marks[key] ??= [sentArchivedThrough[key]];
                     sentArchivedThrough[key] = Math.max(sentArchivedThrough[key] || 0, m.messageId);
+                    undo.marks[key][1] = sentArchivedThrough[key];
                   }
                   batch.forEach((m) => {
                     if (m.toHuman) m.archivedAtMs = Date.now();
                   });
+                  undos.push(undo);
                 } catch (e) {
                   failed.push(...batch);
                   archiveError = {
@@ -6132,7 +6215,8 @@
             pane.dataset.view = "thread";
           }
           ids.forEach((id) => pendingArchive.delete(id));
-          if (!archiveError) showToast(`Archived ${conversationName(t.key)}.`);
+          if (!archiveError)
+            showToast(`Archived ${conversationName(t.key)}.`, () => unarchive(undos, t.key));
           drawList();
           if (archiveError && wasSelected && navigation === startedAt)
             openThread(t.key, { focusComposer: false });
@@ -6140,6 +6224,65 @@
           await savePrefs();
           drawNotice();
           scheduleRefresh();
+        }
+
+        // Puts an archive back (Undo) or, when its Undo fails, archives it again.
+        function placeArchive(undo, back) {
+          const now = Date.now();
+          for (const m of undo.batch) if (m.toHuman) m.archivedAtMs = back ? null : now;
+          mergeMessages(undo.batch);
+          for (const [key, [before, after]] of Object.entries(undo.marks)) {
+            const mark = back ? before : after;
+            if (mark === undefined) delete sentArchivedThrough[key];
+            else sentArchivedThrough[key] = mark;
+          }
+          for (const s of undo.summaries) {
+            const key = historyKey(s.c.with, s.c.team);
+            let c = conversations.find((x) => historyKey(x.with, x.team) === key);
+            if (!c) conversations.push((c = { ...s.c }));
+            Object.assign(c, back ? s.before : s.after);
+            if (back) holdUnread(c, c.unread, true);
+            else releaseHold(c);
+            signSummary(c);
+          }
+        }
+        // Undo of an archive: its rows come back in place, those that were unread come back
+        // unread, and each conversation holds its summary until the server agrees, so neither
+        // the row nor the badge flashes. A team whose unarchive fails stays archived.
+        async function unarchive(done, key) {
+          done.forEach((undo) => placeArchive(undo, true));
+          active = key;
+          drawList();
+          let failed;
+          try {
+            const unreadKeys = new Set(done.flatMap((undo) => undo.unread).map(messageKey));
+            failed = await actPerTeam(
+              "unarchive",
+              done.flatMap((undo) => undo.batch.filter((m) => m.toHuman)),
+              (batch) => ({
+                ...batchArgs(batch),
+                restoreUnread: batch
+                  .filter((m) => unreadKeys.has(messageKey(m)))
+                  .map((m) => m.messageId),
+              }),
+            );
+          } catch {
+            failed = null;
+          }
+          const again = done.filter((undo) => !failed || failedIn(failed, undo.batch[0].team));
+          for (const undo of done) {
+            if (again.includes(undo)) placeArchive(undo, false);
+            else undo.summaries.forEach((s) => holdLanded(s.c));
+          }
+          if (again.length) {
+            if (!failed?.size && active === key)
+              active = threads.find((t) => t.key !== key)?.key ?? null;
+            const where = failed?.size ? ` in ${teamNames(failed)}` : "";
+            showToast(`Couldn't undo the archive${where}.`, () => unarchive(again, key), "Retry");
+          }
+          drawList();
+          scheduleRefresh();
+          await savePrefs();
         }
 
         function drawNotice(refreshError) {
@@ -6394,6 +6537,7 @@
             conversations = inbox.conversations || [];
             // A read that trails a mark or an Undo keeps the held count.
             conversations.forEach(applyHold);
+            restoreHeld(conversations);
             let refreshRows;
             if (crossTeam) {
               refreshRows = inbox.messages.map((m) => ({
@@ -6590,9 +6734,10 @@
               dirty = true;
               return;
             }
-            (inbox.conversations || []).forEach(applyHold);
+            const listed = inbox.conversations || [];
+            listed.forEach(applyHold);
             const unread = new Set(
-              (inbox.conversations || [])
+              restoreHeld(listed)
                 .filter(
                   (c) =>
                     c.unread &&
@@ -6910,11 +7055,21 @@
             e.preventDefault();
             const row = $("conversation-" + encodeURIComponent(active));
             if (row) openRowMenu(row.querySelector(".who") || row);
-          } else if (e.key === "u" && !e.shiftKey && !e.isComposing && active) {
-            // U toggles the focused row read and unread.
+          } else if (
+            (e.key.toLowerCase() === "e" || e.key.toLowerCase() === "u") &&
+            !e.shiftKey &&
+            !e.isComposing &&
+            active
+          ) {
+            // Row keys: E archives (with Undo) and the next row takes focus; U toggles read.
+            // A held key does not repeat either: each press acts once.
             e.preventDefault();
+            if (e.repeat) return;
             const t = threads[index];
-            if (t) toggleRead(t);
+            if (!t) return;
+            if (e.key.toLowerCase() === "u") return toggleRead(t);
+            active = (threads[index + 1] || threads[index - 1])?.key;
+            void archive(t);
           }
         };
         // Keep the pane aligned with shared/lib/scroll-keys.ts and

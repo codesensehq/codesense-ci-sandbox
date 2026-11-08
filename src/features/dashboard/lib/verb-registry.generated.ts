@@ -981,6 +981,16 @@ export const VERB_REGISTRY = [
     "presentationOnlyReason": "Host projection subscription, inbox cursor paging or shared slot UI topics"
   },
   {
+    "name": "unarchive",
+    "class": "metadata",
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "action": true,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding"
+  },
+  {
     "name": "unsubscribe",
     "class": "read",
     "grant": "sessions:read",

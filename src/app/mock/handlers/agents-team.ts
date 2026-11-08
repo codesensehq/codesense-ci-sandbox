@@ -1026,6 +1026,22 @@ export function agentTeamInboxHandlers(
       if (changed > 0) emit("agent-inbox-changed");
       return changed;
     },
+    unarchive_inbox_messages: (args: Record<string, unknown>) => {
+      const ids = new Set(Array.isArray(args.messageIds) ? args.messageIds.map(Number) : []);
+      const unread = new Set(
+        Array.isArray(args.restoreUnread) ? args.restoreUnread.map(Number) : [],
+      );
+      let changed = 0;
+      for (const row of rows) {
+        if (ids.has(row.messageId) && row.to === "human" && row.archivedAtMs) {
+          row.archivedAtMs = null;
+          if (unread.has(row.messageId)) row.unread = true;
+          changed += 1;
+        }
+      }
+      if (changed > 0) emit("agent-inbox-changed");
+      return changed;
+    },
     withdraw_inbox_message: (args: Record<string, unknown>) => {
       const row = find(args);
       if (!row || row.to === "human") return { status: "notFound" };

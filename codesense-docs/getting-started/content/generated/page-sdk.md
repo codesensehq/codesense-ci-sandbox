@@ -1,6 +1,6 @@
 # Page SDK
 
-Generated from the Rust registry and TypeScript declarations. All 106 verbs and every declared Surface member are listed below. Rust checks each call against its frame grant.
+Generated from the Rust registry and TypeScript declarations. All 107 verbs and every declared Surface member are listed below. Rust checks each call against its frame grant.
 
 [Exact TypeScript declarations](codesense.d.ts) · [Machine reference](page-sdk.json) · [Capabilities](capabilities.md) · [LiveHub](live-hub.md)
 
@@ -2108,6 +2108,25 @@ Conditional grants (override the default when their conditions match):
 - topic=records; bound collection scope=story → records:read:team
 - topic=inbox; caller scope=team → inbox:read:team
 - topic=inbox; caller scope=other → inbox:read:all-teams
+
+## VerbMethods: unarchive
+
+```ts
+unarchive(args: {
+      messageIds: number[];
+      org?: string;
+      restoreUnread?: number[];
+      team?: string;
+      [key: string]: unknown;
+    }): Promise<{
+      unarchived: number;
+      [key: string]: unknown;
+    }>;
+```
+
+metadata · inbox:write
+
+Class: metadata; default grant: inbox:write; MCP twin: Host operation bound to the rendered dashboard; no identical MCP binding.
 
 ## VerbMethods: unsubscribe
 

@@ -1283,6 +1283,7 @@ pub fn run() {
             commands::agent_inbox::mark_inbox_messages_read,
             commands::agent_inbox::mark_inbox_messages_unread,
             commands::agent_inbox::mark_inbox_messages_archived,
+            commands::agent_inbox::unarchive_inbox_messages,
             commands::agent_inbox::withdraw_inbox_message,
             commands::agent_inbox::list_agent_updates,
             commands::agent_inbox::get_human_status,

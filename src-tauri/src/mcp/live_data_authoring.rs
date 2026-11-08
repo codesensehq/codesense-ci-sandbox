@@ -361,6 +361,13 @@ pub(crate) const ACTION_VERB_DOCS: &[ActionVerbDoc] = &[
         deny_example: "denied: write budget",
     },
     ActionVerbDoc {
+        verb: "unarchive",
+        tier: "metadata",
+        args: "{org?: string, team?: string, messageIds: number[], restoreUnread?: number[]}",
+        purpose: "Pass both {org, team} to act in a synced team; omit both to keep the page team. Cross-team access requires inbox:read:all-teams in the Rust frame grant, included by the default open policy. Undo `archive`: unarchive human-directed messages in one transaction and at most one inbox change event, with the same grant as archive. Archive also marks messages read, so pass the ids that were unread before archiving as `restoreUnread` to make them unread again; the others keep their read state. Resolves `{unarchived: n}`, counting rows that were archived; agent mail, unarchived and unknown ids are unchanged. Store failures reject verbatim.",
+        deny_example: "denied: write budget",
+    },
+    ActionVerbDoc {
         verb: "setHumanStatus",
         tier: "metadata",
         args: "{status: 'online'|'away'|'busy'|'offline', note?: string}",
@@ -587,7 +594,7 @@ fn sdk_section() -> Value {
             "human_status": "await codesense.humanStatus() [get_human_status] → {status: online|away|busy|offline, note?, updatedAtMs (0 = never set)}.",
             "media_messages": "inbox() and inboxRollup() image attachments carry {kind:'image', sha256?, mime?, width?, height?, bytes?, alt, sourceUrl?, sourceHost?, state:'cached'|'pending'|'blocked'|'failed', reason?, retryable}. Render cached bytes from same-origin /media/v1/<sha256>, never from sourceUrl. Pending or retryable failed rows can call act('loadMedia', {org?,team?,messageId}) after the person taps. Blocked means remote media is off in team config; offer a source link, not a fetch. Respect OS Reduce Motion with a still first frame and explicit play/pause.",
             "html_messages": "Open an agent HTML message to the human with act('openMessage', {messageId}); do not render a live message frame inside the page. Markdown/plain conversations render in the page.",
-            "human_writes": "As the human, through act(): act('sendAsHuman', {to, text, contentType?, onClick?, attachFile?, replyTo?, summary?, inReplyTo?}) (to = a session handle, else a role), act('replyAsHuman', {messageId, text, contentType?, summary?}), act('react', {messageId, emoji, remove?}), act('markRead', {messageIds}), act('markUnread', {messageIds}), act('archive', {messageIds}), act('setHumanStatus', {status, note?}). sendAsHuman, replyAsHuman, react, markRead, markUnread, archive and openMessage accept optional {org, team} together, subject to the Rust inbox:read:all-teams grant; use the team of the rollup row. Omit both to keep the pinned team. A partial pair or unsynced target rejects with the verb named. Under open, any dashboard may target another synced team; team-safe checks the frame's grant before any inbox I/O. See the action verbs for results.",
+            "human_writes": "As the human, through act(): act('sendAsHuman', {to, text, contentType?, onClick?, attachFile?, replyTo?, summary?, inReplyTo?}) (to = a session handle, else a role), act('replyAsHuman', {messageId, text, contentType?, summary?}), act('react', {messageId, emoji, remove?}), act('markRead', {messageIds}), act('markUnread', {messageIds}), act('archive', {messageIds}), act('unarchive', {messageIds, restoreUnread?}) (Undo of archive; restoreUnread = the ids that were unread before archiving), act('setHumanStatus', {status, note?}). sendAsHuman, replyAsHuman, react, markRead, markUnread, archive, unarchive and openMessage accept optional {org, team} together, subject to the Rust inbox:read:all-teams grant; use the team of the rollup row. Omit both to keep the pinned team. A partial pair or unsynced target rejects with the verb named. Under open, any dashboard may target another synced team; team-safe checks the frame's grant before any inbox I/O. See the action verbs for results.",
             "live": "const off = codesense.onAgentsChanged(() => reread()) follows versioned agentDefinitions rows when saved definitions or running counts change, plus compatibility revisions for role registrations, queues and the human's status; codesense.onInboxChanged((change?) => …) when a message is stored, read, claimed or reacted to (change.changes, when present: [{team: {org, team}, messageIds}] names the messages the committed update re-read, only your team's when you are team-scoped; re-read just those); window message `codesense:agent-activity-changed` when an update is posted. Each returns an unsubscribe. Re-read with the calls above. Registrations and claims also lapse with time, so a queue view may re-read on a slow timer (e.g. every 30s while visible).",
             "times": "Every *AtMs field is epoch milliseconds.",
             "example": "const off = codesense.onAgentsChanged(render); render(); async function render() { const [list, {roles}, {messages}] = await Promise.all([codesense.sessions(), codesense.roles(), codesense.inbox({scope: 'to-human', limit: 20})]); /* draw with textContent */ }",
@@ -666,7 +673,7 @@ fn action_section() -> Value {
         "policy": crate::verbs::contract(),
         "tiers": {
             "prefs": "Dashboard-local preferences: separate 30 calls per 10 s budget, no audit line.",
-            "metadata": "Silent frontmatter/file and inbox-state writes (setStatus/setField/routeToContext/draft, markRead/markUnread/archive/setHumanStatus). A runaway guard caps a burst of write calls (a batch `setStatus` is one call); past it the call rejects `denied: write budget` until the burst window passes.",
+            "metadata": "Silent frontmatter/file and inbox-state writes (setStatus/setField/routeToContext/draft, markRead/markUnread/archive/unarchive/setHumanStatus). A runaway guard caps a burst of write calls (a batch `setStatus` is one call); past it the call rejects `denied: write budget` until the burst window passes.",
             "spawn": "Opens a workspace / drives an agent (openWorkspace/runPrompt/runSkill/openTab), or opens a file in the viewer (openFile) — bounded by a concurrency cap (`busy` when saturated). Opens that take no cap slot (openFile, openTab, a headed dir/epic openWorkspace) are bounded by a runaway guard instead: past a burst the call rejects `denied: spawn budget` until the window passes.",
             "send": "Injects a chat turn into an already-running agent (sendToSession/sendToWorkspaceTab, and runPrompt), or sends an inbox message (postMessage, sendAsHuman, replyAsHuman) — rate-limited (anti-flood; `denied: send budget`).",
             "read": "Reads a file / lists a dir CONFINED to the doc's own directory subtree (readWorkspace), or observes a workspace — AUDITED (read:true), never budgeted.",
@@ -1828,6 +1835,7 @@ mod tests {
             "replyAsHuman",
             "markRead",
             "archive",
+            "unarchive",
             "setHumanStatus",
         ] {
             assert!(

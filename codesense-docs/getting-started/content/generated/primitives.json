@@ -2,8 +2,8 @@
   "schema": 1,
   "generatedAt": "deterministic",
   "counts": {
-    "invoke": 106,
-    "kit": 164,
+    "invoke": 107,
+    "kit": 165,
     "classes": 18,
     "tokens": 87,
     "events": 62,
@@ -4630,6 +4630,75 @@
       "sourceRef": "src-tauri/src/verbs/registry.generated.json"
     },
     {
+      "name": "unarchive",
+      "category": "METADATA",
+      "write": true,
+      "readOnlyDocsSafe": false,
+      "audited": true,
+      "description": "Undo `archive`: unarchive human-directed messages in one transaction; returns the rows that were archived. Ids in `restoreUnread` (the ones unread before archiving) become unread again; the rest keep their read state. Agent mail, unarchived and unknown ids are unchanged. Store failures reject so pages can roll back optimistic state. On a human-inbox surface, pass both {org, team} to act in that synced team; omit both to keep the pinned page team. Partial pairs and explicit targets on other surfaces reject with the verb named.",
+      "args": {
+        "additionalProperties": true,
+        "properties": {
+          "messageIds": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "org": {
+            "type": "string"
+          },
+          "restoreUnread": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "team": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageIds"
+        ],
+        "type": "object"
+      },
+      "returns": {
+        "properties": {
+          "unarchived": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unarchived"
+        ],
+        "type": "object"
+      },
+      "examples": [
+        {
+          "args": {
+            "messageIds": [
+              204,
+              205
+            ],
+            "restoreUnread": [
+              205
+            ]
+          },
+          "result": {
+            "unarchived": 2
+          }
+        }
+      ],
+      "sourceRef": "src-tauri/src/verbs/registry.generated.json"
+    },
+    {
       "name": "unsubscribe",
       "category": "READ",
       "write": false,
@@ -6132,6 +6201,15 @@
       "wraps": "invoke('storyTotals', args)",
       "description": "read · sessions:read · MCP twin story_totals",
       "example": "// See the exact declaration for codesense.storyTotals.",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
+    },
+    {
+      "name": "codesense.unarchive",
+      "category": "action",
+      "signature": "unarchive(args: {\n      messageIds: number[];\n      org?: string;\n      restoreUnread?: number[];\n      team?: string;\n      [key: string]: unknown;\n    }): Promise<{\n      unarchived: number;\n      [key: string]: unknown;\n    }>;",
+      "wraps": "invoke('unarchive', args)",
+      "description": "metadata · inbox:write",
+      "example": "// See the exact declaration for codesense.unarchive.",
       "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts"
     },
     {

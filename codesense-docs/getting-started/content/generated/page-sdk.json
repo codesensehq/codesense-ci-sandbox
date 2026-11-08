@@ -14,8 +14,8 @@
     "virtualList"
   ],
   "counts": {
-    "bridgeMethods": 106,
-    "actionVerbs": 54,
+    "bridgeMethods": 107,
+    "actionVerbs": 55,
     "readVerbs": 52,
     "surfaceMembers": 52
   },
@@ -5562,6 +5562,64 @@
       "feature": null
     },
     {
+      "name": "unarchive",
+      "owner": "VerbMethods",
+      "signature": "unarchive(args: {\n      messageIds: number[];\n      org?: string;\n      restoreUnread?: number[];\n      team?: string;\n      [key: string]: unknown;\n    }): Promise<{\n      unarchived: number;\n      [key: string]: unknown;\n    }>;",
+      "description": "metadata · inbox:write",
+      "sourceRef": "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts",
+      "class": "metadata",
+      "grant": "inbox:write",
+      "mcpTwin": null,
+      "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+      "argsSchema": {
+        "additionalProperties": true,
+        "properties": {
+          "messageIds": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "org": {
+            "type": "string"
+          },
+          "restoreUnread": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "team": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageIds"
+        ],
+        "type": "object"
+      },
+      "resultSchema": {
+        "properties": {
+          "unarchived": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unarchived"
+        ],
+        "type": "object"
+      },
+      "action": true,
+      "confirmable": false,
+      "feature": null
+    },
+    {
       "name": "unsubscribe",
       "owner": "VerbMethods",
       "signature": "unsubscribe(args: {\n      collection?: string;\n      topic: string;\n      [key: string]: unknown;\n    }): Promise<unknown>;",
@@ -10346,6 +10404,62 @@
       ]
     },
     {
+      "name": "unarchive",
+      "class": "metadata",
+      "argsSchema": {
+        "additionalProperties": true,
+        "properties": {
+          "messageIds": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "org": {
+            "type": "string"
+          },
+          "restoreUnread": {
+            "items": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "team": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "messageIds"
+        ],
+        "type": "object"
+      },
+      "resultSchema": {
+        "properties": {
+          "unarchived": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unarchived"
+        ],
+        "type": "object"
+      },
+      "grant": "inbox:write",
+      "inboxTarget": true,
+      "confirmable": false,
+      "mcpTwin": null,
+      "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+      "audited": true,
+      "action": true,
+      "module": "inbox"
+    },
+    {
       "name": "unsubscribe",
       "class": "read",
       "argsSchema": {
@@ -13677,12 +13791,33 @@
       },
       "grant": "sessions:stop",
       "mcpTwin": null
+    },
+    {
+      "verb": "unarchive",
+      "tier": "metadata",
+      "args": "{\"additionalProperties\":true,\"properties\":{\"messageIds\":{\"items\":{\"maximum\":9007199254740991,\"minimum\":1,\"type\":\"integer\"},\"minItems\":1,\"type\":\"array\"},\"org\":{\"type\":\"string\"},\"restoreUnread\":{\"items\":{\"maximum\":9007199254740991,\"minimum\":1,\"type\":\"integer\"},\"type\":\"array\"},\"team\":{\"type\":\"string\"}},\"required\":[\"messageIds\"],\"type\":\"object\"}",
+      "description": "metadata · inbox:write",
+      "denyExample": "denied: grant",
+      "result": {
+        "properties": {
+          "unarchived": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unarchived"
+        ],
+        "type": "object"
+      },
+      "grant": "inbox:write",
+      "mcpTwin": null
     }
   ],
   "tiers": [
     {
       "tier": "metadata",
-      "verbs": "archive, dismiss_agent_mark, draft, files.create, files.delete, files.move, loadMedia, markRead, markUnread, react, records.create, records.delete, records.restore, records.setFields, records.write, routeToContext, setField, setHumanStatus, setModelRate, setStatus",
+      "verbs": "archive, dismiss_agent_mark, draft, files.create, files.delete, files.move, loadMedia, markRead, markUnread, react, records.create, records.delete, records.restore, records.setFields, records.write, routeToContext, setField, setHumanStatus, setModelRate, setStatus, unarchive",
       "note": "metadata class; Rust checks the effective grant on every call."
     },
     {
@@ -13712,9 +13847,9 @@
     }
   ],
   "sources": {
-    "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts": "1998332929665052c8a9a123b7aff9119685bbeecb6e0302ce1a5a472ae7dbee",
-    "src-tauri/src/verbs/registry.generated.json": "17b7f8977808a1373e46a33c3610f87f926a67cd2930607e7bda6af8b0fb0551",
-    "src-tauri/src/verbs/registry.rs": "22fff995ac070216d16bbba3b2a244039dacd2fc4c19bd16acc9a3856fabc481",
+    "src-tauri/src/http/routes/dashboard_kit/codesense.d.ts": "111ff4b262955069e6f5e3d2922eeeeea38d90b5383d2de9170c8e9de42ed7b0",
+    "src-tauri/src/verbs/registry.generated.json": "e80d878c6e9007af20d746241f9fdc384d05ab1e67efa115af3f997e5fc16487",
+    "src-tauri/src/verbs/registry.rs": "6638bcb0162e91dc22f8b1068e553a3f9899ac955c758fb612f1b7adc117c4f1",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
     "src-tauri/src/records/schema.rs": "24edc3966808bf25b3744c733aeb3ba731aba84bb5bf802fb8b9e491ab0d06c7",
     "src-tauri/src/http/routes/viewer.rs": "4ad626a372fd2197923eeaa684a0723aceb3180a48b06af49cca0f58bb0a75f0",

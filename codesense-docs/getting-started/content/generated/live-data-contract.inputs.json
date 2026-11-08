@@ -19,18 +19,18 @@
     "src-tauri/src/dashboard_publish/toolkit/cs-live.js": "3296389ae01beebc31b4e3a67fa09e1b1de9dd505330e5d835c9d737e0340840",
     "src-tauri/src/http/routes/viewer.rs": "4ad626a372fd2197923eeaa684a0723aceb3180a48b06af49cca0f58bb0a75f0",
     "src-tauri/src/mcp/live-data-starter.html": "5de6771ae5c84d74caf264f97a3038b3c826375147f1cf66eb12e87e868a8c61",
-    "src-tauri/src/mcp/live_data_authoring.rs": "03e0b3e1ef496c2da1bfb26ecdb872bdc67a2998bc04b4b8804f30fda9b36ca3",
+    "src-tauri/src/mcp/live_data_authoring.rs": "55f1677108c00a785eb4676c75125dcf6190c8e48e8e767279f4a79e8c096fbb",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
     "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
     "src-tauri/src/verbs/commands.rs": "e850a56fb795505d67f0836d2e3646bb30b01ec1f6b52da210380813c02d1974",
-    "src-tauri/src/verbs/dispatcher.rs": "47c3e9aff56be82cab8d5e3e25d7119158d43d82144c90b2fbf9c6d32fc3f932",
+    "src-tauri/src/verbs/dispatcher.rs": "5bce60593af23b8fdbc81f36506aadcaa22fb80898c33bb7a30468caf892a91f",
     "src-tauri/src/verbs/grant_tests.rs": "d3f3a39dae1da2927310eb36376bf93a7d19ba5f12e9cc8a885e4cef715c9f6f",
     "src-tauri/src/verbs/mod.rs": "67d8f4dbe9889cd0f3983dbd4d85400aa7fd3485a88a1b3b442e8405438f566a",
     "src-tauri/src/verbs/policy.rs": "c1fe81f79a639040ae9d7f27bea572b2c14d08a950bbd7b738f66357eebdd24c",
-    "src-tauri/src/verbs/registry.generated.json": "17b7f8977808a1373e46a33c3610f87f926a67cd2930607e7bda6af8b0fb0551",
-    "src-tauri/src/verbs/registry.rs": "22fff995ac070216d16bbba3b2a244039dacd2fc4c19bd16acc9a3856fabc481",
-    "src-tauri/src/verbs/schema.rs": "9c42885dadd18d51f382e06205a2c3da78ccac7d557a5712f5da098e61692bba",
-    "src-tauri/src/verbs/tests.rs": "0e080581b26c16a40fcd4bec9653d2e9a4875614f56e015fd61c4446f9ff3082"
+    "src-tauri/src/verbs/registry.generated.json": "e80d878c6e9007af20d746241f9fdc384d05ab1e67efa115af3f997e5fc16487",
+    "src-tauri/src/verbs/registry.rs": "6638bcb0162e91dc22f8b1068e553a3f9899ac955c758fb612f1b7adc117c4f1",
+    "src-tauri/src/verbs/schema.rs": "9a7becb6701c9929d35f4e0a2cc0688b373cb3f8a3eb916eb221d4dbd5cb36b0",
+    "src-tauri/src/verbs/tests.rs": "4c7ea8aaa1ca0d516a0dec5d064fce5dec2c5549f7f6a6bf0c3f2156c685eff3"
   },
-  "outputSha256": "a5f5a9a4ee434150f8b8b7758604d6df0e60cc388a5bb718df8465cb8b1a3e2c"
+  "outputSha256": "cd8364350b0bdac0a80aea062bcda06d029e61b524c8074d70252b9d1a7529d8"
 }

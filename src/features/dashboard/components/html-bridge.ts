@@ -61,6 +61,7 @@ import {
   markInboxMessagesRead,
   markInboxMessagesUnread,
   markInboxMessagesArchived,
+  unarchiveInboxMessages,
   sendInboxAsHuman,
   sendPromptToAgent,
   type AgentPromptResult,
@@ -1373,6 +1374,18 @@ export const HTML_BRIDGE_ALLOWLIST: Record<string, BridgeHandler> = {
       archived: await markInboxMessagesArchived(team, valid),
     }));
   },
+  unarchive: async (args, ctx) => {
+    const a = argObject(args, "unarchive");
+    if (!Array.isArray(a.messageIds) || !a.messageIds.length)
+      throw new Error("unarchive: {messageIds} must be a non-empty array of message ids");
+    if (a.restoreUnread != null && !Array.isArray(a.restoreUnread))
+      throw new Error("unarchive: restoreUnread, if present, must be an array of message ids");
+    const ids = a.messageIds.map((id) => messageId(id, "unarchive"));
+    const unread = (a.restoreUnread ?? []).map((id) => messageId(id, "unarchive"));
+    return inboxWrite(ctx, "unarchive", a, async (team) => ({
+      unarchived: await unarchiveInboxMessages(team, ids, unread),
+    }));
+  },
   setHumanStatus: async (args, ctx) => {
     const a = argObject(args, "setHumanStatus");
     if (!HUMAN_STATUSES.includes(a.status as HumanStatusValue)) {
@@ -2511,7 +2524,11 @@ export async function checkFrameGrant(
     if (target.org !== grant.team?.org || target.team !== grant.team?.team)
       throw new Error("denied: message file scope");
   }
-  if (["markRead", "markUnread", "archive"].includes(command) && grant.team && frame.message) {
+  if (
+    ["markRead", "markUnread", "archive", "unarchive"].includes(command) &&
+    grant.team &&
+    frame.message
+  ) {
     if (!Array.isArray(a.messageIds) || a.messageIds.some((id) => typeof id !== "number")) {
       throw new Error("denied: message thread");
     }

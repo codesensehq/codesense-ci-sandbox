@@ -5468,27 +5468,31 @@ mod tests {
     // -----------------------------------------------------------------------
 
     /// Wire `attach_worktree_admin_watches` over one temp clone's `.git/worktrees/` admin dir
-    /// with a probe handler (a counter in place of the real `emit_worktree_changed`). Returns
-    /// the live watcher (kept alive by the caller), the dispatcher, the watched
-    /// `.git/worktrees/` dir, and the fire-count the probe increments.
+    /// with a probe handler (a path recorder in place of the real `emit_worktree_changed`).
+    /// Returns the live watcher (kept alive by the caller), the dispatcher, the watched
+    /// `.git/worktrees/` dir, and every path the probe was fired with.
+    ///
+    /// The attach `create_dir_all`s the admin dir right before the real watch starts, so
+    /// FSEvents may deliver that creation to the same handler at any point during the test.
+    /// Assert on the dispatched path, never on a total fire count: the probe paths below are
+    /// never created on disk, so no real FS event can carry them.
     fn wu14_probe(
         clone: &Path,
     ) -> (
         Arc<ContentWatcher>,
         Arc<Dispatcher>,
         PathBuf,
-        Arc<std::sync::atomic::AtomicUsize>,
+        Arc<StdMutex<Vec<PathBuf>>>,
     ) {
-        use std::sync::atomic::AtomicUsize;
         let dispatcher = Arc::new(Dispatcher::new(50, 100, 60_000, 500));
         let watcher = Arc::new(
             ContentWatcher::new(WatchSetup { dirs: vec![] }, Arc::clone(&dispatcher)).unwrap(),
         );
-        let fired = Arc::new(AtomicUsize::new(0));
+        let fired: Arc<StdMutex<Vec<PathBuf>>> = Arc::new(StdMutex::new(Vec::new()));
         let handler: DispatchHandler = {
             let fired = Arc::clone(&fired);
-            Arc::new(move |_p: &Path| {
-                fired.fetch_add(1, Ordering::Relaxed);
+            Arc::new(move |p: &Path| {
+                fired.lock().unwrap().push(p.to_path_buf());
             })
         };
         let git_worktrees = clone.join(".git").join("worktrees");
@@ -5510,10 +5514,10 @@ mod tests {
         let (_watcher, dispatcher, git_worktrees, fired) = wu14_probe(&clone);
 
         // The per-worktree admin subdir + its HEAD file appear on `git worktree add`.
-        dispatcher.dispatch(&git_worktrees.join("feature-x").join("HEAD"));
-        assert_eq!(
-            fired.load(Ordering::Relaxed),
-            1,
+        let head = git_worktrees.join("feature-x").join("HEAD");
+        dispatcher.dispatch(&head);
+        assert!(
+            fired.lock().unwrap().contains(&head),
             "a change under `.git/worktrees/` must fire the emit handler"
         );
     }
@@ -5526,10 +5530,12 @@ mod tests {
         let clone = tmp.path().join("clone");
         let (_watcher, dispatcher, git_worktrees, fired) = wu14_probe(&clone);
 
-        dispatcher.dispatch_rescan(&git_worktrees.join("feature-x"));
-        assert_eq!(
-            fired.load(Ordering::Relaxed),
-            1,
+        // `dispatch_rescan` resolves only the rescan registry, so the probe seeing this path
+        // proves the rescan registration (a real FS event can't carry the uncreated path).
+        let subtree = git_worktrees.join("feature-x");
+        dispatcher.dispatch_rescan(&subtree);
+        assert!(
+            fired.lock().unwrap().contains(&subtree),
             "a rescan/overflow signal must recover via the rescan handler → emit"
         );
     }

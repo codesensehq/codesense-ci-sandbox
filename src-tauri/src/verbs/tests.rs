@@ -507,6 +507,7 @@ fn audit_targets_preserve_verb_specific_labels_without_payload_text() {
         ("getWorkspaceStatus", json!({"storyId":"S-1"}), "S-1"),
         ("setHumanStatus", json!({"status":"away"}), "away"),
         ("archive", json!({"messageIds":[1,2,3]}), "3 messages"),
+        ("unarchive", json!({"messageIds":[1,2]}), "2 messages"),
         ("markRead", json!({"messageIds":[1]}), "1 messages"),
         (
             "setStatus",
@@ -858,6 +859,39 @@ fn mark_unread_has_the_metadata_contract_and_mcp_twin() {
     assert!(!verb.confirmable);
     assert_eq!(verb.args_schema["required"], json!(["messageIds"]));
     assert_eq!(verb.result_schema["required"], json!(["marked"]));
+}
+
+#[test]
+fn unarchive_has_the_archive_contract() {
+    let registry = Registry::default();
+    let (archive, verb) = (
+        registry.get("archive").unwrap(),
+        registry.get("unarchive").unwrap(),
+    );
+    assert_eq!(
+        (verb.class, &verb.grant, verb.confirmable, verb.inbox_target),
+        (
+            archive.class,
+            &archive.grant,
+            archive.confirmable,
+            archive.inbox_target
+        )
+    );
+    assert_eq!(
+        (verb.action, verb.audited),
+        (archive.action, archive.audited)
+    );
+    assert!(verb.mcp_twin.is_none());
+    assert_eq!(verb.args_schema["required"], json!(["messageIds"]));
+    assert_eq!(verb.result_schema["required"], json!(["unarchived"]));
+    assert!(jsonschema::is_valid(
+        &verb.args_schema,
+        &json!({"messageIds":[1,2],"restoreUnread":[2]})
+    ));
+    assert!(!jsonschema::is_valid(
+        &verb.args_schema,
+        &json!({"messageIds":[],"restoreUnread":[2]})
+    ));
 }
 
 #[test]

@@ -161,7 +161,8 @@
         "react",
         "replyAsHuman",
         "sendAsHuman",
-        "setHumanStatus"
+        "setHumanStatus",
+        "unarchive"
       ],
       "conditionalVerbs": []
     },
@@ -776,8 +777,8 @@
   },
   "sources": {
     "src-tauri/src/verbs/capabilities.rs": "ca4e62d053beef566662fe42095839cd4768b44b716aef8d6e4e9a1a5b054c04",
-    "src-tauri/src/verbs/registry.generated.json": "17b7f8977808a1373e46a33c3610f87f926a67cd2930607e7bda6af8b0fb0551",
-    "src-tauri/src/verbs/registry.rs": "22fff995ac070216d16bbba3b2a244039dacd2fc4c19bd16acc9a3856fabc481",
+    "src-tauri/src/verbs/registry.generated.json": "e80d878c6e9007af20d746241f9fdc384d05ab1e67efa115af3f997e5fc16487",
+    "src-tauri/src/verbs/registry.rs": "6638bcb0162e91dc22f8b1068e553a3f9899ac955c758fb612f1b7adc117c4f1",
     "src-tauri/src/records/binding.rs": "8952cdcd9bfee677a0ecc60a382d876ecac5fdddcacbcb1508bb01ad9f501fa7",
     "src-tauri/src/records/schema.rs": "24edc3966808bf25b3744c733aeb3ba731aba84bb5bf802fb8b9e491ab0d06c7"
   }

@@ -2376,7 +2376,7 @@ impl CodesenseHandler {
     }
 
     #[tool(
-        description = "Get local dashboard authoring guidance: the window.codesense page SDK for scoped context queries, actions and routine snapshots, and the agents read model (sessions, agent, inbox, roles, updates, humanStatus, the human's sendAsHuman/replyAsHuman/markRead/archive/setHumanStatus, and the codesense:agents-changed / codesense:inbox-changed live events) with shapes and an example. Use it to write a dashboard, a right pane, or an HTML inbox message. External service access belongs to configured agents."
+        description = "Get local dashboard authoring guidance: the window.codesense page SDK for scoped context queries, actions and routine snapshots, and the agents read model (sessions, agent, inbox, roles, updates, humanStatus, the human's sendAsHuman/replyAsHuman/markRead/archive/unarchive/setHumanStatus, and the codesense:agents-changed / codesense:inbox-changed live events) with shapes and an example. Use it to write a dashboard, a right pane, or an HTML inbox message. External service access belongs to configured agents."
     )]
     async fn get_live_data_contract(&self) -> Result<CallToolResult, ErrorData> {
         ok_json(

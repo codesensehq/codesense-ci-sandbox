@@ -3937,6 +3937,36 @@ async fn the_human_archives_many_messages_with_one_change_signal() {
 }
 
 #[tokio::test]
+async fn the_human_unarchives_many_messages_with_one_change_signal() {
+    let fake = FakeHost::new();
+    let host = port(&fake);
+    let team = launch_team("default");
+    let store = WeftStore::open(fake.team_store("default")).unwrap();
+    let insert =
+        |to| inbox::inbox_insert(&store, "H1", to, "hello", None, None, None, None, None).unwrap();
+    let ids = vec![insert(HUMAN), insert(HUMAN), insert("H2")];
+    mark_archived_many_by_human(&*host, &team, ids.clone())
+        .await
+        .unwrap();
+    let before = *fake.changed.lock().unwrap();
+    assert_eq!(
+        unarchive_many_by_human(&*host, &team, ids.clone(), vec![ids[0]])
+            .await
+            .unwrap(),
+        2
+    );
+    assert_eq!(*fake.changed.lock().unwrap(), before + 1);
+    assert_eq!(inbox::inbox_unread(&store, HUMAN).unwrap().count, 1);
+    assert_eq!(
+        unarchive_many_by_human(&*host, &team, ids, vec![])
+            .await
+            .unwrap(),
+        0
+    );
+    assert_eq!(*fake.changed.lock().unwrap(), before + 1);
+}
+
+#[tokio::test]
 async fn workspace_chat_append_to_native_notice_and_late_bind() {
     use crate::commands::dashboard_launch::{LaunchMeta, LaunchRecord};
     use crate::commands::host_inbox::{inbox_target, offer_once, settle, Fate, Offer, Push};

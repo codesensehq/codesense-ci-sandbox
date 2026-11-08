@@ -82,17 +82,5 @@
     "reason": "fails only in full multi-crate runs (load/env)",
     "issue": "https://github.com/codesensehq/codesense/issues/5",
     "added": "2026-11-07"
-  },
-  {
-    "id": "cargo:codesense_lib::terminal::session_server::tests::exit_classification_is_identical_across_hosts",
-    "reason": "a host-requested kill can lose its exit status on slower runners (lock held by a second kill)",
-    "issue": "https://github.com/codesensehq/codesense/issues/6",
-    "added": "2026-11-08"
-  },
-  {
-    "id": "cargo:codesense_lib::commands::pty_host::tests::real_children_produce_the_golden_pty_exit_payloads",
-    "reason": "a host-requested kill can lose its exit status on slower runners (lock held by a second kill)",
-    "issue": "https://github.com/codesensehq/codesense/issues/6",
-    "added": "2026-11-08"
   }
 ]

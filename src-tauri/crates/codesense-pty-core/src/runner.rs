@@ -125,8 +125,10 @@ pub(crate) struct SessionChild {
     child: Box<dyn Child + Send>,
     #[cfg(unix)]
     process_group: Option<libc::pid_t>,
+    /// `None` until the group SIGKILL is sent; then whether it reached the group
+    /// (or found it gone), so the leader needs no separate kill.
     #[cfg(unix)]
-    process_group_terminated: bool,
+    process_group_kill: Option<bool>,
 }
 
 impl SessionChild {
@@ -141,7 +143,7 @@ impl SessionChild {
             #[cfg(unix)]
             process_group,
             #[cfg(unix)]
-            process_group_terminated: false,
+            process_group_kill: None,
         }
     }
 
@@ -172,10 +174,17 @@ impl SessionChild {
     fn terminate(&mut self) {
         match self.child.try_wait() {
             Ok(None) => {
-                self.terminate_process_group();
-                let _ = self.child.kill();
+                // The group SIGKILL already covers the leader. Skip the driver's
+                // kill there: portable-pty's polls after SIGHUP hold this lock past
+                // the exit seam's grace window and lose the exit status. Without a
+                // covering group kill that can still happen on this rarer path.
+                if !self.terminate_process_group() {
+                    let _ = self.child.kill();
+                }
             }
-            Ok(Some(_)) => self.terminate_process_group(),
+            Ok(Some(_)) => {
+                self.terminate_process_group();
+            }
             Err(error) => {
                 warn!(target: "pty", "child status unavailable during teardown: {error}");
                 // The owning handle is safe to use even when numeric identity
@@ -190,7 +199,7 @@ impl SessionChild {
     /// the owning child synchronously. Numeric identity is never rediscovered.
     fn drain_for_replacement(&mut self, deadline: Instant) -> Result<(), String> {
         #[cfg(unix)]
-        if !self.process_group_terminated {
+        if self.process_group_kill.is_none() {
             if let Some(pgid) = self.process_group {
                 signal_group(pgid, libc::SIGTERM)?;
             }
@@ -223,38 +232,38 @@ impl SessionChild {
         }
     }
 
+    /// SIGKILL the recorded process group once. Returns whether the group kill
+    /// covered the leader: a group is recorded and its kill succeeded or found
+    /// it already gone, now or on an earlier call.
     #[cfg(unix)]
-    fn terminate_process_group(&mut self) {
-        if self.process_group_terminated {
-            return;
-        }
-        self.process_group_terminated = true;
-        if let Some(pgid) = self.process_group {
-            let result = unsafe { libc::kill(-pgid, libc::SIGKILL) };
-            if result != 0 {
-                let error = std::io::Error::last_os_error();
-                if error.raw_os_error() != Some(libc::ESRCH) {
-                    warn!(target: "pty", "process-group kill failed for {pgid}: {error}");
-                }
-            }
-        }
+    fn terminate_process_group(&mut self) -> bool {
+        let Some(pgid) = self.process_group else {
+            return false;
+        };
+        *self.process_group_kill.get_or_insert_with(|| {
+            signal_group(pgid, libc::SIGKILL)
+                .inspect_err(|error| warn!(target: "pty", "process-group kill failed: {error}"))
+                .is_ok()
+        })
     }
 
     #[cfg(not(unix))]
-    fn terminate_process_group(&mut self) {}
+    fn terminate_process_group(&mut self) -> bool {
+        false
+    }
 
     /// Replacement's checked process-group close. Unlike ordinary interactive
     /// teardown, every unexpected signal failure is part of the result and
     /// therefore prevents the caller from publishing a retirement receipt.
     #[cfg(unix)]
     fn terminate_process_group_for_replacement(&mut self) -> Result<(), String> {
-        if self.process_group_terminated {
+        if self.process_group_kill.is_some() {
             return Ok(());
         }
         if let Some(pgid) = self.process_group {
             signal_group(pgid, libc::SIGKILL)?;
         }
-        self.process_group_terminated = true;
+        self.process_group_kill = Some(true);
         Ok(())
     }
 
@@ -635,15 +644,11 @@ mod tests {
     #[test]
     fn rm4d_natural_exit_checks_recorded_group_cleanup() {
         let calls = Arc::new(Mutex::new(Vec::new()));
-        let mut child = SessionChild {
-            child: Box::new(ExitedChild(calls.clone())),
-            process_group: Some(libc::pid_t::MAX),
-            process_group_terminated: false,
-        };
+        let mut child = test_session_child(ExitedChild(calls.clone()), Some(libc::pid_t::MAX));
         child
             .drain_for_replacement(Instant::now() + Duration::from_millis(10))
             .unwrap();
-        assert!(child.process_group_terminated);
+        assert_eq!(child.process_group_kill, Some(true));
         assert_eq!(*calls.lock().unwrap(), ["kill-child", "owning-wait"]);
     }
 
@@ -651,17 +656,124 @@ mod tests {
     #[test]
     fn rm4d_natural_exit_propagates_group_signal_failure() {
         let calls = Arc::new(Mutex::new(Vec::new()));
-        let mut child = SessionChild {
-            child: Box::new(ExitedChild(calls.clone())),
-            process_group: Some(TEST_GROUP_SIGNAL_FAILURE_PGID),
-            process_group_terminated: false,
-        };
+        let mut child = test_session_child(
+            ExitedChild(calls.clone()),
+            Some(TEST_GROUP_SIGNAL_FAILURE_PGID),
+        );
         assert_eq!(
             child.drain_for_replacement(Instant::now() + Duration::from_millis(10)),
             Err("injected process-group signal failure".into())
         );
-        assert!(!child.process_group_terminated);
+        assert_eq!(child.process_group_kill, None);
         assert!(calls.lock().unwrap().is_empty());
+    }
+
+    #[cfg(unix)]
+    fn test_session_child(
+        child: impl Child + Send + 'static,
+        process_group: Option<libc::pid_t>,
+    ) -> SessionChild {
+        SessionChild {
+            child: Box::new(child),
+            process_group,
+            process_group_kill: None,
+        }
+    }
+
+    /// A running child whose leader dies once the first probe has seen it
+    /// running, as the group SIGKILL makes it. Its `kill` holds the caller for
+    /// `kill_delay`, as portable-pty's polls after SIGHUP can on a loaded machine.
+    #[cfg(unix)]
+    #[derive(Clone, Debug)]
+    struct DyingChild {
+        calls: Arc<Mutex<Vec<&'static str>>>,
+        kill_delay: Duration,
+    }
+
+    #[cfg(unix)]
+    impl portable_pty::ChildKiller for DyingChild {
+        fn kill(&mut self) -> std::io::Result<()> {
+            self.calls.lock().unwrap().push("kill-child");
+            std::thread::sleep(self.kill_delay);
+            Ok(())
+        }
+        fn clone_killer(&self) -> Box<dyn portable_pty::ChildKiller + Send + Sync> {
+            Box::new(self.clone())
+        }
+    }
+
+    #[cfg(unix)]
+    impl Child for DyingChild {
+        fn try_wait(&mut self) -> std::io::Result<Option<portable_pty::ExitStatus>> {
+            let mut calls = self.calls.lock().unwrap();
+            let exited = calls.contains(&"try-wait");
+            calls.push("try-wait");
+            Ok(exited.then(|| portable_pty::ExitStatus::with_signal("Killed")))
+        }
+        fn wait(&mut self) -> std::io::Result<portable_pty::ExitStatus> {
+            Ok(portable_pty::ExitStatus::with_signal("Killed"))
+        }
+        fn process_id(&self) -> Option<u32> {
+            None
+        }
+    }
+
+    #[cfg(unix)]
+    fn dying_child(
+        process_group: Option<libc::pid_t>,
+        kill_delay: Duration,
+    ) -> (ChildHandle, Arc<Mutex<Vec<&'static str>>>) {
+        let calls = Arc::new(Mutex::new(Vec::new()));
+        let child = DyingChild {
+            calls: calls.clone(),
+            kill_delay,
+        };
+        let child = ChildHandle(Arc::new(Mutex::new(test_session_child(
+            child,
+            process_group,
+        ))));
+        (child, calls)
+    }
+
+    /// A requested kill keeps its exit status: once the group SIGKILL covers
+    /// the leader, teardown never calls the driver's kill, so the exit seam
+    /// reads the signal within its grace window.
+    #[cfg(unix)]
+    #[test]
+    fn a_group_kill_skips_the_driver_kill_and_keeps_the_exit_status() {
+        let (child, calls) = dying_child(Some(libc::pid_t::MAX), EXIT_STATUS_GRACE * 3);
+        let teardown = std::thread::spawn({
+            let child = child.clone();
+            move || child.terminate()
+        });
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !calls.lock().unwrap().contains(&"try-wait") {
+            assert!(Instant::now() < deadline, "teardown never probed the child");
+            std::thread::yield_now();
+        }
+        assert_eq!(
+            child.exit_info_after_eof(),
+            Some(ExitInfo {
+                exit_code: None,
+                signal: Some("Killed".into()),
+            })
+        );
+        teardown.join().unwrap();
+        assert!(!calls.lock().unwrap().contains(&"kill-child"));
+    }
+
+    /// When no group kill covered the leader (no recorded group, or the group
+    /// signal failed), teardown still calls the driver's kill, and a later group
+    /// close still reports the leader uncovered.
+    #[cfg(unix)]
+    #[test]
+    fn teardown_without_a_group_kill_still_kills_the_child() {
+        for process_group in [None, Some(TEST_GROUP_SIGNAL_FAILURE_PGID)] {
+            let (child, calls) = dying_child(process_group, Duration::ZERO);
+            child.terminate();
+            assert_eq!(*calls.lock().unwrap(), ["try-wait", "kill-child"]);
+            assert!(!child.lock().terminate_process_group(), "{process_group:?}");
+        }
     }
 
     /// The built-in local driver really opens a PTY, forks the child, and

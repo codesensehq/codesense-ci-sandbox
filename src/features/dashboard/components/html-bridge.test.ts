@@ -49,6 +49,7 @@ const mockAgentDefinitionsPrepare = vi.fn();
 const mockMarkInboxMessagesRead = vi.fn();
 const mockMarkInboxMessagesUnread = vi.fn();
 const mockMarkInboxMessagesArchived = vi.fn();
+const mockUnarchiveInboxMessages = vi.fn();
 const mockSendInboxAsHuman = vi.fn();
 const mockSendPromptToAgent = vi.fn();
 const mockRoutineReadList = vi.fn();
@@ -114,6 +115,7 @@ vi.mock("@/tauri/commands", () => ({
   markInboxMessagesRead: (...a: unknown[]) => mockMarkInboxMessagesRead(...a),
   markInboxMessagesUnread: (...a: unknown[]) => mockMarkInboxMessagesUnread(...a),
   markInboxMessagesArchived: (...a: unknown[]) => mockMarkInboxMessagesArchived(...a),
+  unarchiveInboxMessages: (...a: unknown[]) => mockUnarchiveInboxMessages(...a),
   sendInboxAsHuman: (...a: unknown[]) => mockSendInboxAsHuman(...a),
 }));
 vi.mock("@/shared/stores/org-store", () => ({
@@ -354,6 +356,7 @@ describe("HTML_BRIDGE_ALLOWLIST", () => {
       "storyChanges",
       "storyTotals",
       "subscribe",
+      "unarchive",
       "unsubscribe",
       "updates",
       "validateYaml",
@@ -2197,6 +2200,29 @@ describe("agents read model verbs", () => {
     }
   });
 
+  it("unarchives in one call with the ids to make unread again", async () => {
+    mockUnarchiveInboxMessages.mockResolvedValueOnce(2).mockResolvedValueOnce(1);
+    await expect(
+      runBridgeCommand("unarchive", { messageIds: [3, 4], restoreUnread: [4] }, DOC),
+    ).resolves.toEqual({ unarchived: 2 });
+    expect(mockUnarchiveInboxMessages).toHaveBeenCalledExactlyOnceWith(TEAM, [3, 4], [4]);
+    await expect(runBridgeCommand("unarchive", { messageIds: [5] }, DOC)).resolves.toEqual({
+      unarchived: 1,
+    });
+    expect(mockUnarchiveInboxMessages).toHaveBeenLastCalledWith(TEAM, [5], []);
+    mockUnarchiveInboxMessages.mockRejectedValueOnce("store offline");
+    await expect(runBridgeCommand("unarchive", { messageIds: [3] }, DOC)).rejects.toBe(
+      "store offline",
+    );
+    for (const args of [
+      { messageIds: [] },
+      { messageIds: [0] },
+      { messageIds: [3], restoreUnread: 3 },
+      { messageIds: [3], restoreUnread: ["3"] },
+    ])
+      await expect(runBridgeCommand("unarchive", args, DOC)).rejects.toThrow(/^unarchive: /);
+  });
+
   it("opens only live html mail to the human without reading it", async () => {
     const row = { messageId: 42, from: "H1", to: "human", toHuman: true, contentType: "html" };
     mockAgentReadInbox.mockResolvedValue({ messages: [row], humanUnread: 1 });
@@ -2884,6 +2910,7 @@ describe("human-inbox surfaces", () => {
     ["sendAsHuman", mockSendInboxAsHuman, { to: "H2", text: "hello" }],
     ["markRead", mockMarkInboxMessagesRead, { messageIds: [2] }],
     ["archive", mockMarkInboxMessagesArchived, { messageIds: [2] }],
+    ["unarchive", mockUnarchiveInboxMessages, { messageIds: [2] }],
   ] as const)("names %s when the inbox host refuses an unsynced team", async (verb, host, args) => {
     const message = "team acme:missing is not synced on this machine";
     for (const error of [message, new Error(message)]) {

@@ -200,7 +200,8 @@
               <td class="yes">yes</td>
               <td class="yes">write budget</td>
               <td><code>setStatus</code>, <code>setField</code>, <code>markRead</code>,
-                  <code>react</code>, <code>loadMedia</code></td>
+                  <code>archive</code>, <code>unarchive</code>, <code>react</code>,
+                  <code>loadMedia</code></td>
             </tr>
             <tr>
               <td>Spawn</td>
@@ -232,6 +233,14 @@
           refused with <code>denied: loadMedia requires the Inbox pane</code>, even with
           <code>inbox:write</code>. In an Inbox pane it needs the <code>inbox:write</code> grant
           and asks the user to confirm.
+        </p>
+        <p>
+          <code>act('archive', {messageIds})</code> archives the human's messages and marks them
+          read. To offer an Undo, keep the ids that were unread before archiving and pass them back:
+          <code>act('unarchive', {messageIds, restoreUnread})</code> unarchives the messages, makes
+          the <code>restoreUnread</code> ones unread again and leaves the others read. It needs the
+          same <code>inbox:write</code> grant as <code>archive</code> and resolves
+          <code>{unarchived: n}</code>.
         </p>
       </section>
 

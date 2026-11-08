@@ -6370,7 +6370,6 @@ mod tests {
     /// platform name aside). The sidecar's payloads equal these
     /// (`exit_classification_is_identical_across_hosts`).
     #[test]
-    #[ignore = "quarantine: https://github.com/codesensehq/codesense/issues/6"]
     fn real_children_produce_the_golden_pty_exit_payloads() {
         use codesense_pty_core::domain::{PtySessionId, TerminalDomain};
         use codesense_pty_core::layout::ServerIdentity;

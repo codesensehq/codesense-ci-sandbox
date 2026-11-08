@@ -142,6 +142,7 @@ fn spec(
                 | "markRead"
                 | "markUnread"
                 | "archive"
+                | "unarchive"
                 | "sendAsHuman"
                 | "replyAsHuman"
                 | "react"
@@ -181,8 +182,8 @@ fn capability_for_verb(name: &str) -> &'static str {
             "inbox:read:team"
         }
         "inboxRollup" => "inbox:read:all-teams",
-        "loadMedia" | "archive" | "markRead" | "markUnread" | "postMessage" | "replyAsHuman"
-        | "react" | "sendAsHuman" | "setHumanStatus" => "inbox:write",
+        "loadMedia" | "archive" | "unarchive" | "markRead" | "markUnread" | "postMessage"
+        | "replyAsHuman" | "react" | "sendAsHuman" | "setHumanStatus" => "inbox:write",
         "analyze" | "context" | "getDocDir" | "getEpicHandle" | "openFile" | "queryContext"
         | "validateYaml" => "context:read",
         "draft" | "routeToContext" | "setField" | "setStatus" => "context:write",
@@ -353,6 +354,18 @@ fn register_resources(registry: &mut Registry) {
         "inbox",
         spec(
             "archive",
+            Class::Metadata,
+            false,
+            None,
+            Some("Host operation bound to the rendered dashboard; no identical MCP binding"),
+            true,
+            true,
+        ),
+    );
+    registry.register_existing(
+        "inbox",
+        spec(
+            "unarchive",
             Class::Metadata,
             false,
             None,

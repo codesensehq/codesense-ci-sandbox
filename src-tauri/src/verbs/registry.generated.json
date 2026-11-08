@@ -4143,6 +4143,62 @@
     "module": "sessions"
   },
   {
+    "name": "unarchive",
+    "class": "metadata",
+    "argsSchema": {
+      "additionalProperties": true,
+      "properties": {
+        "messageIds": {
+          "items": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "org": {
+          "type": "string"
+        },
+        "restoreUnread": {
+          "items": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "team": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "messageIds"
+      ],
+      "type": "object"
+    },
+    "resultSchema": {
+      "properties": {
+        "unarchived": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "unarchived"
+      ],
+      "type": "object"
+    },
+    "grant": "inbox:write",
+    "inboxTarget": true,
+    "confirmable": false,
+    "mcpTwin": null,
+    "presentationOnlyReason": "Host operation bound to the rendered dashboard; no identical MCP binding",
+    "audited": true,
+    "action": true,
+    "module": "inbox"
+  },
+  {
     "name": "unsubscribe",
     "class": "read",
     "argsSchema": {

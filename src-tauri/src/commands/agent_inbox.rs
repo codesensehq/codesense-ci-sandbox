@@ -2204,6 +2204,26 @@ pub(crate) async fn mark_archived_many_by_human(
     Ok(changed)
 }
 
+/// Undo an archive: unarchive a batch of human messages, restoring unread on those in
+/// `restore_unread`, with one change notification.
+pub(crate) async fn unarchive_many_by_human(
+    host: &dyn InboxHost,
+    team: &LaunchTeam,
+    message_ids: Vec<i64>,
+    restore_unread: Vec<i64>,
+) -> Result<u32, String> {
+    let path = host.team_store(team).await?;
+    let changed_ids = message_ids.clone();
+    let changed = with_store("unarchive_inbox_messages", path, move |store| {
+        inbox::inbox_unarchive_many(store, &message_ids, &restore_unread)
+    })
+    .await??;
+    if changed > 0 {
+        host.inbox_event(InboxEvent::new(InboxChange::Archived, team, changed_ids));
+    }
+    Ok(changed)
+}
+
 /// A stored `reply_to` as a row shows it: a `role:human` (any case) stored before
 /// replyTo was normalized means the human, and shows as the plain address, where a
 /// reply to it goes.
@@ -2287,6 +2307,23 @@ pub async fn mark_inbox_messages_archived(
     message_ids: Vec<i64>,
 ) -> Result<u32, String> {
     mark_archived_many_by_human(&AppInboxHost { app }, &team.into(), message_ids).await
+}
+
+/// Unarchive human-directed messages, making `restore_unread` unread again, in one transaction.
+#[tauri::command]
+pub async fn unarchive_inbox_messages(
+    app: tauri::AppHandle,
+    team: InboxTeam,
+    message_ids: Vec<i64>,
+    restore_unread: Vec<i64>,
+) -> Result<u32, String> {
+    unarchive_many_by_human(
+        &AppInboxHost { app },
+        &team.into(),
+        message_ids,
+        restore_unread,
+    )
+    .await
 }
 
 /// Restore unread state for human-directed messages in the named team.

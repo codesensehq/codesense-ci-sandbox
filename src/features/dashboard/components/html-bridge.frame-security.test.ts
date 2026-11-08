@@ -79,6 +79,12 @@ describe("per-call frame grants", () => {
     await expect(checkFrameGrant(safe, "markRead", { messageIds: [9] }, frame)).rejects.toThrow(
       "denied: message thread",
     );
+    await expect(
+      checkFrameGrant(safe, "unarchive", { messageIds: [7, 8], restoreUnread: [8] }, frame),
+    ).resolves.toBeUndefined();
+    await expect(
+      checkFrameGrant(safe, "unarchive", { messageIds: [9], restoreUnread: [9] }, frame),
+    ).rejects.toThrow("denied: message thread");
   });
   it("allows mutations of a recent reply whose parent is past the inbox list cap", async () => {
     vi.mocked(agentReadInbox).mockResolvedValue({

@@ -1583,6 +1583,17 @@ declare namespace CodesenseSdk {
       window?: [number, number];
       [key: string]: unknown;
     }): Promise<unknown>;
+    /** metadata · inbox:write */
+    unarchive(args: {
+      messageIds: number[];
+      org?: string;
+      restoreUnread?: number[];
+      team?: string;
+      [key: string]: unknown;
+    }): Promise<{
+      unarchived: number;
+      [key: string]: unknown;
+    }>;
     /** read · sessions:read */
     unsubscribe(args: {
       collection?: string;

@@ -968,6 +968,33 @@ pub fn inbox_mark_archived_many(store: &WeftStore, ids: &[i64]) -> WvWriteResult
     Ok(changed)
 }
 
+/// Undo [`inbox_mark_archived_many`]: unarchive the human's archived messages of `ids`, and
+/// make the ones also in `restore_unread` unread again, in one transaction (one audit row
+/// per changed message). Returns how many were unarchived; other ids are left alone.
+pub fn inbox_unarchive_many(
+    store: &WeftStore,
+    ids: &[i64],
+    restore_unread: &[i64],
+) -> WvWriteResult<u32> {
+    let restore_unread: std::collections::HashSet<i64> = restore_unread.iter().copied().collect();
+    let mut conn = store.conn()?;
+    let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    let mut changed = 0;
+    {
+        let mut stmt = tx.prepare_cached(
+            "UPDATE wv_inbox SET archived_at = NULL, read_at = CASE WHEN ?2 THEN NULL ELSE read_at END WHERE id = ?1 AND recipient = 'human' AND archived_at IS NOT NULL",
+        )?;
+        for id in ids {
+            if stmt.execute(params![id, restore_unread.contains(id)])? == 1 {
+                write_audit_public(&tx, INBOX, "mutate", *id)?;
+                changed += 1;
+            }
+        }
+    }
+    tx.commit()?;
+    Ok(changed)
+}
+
 /// `recipient`'s unread messages, oldest first, marked read in the same transaction so
 /// each is returned once.
 pub fn inbox_take_unread(store: &WeftStore, recipient: &str) -> WvWriteResult<Vec<InboxMessage>> {
@@ -2090,6 +2117,75 @@ mod tests {
             inbox_mark_archived_many(&store, &[unread, read]).unwrap(),
             0
         );
+    }
+
+    #[test]
+    fn unarchive_many_round_trips_archive_and_restores_only_the_named_unread() {
+        let (_dir, store) = open_temp();
+        let insert =
+            |to| inbox_insert(&store, "H1", to, "hello", None, None, None, None, None).unwrap();
+        let (first, second, read, live) =
+            (insert(HUMAN), insert(HUMAN), insert(HUMAN), insert(HUMAN));
+        inbox_mark_read(&store, read, HUMAN).unwrap();
+        let read_at = inbox_get(&store, read).unwrap().unwrap().read_at_ms;
+        let other = insert("H2");
+        inbox_mark_archived_many(&store, &[first, second, read]).unwrap();
+        // Archive only ever touches human mail; set an agent's row archived directly so the
+        // recipient guard is what keeps unarchive off it.
+        store
+            .conn()
+            .unwrap()
+            .execute(
+                "UPDATE wv_inbox SET archived_at = 1, read_at = 1 WHERE id = ?1",
+                params![other],
+            )
+            .unwrap();
+        let mutations = || -> i64 {
+            store
+                .conn()
+                .unwrap()
+                .query_row(
+                    "SELECT COUNT(*) FROM wv_write_log WHERE tbl = ?1 AND operation = 'mutate'",
+                    params![INBOX],
+                    |r| r.get(0),
+                )
+                .unwrap()
+        };
+        let before = mutations();
+        // A live row, someone else's mail and an unknown id are unchanged, even if named unread.
+        assert_eq!(
+            inbox_unarchive_many(
+                &store,
+                &[first, second, read, first, live, other, 99999],
+                &[first, second, live, other],
+            )
+            .unwrap(),
+            3
+        );
+        assert_eq!(mutations() - before, 3, "one audit row per changed message");
+        for id in [first, second] {
+            let row = inbox_get(&store, id).unwrap().unwrap();
+            assert!(row.archived_at_ms.is_none() && row.read_at_ms.is_none());
+        }
+        let row = inbox_get(&store, read).unwrap().unwrap();
+        assert!(row.archived_at_ms.is_none());
+        assert_eq!(
+            row.read_at_ms, read_at,
+            "a row read before archiving stays read"
+        );
+        assert!(inbox_get(&store, live)
+            .unwrap()
+            .unwrap()
+            .read_at_ms
+            .is_none());
+        let other_row = inbox_get(&store, other).unwrap().unwrap();
+        assert_eq!((other_row.archived_at_ms, other_row.read_at_ms), (Some(1), Some(1)));
+        assert_eq!(inbox_unread(&store, HUMAN).unwrap().count, 3);
+        assert_eq!(
+            inbox_unarchive_many(&store, &[first, second, read], &[]).unwrap(),
+            0
+        );
+        assert_eq!(mutations() - before, 3);
     }
 
     #[test]

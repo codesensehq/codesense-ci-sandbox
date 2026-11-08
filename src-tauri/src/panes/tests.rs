@@ -276,17 +276,27 @@ fn a_team_without_an_inbox_lists_the_builtin_inbox_after_its_own_panes() {
         .iter()
         .map(|c| (c.id.as_str(), c.scope, c.default_chord.as_deref()))
         .collect();
-    assert_eq!(commands.len(), 9, "{commands:?}");
-    assert!(commands.iter().all(|c| c.1 == CommandScope::SlotFocused));
     assert_eq!(
-        commands[8],
-        (
+        commands.iter().map(|c| c.0).collect::<Vec<_>>(),
+        [
+            "next-conversation",
+            "previous-conversation",
+            "back-to-list",
+            "reply",
+            "go-to-session",
+            "archive-conversation",
+            "mark-all-read",
+            "new-message",
+            "filter-by-team",
             "toggle-list",
-            CommandScope::SlotFocused,
-            Some("CmdOrCtrl+B")
-        )
+        ],
+        "{commands:?}"
     );
-    assert!(commands[..8].iter().all(|c| c.2.is_none()));
+    assert!(commands.iter().all(|c| c.1 == CommandScope::SlotFocused));
+    // Only toggle-list has a default chord.
+    let (last, rest) = commands.split_last().unwrap();
+    assert_eq!(last.2, Some("CmdOrCtrl+B"));
+    assert!(rest.iter().all(|c| c.2.is_none()));
     assert!(builtin::is_builtin_pane_path(Path::new(&inbox.path)));
     assert_eq!(
         std::fs::read_to_string(&inbox.path).unwrap(),

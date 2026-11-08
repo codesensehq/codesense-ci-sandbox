@@ -418,6 +418,13 @@ const INVOKE_META = {
       "Archive and read human-directed messages in one transaction; returns newly archived rows. Agent mail, already archived and unknown ids are unchanged. Store failures reject so pages can roll back optimistic state. On a human-inbox surface, pass both {org, team} to act in that synced team; omit both to keep the pinned page team. Partial pairs and explicit targets on other surfaces reject with the verb named.",
     examples: [{ args: { messageIds: [204, 205] }, result: { archived: 2 } }],
   },
+  unarchive: {
+    description:
+      "Undo `archive`: unarchive human-directed messages in one transaction; returns the rows that were archived. Ids in `restoreUnread` (the ones unread before archiving) become unread again; the rest keep their read state. Agent mail, unarchived and unknown ids are unchanged. Store failures reject so pages can roll back optimistic state. On a human-inbox surface, pass both {org, team} to act in that synced team; omit both to keep the pinned page team. Partial pairs and explicit targets on other surfaces reject with the verb named.",
+    examples: [
+      { args: { messageIds: [204, 205], restoreUnread: [205] }, result: { unarchived: 2 } },
+    ],
+  },
   openMessage: {
     description:
       "Open or focus live HTML mail from an agent to the human in this page's team, using the message's team bridge. Rejects markdown/plain, agent-addressed, human-authored and unknown messages. Preserves layout and marks nothing read. On a human-inbox surface, pass both {org, team} to act in that synced team; omit both to keep the pinned page team. Partial pairs and explicit targets on other surfaces reject with the verb named.",

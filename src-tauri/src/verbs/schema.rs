@@ -54,6 +54,10 @@ pub fn args_schema(name: &str) -> Value {
             json!({"topic":string(),"collection":string(),"scope":string(),"team":string(),"storyId":string(),"agentId":string(),"dir":string(),"sinceRev":{"type":"integer"},"window":{"type":"array","items":{"type":"integer","minimum":0},"minItems":2,"maxItems":2}})
         }
         "page" => json!({"topic":string(),"collection":string(),"cursor":string()}),
+        "unarchive" => {
+            let id = json!({"type":"integer","minimum":1,"maximum":9_007_199_254_740_991_i64});
+            json!({"messageIds":{"type":"array","items":id,"minItems":1},"restoreUnread":{"type":"array","items":id},"org":string(),"team":string()})
+        }
         "markUnread" => {
             json!({"messageIds":{"type":"array","items":{"type":"integer","minimum":1,"maximum":9_007_199_254_740_991_i64},"minItems":1},"org":string(),"team":string()})
         }
@@ -126,7 +130,7 @@ pub fn args_schema(name: &str) -> Value {
         "files.read" | "files.delete" => &["path"],
         "files.move" => &["from", "to"],
         "files.create" => &["path", "onCollision"],
-        "markUnread" => &["messageIds"],
+        "markUnread" | "unarchive" => &["messageIds"],
         "dismiss_agent_mark" => &["sessionId", "crashId"],
         "showMenu" => &["anchorRect"],
         "showPopover" => &["kind", "anchorRect"],
@@ -190,6 +194,9 @@ pub fn result_schema(name: &str) -> Value {
         }
         "files.move" => {
             json!({"type":"object","properties":{"fromPath":{"type":"string"},"toPath":{"type":"string"}},"required":["fromPath","toPath"]})
+        }
+        "unarchive" => {
+            json!({"type":"object","properties":{"unarchived":{"type":"integer","minimum":0}},"required":["unarchived"]})
         }
         "markUnread" => {
             json!({"type":"object","properties":{"marked":{"type":"integer","minimum":0}},"required":["marked"]})

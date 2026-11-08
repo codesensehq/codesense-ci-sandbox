@@ -821,6 +821,7 @@ mod tests {
                 "markRead",
                 "markUnread",
                 "archive",
+                "unarchive",
                 "embedMessage",
                 "openMessage",
                 "openFile",

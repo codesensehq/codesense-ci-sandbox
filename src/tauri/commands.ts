@@ -1232,6 +1232,14 @@ export const markInboxMessagesUnread = (team: InboxTeam, messageIds: readonly nu
 export const markInboxMessagesArchived = (team: InboxTeam, messageIds: readonly number[]) =>
   invoke<number>("mark_inbox_messages_archived", { team, messageIds });
 
+/** Undo an archive in one transaction: unarchive human-directed messages and make the ones in
+ *  `restoreUnread` unread again. Resolves how many were unarchived. */
+export const unarchiveInboxMessages = (
+  team: InboxTeam,
+  messageIds: readonly number[],
+  restoreUnread: readonly number[],
+) => invoke<number>("unarchive_inbox_messages", { team, messageIds, restoreUnread });
+
 /** Outcome of `withdrawInboxMessage`. */
 export type WithdrawInboxMessageResult =
   | { status: "withdrawn"; withdrawnAtMs: number }
