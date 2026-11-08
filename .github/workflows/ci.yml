@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+# Ruleset proof: a harmless comment.
 name: CI
 
 on:
