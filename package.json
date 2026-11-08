@@ -154,7 +154,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-resizable-panels": "^4.8.0",
+    "react-resizable-panels": "^4.16.0",
     "rehype-highlight": "^7.0.2",
     "rehype-highlight-code-lines": "^1.2.2",
     "rehype-slug": "^6.0.0",
