@@ -82,7 +82,7 @@ uuid = { version = "1", features = ["v4"] }
 tauri-plugin-updater = "~2.14.1"
 tauri-plugin-process = "~2.3.0"
 # OS notifications for agents that need you (the webview has no Notification API of its own).
-tauri-plugin-notification = "~2.4.0"
+tauri-plugin-notification = "~2.8.0"
 # The beta bundles' `codesense://` scheme (`tauri.beta.conf.json`, plugins.deep-link) which a
 # running beta app's `check_bundle` requires of any update. No link handler is registered;
 # the dependency stays until the bundler is shown to declare the scheme without it.

@@ -6272,13 +6272,13 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-notification"
-version = "2.4.0"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad2fd40946aef810c4be9fd33a2d1b9b397cb79042b2d21c81a0a8f204354fd1"
+checksum = "5bc6c194a95a535abdfbe3bc1af9a43935b8b9b29c216b8e71af8b59132703cf"
 dependencies = [
  "log",
  "notify-rust",
- "rand 0.9.5",
+ "rand 0.10.3",
  "serde",
  "serde_json",
  "serde_repr",
@@ -6287,6 +6287,7 @@ dependencies = [
  "thiserror 2.0.18",
  "time",
  "url",
+ "zbus",
 ]
 
 [[package]]
