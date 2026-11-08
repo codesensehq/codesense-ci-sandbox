@@ -32,8 +32,9 @@ once we accept them.
 - Sign off every commit (`git commit -s`) to certify the
   [Developer Certificate of Origin](https://developercertificate.org/). See
   [Sign-off](#sign-off-dco) below.
-- There is no CI on this repository. Run the [local checks](#local-checks)
-  yourself and say in the pull request which ones you ran.
+- Pull requests run the public CI workflows, and the maintainer decides which
+  checks are required before merge. Say in the pull request which
+  [local checks](#local-checks) you ran.
 
 ### Sign-off (DCO)
 
@@ -88,6 +89,18 @@ pnpm test:rust         # Rust tests
 ```
 
 `pnpm exec prettier --write <file>` fixes the formatting of a file you changed.
+
+### Before the long local checks
+
+- Run `pnpm install` first, and do one check run at a time without starting
+  another test runner or job queue from inside it.
+- Run `pnpm gen:docs` before any Cargo step, and run the tests you changed
+  quickly, without Cargo, before the long run.
+- Leave at least 35 GB of free disk, stop if it drops under 20 GB, and delete
+  `target/` when you are done. Build with the default features only.
+- If a GitHub release download times out, retry it with `gh release download`
+  and check it against its pinned checksum (the scanners' are in
+  `release/scanners.lock`).
 
 If a step fails on a clean checkout, please open an issue.
 

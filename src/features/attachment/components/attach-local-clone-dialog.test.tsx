@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks ---
@@ -131,6 +131,19 @@ beforeEach(() => {
   mockWorkspaceRepos = {};
   mockNoClonePromptRepo = { teamKey: "acme:default", sourceRepoSlug: "owner/repo" };
   storeListeners = [];
+});
+
+// Radix FocusScope queues its unmount auto-focus on a setTimeout. Under fake
+// timers that callback stays pending after unmount, and the real interval
+// behind `shouldAdvanceTime` can fire it after happy-dom is torn down, where
+// `new CustomEvent` is no longer happy-dom's Event and `dispatchEvent` throws.
+// Unmount, flush that timer while the DOM is live, then restore real timers.
+afterEach(() => {
+  cleanup();
+  act(() => {
+    vi.runOnlyPendingTimers();
+  });
+  vi.useRealTimers();
 });
 
 describe("AttachLocalCloneDialog — matching origin happy path", () => {
