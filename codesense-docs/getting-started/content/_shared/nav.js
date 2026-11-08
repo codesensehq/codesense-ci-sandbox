@@ -30,7 +30,8 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Arcs — the 14 named stops. Order is canonical and visible in the dropdown.
+  // Arcs — the 13 named stops, plus the crossref reference page. Order is canonical
+  // and visible in the dropdown.
   // The generator can later rewrite this at build-time; shape stays.
   // ---------------------------------------------------------------------------
   var ARCS = [
@@ -67,8 +68,9 @@
     { letter: "K", slug: "k-review", title: "Sync", href: "./arc-k-sync/index.html" },
     { letter: "L", slug: "l-ship", title: "The factory", href: "./arc-l-factory/index.html" },
     {
-      letter: "M",
+      letter: "↔",
       slug: "m-crossref",
+      crumb: "Reference",
       title: "UI ↔ MCP crossref",
       href: "./ui-mcp-crossref.html",
     },
@@ -358,7 +360,12 @@
         return { title: s.label, crumb: "Dashboard", kind: "page", href: s.href };
       }).concat(
         ARCS.map(function (a) {
-          return { title: a.title, crumb: "Arc " + a.letter, kind: "arc", href: a.href };
+          return {
+            title: a.title,
+            crumb: a.crumb || "Arc " + a.letter,
+            kind: "arc",
+            href: a.href,
+          };
         }),
       );
     }
@@ -594,6 +601,8 @@
 
   // Expose + auto-run.
   window.initDocsNav = initDocsNav;
+  // The arc list, for pages that link to an arc by letter (architecture.html).
+  window.initDocsNav.arcs = ARCS;
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initDocsNav);
   } else {

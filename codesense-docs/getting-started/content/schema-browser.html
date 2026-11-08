@@ -599,15 +599,8 @@
         font: var(--cs-docs-text-xs)/1 var(--cs-font-mono);
         /* WCAG 2.1 AA. */
         color: var(--cs-muted-fg);
-        text-decoration: underline;
-        text-decoration-color: var(--cs-border-strong);
-        text-underline-offset: 2px;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
-      }
-      .cs-schema-fields td.c-desc .srcref:hover {
-        color: var(--cs-fg);
-        text-decoration-color: var(--cs-accent);
       }
 
       /* ---------- Example YAML block. */
@@ -1546,18 +1539,9 @@
           reqCount +
           "</strong> required</span>" +
           "<span>·</span>" +
-          '<a href="#" class="srcref" data-source-ref="' +
+          '<span class="srcref">' +
           esc(s.sourceRef) +
-          '">' +
-          esc(s.sourceRef) +
-          "</a>";
-        var link = meta.querySelector("[data-source-ref]");
-        if (link) {
-          link.addEventListener("click", function (e) {
-            e.preventDefault();
-            openSource(s.sourceRef);
-          });
-        }
+          "</span>";
         return meta;
       }
 
@@ -1597,11 +1581,7 @@
           var descCell = esc(f.description);
           if (f.sourceRef) {
             descCell +=
-              ' <a href="#" class="srcref" data-source-ref="' +
-              esc(f.sourceRef) +
-              '">' +
-              esc(f.sourceRef) +
-              "</a>";
+              ' <span class="srcref">' + esc(f.sourceRef) + "</span>";
           }
           var tr = h("tr", { class: f.required ? "required" : "" });
           tr.innerHTML =
@@ -1628,14 +1608,6 @@
           tbody.append(tr);
         });
         table.append(thead, tbody);
-
-        // Delegate click on source refs.
-        table.addEventListener("click", function (e) {
-          var link = e.target.closest("[data-source-ref]");
-          if (!link) return;
-          e.preventDefault();
-          openSource(link.getAttribute("data-source-ref") || "");
-        });
 
         return table;
       }
@@ -2138,22 +2110,6 @@
         }
         if (!state.selected && SCHEMAS[0]) {
           select(SCHEMAS[0].slug, { pushHash: false });
-        }
-      }
-
-      function openSource(ref) {
-        var cs = window.codesense;
-        if (cs && typeof cs.openSource === "function") {
-          cs.openSource(ref);
-        } else if (cs && typeof cs.invoke === "function") {
-          // Best-effort: try the bridge openFile verb. Harmless if not allowlisted.
-          try {
-            cs.invoke("openFile", { ref: ref });
-          } catch (_) {
-            /* ignore */
-          }
-        } else {
-          console.log("[schema-browser] openSource:", ref);
         }
       }
 

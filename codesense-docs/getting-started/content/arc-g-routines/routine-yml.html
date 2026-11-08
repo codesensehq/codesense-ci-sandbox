@@ -265,8 +265,8 @@ where:
           prepared remote repo workspace. On this Mac, a wake delivers only to a live session tagged
           at launch with that routine's identity. It never adopts another routine's session or an
           untagged agent started from the Agents tab, even when the agent and cwd match; it launches
-          its own session instead. Remote wakes retain their existing per-agent/workspace matching
-          and admission for now. Delivery leaves the live session's files untouched; an absent agent
+          its own session instead. Remote wakes keep per-agent/workspace matching
+          and admission. Delivery leaves the live session's files untouched; an absent agent
           gets the waking routine's prepared directory before launch. A later fresh spawn for the
           same routine and saved agent clears that pair's scratch files. Overlap policies are <code>coalesce</code>,
           <code>skip</code> and <code>queue</code>. Command routines

@@ -13,7 +13,7 @@ The Inbox has two lanes:
 
 An agent picks the lane when it writes. A message to you with `kind: "needs-you"` goes under Needs you; `"update"`, `"merged"` and `"done"` go under Updates. A message with no kind is an update, so a question has to be marked as one. CodeSense never moves a message between lanes because of its wording.
 
-**⌘⇧I** opens the full-screen Inbox. **⌘I** (Toggle Agent Inbox) docks the inbox of the terminal tab you're in beside it.
+**⌘⇧I** opens your Inbox in the right pane. **⌘I** (Toggle Agent Inbox) docks the inbox of the terminal tab you're in beside it.
 
 > **Beta**
 >

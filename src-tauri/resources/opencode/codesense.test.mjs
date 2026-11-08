@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import assert from "node:assert/strict";
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer } from "node:http";
@@ -96,6 +96,16 @@ test("leaves a hand-typed launch's XDG alone", async () => {
   assert.deepEqual(await shellEnvironment(), {});
 });
 
+/** Polls `read` until `done` holds of its value, then returns the value; fails after 5 s. */
+async function until(read, done, what) {
+  const deadline = Date.now() + 5000;
+  for (let value = read(); ; value = read()) {
+    if (done(value)) return value;
+    assert.ok(Date.now() < deadline, `timed out: ${what(value)}`);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
 /** A host whose helper appends each stdin it is run with, as one line, to a log. */
 function fakeHost(wait = "sleep 3") {
   const dir = mkdtempSync(join(tmpdir(), "codesense-opencode-plugin-"));
@@ -106,7 +116,7 @@ function fakeHost(wait = "sleep 3") {
   // $n is how many waiters ran so far.
   writeFileSync(
     helper,
-    `#!/bin/sh
+    `#!/usr/bin/env bash
 if [ "$1 $2" = "--inbox-wait opencode" ]; then
   echo "$3 $4" >> "${waits}"
   n=$(wc -l < "${waits}" | tr -d ' ')
@@ -139,20 +149,12 @@ echo >> "${log}"
     lines,
     armed,
     async armedCount(count) {
-      const deadline = Date.now() + 5000;
-      while (armed().length < count) {
-        assert.ok(Date.now() < deadline, `timed out: ${JSON.stringify(armed())}`);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
+      await until(armed, (seen) => seen.length >= count, JSON.stringify);
       await new Promise((resolve) => setTimeout(resolve, 100));
       return armed();
     },
     async settled(count) {
-      const deadline = Date.now() + 5000;
-      while (lines().length < count) {
-        assert.ok(Date.now() < deadline, `timed out: ${JSON.stringify(lines())}`);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
+      await until(lines, (seen) => seen.length >= count, JSON.stringify);
       await new Promise((resolve) => setTimeout(resolve, 100));
       return lines();
     },
@@ -595,11 +597,7 @@ async function fakeEndpoint({ failFirst = 0, status = 503 } = {}) {
     attrs,
     close: () => server.close(),
     async settled(count) {
-      const deadline = Date.now() + 5000;
-      while (records().length < count) {
-        assert.ok(Date.now() < deadline, `timed out: ${JSON.stringify(posts)}`);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
+      await until(records, (seen) => seen.length >= count, () => JSON.stringify(posts));
       await new Promise((resolve) => setTimeout(resolve, 100));
       return records();
     },
@@ -775,6 +773,8 @@ function fakeClient() {
 
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const mail = (text) => `echo '${text}' >&2; exit 2`;
+/** Waits for the plugin to submit a notice through the fake client. */
+const submitted = (prompts) => until(() => prompts.length, (count) => count > 0, String);
 
 test("the waiter is armed at boot, at a turn's end, at a failed turn and after a tool call", async () => {
   const host = fakeHost();
@@ -826,7 +826,7 @@ test("mail submits its notice to the main session once, through the client", asy
   const plugin = await CodeSense({ client });
   await plugin.event(created("main"));
   await host.armedCount(1);
-  await pause(400);
+  await submitted(prompts);
   assert.deepEqual(prompts, [
     { sessionID: "main", text: "You have 1 new message.", delivery: "queue" },
   ]);
@@ -895,7 +895,7 @@ test("cancelling a mail-woken turn re-arms the waiter, though the idle after the
   const plugin = await CodeSense({ client });
   await plugin.event(created("main"));
   await host.armedCount(1);
-  await pause(400);
+  await submitted(prompts);
   assert.equal(prompts.length, 1);
   await plugin["session.prompt"]({ sessionID: "main" });
   await plugin.event(raised("session.execution.interrupted", { sessionID: "main", reason: "user" }));
@@ -922,7 +922,7 @@ test("a failed turn's own idle leaves the one waiter its failure armed", async (
 
 test("a turn's end replacing a waiter that already printed its notice still delivers it, once", async () => {
   const host = fakeHost(
-    `[ "$n" = 1 ] && { echo 'You have 1 new message.' >&2; sleep 0.6; exit 2; }; sleep 3`,
+    `[ "$n" = 1 ] && { echo 'You have 1 new message.' >&2; sleep 0.6; touch "$dir/exited"; exit 2; }; sleep 3`,
   );
   const { client, prompts } = fakeClient();
   const plugin = await CodeSense({ client });
@@ -933,12 +933,14 @@ test("a turn's end replacing a waiter that already printed its notice still deli
   await plugin["session.prompt"]({ sessionID: "main" });
   await plugin.event(raised("session.execution.succeeded", { sessionID: "main" }));
   await host.armedCount(2);
-  await pause(900);
+  await submitted(prompts);
+  // The replacement waits on; the replaced one, once it has exited, neither delivers again
+  // nor re-arms another. Its exit has no observable effect to wait for, so allow 300 ms.
+  await until(() => existsSync(join(host.dir, "exited")), Boolean, () => "the replaced waiter never exited");
+  await pause(300);
   assert.deepEqual(prompts, [
     { sessionID: "main", text: "You have 1 new message.", delivery: "queue" },
   ]);
-  // The replacement waits on; the replaced one does not re-arm another.
-  await pause(300);
   assert.equal(host.armed().length, 2);
 });
 
@@ -1051,7 +1053,8 @@ test("a finished turn of a session the tab left does not take the waiter, and it
   // A, in the background, finishes: it is not the session the tab follows.
   await plugin.event(raised("session.execution.succeeded", { sessionID: "A" }));
   await plugin["tool.execute.after"]({ tool: "bash", sessionID: "A", id: "c1" });
-  await pause(1200);
+  // B's waiter mails 0.7 s after it was armed, well after A's events would have armed another.
+  await submitted(prompts);
   assert.deepEqual(host.armed().map((line) => line.split(" ")[0]), ["SessionStart", "SessionStart"]);
   assert.deepEqual(prompts, [
     { sessionID: "B", text: "You have 1 new message.", delivery: "queue" },
@@ -1096,14 +1099,24 @@ test("the headless command is found past global options and their values", async
 const deleted = (sessionID) => raised("session.deleted", { sessionID, info: { id: sessionID } });
 
 /** A waiter that prints a notice, then says whether it was confirmed to it, in `dir`. */
-const printsThenListens = `echo 'You have 1 new message.' >&2; if read -t 3 c; then echo "$c" > "$dir/confirmed"; else echo eof > "$dir/unconfirmed"; fi; exit 2`;
-const exists = (host, name) => {
+// A read that times out says so rather than looking like a closed stdin. Elapsed time tells
+// them apart: bash 3.2 (macOS) returns 1 for both, later bash returns >128 for a timeout.
+const printsThenListens = `echo 'You have 1 new message.' >&2; SECONDS=0; if read -t 3 c; then echo "$c" > "$dir/confirmed"; elif [ "$SECONDS" -ge 3 ]; then echo timeout > "$dir/unconfirmed"; else echo eof > "$dir/unconfirmed"; fi; exit 2`;
+const readOr = (path) => {
   try {
-    return readFileSync(join(host.dir, name), "utf8").trim();
+    return readFileSync(path, "utf8");
   } catch {
-    return undefined;
+    return "";
   }
 };
+const exists = (host, name) => readOr(join(host.dir, name)).trim() || undefined;
+/** Waits for the waiter in `host` to finish writing its verdict, `confirmed` or `unconfirmed`. */
+const verdict = (host) =>
+  until(
+    () => ["confirmed", "unconfirmed"].map((name) => readOr(join(host.dir, name))),
+    (texts) => texts.some((text) => text.endsWith("\n")),
+    () => "no verdict from the waiter",
+  );
 
 test("a delivered notice is confirmed to its waiter", async () => {
   const host = fakeHost(`[ "$n" = 1 ] && { ${printsThenListens}; }; sleep 3`);
@@ -1111,7 +1124,7 @@ test("a delivered notice is confirmed to its waiter", async () => {
   const plugin = await CodeSense({ client });
   await plugin.event(created("main"));
   await host.armedCount(1);
-  await pause(500);
+  await verdict(host);
   assert.equal(prompts.length, 1);
   assert.equal(exists(host, "confirmed"), "delivered");
   assert.equal(exists(host, "unconfirmed"), undefined);
@@ -1125,7 +1138,7 @@ test("a notice with no conversation to receive it is not confirmed", async () =>
   await plugin.event(created("B"));
   await host.armedCount(1);
   await plugin.event(deleted("B"));
-  await pause(1500);
+  await verdict(host);
   assert.deepEqual(prompts, [], "never submitted to the deleted conversation");
   assert.equal(exists(host, "confirmed"), undefined);
   assert.equal(exists(host, "unconfirmed"), "eof");
@@ -1137,7 +1150,7 @@ test("a notice OpenCode refuses is not confirmed", async () => {
   const plugin = await CodeSense({ client: refusing });
   await plugin.event(created("main"));
   await host.armedCount(1);
-  await pause(1500);
+  await verdict(host);
   assert.equal(exists(host, "confirmed"), undefined);
   assert.equal(exists(host, "unconfirmed"), "eof");
   const thrown = { session: { prompt: async () => Promise.reject(new Error("gone")) } };
@@ -1145,7 +1158,7 @@ test("a notice OpenCode refuses is not confirmed", async () => {
   const second = await CodeSense({ client: thrown });
   await second.event(created("main"));
   await other.armedCount(1);
-  await pause(1500);
+  await verdict(other);
   assert.equal(exists(other, "confirmed"), undefined);
   assert.equal(exists(other, "unconfirmed"), "eof");
 });

@@ -92,7 +92,7 @@ confirm it matches the machine. Only then call it again with that value as
 `trustedHostKeyFp`. Report each step of the result in plain words, and the install plan if it
 returns one.
 
-If the machine isn't in CodeSense yet, tell the user to add it with **Machines → Add machine…** in CodeSense, or
+If the machine isn't in CodeSense yet, tell the user to add it with **Machines → Add machine** in CodeSense, or
 offer to save it with `save_machine` after they say yes.
 
 ## 5. Summary

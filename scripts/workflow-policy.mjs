@@ -11,7 +11,6 @@ const HOSTED_RUNNERS = new Set([
   "ubuntu-22.04",
   "ubuntu-24.04-arm",
   "macos-latest",
-  "macos-14",
   "macos-15",
   "macos-26",
   "windows-latest",

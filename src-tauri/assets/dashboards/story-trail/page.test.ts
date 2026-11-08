@@ -100,6 +100,8 @@ describe('trail entry paths',()=>{
     expect(document.body.textContent).not.toContain('$0');
   });
   it('saves a user-entered rate through setModelRate',async()=>{
+    // The form defaults effective-from to the local day of the earliest session (1 s past the epoch), so pin the zone.
+    vi.stubEnv('TZ','America/Los_Angeles');
     const h=boot(vi.fn().mockResolvedValue(story({sessions:[session('lead',{cost:{state:'absent',totalUsd:null,source:null,reason:'unpriced'},models:[{model:'new-model',costUsd:null,costSource:null}]})]})));await settle();
     document.querySelector<HTMLButtonElement>('[data-rate]')!.click();
     const form=document.querySelector<HTMLFormElement>('#rate-form')!;

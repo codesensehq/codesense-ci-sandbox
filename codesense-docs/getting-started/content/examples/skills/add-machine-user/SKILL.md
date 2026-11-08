@@ -75,7 +75,7 @@ the same `grep -c` without `sudo` on the shared account. It should print `1`.
 You can't test their login from here: it uses their key. Tell the user to send the teammate:
 
 - the host, port and their user name;
-- to add it in CodeSense with **Machines → Add machine…**, or to ask their agent to run
+- to add it in CodeSense with **Machines → Add machine**, or to ask their agent to run
   `/setup-machine`, which ends with the `test_machine_connection` check.
 
 If the team shares machines in CodeSense, the machine can also be saved for the team with

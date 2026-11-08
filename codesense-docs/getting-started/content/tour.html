@@ -610,7 +610,6 @@
 
       <!-- ===================== Stage ===================== -->
       <section class="cs-docs-tour-stage" aria-label="Tour stage" data-search="Guided walkthrough of the CodeSense window" id="stage">
-        <!-- Animated SVG shell. Hero visual per invariant I-9. -->
         <div class="cs-docs-tour-shell" data-has-shot="false" aria-hidden="false">
           <img class="cs-docs-tour-shell__shot" alt="" data-cs-tour-shot src="" />
 
@@ -733,7 +732,7 @@
                   stroke-linejoin="round"
                 ></path>
                 <text class="shell-sans" x="36" y="222" font-size="12" fill="var(--cs-fg)" font-weight="500">arcs</text>
-                <text class="shell-sans shell-muted" x="190" y="222" font-size="10">14</text>
+                <text class="shell-sans shell-muted" x="190" y="222" font-size="10">13</text>
               </g>
 
               <g>
@@ -805,7 +804,7 @@
                   Welcome to CodeSense
                 </text>
                 <text class="shell-sans shell-muted" x="256" y="134" font-size="12">
-                  A dark console, 14 arcs, one running factory.
+                  A dark console, 13 arcs, one running factory.
                 </text>
 
                 <rect x="256" y="156" width="548" height="2" fill="var(--cs-border)"></rect>
@@ -1443,7 +1442,7 @@
           {
             title: "Identity",
             arc: "Arc B · The model",
-            body: "Who you are, which org, which team. Everything else — context, agents, worktrees — inherits from this chip. Click it to switch orgs or sign in on a new Mac.",
+            body: "Who you are, which org, which team. Everything else — context, agents, worktrees — inherits from this chip. Click it to switch context repos and teams.",
             spot: { x: 1056, y: 6, w: 132, h: 28 },
             open: null,
             deep: "./arc-b-model/index.html",
@@ -1515,7 +1514,7 @@
           {
             title: "Workspaces & worktrees",
             arc: "Arc C · Workspaces & worktrees",
-            body: "Prepared worktrees of your repos, created where the work needs them. Each story gets its own branch; parallel work doesn't collide; opening a workspace readies five Macs at once.",
+            body: "Prepared worktrees of your repos, created where the work needs them. Each story gets its own branch; parallel work doesn't collide.",
             spot: { x: 72, y: 50, w: 436, h: 318 },
             open: null,
             deep: "./arc-c-workspaces-and-worktrees/index.html",
@@ -1750,12 +1749,10 @@
         // --- Close ------------------------------------------------------
         function closeTour() {
           var cs = window.codesense;
-          if (cs && typeof cs.closeTab === "function") {
-            cs.closeTab();
-            return;
-          }
           if (cs && typeof cs.openFile === "function") {
-            cs.openFile({ path: "./README.html" });
+            cs.openFile({ path: "./README.html" }).catch(function () {
+              location.href = "./README.html";
+            });
             return;
           }
           history.back();
@@ -1827,14 +1824,10 @@
         );
 
         // --- Theme-aware screenshot swap --------------------------------
-        if (
-          window.codesense &&
-          window.codesense.kit &&
-          typeof window.codesense.kit.subscribeContext === "function"
-        ) {
-          window.codesense.kit.subscribeContext(function (ctx) {
-            if (ctx && ctx.theme) {
-              document.documentElement.setAttribute("data-theme", ctx.theme);
+        if (window.codesense && typeof window.codesense.onTheme === "function") {
+          window.codesense.onTheme(function (theme) {
+            if (theme && theme.scheme) {
+              document.documentElement.setAttribute("data-theme", theme.scheme);
               trySwapScreenshot(STEPS[current - 1]);
             }
           });

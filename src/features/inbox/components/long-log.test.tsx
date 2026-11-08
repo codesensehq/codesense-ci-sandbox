@@ -281,19 +281,26 @@ describe("Mailspool on a long log", () => {
   });
 
   it("still walks lines with j/k, bringing a line outside the window into view", async () => {
-    inbox(longInbox(200));
+    // Long enough that the oldest line is outside the drawn window, short enough that one
+    // re-render per key stays well inside the test timeout on a slow runner.
+    const n = 40;
+    inbox(longInbox(n));
     await renderRail("spool");
     const log = await screen.findByTestId("ibx-log");
     await waitFor(() => expect(atEnd(log)).toBe(true));
+    expect(log.querySelector('[data-log="alderco/default#1"]')).toBeNull();
     // From no selection, j starts where the reader is: the newest line, at the bottom.
     fireEvent.keyDown(log, { key: "j" });
-    expect(log.querySelector(".ibx-lrow.sel")).toHaveAttribute("data-log", "alderco/default#200");
+    expect(log.querySelector(".ibx-lrow.sel")).toHaveAttribute("data-log", `alderco/default#${n}`);
     fireEvent.keyDown(log, { key: "k" });
-    expect(log.querySelector(".ibx-lrow.sel")).toHaveAttribute("data-log", "alderco/default#199");
+    expect(log.querySelector(".ibx-lrow.sel")).toHaveAttribute(
+      "data-log",
+      `alderco/default#${n - 1}`,
+    );
     // Walking to the oldest line scrolls it into the window and draws it.
     fireEvent.keyDown(log, { key: "j" });
     fireEvent.keyDown(log, { key: "Home" });
-    for (let i = 0; i < 199; i++) fireEvent.keyDown(log, { key: "k" });
+    for (let i = 0; i < n - 1; i++) fireEvent.keyDown(log, { key: "k" });
     await waitFor(() =>
       expect(log.querySelector(".ibx-lrow.sel")).toHaveAttribute("data-log", "alderco/default#1"),
     );

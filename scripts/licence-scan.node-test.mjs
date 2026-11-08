@@ -8,6 +8,7 @@ import { test } from "node:test";
 import {
   DECISIONS,
   DENY,
+  LOCKFILE,
   NOTICES,
   NPM_IGNORES,
   VENDORED,
@@ -25,6 +26,8 @@ import {
   npmIgnores,
   npmMetadataGaps,
   npmPackages,
+  notNative,
+  platformPackages,
   pnpmAuditConfigProblems,
   staleNpmIgnores,
   renderNotices,
@@ -304,6 +307,73 @@ test("--check fails unless the notices at HEAD match the generated ones exactly"
   assert.match(staleNotices("# old\n", "# n\n"), /at HEAD differs/);
 });
 
+test("platform-specific packages are the pnpm-lock.yaml packages with an os, cpu or libc field", () => {
+  const lock = [
+    "lockfileVersion: '9.0'",
+    "",
+    "importers:",
+    "",
+    "  .:",
+    "    os: [darwin]",
+    "",
+    "packages:",
+    "",
+    "  '@esbuild/linux-x64@0.25.0':",
+    "    resolution: {integrity: sha512-x}",
+    "    engines: {node: '>=18'}",
+    "    cpu: [x64]",
+    "    os: [linux]",
+    "",
+    "  fsevents@2.3.3:",
+    "    resolution: {integrity: sha512-f}",
+    "    os: [darwin]",
+    "",
+    "  '@img/sharp-linuxmusl-x64@0.34.0':",
+    "    resolution: {integrity: sha512-m}",
+    "    libc: [musl]",
+    "",
+    "  plain@1.0.0:",
+    "    resolution: {integrity: sha512-p}",
+    "",
+    "snapshots:",
+    "",
+    "  plain@1.0.0:",
+    "    os: [darwin]",
+    "",
+  ].join("\n");
+  assert.deepEqual([...platformPackages(lock).keys()].sort(), [
+    "@esbuild/linux-x64@0.25.0",
+    "@img/sharp-linuxmusl-x64@0.34.0",
+    "fsevents@2.3.3",
+  ]);
+  assert.equal(platformPackages(lock.replace(/\n/g, "\r\n")).size, 3);
+  assert.deepEqual(platformPackages(lock).get("@esbuild/linux-x64@0.25.0"), {
+    os: ["linux"],
+    cpu: ["x64"],
+    libc: [],
+  });
+  assert.equal(notNative(platformPackages(lock).get("fsevents@2.3.3")), false);
+  const odd = platformPackages(
+    "packages:\n\n  a@1:\n    os: ['!win32']\n  w@1:\n    cpu: [wasm32]\n",
+  );
+  assert.deepEqual(odd.get("a@1").os, ["!win32"]);
+  assert.equal(notNative(odd.get("a@1")), true);
+  assert.equal(notNative(odd.get("w@1")), true);
+  // The production graph's one today: fsevents, macOS only, under @excalidraw/excalidraw's sass.
+  const real = platformPackages(read(LOCKFILE));
+  assert.ok(real.has("fsevents@2.3.3"));
+  const listed = [...read(NOTICES).matchAll(/^\| ([^|]+) \| ([^|]+) \|/gm)].map((m) => [
+    m[1],
+    m[2],
+  ]);
+  assert.ok(listed.length > 500);
+  assert.deepEqual(
+    listed.filter(([name, version]) => real.has(`${name}@${version}`)),
+    [],
+    `${NOTICES} lists a platform-specific package; regenerate it`,
+  );
+});
+
 // A throwaway repo root for main(): the real deny.toml, a one-component vendored manifest, and the
 // given files. Returns the root and a remover.
 function fixtureRoot(files = {}) {
@@ -324,6 +394,7 @@ function fixtureRoot(files = {}) {
       ],
     }),
     "vend.LICENSE": "MIT vend",
+    [LOCKFILE]: "lockfileVersion: '9.0'\n\npackages:\n",
     ...files,
   };
   for (const [rel, text] of Object.entries(all)) {
@@ -340,8 +411,9 @@ const spawnResult = (stdout = "", stderr = "", status = 0) => ({ status, stdout,
 function runScan(root, argv, npm, t) {
   const calls = [];
   const errors = [];
+  const logs = [];
   t.mock.method(console, "error", (m) => errors.push(m));
-  t.mock.method(console, "log", () => {});
+  t.mock.method(console, "log", (m) => logs.push(m));
   const exec = (cmd, args) => {
     calls.push(`${cmd} ${args.join(" ")}`);
     if (cmd === "pnpm") return JSON.stringify(npm);
@@ -368,7 +440,7 @@ function runScan(root, argv, npm, t) {
   };
   const code = main(argv, { root, run: exec, spawn });
   t.mock.restoreAll();
-  return { code, calls, errors };
+  return { code, calls, errors, logs };
 }
 
 test("a GPL production dependency fails --check; dev and test dependencies are out of scope by design", (t) => {
@@ -402,6 +474,43 @@ test("a GPL production dependency fails --check; dev and test dependencies are o
     JSON.stringify({ "npm:planted-gpl": { licence: "GPL-3.0-only", reason: "test" } }),
   );
   assert.equal(runScan(root, ["--check"], gpl, t).code, 0);
+});
+
+test("notices are the same on every host: macOS, which lists fsevents, and Linux, which does not", (t) => {
+  const lock = "lockfileVersion: '9.0'\n\npackages:\n\n  fsevents@2.3.3:\n    os: [darwin]\n";
+  const { root, done } = fixtureRoot({ [LOCKFILE]: lock });
+  t.after(done);
+  const dep = { name: "ok-dep", versions: ["1.0.0"], paths: [`${root}/ok`] };
+  const linux = { MIT: [dep] };
+  const darwin = { MIT: [dep, { name: "fsevents", versions: ["2.3.3"], paths: [`${root}/fs`] }] };
+
+  const mac = runScan(root, [], darwin, t);
+  assert.equal(mac.code, 0);
+  // Left out, but never silently: the summary names it.
+  assert.match(mac.logs.at(-1), /; 1 platform-specific left out \(fsevents@2\.3\.3\)$/);
+  assert.deepEqual(mac.errors, []);
+  const onMac = readFileSync(join(root, NOTICES), "utf8");
+  assert.ok(!onMac.includes("fsevents"));
+  assert.match(onMac, /\| ok-dep \| 1\.0\.0 \|/);
+  const onLinux = runScan(root, ["--check"], linux, t);
+  assert.equal(onLinux.code, 0, onLinux.errors.join("\n"));
+  assert.match(onLinux.logs.at(-1), /; 0 platform-specific left out$/);
+  runScan(root, [], linux, t);
+  assert.equal(readFileSync(join(root, NOTICES), "utf8"), onMac);
+
+  // Left out of the notices, a platform-specific package still needs an allowed licence.
+  const gpl = { ...linux, "GPL-3.0-only": [darwin.MIT[1]] };
+  const planted = runScan(root, ["--check"], gpl, t);
+  assert.equal(planted.code, 1);
+  assert.ok(planted.errors.includes("  npm fsevents 2.3.3: GPL-3.0-only"));
+
+  // A package limited by a negated os is not a native build and may ship: it stays in.
+  writeFileSync(join(root, LOCKFILE), `${lock}  not-win@1.0.0:\n    os: ['!win32']\n`);
+  const notWin = { MIT: [dep, { name: "not-win", versions: ["1.0.0"], paths: [`${root}/n`] }] };
+  const kept = runScan(root, [], notWin, t);
+  assert.equal(kept.code, 0);
+  assert.match(readFileSync(join(root, NOTICES), "utf8"), /\| not-win \| 1\.0\.0 \|/);
+  assert.match(kept.logs.at(-1), /; 0 platform-specific left out$/);
 });
 
 test("deny.toml [advisories]: unsound and unmaintained cover every crate; each ignore is a table with a reason", () => {

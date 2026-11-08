@@ -551,7 +551,7 @@
           </h1>
           <p class="cs-docs-home__lede cs-docs-reveal">
             <strong>CodeSense</strong> is the context layer and execution surface for agent-driven
-            engineering teams. Fourteen arcs below walk you from first launch to many agents working
+            engineering teams. Thirteen arcs below walk you from first launch to many agents working
             in parallel on this Mac and on machines you reach over SSH — then show how every step is reproducible via MCP,
             with no UI required.
           </p>
@@ -861,9 +861,9 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
 
       <!-- =============== Arcs =============== -->
       <div class="cs-docs-home__section">
-        <h2>The fourteen arcs</h2>
+        <h2>The thirteen arcs, and the crossref</h2>
         <span class="cs-docs-home__section-hint">
-          Read A → N once. After that, search. Updating or removing the app:
+          Read the arcs in order once. After that, search. Updating or removing the app:
           <a href="./arc-n-reference/updates-and-uninstall.html">Updates, network calls and removing CodeSense</a>.
         </span>
       </div>
@@ -1307,15 +1307,14 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
           </div>
         </a>
 
-        <!-- M -->
+        <!-- Crossref (a reference page, not an arc) -->
         <a
           href="./ui-mcp-crossref.html"
           class="cs-docs-home__arc cs-docs-reveal"
           role="listitem"
-          data-arc="M"
         >
           <div class="cs-docs-home__arc-row">
-            <span class="cs-docs-home__arc-letter">M</span>
+            <span class="cs-docs-home__arc-letter">↔</span>
             <span class="cs-docs-home__arc-icon" aria-hidden="true">
               <svg
                 viewBox="0 0 24 24"
@@ -1330,9 +1329,9 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
               </svg>
             </span>
           </div>
-          <h3 class="cs-docs-home__arc-title">MCP can do everything</h3>
+          <h3 class="cs-docs-home__arc-title">UI ↔ MCP crossref</h3>
           <p class="cs-docs-home__arc-hook">
-            The invariant made auditable. Every UI action paired with its tool.
+            Which UI actions have an MCP tool, and which are UI only.
           </p>
           <div class="cs-docs-home__arc-chips">
             <span class="cs-docs-chip">crossref</span>
@@ -1369,8 +1368,6 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
             Every YAML schema, every shortcut, every file extension CodeSense renders.
           </p>
           <div class="cs-docs-home__arc-chips">
-            <!-- Counts placeholder — resolved from generated/schemas.json +
-               shortcuts.json once the primitives generator ships. I-11 compliant. -->
             <span class="cs-docs-chip"
               ><data-count id="schemas">All</data-count> schemas</span
             >
@@ -1447,10 +1444,10 @@ open_workspace({ <span class="tok-k">target</span>: <span class="tok-s">"story"<
               <polyline points="16 21 20 17 16 13" />
               <line x1="20" y1="17" x2="4" y2="17" />
             </svg>
-            UI = MCP
+            UI and MCP
           </h3>
           <p>
-            Everything the UI does, MCP does — the invariant is auditable. See
+            Most of what the UI does, MCP does too. See which actions pair up in
             <a href="./ui-mcp-crossref.html">the UI&harr;MCP crossref</a>.
           </p>
         </div>

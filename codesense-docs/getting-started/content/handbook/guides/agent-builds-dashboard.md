@@ -70,7 +70,7 @@ const { sessions, days, totals } = await codesense.sessionUsage({
 
 ## A dashboard published to share.codesense.ai
 
-Publishing a dashboard to share.codesense.ai is invite only: you choose who sees it. The tools are `create_dashboard`, `publish_dashboard`, `share_dashboard` and `unpublish_dashboard`. Parts that are decided but not built yet are marked.
+Publishing a dashboard to share.codesense.ai is invite only: you choose who sees it. The tools are `create_dashboard`, `publish_dashboard`, `share_dashboard` and `unpublish_dashboard`.
 
 Dashboards saved in synced team content, including dashboards shared from a parent team, appear automatically in **Identity → Dashboards**. Select a team dashboard and choose **Publish**; CodeSense records its folder on this Mac as part of publishing. Use **Open dashboard folder** for a dashboard folder outside your teams' content.
 
@@ -195,9 +195,9 @@ live:
 | `publish.state` | `draft` or `published`. `publish_dashboard` and `unpublish_dashboard` set it; do not edit it by hand. |
 | `publish.visibility` | `private` or `team`. `team` is reserved and is currently the same as `private`: only invited viewers get in. |
 | `publish.files` | Every file the pages use, as relative paths inside the folder: no leading `/`, no `./` or `..`, no backslash, no symlink or hard link, each listed once. |
-| `publish.entry` | Decided, not built. The manifest has no entry field yet; the viewer opens `index.html`, or else the first `.html` file in sorted order. Always have an `index.html`. |
+| `publish.entry` | Not a manifest field. The viewer opens `index.html`, or else the first `.html` file in sorted order. Always have an `index.html`. |
 | `live` | Optional. See [Live answers](#live-answers). |
-| `viewers.session_days` | Optional. 1 to 365; the default is 90. How many days without a visit end a viewer's session. A session ends 90 days after sign-in at the latest. |
+| `viewers.session_days` | Optional. 1 to 365, default 90: how many days without a visit end a viewer's session. Sessions end 90 days after sign-in at the latest, so values above 90 act as 90. |
 
 Limits: at most 50 files, 5 MB per file, 25 MB in all. Allowed types: `html`, `css`, `js`, `json`, `csv`, `txt`, `png`, `jpg`/`jpeg`, `webp`, `gif`. SVG and font files are not allowed.
 
@@ -215,7 +215,7 @@ On share.codesense.ai each page runs in a sandboxed frame with no network access
 - Each page load is a fresh document. Keep state in the URL fragment, or read it again from data files.
 - Per page, at most 8 file reads run at once and 25 MB can be read in all. Read data once on load; the viewer reloads the page when a new version arrives.
 
-Decided, not built: publish does not yet scan pages for references to unlisted files or to files outside the folder, and it does not yet report linked dashboards that are not published. Until then, such a reference just fails to load in the viewer, so check references before you publish.
+Publish doesn't scan pages for references to unlisted files or to files outside the folder, and it doesn't report linked dashboards that aren't published. Such a reference just fails to load in the viewer, so check references before you publish.
 
 The same page works in CodeSense on your Mac, which serves the folder's files, so open `index.html` there to check it before you publish.
 
@@ -239,7 +239,7 @@ A `live` block lets the page ask your Mac read-only questions while it is connec
 | `runs` | Recent agent runs and how each ended. Not the summary or workspace unless shared. |
 | `queryContext` | Files in the dashboard's own team context by their metadata, with only the fields the dashboard lists. No file text. |
 
-`get_live_data_contract` (section `hosted`) lists each query's arguments and fields. Secrets are never answered, answers are redacted and capped at 256 KB (see "Answer size" below), each answer has 10 seconds, and a viewer can ask 60 times a minute.
+`get_live_data_contract` (section `hosted`) lists each query's arguments and fields. No query returns publisher tokens, API keys or Keychain items. Answers are redacted by shape and label, which can't catch every secret. Each answer is capped at 256 KB (see "Answer size" below) and has 10 seconds, and a viewer can ask 60 times a minute.
 
 A person decides the `live` block, once, in the CodeSense app. When an agent publishes a new or wider `live` block, `publish_dashboard` publishes the page without live data and returns `live: pending_confirmation`; CodeSense asks the person in a dialog and in the Dashboards tab, and live data stays paused until they confirm. A narrower or removed block takes effect within seconds with no new publish (your Mac saves it and sends the new list to the server, retried once a minute while the server cannot be reached). A person can turn live data off for a dashboard at any time from the Dashboards tab. A live dashboard keeps a connection to share.codesense.ai open while CodeSense runs, and streams the terminals it lists with secrets masked; see [what leaves your Mac](../concepts/security-and-privacy.md#what-leaves-your-mac).
 
@@ -390,7 +390,7 @@ A viewer opens the link in the invite email (valid for 15 minutes, single use) a
 - Use SVG or font files, more than 50 files, a file over 5 MB, or more than 25 MB in all.
 - Write anything as an invited viewer. An owner can run declared actions, including starting the declared agent. Terminal input requires the dashboard to enable control and the owner to take it in the viewer.
 - Send invite emails yourself: they are reviewed before they are sent.
-- Choose a different first page yet (`publish.entry` is decided, not built).
+- Choose a different first page. The viewer opens `index.html`, or else the first `.html` file in sorted order.
 The full guide ships in the app's docs: **Dashboard primitives → Your first dashboard**.
 
 ### Hosted file retention
@@ -429,8 +429,8 @@ the arg to configure and the epic or team it must belong to.
 
 The Mac checks before running a query and returns `arg_not_allowed`. The share server also
 checks before relay or cache fallback; a refusal never serves cached data. Edited
-pins take effect when the watcher saves the block, without republishing. Until then
-asks fail closed. Changed pins delete that query's cached answers. Streams are not
+pins take effect when the watcher saves the block, without republishing; asks fail
+closed until it does. Changed pins delete that query's cached answers. Streams are not
 pinned by this block.
 
 Only `storyChanges.storyId` also accepts `{epic: DEMO}` or `{team: platform}`

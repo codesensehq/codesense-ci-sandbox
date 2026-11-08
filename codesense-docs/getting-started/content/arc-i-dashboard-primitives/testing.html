@@ -19,10 +19,10 @@
         <span class="cs-docs-eyebrow">Arc I · Loop</span>
         <h1>Edit. Reload. Confirm.</h1>
         <p class="lede">
-          A dashboard is a text file in your context repo. You edit it in any editor, you
-          reload the tab in CodeSense, you see the change. There is no build step, no
+          A dashboard is a text file in your context repo. You edit it in any editor, the
+          open tab in CodeSense reloads, you see the change. There is no build step, no
           hot-module tooling, no sourcemap drama. This page walks the loop end to end —
-          inspecting the bridge, catching errors, previewing the file standalone before you
+          probing the bridge, catching errors, previewing the file standalone before you
           plug it into the viewer.
         </p>
 
@@ -31,7 +31,7 @@
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 640 220"
             role="img"
-            aria-label="Four-step cycle around a circle: edit the file, save, reload the tab, confirm. A branch at reload goes to standalone preview if the viewer is unavailable."
+            aria-label="Four-step cycle around a circle: edit the file, save, the tab reloads, confirm. A branch at reload goes to standalone preview if the viewer is unavailable."
           >
             <title>Edit · reload · confirm</title>
 
@@ -54,7 +54,7 @@
             </g>
             <g>
               <rect class="i-surf" x="265" y="164" width="110" height="36" rx="6" />
-              <text class="i-txt" x="320" y="186" text-anchor="middle">⌘R reload</text>
+              <text class="i-txt" x="320" y="186" text-anchor="middle">tab reloads</text>
             </g>
             <g>
               <rect class="i-surf" x="135" y="92" width="110" height="36" rx="6" />
@@ -86,10 +86,10 @@
             </p>
           </li>
           <li>
-            <h3>Reload the tab</h3>
+            <h3>Watch the tab reload</h3>
             <p>
-              Focus the dashboard tab and hit <code>⌘R</code>. The viewer reloads the iframe,
-              re-injects the bridge, and your doc runs fresh. State you kept in JS memory
+              When the file changes on disk, the open tab reloads its iframe, re-injects the
+              bridge, and your doc runs fresh. State you kept in JS memory
               resets — persisted state (via <code>codesense.setField</code> or your own
               <code>localStorage</code>) survives.
             </p>
@@ -108,29 +108,36 @@
               The viewer forwards <code>window.onerror</code> and
               <code>unhandledrejection</code> to the host via
               <code>codesense:doc-error</code>, which renders a red banner inside the frame
-              with the message, source, and line. For deeper poking, open the WebKit inspector
-              from the viewer's debug menu (⌘⌥I on macOS).
+              with the message, source, and line.
             </p>
           </li>
         </ol>
       </section>
 
       <!-- =============== Inspecting the bridge =============== -->
-      <section data-search="Inspecting the bridge window codesense console" id="inspect">
-        <h2>Inspecting the bridge from the console</h2>
+      <section data-search="Probing the bridge window codesense script" id="inspect">
+        <h2>Probing the bridge from a script</h2>
         <p>
-          With the inspector open on your dashboard, the <code>window.codesense</code> object
-          is right there. Every method is callable from the console the same way your doc
-          calls it. Use this to probe a verb before you wire it into UI code:
+          The shipped app has no web inspector, but any script in your dashboard can call
+          <code>window.codesense</code>. Probe a verb from a scratch copy of the page before you
+          wire it into UI code, and print each result into the page to read it. Put it in a
+          <code>&lt;script type="module"&gt;</code>, which allows <code>await</code> at the top level:
         </p>
-        <pre><code>// What verbs are exposed?
-Object.keys(window.codesense).sort();
+        <pre><code>// Print each result into the page, one block per result.
+const show = (label, value) =&gt; {
+  const pre = document.createElement("pre");
+  pre.textContent = label + ": " + JSON.stringify(value, null, 2);
+  document.body.append(pre);
+};
+
+// What verbs are exposed?
+show("members", Object.keys(window.codesense).sort());
 
 // Dry-run a verb to see the result shape
-await codesense.invoke("worktrees", {});
+show("worktrees", await codesense.invoke("worktrees", {}));
 
 // Snapshot the current theme palette
-await codesense.theme();
+show("theme", await codesense.theme());
 
 // Simulate what a parent nudge would do
 window.dispatchEvent(new MessageEvent("message", {
@@ -138,8 +145,8 @@ window.dispatchEvent(new MessageEvent("message", {
 }));</code></pre>
         <p>
           The last line is the trick for exercising a subscriber without the host actually
-          moving — paste it, watch your handler fire. Pair with the console log the handler
-          produces to verify filter logic.
+          moving: run it and watch your handler fire. Have the handler write what it saw to
+          the page to check its filter logic.
         </p>
       </section>
 
@@ -242,13 +249,11 @@ bridge.invoke("worktrees", {}).then(render);</code></pre>
       </section>
 
       <!-- =============== Try this now =============== -->
-      <section data-search="Try this now theme snapshot invoke" id="try-this-now">
+      <section data-search="Try this now verify the bridge invoke" id="try-this-now">
         <h2>Try this now</h2>
         <p>
-          Open the WebKit inspector on this page (<code>⌘⌥I</code>) and type
-          <code>codesense.theme()</code> at the console prompt. You'll see the live palette
-          object the viewer handed you. Then click the button to issue a plain read through
-          the Try-this wrapper the training manual uses — if it answers, your bridge is live:
+          Click the button to issue a plain read through the Try-this wrapper the training
+          manual uses. If it answers, your bridge is live:
         </p>
         <cs-try-this
           verb="worktrees"

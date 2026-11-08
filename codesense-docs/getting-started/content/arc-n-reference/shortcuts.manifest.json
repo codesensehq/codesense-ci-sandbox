@@ -11,7 +11,7 @@
           "label": "Open Settings",
           "mac": "⌘,",
           "winLinux": "Ctrl+,",
-          "menu": "CodeSense → Settings"
+          "menu": "CodeSense → Settings…"
         },
         {
           "id": "nav.open-machines",
@@ -36,7 +36,7 @@
         },
         {
           "id": "nav.open-workspaces",
-          "label": "Open Context Repos",
+          "label": "Open context repos",
           "mac": "⌘⌥W",
           "winLinux": "Ctrl+Alt+W",
           "menu": "Go → Context Repos"
@@ -53,7 +53,7 @@
           "label": "Command Palette",
           "mac": "⌘⇧P",
           "winLinux": "Ctrl+Shift+P",
-          "menu": "Go → Command Palette"
+          "menu": "(not in menu)"
         },
         {
           "id": "nav.switch-team",
@@ -61,6 +61,20 @@
           "mac": "⌘⌥⇧T",
           "winLinux": "Ctrl+Alt+Shift+T",
           "menu": "Go → Switch Team"
+        },
+        {
+          "id": "nav.context-back",
+          "label": "Back",
+          "mac": "⌘[",
+          "winLinux": "Alt+Left",
+          "menu": "Go → Back"
+        },
+        {
+          "id": "nav.context-forward",
+          "label": "Forward",
+          "mac": "⌘]",
+          "winLinux": "Alt+Right",
+          "menu": "Go → Forward"
         }
       ]
     },
@@ -74,28 +88,35 @@
           "label": "Open Workspace",
           "mac": "⌘K",
           "winLinux": "Ctrl+K",
-          "menu": "Go → Open Workspace"
+          "menu": "(not in menu)"
+        },
+        {
+          "id": "nav.quick-open",
+          "label": "Quick Open File",
+          "mac": "⌘P",
+          "winLinux": "Ctrl+P",
+          "menu": "(not in menu)"
         },
         {
           "id": "nav.open-note-switcher",
           "label": "Open Note Switcher",
           "mac": "⌘O",
           "winLinux": "Ctrl+O",
-          "menu": "Go → Open Note Switcher"
+          "menu": "(not in menu)"
         },
         {
           "id": "nav.goto-heading",
           "label": "Go to Heading",
           "mac": "⌘⇧O",
           "winLinux": "Ctrl+Shift+O",
-          "menu": "Go → Go to Heading"
+          "menu": "(not in menu)"
         },
         {
           "id": "nav.focus-left-search",
           "label": "Focus Nav Search",
           "mac": "⌘⇧F",
           "winLinux": "Ctrl+Shift+F",
-          "menu": "Go → Focus Nav Search"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.toggle-terminal",
@@ -109,14 +130,14 @@
           "label": "Toggle Sidebar",
           "mac": "⌘B",
           "winLinux": "Ctrl+B",
-          "menu": "View → Toggle Sidebar"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.toggle-inbox-rollup",
           "label": "Inbox",
           "mac": "⇧⌘I",
           "winLinux": "Ctrl+Shift+I",
-          "menu": "View → Inbox"
+          "menu": "View → Panels → Inbox"
         },
         {
           "id": "viewer.toggle-right-pane",
@@ -137,35 +158,35 @@
           "label": "Cycle Terminal Layout",
           "mac": "⌘⇧L",
           "winLinux": "Ctrl+Shift+L",
-          "menu": "View → Cycle Terminal Layout"
-        },
-        {
-          "id": "viewer.toggle-sync",
-          "label": "Toggle Sync View",
-          "mac": "⌘⇧S",
-          "winLinux": "Ctrl+Shift+S",
-          "menu": "View → Toggle Sync View"
+          "menu": "Terminal layout button, below the terminal"
         },
         {
           "id": "weft.jump-to-next-needs-you",
           "label": "Jump to Next Needs-You",
           "mac": "⌘⌥⇧J",
           "winLinux": "Ctrl+Alt+Shift+J",
-          "menu": "Go → Jump to Next Needs-You"
+          "menu": "(not in menu)"
+        },
+        {
+          "id": "viewer.focus-tile-question",
+          "label": "Jump to What Needs You",
+          "mac": "⌘⇧J",
+          "winLinux": "Ctrl+Shift+J",
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.edit-file",
           "label": "Edit File",
           "mac": "⌘E",
           "winLinux": "Ctrl+E",
-          "menu": "File → Edit File"
+          "menu": "Edit button beside Read-only"
         },
         {
           "id": "story.launch-agent",
           "label": "Launch Agent on Story",
           "mac": "⌘⇧A",
           "winLinux": "Ctrl+Shift+A",
-          "menu": "File → Launch Agent on Story"
+          "menu": "Story in the sidebar, right-click → Launch agent"
         }
       ]
     },
@@ -179,42 +200,49 @@
           "label": "Toggle Story HUD",
           "mac": "⌘⇧H",
           "winLinux": "Ctrl+Shift+H",
-          "menu": "View → Toggle Story HUD"
+          "menu": "Tile options (or View options) → Story summary (Epic summary on an epic)"
         },
         {
           "id": "viewer.toggle-story-hud-size",
           "label": "Expand / Collapse Story HUD",
           "mac": "⌘⇧U",
           "winLinux": "Ctrl+Shift+U",
-          "menu": "View → Expand / Collapse Story HUD"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.toggle-source-diff",
           "label": "Toggle Source Diff",
           "mac": "⌘⇧D",
           "winLinux": "Ctrl+Shift+D",
-          "menu": "View → Toggle Source Diff"
+          "menu": "Tile options (or View options) → Source diff"
         },
         {
           "id": "viewer.toggle-code-editor",
           "label": "Toggle Code Editor",
           "mac": "⌘⇧C",
           "winLinux": "Ctrl+Shift+C",
-          "menu": "View → Toggle Code Editor"
+          "menu": "Tile options (or View options) → Code editor"
         },
         {
           "id": "viewer.toggle-agent-inbox",
           "label": "Toggle Agent Inbox",
-          "mac": "⌘⇧I",
-          "winLinux": "Ctrl+Shift+I",
-          "menu": "View → Toggle Agent Inbox"
+          "mac": "⌘I",
+          "winLinux": "Ctrl+I",
+          "menu": "Inbox button in the terminal caption"
+        },
+        {
+          "id": "viewer.open-group-chat",
+          "label": "Open Group Chat",
+          "mac": "⌘⌥G",
+          "winLinux": "Ctrl+Alt+G",
+          "menu": "Inbox → the workspace's group chat"
         },
         {
           "id": "viewer.toggle-terminal-zoom",
           "label": "Expand In / Out",
           "mac": "⌘⇧M",
           "winLinux": "Ctrl+Shift+M",
-          "menu": "View → Expand In / Out"
+          "menu": "Expand button on the tile"
         },
         {
           "id": "viewer.cycle-workspace-next",
@@ -368,21 +396,21 @@
           "label": "Hide Workspace",
           "mac": "⌘⇧W",
           "winLinux": "Ctrl+Shift+W",
-          "menu": "Go → Hide Workspace"
+          "menu": "Hide button on the tile"
         },
         {
           "id": "viewer.hard-close-workspace",
           "label": "End Workspace",
           "mac": "⌘⇧⌫",
           "winLinux": "Ctrl+Shift+Backspace",
-          "menu": "Go → End Workspace"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.export-pdf",
           "label": "Export to PDF",
           "mac": "⌘⇧E",
           "winLinux": "Ctrl+Shift+E",
-          "menu": "File → Export to PDF"
+          "menu": "Document tab, right-click → Export to PDF"
         }
       ]
     },
@@ -396,49 +424,49 @@
           "label": "New Terminal Tab",
           "mac": "⌘T",
           "winLinux": "Ctrl+T",
-          "menu": "File → New Terminal Tab"
+          "menu": "Tab bar → New terminal (+)"
         },
         {
           "id": "viewer.new-terminal-on-machine",
           "label": "New Terminal On…",
           "mac": "⌘⇧N",
           "winLinux": "Ctrl+Shift+N",
-          "menu": "File → New Terminal On…"
+          "menu": "Terminal tab, right-click → New terminal on…"
         },
         {
           "id": "viewer.split-terminal",
           "label": "Split Terminal",
           "mac": "⌘D",
           "winLinux": "Ctrl+D",
-          "menu": "View → Split Terminal"
+          "menu": "Terminal tab, right-click → Split"
         },
         {
           "id": "viewer.reopen-closed-tab",
           "label": "Reopen Closed Tab",
           "mac": "⌘⇧T",
           "winLinux": "Ctrl+Shift+T",
-          "menu": "File → Reopen Closed Tab"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.rename-terminal-tab",
           "label": "Rename Terminal Tab",
           "mac": "F2",
           "winLinux": "F2",
-          "menu": "View → Rename Terminal Tab"
+          "menu": "Terminal tab, right-click → Rename"
         },
         {
           "id": "viewer.find-in-terminal",
           "label": "Find in Terminal",
           "mac": "⌘F",
           "winLinux": "Ctrl+F",
-          "menu": "View → Find in Terminal"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.clear-terminal",
           "label": "Clear Terminal",
           "mac": "⌘⇧K",
           "winLinux": "Ctrl+Shift+K",
-          "menu": "View → Clear Terminal"
+          "menu": "(not in menu)"
         },
         {
           "id": "viewer.jump-terminal-tab-1",
@@ -498,7 +526,7 @@
         },
         {
           "id": "viewer.jump-terminal-tab-9",
-          "label": "Jump to Terminal Tab 9 (last tab)",
+          "label": "Jump to Last Terminal Tab",
           "mac": "⌘⌥9",
           "winLinux": "Ctrl+Alt+9",
           "menu": "(not in menu)"

@@ -784,7 +784,7 @@
       "crumb": "CodeSense — The model",
       "kind": "section",
       "href": "./arc-b-model/index.html#hero",
-      "text": "Arc B · The model Orgs, teams, and the team chain. One org is one context repo. A repo holds teams , and a team can name one parent_team . A team's context is its own content plus everything its parents hold, resolved per file : the closest team wins. Nothing copies itself anywhere. Content reaches a worktree only when the worktree is created, when an agent launches there (it gets what its context asks for), or when an agent explicitly asks for more. This arc teaches the model with pictures and a worked example, and leaves the schemas to the schema browser . Where an agent's context comes from · one team chain closest wins, per file Repo content · only in that repo <org>/<team>/repos/<host>/<owner>/<repo>/content/ Private · yours alone ~/.codesense/users/<you>/scratch/orgs/<org>/ (+ all-orgs, inert only) Team content · default <org>/default/content/ Parent team · platform <org>/platform/content/ Its parent · root <org>/root/content/ root top of the chain platform parent_team: root default · active parent_team: platform Resolved per file · closest wins · an agent's context picks what a launch copies This is the shape; the live arc-b-model.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Arc B · The model Orgs, teams, and the team chain. One org is one context repo. A repo holds teams , and a team can name one parent_team . A team's context is its own content plus everything its parents hold, resolved per file : the closest team wins. Nothing copies itself anywhere. Content reaches a worktree only when the worktree is created, when an agent launches there (it gets what its context asks for), or when an agent explicitly asks for more. This arc teaches the model with pictures and a worked example, and leaves the schemas to the schema browser . Where an agent's context comes from · one team chain closest wins, per file Repo content · only in that repo <org>/<team>/repos/<host>/<owner>/<repo>/content/ Private · yours alone ~/.codesense/users/<you>/scratch/orgs/<org>/ (+ all-orgs, inert only) Team content · default <org>/default/content/ Parent team · platform <org>/platform/content/ Its parent · root <org>/root/content/ root top of the chain platform parent_team: root default · active parent_team: platform Resolved per file · closest wins · an agent's context picks what a launch copies This is the shape; the live arc-b-model.excalidraw canvas has the editable version."
     },
     {
       "title": "The model at a glance",
@@ -2282,7 +2282,7 @@
       "crumb": "CodeSense — Workspace kinds",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/workspace-kinds.html#hero",
-      "text": "Arc C · Workspace kinds Four kinds, one open call A workspace is anything you can open_workspace against. CodeSense ships four kinds. Three of them — story, epic, team — are tied to a context repo. The fourth is just a managed dir. Each one gets its own tab, its own name, and the same lifecycle (open · live · hidden · closed). What differs is what sits on disk when the tab lands. Hero — four workspace tabs side by side in the CodeSense window: DEMO-1 (story), per-agent-kill-switch (epic), Default (team), sprint-triage (generic). Screenshot coming."
+      "text": "Arc C · Workspace kinds Four kinds, one open call A workspace is anything you can open_workspace against. CodeSense ships four kinds. Three of them — story, epic, team — are tied to a context repo. The fourth is just a managed dir. Each one gets its own tab, its own name, and the same lifecycle (open · live · hidden · closed). What differs is what sits on disk when the tab lands. Four workspace tabs can sit side by side in the CodeSense window, one of each kind: DEMO-1 (story), per-agent-kill-switch (epic), Default (team), sprint-triage (generic)."
     },
     {
       "title": "The four kinds",
@@ -2408,7 +2408,7 @@
       "crumb": "CodeSense — Worktree creation",
       "kind": "section",
       "href": "./arc-c-workspaces-and-worktrees/worktree-creation.html#hero",
-      "text": "Arc C · Worktree creation How a worktree appears You choose Open CLI on a story, or an agent calls open_workspace . If the worktree already exists, you land in it immediately. If it doesn't, CodeSense creates one: it resolves the branch (fetching from the remote when it can), lays the directory, links it to the story, and runs the worktree.yaml setup. Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when an agent launches there (its context ) or when an agent asks for more with hydrate_story or hydrate_worktree . Create a story worktree · timeline BEFORE CALL DURING AFTER DEMO-1 story · depends_on: [] context repo codesense/docs No worktree yet · nothing on disk open_workspace story_id: 'DEMO-1' any agent · any user ensure_story_worktree does the work STEP 1 git fetch (if reachable) STEP 2 git worktree add STEP 3 link the story STEP 4 run worktree.yaml · setup setup time varies CodeSense runs these git steps for you ../repo-wt/feat-DEMO-1/ source repo cloned branch story link no context copied worktree.yaml setup ran · exit 0 ready index entry written · agent attaches created worktree frame source repo story link agent / MCP This is the shape; the live workspaces/worktree-create.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Arc C · Worktree creation How a worktree appears You choose Open CLI on a story, or an agent calls open_workspace . If the worktree already exists, you land in it immediately. If it doesn't, CodeSense creates one: it resolves the branch (fetching from the remote when it can), lays the directory, links it to the story, and runs the worktree.yaml setup. Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when an agent launches there (its context ) or when an agent asks for more with hydrate_story or hydrate_worktree . Create a story worktree · timeline BEFORE CALL DURING AFTER DEMO-1 story · depends_on: [] context repo codesense/docs No worktree yet · nothing on disk open_workspace story_id: 'DEMO-1' any agent · any user ensure_story_worktree does the work STEP 1 git fetch (if reachable) STEP 2 git worktree add STEP 3 link the story STEP 4 run worktree.yaml · setup setup time varies CodeSense runs these git steps for you ../repo-wt/feat-DEMO-1/ source repo cloned branch story link no context copied worktree.yaml setup ran · exit 0 ready index entry written · agent attaches created worktree frame source repo story link agent / MCP This is the shape; the live workspaces/worktree-create.excalidraw canvas has the editable version."
     },
     {
       "title": "What you see in the UI",
@@ -2562,7 +2562,7 @@
       "crumb": "CodeSense — Add machine user",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/add-machine-user.html#walkthrough",
-      "text": "Walking it You give the skill four things: the SSH host, the teammate's name for the account (lowercase, e.g. sam ), their public key (a single line starting ssh-ed25519 or ssh-rsa , usually from their ~/.ssh/id_ed25519.pub ), and which mode: own or shared. The skill checks the account. ssh <host> 'id -u <name>' tells it whether to create or just add a key. Own account path. On Linux: shows you the exact sudo useradd -m -s /bin/bash <name> command, waits for your yes , then runs it over ssh -t . On macOS: points you at System Settings → Users & Groups or sudo sysadminctl -addUser . No password is set — the teammate signs in with their key. Append the key, once. The grep -qxF … || echo … >> pattern guarantees re-running the skill doesn't duplicate the key. Permissions on ~/.ssh ( 700 ) and authorized_keys ( 600 ) are set to what SSH expects. Verify & hand over. grep -cxF <key> …authorized_keys prints 1 . The skill tells the teammate the host, port, and user name they should use, and points them at Machines → Add machine… in CodeSense."
+      "text": "Walking it You give the skill four things: the SSH host, the teammate's name for the account (lowercase, e.g. sam ), their public key (a single line starting ssh-ed25519 or ssh-rsa , usually from their ~/.ssh/id_ed25519.pub ), and which mode: own or shared. The skill checks the account. ssh <host> 'id -u <name>' tells it whether to create or just add a key. Own account path. On Linux: shows you the exact sudo useradd -m -s /bin/bash <name> command, waits for your yes , then runs it over ssh -t . On macOS: points you at System Settings → Users & Groups or sudo sysadminctl -addUser . No password is set — the teammate signs in with their key. Append the key, once. The grep -qxF … || echo … >> pattern guarantees re-running the skill doesn't duplicate the key. Permissions on ~/.ssh ( 700 ) and authorized_keys ( 600 ) are set to what SSH expects. Verify & hand over. grep -cxF <key> …authorized_keys prints 1 . The skill tells the teammate the host, port, and user name they should use, and points them at Machines → Add machine in CodeSense."
     },
     {
       "title": "What the add-machine-user skill does",
@@ -2618,7 +2618,7 @@
       "crumb": "CodeSense — Terminals & machines",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/index.html#gaps-at-a-glance",
-      "text": "Where parity breaks on purpose Three things are not identical, and the docs are honest about it: The host-agent runs on the Mac that owns your CodeSense account. Only one, and it has to be local. Everything else — tabs, agents, worktrees — is reproducible on either side. Native OS APIs (keychain, Finder reveal, system notifications) use the local Mac. On the remote the equivalent is the terminal server plus plain shell. File watching is instant on your Mac (fsevents); remote uses a 5–10 s poll by default, tightenable with git fsmonitor . Every other workflow is parity. The parity matrix enumerates them row by row."
+      "text": "Where parity breaks on purpose Three things are not identical, and the docs are honest about it: The host-agent runs on the Mac you run CodeSense on, which owns your profile directory. Only one, and it has to be local. Everything else — tabs, agents, worktrees — is reproducible on either side. Native OS APIs (keychain, Finder reveal, system notifications) use the local Mac. On the remote the equivalent is the terminal server plus plain shell. File watching is instant on your Mac (fsevents); remote uses a 5–10 s poll by default, tightenable with git fsmonitor . Every other workflow is parity. The parity matrix enumerates them row by row."
     },
     {
       "title": "Local or remote, same CodeSense",
@@ -2709,7 +2709,7 @@
       "crumb": "CodeSense — Local machine",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/local-machine.html#anatomy",
-      "text": "Anatomy of a local terminal tab You open a tab — ⌘ T or Workspace → New terminal , or open_terminal_tab over MCP. The tab is scoped to the current workspace: its cwd is the workspace's hydrated worktree. CodeSense forks a native PTY — your login shell, in that cwd, with the environment you'd expect ( PATH , HOME , SHELL ). No SSH involved. You type, run agents, read scrollback — plain shell. claude and codex work exactly as they would in Terminal.app, except CodeSense's MCP server is wired in so agents can see your context repo. Scrollback is captured — the emulator keeps a bounded scrollback so read_terminal_tab can snapshot it for an agent without re-running anything."
+      "text": "Anatomy of a local terminal tab You open a tab — ⌘ T or the New terminal (+) button in the tab bar, or open_terminal_tab over MCP. The tab is scoped to the current workspace: its cwd is the workspace's hydrated worktree. CodeSense forks a native PTY — your login shell, in that cwd, with the environment you'd expect ( PATH , HOME , SHELL ). No SSH involved. You type, run agents, read scrollback — plain shell. claude and codex work exactly as they would in Terminal.app, except CodeSense's MCP server is wired in so agents can see your context repo. Scrollback is captured — the emulator keeps a bounded scrollback so read_terminal_tab can snapshot it for an agent without re-running anything."
     },
     {
       "title": "This Mac — the terminal you already know",
@@ -2982,7 +2982,7 @@
       "crumb": "CodeSense — Machines",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/machines.html#kinds",
-      "text": "Kinds This Mac — the machine CodeSense is running on. It owns your account directory and runs the host-agent. You never add it; it's always present. Remote — any other host reachable over SSH. You add it once, test it, and from then on it appears in the picker next to \"this Mac\". Linux is the common case; another Mac works too."
+      "text": "Kinds This Mac — the machine CodeSense is running on. It owns your profile directory ( ~/.codesense/users/<principal>/ ) and runs the host-agent. You never add it; it's always present. Remote — any other host reachable over SSH. You add it once, test it, and from then on it appears in the picker next to \"this Mac\". Linux is the common case; another Mac works too."
     },
     {
       "title": "Two modes",
@@ -3157,7 +3157,7 @@
       "crumb": "CodeSense — Remote (private account)",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/remote-private-account.html#terminal-server",
-      "text": "The CodeSense terminal server A tiny server CodeSense installs on each remote machine (one per private account) is what makes remote feel like local. It: Owns the PTYs — each remote tab is a PTY under this server, not a child of your SSH session. If your laptop sleeps, the PTYs keep running. Streams scrollback — the same emulator contract as local, exposed over a framed protocol over SSH. One codec, one scrollback shape. Carries a pinned identity — the pinned_server_id on the machine declaration. If the server is replaced (someone wiped the box, or you reset the installation), CodeSense refuses until you re-verify. Upgrades under control — Machines → Replace terminal server prepares the new binary alongside the live one, then swaps. Older servers get a \"terminalServerOutdated\" refusal for new verbs so you know to upgrade."
+      "text": "The CodeSense terminal server A tiny server CodeSense installs on each remote machine (one per private account) is what makes remote feel like local. It: Owns the PTYs — each remote tab is a PTY under this server, not a child of your SSH session. If your laptop sleeps, the PTYs keep running. Streams scrollback — the same emulator contract as local, exposed over a framed protocol over SSH. One codec, one scrollback shape. Carries a pinned identity — the pinned_server_id on the machine declaration. If the server is replaced (someone wiped the box, or you reset the installation), CodeSense refuses until you re-verify. Upgrades under control — Machines → Update terminal server prepares the new binary alongside the live one, then swaps. Older servers get a \"terminalServerOutdated\" refusal for new verbs so you know to upgrade."
     },
     {
       "title": "Try this now",
@@ -3304,7 +3304,7 @@
       "crumb": "CodeSense — Setup machine",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/setup-machine.html#save",
-      "text": "Save it in CodeSense If the machine isn't in CodeSense yet, either: Use Machines → Add machine… in the UI, or Ask the skill to save_machine for you after you say yes. Choose personal (just you) or team-shared (everyone in the team gets the declaration via the normal sync)."
+      "text": "Save it in CodeSense If the machine isn't in CodeSense yet, either: Use Machines → Add machine in the UI, or Ask the skill to save_machine for you after you say yes. Choose personal (just you) or team-shared (everyone in the team gets the declaration via the normal sync)."
     },
     {
       "title": "The five steps",
@@ -3654,7 +3654,7 @@
       "crumb": "CodeSense — Troubleshooting",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/troubleshooting.html#host-key",
-      "text": "2 · \"Pinned host key does not match\" CodeSense refuses the connection: the host key the server offered isn't the one you confirmed the first time. Expected cause — the remote machine was reinstalled, re-imaged, or rolled its host keys. Confirm with the admin. Unexpected cause — stop . Someone has rotated that machine's identity without telling you. Don't blindly re-pin. Fix (expected case) — in Machines, Replace host key pin , confirm the new fingerprint matches the admin's. CodeSense pins the new key."
+      "text": "2 · \"Pinned host key does not match\" CodeSense refuses the connection: the host key the server offered isn't the one you confirmed the first time. Expected cause — the remote machine was reinstalled, re-imaged, or rolled its host keys. Confirm with the admin. Unexpected cause — stop . Someone has rotated that machine's identity without telling you. Leave it blocked and tell your team. Fix (expected case) — in Machines, Review key… shows the pinned key and the presented key. Once the admin confirms it was rebuilt, whoever manages it removes the machine and adds it again. Adding it shows the new fingerprint; check it against the rebuilt machine before you confirm."
     },
     {
       "title": "4 · \"Permission denied\" during setup",
@@ -3682,7 +3682,7 @@
       "crumb": "CodeSense — Troubleshooting",
       "kind": "section",
       "href": "./arc-d-terminals-and-machines/troubleshooting.html#routines",
-      "text": "7 · Scheduled routine didn't fire Local-owned routine, Mac was asleep. Standard macOS behavior — scheduled fires skip when the Mac is asleep. Move ownership to an always-on machine if the schedule must fire. Remote-owned routine, terminal server was down. Check Machines → <host> → Terminal server . If it bounced during your window, the fire was skipped. Routine disabled. Routines console → <routine> . A failed run can disable itself; re-enable after you've fixed the cause."
+      "text": "7 · Scheduled routine didn't fire Local-owned routine, Mac was asleep. Standard macOS behavior — scheduled fires skip when the Mac is asleep. Move ownership to an always-on machine if the schedule must fire. Remote-owned routine, terminal server was down. Check the machine's status line in Machines , or call terminal_server_status or list_machines . If it bounced during your window, the fire was skipped. Routine disabled. Open Schedule from the identity menu and pick the routine. A failed run can disable itself; turn it back on there (or call routine_set_enabled ) after you've fixed the cause."
     },
     {
       "title": "1 · SSH can't connect",
@@ -4802,7 +4802,7 @@
       "crumb": "CodeSense — Line attribution",
       "kind": "section",
       "href": "./arc-e-agents/line-attribution.html#captured",
-      "text": "What is captured For each line an agent wrote, in a commit made while capture was on: the tool ( claude or codex ); the agent CLI's own session id ; the model , when git-ai could read it from the session's transcript. No prompt text. CodeSense runs git-ai with prompts excluded from every repository, so the note holds who wrote a line and never what was asked. CodeSense also writes nothing into the notes itself. A line nobody tracked (a commit made with capture off, or a line the note does not cover) reads as unknown , never as human. Capture is on this Mac for the CodeSense-managed worktrees agents launch into. CodeSense does not run git-ai install-hooks and never edits your ~/.gitconfig or ~/.claude : git-ai runs in its own home under ~/.codesense/git-ai/ , and a launch gets the hooks in its own private settings. Codex receives trust hashes for CodeSense-injected hooks through launch flags; CodeSense may also add those hashes to its native hooks.state , preserving unrelated configuration. Remote machines and OpenCode report unsupported for now. git-ai's own telemetry and update checks are switched off. CLIs without capture. A session of a CLI CodeSense cannot capture yet (OpenCode and Hermes) in a managed worktree is launched with GIT_REFLOG_ACTION=codesense-unsupported-cli <cli> , so git-ai never credits its commits to you. Their lines count as unattributed, and why_line names the CLI with reason unsupported_cli while a local reflog still records the commit. Git also records that session's branch switches under that name, so git checkout - , git switch - and @{-N} skip them: in these sessions, and in the same worktree afterwards, switch branches by name. Only your attached clones. CodeSense's git-ai daemon does work only for the source repos attached on this Mac (by any profile), so repos it does not manage, such as the scratch repos an agent's tests create, cost it nothing. It lists each attached clone's Git directory in git-ai's daemon_repo_roots ; a clone's linked worktrees share it, so they are covered.…"
+      "text": "What is captured For each line an agent wrote, in a commit made while capture was on: the tool ( claude or codex ); the agent CLI's own session id ; the model , when git-ai could read it from the session's transcript. No prompt text. CodeSense runs git-ai with prompts excluded from every repository, so the note holds who wrote a line and never what was asked. CodeSense also writes nothing into the notes itself. A line nobody tracked (a commit made with capture off, or a line the note does not cover) reads as unknown , never as human. Capture is on this Mac for the CodeSense-managed worktrees agents launch into. CodeSense does not run git-ai install-hooks and never edits your ~/.gitconfig or ~/.claude : git-ai runs in its own home under ~/.codesense/git-ai/ , and a launch gets the hooks in its own private settings. Codex receives trust hashes for CodeSense-injected hooks through launch flags; CodeSense may also add those hashes to its native hooks.state , preserving unrelated configuration. Remote machines and OpenCode report unsupported . git-ai's own telemetry and update checks are switched off. CLIs without capture. A session of a CLI CodeSense doesn't capture (OpenCode and Hermes) in a managed worktree is launched with GIT_REFLOG_ACTION=codesense-unsupported-cli <cli> , so git-ai never credits its commits to you. Their lines count as unattributed, and why_line names the CLI with reason unsupported_cli while a local reflog still records the commit. Git also records that session's branch switches under that name, so git checkout - , git switch - and @{-N} skip them: in these sessions, and in the same worktree afterwards, switch branches by name. Only your attached clones. CodeSense's git-ai daemon does work only for the source repos attached on this Mac (by any profile), so repos it does not manage, such as the scratch repos an agent's tests create, cost it nothing. It lists each attached clone's Git directory in git-ai's daemon_repo_roots ; a clone's linked worktrees share it, so they are covered. Attaching or…"
     },
     {
       "title": "Line attribution — which agent session wrote each committed line, captured with git-ai",
@@ -5992,14 +5992,14 @@
       "crumb": "CodeSense — Inboxes, triage, workers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/index.html#via-mcp",
-      "text": "How to do this via MCP Every UI action in this arc has a matching MCP tool. The four you'll see most: // Claim mail off a role queue claim_role_messages { team, role: 'builder', instanceId, generation, limit: 10 } // Accept a specific delivery accept_role_message { team, deliveryId, claimToken, instanceId, generation, disposition: { kind: 'work' } } // Send a message to a role (send_message takes a session handle or \"human\") send_role_message { team, role: 'builder', text } // Ack when the delivery is handled ack_role_message { team, deliveryId, claimToken, instanceId, generation, receiptId } See mcp-explorer for the full tool catalog."
+      "text": "How to do this via MCP The UI actions in this arc have matching MCP tools. The four you'll see most: // Claim mail off a role queue claim_role_messages { team, role: 'builder', instanceId, generation, limit: 10 } // Accept a specific delivery accept_role_message { team, deliveryId, claimToken, instanceId, generation, disposition: { kind: 'work' } } // Send a message to a role (send_message takes a session handle or \"human\") send_role_message { team, role: 'builder', text } // Ack when the delivery is handled ack_role_message { team, deliveryId, claimToken, instanceId, generation, receiptId } See mcp-explorer for the full tool catalog."
     },
     {
       "title": "Where the Inbox lives",
       "crumb": "CodeSense — Inboxes, triage, workers",
       "kind": "section",
       "href": "./arc-f-inboxes-and-triage/index.html#where-the-inbox-lives",
-      "text": "Where the Inbox lives The Inbox lives in the right pane. Press ⇧⌘I , or choose View → Inbox , to open it; use the shortcut again to close it. You can rebind it in Settings → Shortcuts. Use the section header's Maximize panel button for more room, then restore with ✕ or Esc . The team filter inside the Inbox switches between All teams and one team, and remembers your menu choice across restarts. The Inbox tab shows its unread badge. When the right pane is closed, its edge shows a dot for the panes' unread counts. Policy: the built-in Inbox opts into live badges, so new mail updates that count while closed. Architecture: panes without a live-badge declaration retain their last known count and refresh when opened."
+      "text": "Where the Inbox lives The Inbox lives in the right pane. Press ⇧⌘I , or choose View → Panels → Inbox , to open it; use the shortcut again to close it. You can rebind it in Settings → Shortcuts. Use the section header's Maximize panel button for more room, then restore with ✕ or Esc . The team filter inside the Inbox switches between All teams and one team, and remembers your menu choice across restarts. The Inbox tab shows its unread badge. When the right pane is closed, its edge shows a dot for the panes' unread counts. Policy: the built-in Inbox opts into live badges, so new mail updates that count while closed. Architecture: panes without a live-badge declaration retain their last known count and refresh when opened."
     },
     {
       "title": "One kit, every shape",
@@ -6937,7 +6937,7 @@
       "crumb": "CodeSense — Wake an agent",
       "kind": "section",
       "href": "./arc-g-routines/agent-wake.html#why",
-      "text": "Every routine has a mode . wake types the routine's task into a matching running session once it is idle, so the agent keeps everything it already knows. On this Mac, the session must carry this routine's launch tag: another routine's session or an untagged Agents-tab session is never adopted. Each local routine starts its own session when none matches. Remote wakes retain per-agent/workspace matching and admission for now. start a new ( mode: fresh in the file) starts a new session of the agent on every fire, with the task as its whole prompt. A Manager, a triage desk or a long-lived Builder you keep open and talk to wants wake . A nightly report or a digest that wants a clean slate wants start a new . A wake with no running session doesn't fail: it starts one, with the task as its first prompt. So one routine both keeps a live agent busy and brings it back when it is gone."
+      "text": "Every routine has a mode . wake types the routine's task into a matching running session once it is idle, so the agent keeps everything it already knows. On this Mac, the session must carry this routine's launch tag: another routine's session or an untagged Agents-tab session is never adopted. Each local routine starts its own session when none matches. Remote wakes keep per-agent/workspace matching and admission. start a new ( mode: fresh in the file) starts a new session of the agent on every fire, with the task as its whole prompt. A Manager, a triage desk or a long-lived Builder you keep open and talk to wants wake . A nightly report or a digest that wants a clean slate wants start a new . A wake with no running session doesn't fail: it starts one, with the task as its first prompt. So one routine both keeps a live agent busy and brings it back when it is gone."
     },
     {
       "title": "Busy, absent, on another machine",
@@ -7441,7 +7441,7 @@
       "crumb": "CodeSense — routine.yml — every model field",
       "kind": "section",
       "href": "./arc-g-routines/routine-yml.html#workspace-context",
-      "text": "Context in a fresh team run On this Mac, an agent routine targeting team_workspace starts in its own scratch directory for that routine and saved agent, outside shared team content. Before each new session, CodeSense clears that pair's scratch files and prepares the saved agent's current context and startup , including merge-marked workspace files such as team hooks in .claude/settings.json . Both visible and headless sessions receive these files. Save outputs you need to keep through the appropriate content or Notes tools; files left in the routine's working directory are temporary. Reassigning a routine to a different saved agent selects a different directory, preserving the previous agent's live files. Old per-agent directories remain; they are not automatically removed on reassignment. # In the saved agent's agent.yaml: context: - path: skills/evaluate dest: .claude/skills/evaluate # In its routine.yml: mode: fresh task: Run /evaluate, save the result, then call signal_done. where: kind: team_workspace Preview with agent_preview {agent: \"org/repo/team/agent\", teamWorkspace: true} : its context.files destinations are the context paths prepared in the run's cwd. Changes to skills or the agent's context apply on the next spawn, without restarting the app. Projected files are never written into shared team content. each_mac prepares the directory on each firing Mac; one_mac prepares it only on the armed host. Explicit remote-machine launches continue using their prepared remote repo workspace. On this Mac, a wake delivers only to a live session tagged at launch with that routine's identity. It never adopts another routine's session or an untagged agent started from the Agents tab, even when the agent and cwd match; it launches its own session instead. Remote wakes retain their existing per-agent/workspace matching and admission for now. Delivery leaves the live session's files untouched; an absent agent gets the waking routine's prepared directory before launch. A later fresh spawn for the same routine and saved…"
+      "text": "Context in a fresh team run On this Mac, an agent routine targeting team_workspace starts in its own scratch directory for that routine and saved agent, outside shared team content. Before each new session, CodeSense clears that pair's scratch files and prepares the saved agent's current context and startup , including merge-marked workspace files such as team hooks in .claude/settings.json . Both visible and headless sessions receive these files. Save outputs you need to keep through the appropriate content or Notes tools; files left in the routine's working directory are temporary. Reassigning a routine to a different saved agent selects a different directory, preserving the previous agent's live files. Old per-agent directories remain; they are not automatically removed on reassignment. # In the saved agent's agent.yaml: context: - path: skills/evaluate dest: .claude/skills/evaluate # In its routine.yml: mode: fresh task: Run /evaluate, save the result, then call signal_done. where: kind: team_workspace Preview with agent_preview {agent: \"org/repo/team/agent\", teamWorkspace: true} : its context.files destinations are the context paths prepared in the run's cwd. Changes to skills or the agent's context apply on the next spawn, without restarting the app. Projected files are never written into shared team content. each_mac prepares the directory on each firing Mac; one_mac prepares it only on the armed host. Explicit remote-machine launches continue using their prepared remote repo workspace. On this Mac, a wake delivers only to a live session tagged at launch with that routine's identity. It never adopts another routine's session or an untagged agent started from the Agents tab, even when the agent and cwd match; it launches its own session instead. Remote wakes keep per-agent/workspace matching and admission. Delivery leaves the live session's files untouched; an absent agent gets the waking routine's prepared directory before launch. A later fresh spawn for the same routine and saved agent clears that pair's…"
     },
     {
       "title": "Author a definition",
@@ -12418,21 +12418,21 @@
       "crumb": "CodeSense — Testing & iterating",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/testing.html#hero",
-      "text": "Arc I · Loop Edit. Reload. Confirm. A dashboard is a text file in your context repo. You edit it in any editor, you reload the tab in CodeSense, you see the change. There is no build step, no hot-module tooling, no sourcemap drama. This page walks the loop end to end — inspecting the bridge, catching errors, previewing the file standalone before you plug it into the viewer. Edit · reload · confirm edit the file ⌘S save ⌘R reload confirm change under a second per round · no restart, no reindex"
+      "text": "Arc I · Loop Edit. Reload. Confirm. A dashboard is a text file in your context repo. You edit it in any editor, the open tab in CodeSense reloads, you see the change. There is no build step, no hot-module tooling, no sourcemap drama. This page walks the loop end to end — probing the bridge, catching errors, previewing the file standalone before you plug it into the viewer. Edit · reload · confirm edit the file ⌘S save tab reloads confirm change under a second per round · no restart, no reindex"
     },
     {
-      "title": "Inspecting the bridge from the console",
+      "title": "Probing the bridge from a script",
       "crumb": "CodeSense — Testing & iterating",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/testing.html#inspect",
-      "text": "Inspecting the bridge from the console With the inspector open on your dashboard, the window.codesense object is right there. Every method is callable from the console the same way your doc calls it. Use this to probe a verb before you wire it into UI code: // What verbs are exposed? Object.keys(window.codesense).sort(); // Dry-run a verb to see the result shape await codesense.invoke(\"worktrees\", {}); // Snapshot the current theme palette await codesense.theme(); // Simulate what a parent nudge would do window.dispatchEvent(new MessageEvent(\"message\", { data: { type: \"codesense:context-changed\", orgs: [], allOrgs: 0, truncated: false } })); The last line is the trick for exercising a subscriber without the host actually moving — paste it, watch your handler fire. Pair with the console log the handler produces to verify filter logic."
+      "text": "Probing the bridge from a script The shipped app has no web inspector, but any script in your dashboard can call window.codesense . Probe a verb from a scratch copy of the page before you wire it into UI code, and print each result into the page to read it. Put it in a <script type=\"module\"> , which allows await at the top level: // Print each result into the page, one block per result. const show = (label, value) => { const pre = document.createElement(\"pre\"); pre.textContent = label + \": \" + JSON.stringify(value, null, 2); document.body.append(pre); }; // What verbs are exposed? show(\"members\", Object.keys(window.codesense).sort()); // Dry-run a verb to see the result shape show(\"worktrees\", await codesense.invoke(\"worktrees\", {})); // Snapshot the current theme palette show(\"theme\", await codesense.theme()); // Simulate what a parent nudge would do window.dispatchEvent(new MessageEvent(\"message\", { data: { type: \"codesense:context-changed\", orgs: [], allOrgs: 0, truncated: false } })); The last line is the trick for exercising a subscriber without the host actually moving: run it and watch your handler fire. Have the handler write what it saw to the page to check its filter logic."
     },
     {
       "title": "The inner loop",
       "crumb": "CodeSense — Testing & iterating",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/testing.html#loop",
-      "text": "The inner loop Edit the HTML in any editor Your dashboard file lives under dashboards/ (or wherever you put it) inside the active context repo on disk. CodeSense doesn't lock the file; open it in your editor of choice, save normally. Reload the tab Focus the dashboard tab and hit ⌘R . The viewer reloads the iframe, re-injects the bridge, and your doc runs fresh. State you kept in JS memory resets — persisted state (via codesense.setField or your own localStorage ) survives. Confirm the change in place If your dashboard renders a list, add a row via the matching write verb and watch the list update. If it reacts to state, make a small change in another surface (toggle a routine, send a message) and watch the handler fire. Error? Inspect in place. The viewer forwards window.onerror and unhandledrejection to the host via codesense:doc-error , which renders a red banner inside the frame with the message, source, and line. For deeper poking, open the WebKit inspector from the viewer's debug menu (⌘⌥I on macOS)."
+      "text": "The inner loop Edit the HTML in any editor Your dashboard file lives under dashboards/ (or wherever you put it) inside the active context repo on disk. CodeSense doesn't lock the file; open it in your editor of choice, save normally. Watch the tab reload When the file changes on disk, the open tab reloads its iframe, re-injects the bridge, and your doc runs fresh. State you kept in JS memory resets — persisted state (via codesense.setField or your own localStorage ) survives. Confirm the change in place If your dashboard renders a list, add a row via the matching write verb and watch the list update. If it reacts to state, make a small change in another surface (toggle a routine, send a message) and watch the handler fire. Error? Inspect in place. The viewer forwards window.onerror and unhandledrejection to the host via codesense:doc-error , which renders a red banner inside the frame with the message, source, and line."
     },
     {
       "title": "Common pitfalls",
@@ -12460,7 +12460,7 @@
       "crumb": "CodeSense — Testing & iterating",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/testing.html#try-this-now",
-      "text": "Try this now Open the WebKit inspector on this page ( ⌘⌥I ) and type codesense.theme() at the console prompt. You'll see the live palette object the viewer handed you. Then click the button to issue a plain read through the Try-this wrapper the training manual uses — if it answers, your bridge is live:"
+      "text": "Try this now Click the button to issue a plain read through the Try-this wrapper the training manual uses. If it answers, your bridge is live:"
     },
     {
       "title": "How to do this via MCP",
@@ -12512,13 +12512,6 @@
       "text": ""
     },
     {
-      "title": "Inspecting the bridge from the console",
-      "crumb": "CodeSense — Testing & iterating",
-      "kind": "heading",
-      "href": "./arc-i-dashboard-primitives/testing.html",
-      "text": ""
-    },
-    {
       "title": "Previewing the file standalone (file://)",
       "crumb": "CodeSense — Testing & iterating",
       "kind": "heading",
@@ -12526,7 +12519,7 @@
       "text": ""
     },
     {
-      "title": "Reload the tab",
+      "title": "Probing the bridge from a script",
       "crumb": "CodeSense — Testing & iterating",
       "kind": "heading",
       "href": "./arc-i-dashboard-primitives/testing.html",
@@ -12548,6 +12541,13 @@
     },
     {
       "title": "Try this now",
+      "crumb": "CodeSense — Testing & iterating",
+      "kind": "heading",
+      "href": "./arc-i-dashboard-primitives/testing.html",
+      "text": ""
+    },
+    {
+      "title": "Watch the tab reload",
       "crumb": "CodeSense — Testing & iterating",
       "kind": "heading",
       "href": "./arc-i-dashboard-primitives/testing.html",
@@ -12593,14 +12593,14 @@
       "crumb": "CodeSense — Theme & tokens",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/theme-and-tokens.html#tokens",
-      "text": "The tokens, live These are the authored tokens — the ones every dashboard can rely on. Each swatch below is painted with the token's actual value in the viewer's current theme. Switch dark ↔ light (⌘⇧Y in the identity menu) and watch them move. --cs-bg Document background Ag --cs-fg Document foreground text Ag --cs-muted-fg Muted / secondary text --cs-border Border colour --cs-surface Card · raised surface background --cs-accent Accent · primary action Ag --cs-accent-fg Foreground on accent Ag --cs-link Hyperlink colour --cs-danger Error · destructive --cs-success Success · added --cs-warning Warning · modified Ag --cs-font-sans Sans-serif family Ag --cs-font-mono Monospace family scheme --cs-color-scheme \"dark\" or \"light\" — derived from --cs-bg Every token has a fallback chain — a sequence of older names the viewer will try before giving up. See each chain plus the source of truth in the tokens tab of the explorer ."
+      "text": "The tokens, live These are the authored tokens — the ones every dashboard can rely on. Each swatch below is painted with the token's actual value in the viewer's current theme. Switch dark ↔ light in Settings → Appearance → Mode (Light / Dark / System) and watch them move. --cs-bg Document background Ag --cs-fg Document foreground text Ag --cs-muted-fg Muted / secondary text --cs-border Border colour --cs-surface Card · raised surface background --cs-accent Accent · primary action Ag --cs-accent-fg Foreground on accent Ag --cs-link Hyperlink colour --cs-danger Error · destructive --cs-success Success · added --cs-warning Warning · modified Ag --cs-font-sans Sans-serif family Ag --cs-font-mono Monospace family scheme --cs-color-scheme \"dark\" or \"light\" — derived from --cs-bg Every token has a fallback chain — a sequence of older names the viewer will try before giving up. See each chain plus the source of truth in the tokens tab of the explorer ."
     },
     {
       "title": "Try this now",
       "crumb": "CodeSense — Theme & tokens",
       "kind": "section",
       "href": "./arc-i-dashboard-primitives/theme-and-tokens.html#try-this-now",
-      "text": "Try this now Hit ⌘⇧Y (from the identity menu) to flip the viewer theme and watch every swatch, every row, every button on this page update at once. Then invoke the read below — same bridge, same colours, both themes:"
+      "text": "Try this now Change Settings → Appearance → Mode to flip the viewer theme and watch every swatch, every row, every button on this page update at once. Then invoke the read below — same bridge, same colours, both themes:"
     },
     {
       "title": "How to do this via MCP",
@@ -13293,7 +13293,7 @@
       "crumb": "CodeSense — Progressive discovery",
       "kind": "section",
       "href": "./arc-j-mcp/progressive-discovery.html#invariant",
-      "text": "Why this shape The MCP server has every CodeSense verb — the MCP-complete rule says every UI action has a tool, and tools/list advertises all of them so strict hosts can call any of them. With a few hundred tools, an agent rarely knows a name up front, and hosts that load schemas lazily show names only. Search and schema close that gap."
+      "text": "Why this shape The MCP server has most CodeSense actions as tools, and tools/list advertises all its tools so strict hosts can call any of them. With a few hundred tools, an agent rarely knows a name up front, and hosts that load schemas lazily show names only. Search and schema close that gap."
     },
     {
       "title": "Walkthrough",
@@ -13531,14 +13531,14 @@
       "crumb": "CodeSense — Writing an MCP-only agent",
       "kind": "section",
       "href": "./arc-j-mcp/writing-an-mcp-agent.html#hero",
-      "text": "No UI. Just four calls. Everything CodeSense does is reachable through MCP: it is MCP-complete . We'll build an agent that onboards a new team end-to-end without ever touching the UI: pick the active team, add a source repo, list the worktrees that are open on it. Four tool calls. The agent's whole surface area is the bridge. team-onboarder runtime: claude launch: headless mcp.servers: [] permissions.claude: allow: [\"mcp__codesense__*\"] deny: [Edit, Write, Bash] no UI window CodeSense MCP bridge 1 2 3 4 1 · list_orgs_teams discover orgs + teams read 2 · set_active_team switch the backend focus write 3 · add_source_repo attach a source write 4 · list_worktrees enumerate workspaces read"
+      "text": "No UI. Just four calls. Most of what CodeSense does is reachable through MCP. We'll build an agent that onboards a new team end-to-end without ever touching the UI: pick the active team, add a source repo, list the worktrees that are open on it. Four tool calls. The agent's whole surface area is the bridge. team-onboarder runtime: claude launch: headless mcp.servers: [] permissions.claude: allow: [\"mcp__codesense__*\"] deny: [Edit, Write, Bash] no UI window CodeSense MCP bridge 1 2 3 4 1 · list_orgs_teams discover orgs + teams read 2 · set_active_team switch the backend focus write 3 · add_source_repo attach a source write 4 · list_worktrees enumerate workspaces read"
     },
     {
       "title": "What this proves",
       "crumb": "CodeSense — Writing an MCP-only agent",
       "kind": "section",
       "href": "./arc-j-mcp/writing-an-mcp-agent.html#proves",
-      "text": "What this proves Zero UI calls. Zero shell calls. Zero filesystem writes outside what the bridge did on your behalf — set_active_team and add_source_repo both landed in CodeSense's own state, nothing in your source tree moved. The whole workflow is auditable, log-replayable, scriptable on a cron. MCP-complete means: every UI action has an MCP tool, so every workflow is reproducible via MCP alone. Want a shorter version — an agent whose whole job is this shape, not just this task? See Arc E · MCP-only agents for the full posture (empty mcp.servers , allowlist prefix, deny filesystem) and more fits (dashboard caretakers, scheduled reporters, routine sentries)."
+      "text": "What this proves Zero UI calls. Zero shell calls. Zero filesystem writes outside what the bridge did on your behalf — set_active_team and add_source_repo both landed in CodeSense's own state, nothing in your source tree moved. The whole workflow is auditable, log-replayable, scriptable on a cron. Most UI actions have an MCP tool, so a workflow like this one runs through MCP alone; the UI ↔ MCP crossref lists the ones that don't. Want a shorter version — an agent whose whole job is this shape, not just this task? See Arc E · MCP-only agents for the full posture (empty mcp.servers , allowlist prefix, deny filesystem) and more fits (dashboard caretakers, scheduled reporters, routine sentries)."
     },
     {
       "title": "The task",
@@ -15092,7 +15092,7 @@
       "crumb": "CodeSense — Local-only factory",
       "kind": "section",
       "href": "./arc-l-factory/local-only.html#hero",
-      "text": "Local-only · all on one Mac No network. No remote accounts. Just your Mac, N worktrees, and N agents happily working the same context repo. The simplest factory that ships, and the one you'll start with. When battery and fans aren't a concern — plugged in, on your desk — this shape beats anything fancier. Local-only factory · all on one Mac MacBook — dev@local N worktrees + N agents, no network inbox_idle inbox_idle triager routes inbox mail builder builder builder reviewer resolver scout wt-fake-1 wt-fake-2 wt-fake-3 reply queue = this Mac primitives · worktrees · inbox roles · routines · inbox_idle This is the shape; the live factory/local-only.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Local-only · all on one Mac No network. No remote accounts. Just your Mac, N worktrees, and N agents happily working the same context repo. The simplest factory that ships, and the one you'll start with. When battery and fans aren't a concern — plugged in, on your desk — this shape beats anything fancier. Local-only factory · all on one Mac MacBook — dev@local N worktrees + N agents, no network inbox_idle inbox_idle triager routes inbox mail builder builder builder reviewer resolver scout wt-fake-1 wt-fake-2 wt-fake-3 reply queue = this Mac primitives · worktrees · inbox roles · routines · inbox_idle This is the shape; the live factory/local-only.excalidraw canvas has the editable version."
     },
     {
       "title": "What runs where",
@@ -15218,7 +15218,7 @@
       "crumb": "CodeSense — Multi-mac distributed",
       "kind": "section",
       "href": "./arc-l-factory/multi-mac-distributed.html#hero",
-      "text": "Multi-mac distributed · several developers' Macs cooperating Three developers. Three Macs. One team context repo. One triager keeps the whole thing in sync; each developer runs the roles that matter for the hour. Nobody has to know what the others are doing — the inbox does the choreography. Multi-mac distributed · three developers' Macs MacBook — alice@mobile MacBook — bob@desk MacBook — carol@laptop private-account private-account triager shared lease · one at a time builder resolver builder builder reviewer scout builder reviewer team repo (git) pull/push pull/push alice bob carol This is the shape; the live factory/multi-mac.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Multi-mac distributed · several developers' Macs cooperating Three developers. Three Macs. One team context repo. One triager keeps the whole thing in sync; each developer runs the roles that matter for the hour. Nobody has to know what the others are doing — the inbox does the choreography. Multi-mac distributed · three developers' Macs MacBook — alice@mobile MacBook — bob@desk MacBook — carol@laptop private-account private-account triager shared lease · one at a time builder resolver builder builder reviewer scout builder reviewer team repo (git) pull/push pull/push alice bob carol This is the shape; the live factory/multi-mac.excalidraw canvas has the editable version."
     },
     {
       "title": "Step-by-step: stand up a three-Mac factory",
@@ -15393,7 +15393,7 @@
       "crumb": "CodeSense — Running overnight",
       "kind": "section",
       "href": "./arc-l-factory/running-overnight.html#hero",
-      "text": "Running overnight · hands-off loop Set the loop at 22:00. Wake up at 07:00 to a morning summary and five open PRs. The factory ran six wake cycles while you slept, each triggered by inbox_idle , each isolated to its own worktree, each one honest about what it couldn't resolve. Running overnight · hands-off loop Running overnight · hands-off loop no humans in the hot path · morning summary waits morning summary +5 PRs opened 3 escalations queued builder wake reviewer wake builder wake resolver wake builder wake reviewer wake inbox_idle inbox_idle inbox_idle inbox_idle inbox_idle inbox_idle human: asleep 22:00 00:00 02:00 04:00 06:00 08:00 routines · inbox_idle · worktrees · agent-dag · morning summary This is the shape; the live factory/overnight.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Running overnight · hands-off loop Set the loop at 22:00. Wake up at 07:00 to a morning summary and five open PRs. The factory ran six wake cycles while you slept, each triggered by inbox_idle , each isolated to its own worktree, each one honest about what it couldn't resolve. Running overnight · hands-off loop Running overnight · hands-off loop no humans in the hot path · morning summary waits morning summary +5 PRs opened 3 escalations queued builder wake reviewer wake builder wake resolver wake builder wake reviewer wake inbox_idle inbox_idle inbox_idle inbox_idle inbox_idle inbox_idle human: asleep 22:00 00:00 02:00 04:00 06:00 08:00 routines · inbox_idle · worktrees · agent-dag · morning summary This is the shape; the live factory/overnight.excalidraw canvas has the editable version."
     },
     {
       "title": "The morning check-in",
@@ -15456,7 +15456,7 @@
       "crumb": "CodeSense — Solo with remote",
       "kind": "section",
       "href": "./arc-l-factory/solo-with-remote.html#hero",
-      "text": "Solo + remote · one Mac plus one or two remote machines You've got a laptop. You've got an always-on Linux box in the closet (call it mini ). Add it as a machine over SSH and you can send heavy work to it while your laptop keeps its fans quiet. Its sessions keep running when the laptop sleeps or you quit CodeSense. Solo + remote · one Mac plus a remote Mac private-account bridge MacBook · local — dev@local MacBook · remote — dev@mini triager routes to both Macs builder resolver analyst builder builder reviewer scout private-account inbox_idle reply queue home mac mini (remote) primitives · worktrees · inbox roles · routines · private-account · inbox_idle This is the shape; the live factory/solo-with-remote.excalidraw canvas has the editable version — click the diagram to open it."
+      "text": "Solo + remote · one Mac plus one or two remote machines You've got a laptop. You've got an always-on Linux box in the closet (call it mini ). Add it as a machine over SSH and you can send heavy work to it while your laptop keeps its fans quiet. Its sessions keep running when the laptop sleeps or you quit CodeSense. Solo + remote · one Mac plus a remote Mac private-account bridge MacBook · local — dev@local MacBook · remote — dev@mini triager routes to both Macs builder resolver analyst builder builder reviewer scout private-account inbox_idle reply queue home mac mini (remote) primitives · worktrees · inbox roles · routines · private-account · inbox_idle This is the shape; the live factory/solo-with-remote.excalidraw canvas has the editable version."
     },
     {
       "title": "⚠ Parity gap — event triggers need the laptop",
@@ -15477,7 +15477,7 @@
       "crumb": "CodeSense — Solo with remote",
       "kind": "section",
       "href": "./arc-l-factory/solo-with-remote.html#steps",
-      "text": "Step-by-step: turn the mini into a Builder farm Add the machine. Open Machines ( ⌘ ⌥ C ) or run Add machine… from ⌘K. The first connection test shows the machine's host key fingerprint; confirm it and CodeSense pins it. Define your Builder agent once. It lives in the context repo, so the same definition launches on either machine. # config/agents/amelia-builder/agent.yaml id: amelia-builder name: Amelia (builder) runtime: claude startup: - .claude/skills/bmad-build/ revision: 1 Send its sessions to the mini with a routine whose where.machine is the machine's id (from list_machines ): # config/agents/amelia-builder/routines/builder-claim-remote/routine.yml id: builder-claim-remote name: Start a builder on the mini mode: fresh task: | Join the builder role with register_role, claim the waiting message with claim_role_messages and build the story it names with /bmad-build. where: kind: team_workspace machine: <machine id> triggers: - event: kind: role_pending policy: max_runtime: 2h revision: 1 The agent-dag now shows sessions on both machines. Builder sessions light up on the mini while your laptop stays quiet."
+      "text": "Step-by-step: turn the mini into a Builder farm Add the machine. Open Machines ( ⌘ ⌥ C ) or run Add machine… from the command palette (⌘⇧P). The first connection test shows the machine's host key fingerprint; confirm it and CodeSense pins it. Define your Builder agent once. It lives in the context repo, so the same definition launches on either machine. # config/agents/amelia-builder/agent.yaml id: amelia-builder name: Amelia (builder) runtime: claude startup: - .claude/skills/bmad-build/ revision: 1 Send its sessions to the mini with a routine whose where.machine is the machine's id (from list_machines ): # config/agents/amelia-builder/routines/builder-claim-remote/routine.yml id: builder-claim-remote name: Start a builder on the mini mode: fresh task: | Join the builder role with register_role, claim the waiting message with claim_role_messages and build the story it names with /bmad-build. where: kind: team_workspace machine: <machine id> triggers: - event: kind: role_pending policy: max_runtime: 2h revision: 1 The agent-dag now shows sessions on both machines. Builder sessions light up on the mini while your laptop stays quiet."
     },
     {
       "title": "How to do this via MCP",
@@ -16044,14 +16044,14 @@
       "crumb": "CodeSense — Arc N · Reference catalog",
       "kind": "section",
       "href": "./arc-n-reference/index.html#pages",
-      "text": "The five lookup tables Schemas YAML schemas 8 schemas Field tables for every file CodeSense parses: agent.yaml , routine.yml , teams.yml , story frontmatter, and more. Shortcuts Keyboard shortcuts 67 shortcuts Every chord, grouped by surface — global, team, workspace, terminal. Extensions File extensions 20 viewable What CodeSense renders inline, what falls back to the code viewer, and which extensions are gated as binary. Glossary Glossary A → W Every CodeSense term the training arcs use. Alphabetical, cross-linked back to the arc that teaches it. Index Troubleshooting Top issues A one-page symptom → fix index that routes to the per-arc troubleshooting pages (A, C, D, G). Also in this arc: Updates, network calls and removing CodeSense , for how the app updates itself, what it sends on its own, and how to remove it."
+      "text": "The five lookup tables Schemas YAML schemas 9 schemas Field tables for every file CodeSense parses: agent.yaml , routine.yml , teams.yml , story frontmatter, and more. Shortcuts Keyboard shortcuts 72 shortcuts Every chord, grouped by surface — global, team, workspace, terminal. Extensions File extensions 20 viewable What CodeSense renders inline, what falls back to the code viewer, and which extensions are gated as binary. Glossary Glossary A → W Every CodeSense term the training arcs use. Alphabetical, cross-linked back to the arc that teaches it. Index Troubleshooting Top issues A one-page symptom → fix index that routes to the per-arc troubleshooting pages (A, C, D, G). Also in this arc: Updates, network calls and removing CodeSense , for how the app updates itself, what it sends on its own, and how to remove it."
     },
     {
       "title": "Arc N vs. the explorers",
       "crumb": "CodeSense — Arc N · Reference catalog",
       "kind": "section",
       "href": "./arc-n-reference/index.html#relates",
-      "text": "Arc N vs. the explorers CodeSense ships four reference-shaped dashboards at the top of the docs org: schema browser , MCP explorer , primitives explorer , and UI ↔ MCP crossref . Each is a list-detail explorer with a live validator or Try-it button. Arc N is their narrative : short intros that teach you how to read them, plus the lookup tables that don't fit a list-detail shape (shortcuts, extensions, glossary, troubleshooting). Need to validate YAML? → the schema browser has a paste-and-check validator. This arc's YAML schemas page teaches you how to read it. Need every MCP tool? → the MCP explorer . Arc J teaches it. Need every primitive? → the primitives explorer . Arc M teaches it."
+      "text": "Arc N vs. the explorers CodeSense ships four reference-shaped dashboards at the top of the docs org: schema browser , MCP explorer , primitives explorer , and UI ↔ MCP crossref . Each is a list-detail explorer with a live validator or Try-it button. Arc N is their narrative : short intros that teach you how to read them, plus the lookup tables that don't fit a list-detail shape (shortcuts, extensions, glossary, troubleshooting). Need to validate YAML? → the schema browser has a paste-and-check validator. This arc's YAML schemas page teaches you how to read it. Need every MCP tool? → the MCP explorer . Arc J teaches it. Need every primitive? → the primitives explorer . Arc I teaches it."
     },
     {
       "title": "Versions",
@@ -16121,7 +16121,7 @@
       "crumb": "CodeSense — Keyboard shortcuts",
       "kind": "section",
       "href": "./arc-n-reference/keyboard-shortcuts.html#hero",
-      "text": "Arc N · Shortcuts Every chord CodeSense fires, grouped by scope. CodeSense binds 67 keyboard shortcuts across four scopes: global (fire anywhere), team (fire inside a team), workspace (fire with a story workspace focused), and terminal (fire inside the terminal pane). The chord resolves against the smallest matching scope, so a workspace chord wins over the same global one. Rebind anything in Settings → Shortcuts ; the table below reflects the ship defaults. The Toggle Terminal chord is focus-aware: from another view it reveals the existing CLI and focuses it, even when the terminal is already visible; from the CLI itself it hides the terminal. With no workspace open there's nothing to focus, so it hides the terminal. Rebinding keeps the same behavior, and the divider handle still toggles normally. Shortcut scope resolution Four concentric rings labelled from outside in: Global, Team, Workspace, Terminal. A chord enters from the right and lands on the innermost matching ring. Global Team Workspace Terminal a key event ↓ resolves to the smallest matching scope. Scope resolution — the innermost matching ring wins."
+      "text": "Arc N · Shortcuts Every chord CodeSense fires, grouped by scope. CodeSense binds 72 keyboard shortcuts across four scopes: global (fire anywhere), team (fire inside a team), workspace (fire with a story workspace focused), and terminal (fire inside the terminal pane). The chord resolves against the smallest matching scope, so a workspace chord wins over the same global one. Rebind anything in Settings → Shortcuts ; the table below reflects the ship defaults. The Toggle Terminal chord is focus-aware: from another view it reveals the existing CLI and focuses it, even when the terminal is already visible; from the CLI itself it hides the terminal. With no workspace open there's nothing to focus, so it hides the terminal. Rebinding keeps the same behavior, and the divider handle still toggles normally. Shortcut scope resolution Four concentric rings labelled from outside in: Global, Team, Workspace, Terminal. A chord enters from the right and lands on the innermost matching ring. Global Team Workspace Terminal a key event ↓ resolves to the smallest matching scope. Scope resolution — the innermost matching ring wins."
     },
     {
       "title": "How to do this via MCP",
@@ -16408,7 +16408,7 @@
       "crumb": "CodeSense — Architecture",
       "kind": "section",
       "href": "./architecture.html#hero",
-      "text": "Architecture One picture of how CodeSense is wired. The Tauri webview calls the app's backend, the host-agent , through Tauri commands; it owns your files, routines, and inboxes, and a local HTTP server serves the HTML docs and dashboards. Agents reach the same backend through the CodeSense MCP . Click any shape to open its detail. Local Local + Remote This Mac Context repo + worktree Async spine Tauri webview React viewer · panes · tabs Dashboards HTML docs — this page talks to window.codesense Agent CLI Claude Code · Codex runs in a terminal tab Local HTTP server Axum localhost:<port> injects window.codesense serves /kit + docs Host-agent The app's Rust backend · Tauri commands, MCP, context IO, routines. Only runs on the Mac you run CodeSense on. the one place writes to disk originate CodeSense MCP The agent bridge · every tool every UI action also lives here (MCP-complete invariant) Local machine · macOS filesystem · ~/.codesense/… + bound user repos Context repo git-backed org · teams · content · config the shared truth · parent-team inheritance read-only on the docs org Worktree per-story · created on open context copied in at launch or on request Bound source repo the code being worked on · lives inside the worktree Inbox per-team threads · messages · role queues builder / resolver / reviewer / analyst / … the async spine of the factory Routine engine triggers: each_mac · inbox_idle · cron · manual wakes agents, posts messages, moves pipeline status routine-owned storage fetch · subscribe ipc tool call dispatch read / write create · hydrate mounts post · read fires inbox_idle This Mac Shared git truth Async spine Remote machine · private account SSH Tauri webview React viewer Dashboards this page Agent CLI local terminal HTTP server Axum · localhost Host-agent (local) app backend · terminals in the terminal server CodeSense MCP every tool Context repo one source of truth synced to each machine Worktree (local) per-story Source repo (local) Inbox role queues · reached from both machines Routine engine…"
+      "text": "Architecture One picture of how CodeSense is wired. The Tauri webview calls the app's backend, the host-agent , through Tauri commands; it owns your files, routines, and inboxes, and a local HTTP server serves the HTML docs and dashboards. Agents reach the same backend through the CodeSense MCP . Click any shape to open its detail. Local Local + Remote This Mac Context repo + worktree Async spine Tauri webview React viewer · panes · tabs Dashboards HTML docs — this page talks to window.codesense Agent CLI Claude Code · Codex runs in a terminal tab Local HTTP server Axum localhost:<port> injects window.codesense serves /kit + docs Host-agent The app's Rust backend · Tauri commands, MCP, context IO, routines. Only runs on the Mac you run CodeSense on. the one place writes to disk originate CodeSense MCP The agent bridge · every tool most UI actions also live here as MCP tools Local machine · macOS filesystem · ~/.codesense/… + bound user repos Context repo git-backed org · teams · content · config the shared truth · parent-team inheritance read-only on the docs org Worktree per-story · created on open context copied in at launch or on request Bound source repo the code being worked on · lives inside the worktree Inbox per-team threads · messages · role queues builder / resolver / reviewer / analyst / … the async spine of the factory Routine engine triggers: each_mac · inbox_idle · cron · manual wakes agents, posts messages, moves pipeline status routine-owned storage fetch · subscribe ipc tool call dispatch read / write create · hydrate mounts post · read fires inbox_idle This Mac Shared git truth Async spine Remote machine · private account SSH Tauri webview React viewer Dashboards this page Agent CLI local terminal HTTP server Axum · localhost Host-agent (local) app backend · terminals in the terminal server CodeSense MCP every tool Context repo one source of truth synced to each machine Worktree (local) per-story Source repo (local) Inbox role queues · reached from both machines Routine engine each_mac fires on…"
     },
     {
       "title": "Click a shape",
@@ -16670,13 +16670,6 @@
       "text": ""
     },
     {
-      "title": "MCP can do everything",
-      "crumb": "CodeSense — training manual",
-      "kind": "heading",
-      "href": "./README.html",
-      "text": ""
-    },
-    {
       "title": "MCP full reference",
       "crumb": "CodeSense — training manual",
       "kind": "heading",
@@ -16740,13 +16733,6 @@
       "text": ""
     },
     {
-      "title": "The fourteen arcs",
-      "crumb": "CodeSense — training manual",
-      "kind": "heading",
-      "href": "./README.html",
-      "text": ""
-    },
-    {
       "title": "The model",
       "crumb": "CodeSense — training manual",
       "kind": "heading",
@@ -16754,7 +16740,21 @@
       "text": ""
     },
     {
-      "title": "UI = MCP",
+      "title": "The thirteen arcs, and the crossref",
+      "crumb": "CodeSense — training manual",
+      "kind": "heading",
+      "href": "./README.html",
+      "text": ""
+    },
+    {
+      "title": "UI ↔ MCP crossref",
+      "crumb": "CodeSense — training manual",
+      "kind": "heading",
+      "href": "./README.html",
+      "text": ""
+    },
+    {
+      "title": "UI and MCP",
       "crumb": "CodeSense — training manual",
       "kind": "heading",
       "href": "./README.html",
@@ -16824,6 +16824,13 @@
       "text": ""
     },
     {
+      "title": "Over MCP",
+      "crumb": "CodeSense — Recipes gallery",
+      "kind": "heading",
+      "href": "./recipes-gallery.html",
+      "text": ""
+    },
+    {
       "title": "Recipes",
       "crumb": "CodeSense — Recipes gallery",
       "kind": "heading",
@@ -16832,13 +16839,6 @@
     },
     {
       "title": "Source",
-      "crumb": "CodeSense — Recipes gallery",
-      "kind": "heading",
-      "href": "./recipes-gallery.html",
-      "text": ""
-    },
-    {
-      "title": "UI = MCP",
       "crumb": "CodeSense — Recipes gallery",
       "kind": "heading",
       "href": "./recipes-gallery.html",
@@ -16863,7 +16863,7 @@
       "crumb": "CodeSense — 60-second tour",
       "kind": "section",
       "href": "./tour.html#stage",
-      "text": "A stylized CodeSense window A dark application window with a title bar, left file tree, central viewer, right pane, terminal strip, and status bar. A ring highlights the surface being described in the current tour step. codesense-docs / getting-started / tour.html A dev · codesense Filter… ⌘K getting-started tour.html home.html factory-playbook.html architecture.html arcs 14 _bmad-output INBOXES builder 3 resolver 1 reviewer 0 AGENTS M Mary W Winston A Amelia × 3 tour.html home.html architecture.html Welcome to CodeSense A dark console, 14 arcs, one running factory. A — FIRST TOUCH What happens between install and your first useful minute. book icon · the tour · identity · where files live B — THE MODEL Orgs, teams, context layers. teams.yml · inheritance · All-orgs · layers MCP · LAUNCH open_workspace { agent: 'builder' } # inbox: builder routine_run_now ship-release Pipeline · DEMO 14 phases · 42 stories · 7 in-flight · 3 blocked 1 · Idea 2 · Spec 3 · Arch 4 · UX 5–9 10 Review 11 QA 12 Retro 13 Ship 14 Loop LEGEND plan design build verify ship loop Settings Themes · keybindings · machines Appearance Dark · Light · Follow system dark Keybindings 88 bindings · ⌘K · ⌘P · ⌘⇧P · →/← · esc Open file → Machines this-mac · build-mac · cs-remote.example.com 3 online Connectors GitHub · Slack · Jira · Playwright 4 ok chat inbox routine agent M Mary analyst The spec is distilled. 5 stories, chain of 1 → {2,3,4,5}. See pipeline-graph . you Open the pipeline. Fire story 1 to builder. A Amelia builder-1 On it. worktree opens at ~/wt/demo-1. Reply to Mary · ⌘↵ to send builder inbox · 3 open DEMO-1 · scaffold shared chrome 2 msgs · builder · now DEMO-3 · tour.html 1 msg · builder · 3m DEMO-9 · factory playbook 4 msgs · builder · 11m ROLE CONTRACT builder · implements stories · auto-wake on idle agents 7 personas · 3 live M Mary analyst · bmad-forge-idea W Winston architect · bmad-architecture A×3 Amelia × 3 builder · bmad-build Mu Murat tea · bmad-testarch-atdd routines 4 active INBOX_IDLE · BUILDER wake-builder-on-idle last…"
+      "text": "A stylized CodeSense window A dark application window with a title bar, left file tree, central viewer, right pane, terminal strip, and status bar. A ring highlights the surface being described in the current tour step. codesense-docs / getting-started / tour.html A dev · codesense Filter… ⌘K getting-started tour.html home.html factory-playbook.html architecture.html arcs 13 _bmad-output INBOXES builder 3 resolver 1 reviewer 0 AGENTS M Mary W Winston A Amelia × 3 tour.html home.html architecture.html Welcome to CodeSense A dark console, 13 arcs, one running factory. A — FIRST TOUCH What happens between install and your first useful minute. book icon · the tour · identity · where files live B — THE MODEL Orgs, teams, context layers. teams.yml · inheritance · All-orgs · layers MCP · LAUNCH open_workspace { agent: 'builder' } # inbox: builder routine_run_now ship-release Pipeline · DEMO 14 phases · 42 stories · 7 in-flight · 3 blocked 1 · Idea 2 · Spec 3 · Arch 4 · UX 5–9 10 Review 11 QA 12 Retro 13 Ship 14 Loop LEGEND plan design build verify ship loop Settings Themes · keybindings · machines Appearance Dark · Light · Follow system dark Keybindings 88 bindings · ⌘K · ⌘P · ⌘⇧P · →/← · esc Open file → Machines this-mac · build-mac · cs-remote.example.com 3 online Connectors GitHub · Slack · Jira · Playwright 4 ok chat inbox routine agent M Mary analyst The spec is distilled. 5 stories, chain of 1 → {2,3,4,5}. See pipeline-graph . you Open the pipeline. Fire story 1 to builder. A Amelia builder-1 On it. worktree opens at ~/wt/demo-1. Reply to Mary · ⌘↵ to send builder inbox · 3 open DEMO-1 · scaffold shared chrome 2 msgs · builder · now DEMO-3 · tour.html 1 msg · builder · 3m DEMO-9 · factory playbook 4 msgs · builder · 11m ROLE CONTRACT builder · implements stories · auto-wake on idle agents 7 personas · 3 live M Mary analyst · bmad-forge-idea W Winston architect · bmad-architecture A×3 Amelia × 3 builder · bmad-build Mu Murat tea · bmad-testarch-atdd routines 4 active INBOX_IDLE · BUILDER wake-builder-on-idle last…"
     },
     {
       "title": "60-second tour of CodeSense",

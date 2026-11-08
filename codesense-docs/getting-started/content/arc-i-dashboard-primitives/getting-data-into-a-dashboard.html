@@ -103,7 +103,7 @@
         <p>
           The Mac checks before running a query. The relay checks before serving live or cached
           answers, and never serves a cache fallback for this refusal. Edits take effect when the
-          watcher saves the block, without republishing; until then asks fail closed. Changing a
+          watcher saves the block, without republishing; asks fail closed until it does. Changing a
           query's pins deletes its cached answers. Unknown live keys and invalid pin declarations
           are refused. These pins cover queries only; streams are unchanged.
         </p>

@@ -288,9 +288,8 @@
         <header class="cs-xref-head">
           <h1 class="cs-xref-head__title">UI <em>&harr;</em> MCP crossref</h1>
           <p class="cs-xref-head__lede">
-            Every Tauri command the UI invokes paired with the MCP tool an agent can call to achieve
-            the same thing — the auditor for invariant <strong>I&#8209;2</strong>
-            (MCP&#8209;complete). Build-time generator reads the registrations in
+            Every Tauri command the UI invokes, paired with the MCP tool an agent can call to do the
+            same thing where one exists. Build-time generator reads the registrations in
             <code>src-tauri/src/lib.rs</code> and <code>src-tauri/src/mcp/handler.rs</code>, pairs
             by exact function-name match plus an explicit map, and emits
             <code>generated/ui-mcp.json</code>. New one-sided commands land as drift and fail CI

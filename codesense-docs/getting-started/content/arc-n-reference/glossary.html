@@ -574,8 +574,9 @@
                 An <strong>inbox</strong> holds messages agents and people send each other with
                 <code>send_message</code>, as plain text, Markdown or HTML (an HTML message to you is a live
                 page with buttons). Your Inbox shows conversations and role queues, and its badge
-                counts all unread human mail of either kind, excluding archived mail; <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">I</span>
-                docks it beside the terminal. Roles have inboxes too: a routine with a
+                counts all unread human mail of either kind, excluding archived mail. <span class="cs-docs-kbd">⇧</span><span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">I</span>
+                opens your Inbox; <span class="cs-docs-kbd">⌘</span><span class="cs-docs-kbd">I</span> docks the focused
+                agent's inbox beside its terminal. Roles have inboxes too: a routine with a
                 <code>role_pending</code> trigger fires when a message waits for its role.
               </dd>
             </div>
@@ -627,7 +628,7 @@
               </dt>
               <dd>
                 Model Context Protocol. The tool-call shape CodeSense exposes to agents: a few hundred tools, and
-                every UI action has one, so an agent can do it without "seeing" the UI. The
+                most UI actions have one, so an agent can do them without "seeing" the UI. The
                 <a href="../mcp-explorer.html">MCP explorer</a> lists them with signatures and examples.
               </dd>
             </div>

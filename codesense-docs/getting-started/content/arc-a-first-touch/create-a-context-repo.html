@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../_shared/cs-docs.css" />
     <script src="../_shared/nav.js" defer></script>
-    <script src="../_shared/create-repo-primer.js" defer></script>
-    <script src="../_shared/try-this.js" defer></script>
     <style>
       /* Arc-A content shell (duplicated per-page by design; see sibling notes). */
       .cs-docs-arcA {
@@ -44,32 +42,6 @@
       .cs-docs-arcA li {
         margin: 8px 0;
         line-height: 1.55;
-      }
-      .cs-docs-arcA__hero {
-        border: 1px solid var(--cs-border);
-        border-radius: var(--cs-docs-radius-lg);
-        padding: var(--cs-docs-space-5);
-        background: color-mix(in oklab, var(--cs-surface) 85%, transparent);
-        margin: 0 0 var(--cs-docs-space-5);
-      }
-      .cs-docs-arcA__placeholder {
-        aspect-ratio: 16 / 9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--cs-muted-fg);
-        background: var(--cs-inset);
-        border: 1px dashed var(--cs-border);
-        border-radius: var(--cs-docs-radius);
-        text-align: center;
-        padding: 20px;
-      }
-      .cs-docs-arcA__hero figcaption {
-        margin-top: var(--cs-docs-space-3);
-        font-size: var(--cs-docs-text-xs);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--cs-faint-fg);
       }
       .cs-docs-arcA__step {
         display: grid;
@@ -270,22 +242,5 @@ commit_registry_edit_local({
         </span>
       </div>
     </footer>
-
-    <script>
-      // Mount the inline create-repo primer when the bridge is live. Mirrors the
-      // behaviour of create.html so the "Create one now" affordance works on
-      // either entry point.
-      document.addEventListener("DOMContentLoaded", function () {
-        var host = document.querySelector("[data-create-repo-primer]");
-        if (host && window.codesense && window.codesense.docs) {
-          window.codesense.docs.mountInlineAffordance(host, {
-            onRetry: function () {
-              var btn = document.querySelector("cs-try-this button");
-              if (btn && typeof btn.focus === "function") btn.focus();
-            },
-          });
-        }
-      });
-    </script>
   </body>
 </html>

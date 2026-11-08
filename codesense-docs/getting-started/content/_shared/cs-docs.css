@@ -325,7 +325,7 @@ samp {
   font-weight: 400;
 }
 
-/* Arc dropdown trigger — the 14-arc affordance owned by nav.js. */
+/* Arc dropdown trigger — the 13-arc affordance owned by nav.js. */
 .cs-topnav__arcs {
   display: inline-flex;
   align-items: center;

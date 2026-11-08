@@ -129,8 +129,7 @@
       >
         <h1>No UI. Just four calls.</h1>
         <p class="lede">
-          Everything CodeSense does is reachable through MCP: it is
-          <strong>MCP-complete</strong>. We'll build an agent that onboards a new team
+          Most of what CodeSense does is reachable through MCP. We'll build an agent that onboards a new team
           end-to-end without ever touching the UI: pick the active team, add a source repo, list the
           worktrees that are open on it. Four tool calls. The agent's whole surface area is the
           bridge.
@@ -574,17 +573,15 @@ done — team active, source attached, 0 worktrees so far.</code></pre>
         </div>
       </section>
 
-      <section data-search="What this proves — MCP-complete" id="proves">
+      <section data-search="What this proves" id="proves">
         <h2>What this proves</h2>
         <p>
           Zero UI calls. Zero shell calls. Zero filesystem writes outside what the bridge did on
           your behalf — <code>set_active_team</code> and <code>add_source_repo</code> both landed in
           CodeSense's own state, nothing in your source tree moved. The whole workflow is auditable,
-          log-replayable, scriptable on a cron. MCP-complete means:
-          <strong
-            >every UI action has an MCP tool, so every workflow is reproducible via MCP
-            alone.</strong
-          >
+          log-replayable, scriptable on a cron. Most UI actions have an MCP tool, so a
+          workflow like this one runs through MCP alone; the
+          <a href="../ui-mcp-crossref.html">UI ↔ MCP crossref</a> lists the ones that don't.
         </p>
         <p>
           Want a shorter version — an agent whose <em>whole</em> job is this shape, not just this

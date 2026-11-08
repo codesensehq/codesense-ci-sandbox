@@ -30,7 +30,7 @@ A box holds the clone, the files its agents were given, and the CLIs signed in w
 
 Each page runs in an isolated frame with its own capability token. Dashboards are your own files, so open only ones you trust; see [How CodeSense trusts agents](https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents). A guard keeps credential files out of managed Claude sessions’ ordinary reads; it is not a sandbox.
 
-A page can only call the verbs `window.codesense` exposes, and every action goes through the same gate: a page can open a workspace, message an agent or type into one. A dashboard published to share.codesense.ai is checked before upload: an allowlist of files, size limits, and no app calls in its pages.
+A page can only call the verbs `window.codesense` exposes, and every action goes through the same gate: a page can open a workspace, message an agent or type into one, and create, move or delete team content files. Moves and deletes run without a confirm sheet unless you set `files.move` or `files.delete` to prompt for that dashboard. A dashboard published to share.codesense.ai is checked before upload: an allowlist of files, size limits, and no app calls in its pages.
 
 ## Updates are verified
 

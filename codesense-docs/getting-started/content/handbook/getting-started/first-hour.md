@@ -12,8 +12,8 @@ Codex or OpenCode installed.
 
 ## Minutes 0–5: open CodeSense in its own docs
 
-Install CodeSense and open it. There's no sign-in and no welcome screen: the
-app opens straight into **CodeSense Docs**, a context repo that ships with every
+Install CodeSense and open it. The app has no sign-in and no welcome screen: it
+opens straight into **CodeSense Docs**, a context repo that ships with every
 install. Its **getting-started** team is open with its README. See
 [Install CodeSense](install.md).
 
@@ -22,8 +22,8 @@ a routine you can open and run, and `examples/` with skills (such as
 `/routine`, `/agent` and `/codesense-setup`) and dashboards you can copy into
 your own team. Nothing in `examples/` is installed; the CodeSense MCP tools
 describe everything an agent needs on their own. It's read-only and has a book icon in the context repo menu at the
-top left. It's a real git clone: to update it, ask an agent to run the
-`update-codesense-docs` skill, which fetches the latest docs with git. CodeSense never commits, pushes
+top left. To update it, ask an agent to run the
+`update-codesense-docs` skill, which refreshes the docs from the app's offline bundle (no network). A newer app brings newer docs. CodeSense never commits, pushes
 or merges for you.
 
 ## Minutes 5–10: connect your context repo

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Privacy
+
+- Clarified: the app has no sign-in and no usage tracking; sharing a dashboard uses owner and viewer accounts on share.codesense.ai.
+
 ## [0.1.0] - 2026-11-06
 
 The first public release of CodeSense. CodeSense is a Mac app that runs your team of Claude Code, Codex and OpenCode agents across every repo, all in your own git. It needs macOS on Apple Silicon. You run Claude Code, Codex or OpenCode with your own subscriptions and settings; CodeSense never calls a model itself.

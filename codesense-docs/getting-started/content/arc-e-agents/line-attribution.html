@@ -70,10 +70,10 @@
           home under <code>~/.codesense/git-ai/</code>, and a launch gets the hooks in its own private settings.
           Codex receives trust hashes for CodeSense-injected hooks through launch flags; CodeSense may also
           add those hashes to its native <code>hooks.state</code>, preserving unrelated configuration. Remote machines and OpenCode report
-          <code>unsupported</code> for now. git-ai's own telemetry and update checks are switched off.
+          <code>unsupported</code>. git-ai's own telemetry and update checks are switched off.
         </p>
         <p>
-          <strong>CLIs without capture.</strong> A session of a CLI CodeSense cannot capture yet (OpenCode and
+          <strong>CLIs without capture.</strong> A session of a CLI CodeSense doesn't capture (OpenCode and
           Hermes) in a managed worktree is launched with <code>GIT_REFLOG_ACTION=codesense-unsupported-cli &lt;cli&gt;</code>,
           so git-ai never credits its commits to you. Their lines count as unattributed, and <code>why_line</code> names the CLI with
           reason <code>unsupported_cli</code> while a local reflog still records the commit. Git also records that

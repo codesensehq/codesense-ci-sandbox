@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import {
   DEFAULT_SCAN,
   checkPaths,
+  htmlScripts,
   loadSurface,
   recordSurface,
   scanFile,
@@ -223,4 +224,22 @@ test("the docs list the supported surface", () => {
 
 test("the current tree passes", () => {
   assert.deepEqual(checkPaths(DEFAULT_SCAN, surface), []);
+});
+
+test("inline scripts: data-src and data-type are not src and type; types are normalised", () => {
+  const html = [
+    '<script data-src="x.js">a()</script>',
+    '<script src="x.js"></script>',
+    '<script type="text/javascript; charset=utf-8">b()</script>',
+    '<script type="text/ecmascript" data-type="module">c()</script>',
+    '<script type="application/json">{}</script>',
+  ].join("\n");
+  assert.deepEqual(
+    htmlScripts(html).map(({ text, type }) => ({ text, type })),
+    [
+      { text: "a()", type: "" },
+      { text: "b()", type: "text/javascript" },
+      { text: "c()", type: "text/ecmascript" },
+    ],
+  );
 });

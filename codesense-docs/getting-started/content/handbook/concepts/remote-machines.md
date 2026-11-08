@@ -10,7 +10,7 @@ The whole feature is in beta.
 
 > **Beta**
 >
-> Open **Machines** (**⌘⌥C**, or **Go → Machines**) and add one, or run **Add machine…** from ⌘K. CodeSense connects with ordinary OpenSSH and your own SSH setup: your SSH agent or a key file. It never asks for a private key, a password or a token. The first connection test shows the machine's host key fingerprint; once you confirm it, CodeSense pins it and refuses a machine whose key changes.
+> Open **Machines** (**⌘⌥C**, or **Go → Machines**) and add one, or run **Add machine…** from the command palette (**⌘⇧P**). CodeSense connects with ordinary OpenSSH and your own SSH setup: your SSH agent or a key file. It never asks for a private key, a password or a token. The first connection test shows the machine's host key fingerprint; once you confirm it, CodeSense pins it and refuses a machine whose key changes.
 >
 > You can keep a machine to yourself or share it with a team. Sharing shares where the machine is, never how to log in: each teammate signs in with their own account on it.
 >

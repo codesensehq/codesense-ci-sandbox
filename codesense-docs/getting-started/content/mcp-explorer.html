@@ -540,18 +540,9 @@
         color: var(--cs-muted-fg);
         flex-wrap: wrap;
       }
-      .detail-head .meta a {
-        color: var(--cs-muted-fg);
-        text-decoration: underline;
-        text-decoration-color: var(--cs-border-strong);
-        text-underline-offset: 2px;
-        text-decoration-thickness: 1px;
+      .detail-head .meta .src {
         font-variant-numeric: tabular-nums;
         font-family: var(--cs-font-mono);
-      }
-      .detail-head .meta a:hover {
-        color: var(--cs-fg);
-        text-decoration-color: var(--cs-accent);
       }
       .detail-head .arc-chip {
         cursor: default;
@@ -1478,18 +1469,7 @@
                     "read-only",
                   ),
               h("span", {}, "·"),
-              h(
-                "a",
-                {
-                  href: "#",
-                  title: "Open in source",
-                  onclick: (e) => {
-                    e.preventDefault();
-                    openSource(tool);
-                  },
-                },
-                tool.sourceRef,
-              ),
+              h("span", { class: "src", title: "Source file" }, tool.sourceRef),
               tool.core
                 ? h(
                     "span",
@@ -1791,14 +1771,6 @@
             history.replaceState(null, "", location.pathname + location.search + next);
         }
         $("app").dataset.detailOpen = name ? "true" : "false";
-      }
-
-      function openSource(tool) {
-        if (window.codesense && typeof window.codesense.openSource === "function") {
-          window.codesense.openSource("src-tauri/src/mcp/" + tool.sourceRef);
-        } else {
-          console.log("[mcp-explorer] openSource", tool.sourceRef);
-        }
       }
 
       /* ---------- Keyboard ---------- */

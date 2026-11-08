@@ -36,7 +36,7 @@ Each pane runs in an isolated frame with its own capability token, and a pane th
 
 A pane reads and acts only through `window.codesense`: queries, sessions, routines and a fixed list of actions such as opening a workspace or messaging an agent. Dashboards are your own files, so open only ones you trust; see [How CodeSense trusts agents](https://github.com/codesensehq/codesense/blob/main/SECURITY.md#how-codesense-trusts-agents). A runaway loop is rate-limited. Errors show as a banner in the pane, never a blank pane.
 
-## Shortcuts in ⌘K
+## Shortcuts in the command palette
 
 Your own panes register their shortcuts with CodeSense and show up in the command palette.
 

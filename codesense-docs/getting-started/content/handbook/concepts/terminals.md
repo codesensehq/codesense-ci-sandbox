@@ -62,7 +62,7 @@ Four tools float over the focused terminal tile, so you can look at an agent's w
 | <kbd>⌘⇧D</kbd> | **Source diff** | Review the worktree's changes: the whole branch or only what's uncommitted, file by file, as a tree or a flat list. It's for reading only. There's no commit, publish or sync here, and nothing you do in it is sent to the agent. Press <kbd>e</kbd> to open the file in the code editor. |
 | <kbd>⌘⇧C</kbd> | **Code editor** | Edit the worktree's files: a file tree, tabs, find and replace, multiple cursors, a change gutter against `HEAD`, <kbd>⌘P</kbd> to open a file and <kbd>⌃G</kbd> to go to a line. A save never overwrites a change that landed underneath you; you get a merge view instead. |
 | <kbd>⌘⇧H</kbd> | **Story summary** | The story's doc over its terminal (on an epic tile, the epic's README). <kbd>⌘⇧U</kbd> expands or collapses it. |
-| <kbd>⌘I</kbd> | **Inbox** | This tab's inbox, docked beside its terminal: everything the session sent and received, what was typed into it, and what it holds through a role. Reading here doesn't mark anything read. <kbd>⌘⇧I</kbd> opens the full-screen inbox for every session. |
+| <kbd>⌘I</kbd> | **Inbox** | This tab's inbox, docked beside its terminal: everything the session sent and received, what was typed into it, and what it holds through a role. Reading here doesn't mark anything read. <kbd>⌘⇧I</kbd> opens your Inbox, for every session, in the right pane. |
 
 Source diff and the code editor work the same on a worktree on a remote machine.
 

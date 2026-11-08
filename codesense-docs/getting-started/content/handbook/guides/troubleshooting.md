@@ -44,7 +44,7 @@ This appears when a story's repo is listed for your team, but CodeSense doesn't 
 
 ## A CLI I typed myself doesn't see the team's context
 
-An agent you launch from CodeSense gets your team's context (`CLAUDE.md`, `.claude/`, skills) copied into its worktree before it starts. A `claude` or `codex` you type yourself in a terminal tab gets only what the worktree already holds. Launch the agent from CodeSense instead, or have an agent call `hydrate_worktree` to copy the context in.
+An agent you launch from CodeSense gets your team's context (`CLAUDE.md`, `.claude/`, skills) copied into its worktree before it starts. A `claude`, `codex` or `opencode` you type yourself in a terminal tab gets only what the worktree already holds. Launch the agent from CodeSense instead, or have an agent call `hydrate_worktree` to copy the context in.
 
 > **Coming: a context-landing indicator**
 >
@@ -54,9 +54,9 @@ An agent you launch from CodeSense gets your team's context (`CLAUDE.md`, `.clau
 
 The agent's MCP bridge couldn't reach the app. Open CodeSense. The bridge reconnects on its own for about 30 seconds after the app restarts. After that, restart the agent session.
 
-## Claude Code or Codex isn't offered
+## Claude Code, Codex or OpenCode isn't offered
 
-CodeSense looks for `claude` and `codex` and needs `claude` 2.0 or newer, or `codex` 0.140 or newer. Install or update the CLI; CodeSense notices new installs. Git 2.44 or newer is the only thing CodeSense requires to start.
+CodeSense looks for `claude`, `codex` and `opencode` and needs `claude` 2.0 or newer, `codex` 0.140 or newer, or `opencode` 2.1 or newer (full support from 2.1.4 up to 2.x). Install or update the CLI; CodeSense notices new installs. Git 2.44 or newer is the only thing CodeSense requires to start.
 
 ## My shell config isn't loaded in the terminal
 

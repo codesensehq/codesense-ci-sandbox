@@ -9,10 +9,14 @@ with CodeSense's status and new-mail hooks. Your own `--mcp-config` wins, a
 folder whose `.mcp.json` already has `codesense` keeps its own, and `command claude` /
 `command codex` runs the plain CLI.
 
-An outside MCP client can inspect CodeSense, but cannot send or reply to messages, read a session inbox, or signal completion. Those calls require a connection bound to a CodeSense tab; passing a `sessionId` alone does not establish identity. Start `claude` or `codex` inside a CodeSense terminal tab to use them. A detached process that has left its tab’s process tree cannot establish that binding. Only the native app can answer as the person.
+The same goes for `opencode` typed in a CodeSense tab on this Mac (not on a remote machine): the
+tab's shell passes the tab's bridge in `OPENCODE_CONFIG_CONTENT`. A value you set yourself
+wins, and `command opencode` runs the plain CLI.
 
-The connection setup below works from outside CodeSense with Claude Code, Codex or
-any other MCP client. The server lists the same tools, but calls that act as a session
+An outside MCP client can inspect CodeSense, but cannot send or reply to messages, read a session inbox, or signal completion. Those calls require a connection bound to a CodeSense tab; passing a `sessionId` alone does not establish identity. Start `claude` or `codex` inside a CodeSense terminal tab, or `opencode` in a tab on this Mac, to use them. A detached process that has left its tab’s process tree cannot establish that binding. Only the native app can answer as the person.
+
+The connection setup below works from outside CodeSense with Claude Code, Codex, OpenCode
+or any other MCP client. The server lists the same tools, but calls that act as a session
 require a verified tab identity. Other tools retain their own permissions; this is
 not a general read-only connection.
 
@@ -62,6 +66,25 @@ command = "/Users/<you>/.codesense/bin/codesense-bridge"
 Use your full home path. Codex doesn't expand `~` or `$HOME` here.
 
 Check it: `codex mcp list` shows `codesense` as `enabled`.
+
+## OpenCode
+
+Add it to `opencode.json` (in your project, or `~/.config/opencode/opencode.json` for every
+project):
+
+```json
+{
+  "mcp": {
+    "codesense": {
+      "type": "local",
+      "command": ["/Users/<you>/.codesense/bin/codesense-bridge"],
+      "enabled": true
+    }
+  }
+}
+```
+
+Check it: `opencode mcp list` shows `codesense`.
 
 ## Any other MCP client
 

@@ -110,10 +110,10 @@
         padding: 1px 6px; border-radius: var(--cs-radius-sm);
       }
 
-      /* "You are here" rail: tiny progress line that shows where in the 14-arc model
+      /* "You are here" rail: tiny progress line that shows where in the arc model
          the user currently is. One dot per arc; the current arc gets the accent fill. */
       .here-rail {
-        display: grid; grid-template-columns: repeat(14, 1fr);
+        display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
         gap: 3px;
         padding: var(--cs-space-2) 0 0;
       }
@@ -212,18 +212,10 @@
           </p>
         </div>
 
-        <!-- Section 2: You-are-here rail across the 14 arcs -->
+        <!-- Section 2: You-are-here rail across the arcs (built from ARCS) -->
         <div class="pane__section">
           <span class="pane__label">You are here</span>
-          <div class="here-rail" role="img" aria-label="Current arc in the 14-arc map">
-            <span class="seg"></span><span class="seg"></span>
-            <span class="seg"></span><span class="seg"></span>
-            <span class="seg"></span><span class="seg"></span>
-            <span class="seg"></span><span class="seg"></span>
-            <span class="seg"></span><span class="seg"></span>
-            <span class="seg"></span><span class="seg" data-current="true"></span>
-            <span class="seg"></span><span class="seg"></span>
-          </div>
+          <div class="here-rail" role="img" aria-label="Current arc in the arc map"></div>
           <div class="here-rail-captions">
             <span>A</span>
             <span style="color:var(--cs-fg);">L · factory</span>
@@ -298,12 +290,12 @@
         const nextUp = pane.querySelector('#next-up');
         const collapseBtn = pane.querySelector('.pane__collapse');
 
-        // Fourteen-arc map: A..N → arc name.
+        // Thirteen-arc map: A..L and N → arc name.
         const ARCS = [
           ['A','First touch'], ['B','Model'], ['C','Worktrees'], ['D','Terminals'],
           ['E','Agents'], ['F','Inboxes'], ['G','Routines'], ['H','Pipelines'],
           ['I','Dashboards'], ['J','MCP ref'], ['K','Sync + git'], ['L','Factory'],
-          ['M','MCP=UI'], ['N','Catalog'],
+          ['N','Catalog'],
         ];
 
         // The tutor's "what should I say right now?" lookup.
@@ -377,9 +369,8 @@
 
         function renderRail(arcLetter) {
           const idx = ARCS.findIndex(([L]) => L === arcLetter);
-          rail.querySelectorAll('.seg').forEach((seg, i) => {
-            seg.dataset.current = String(i === idx);
-          });
+          rail.innerHTML = ARCS.map((_, i) =>
+            `<span class="seg" data-current="${i === idx}"></span>`).join('');
           const name = ARCS[idx]?.[1] || '—';
           captions.innerHTML = `
             <span>A</span>
@@ -397,7 +388,7 @@
               tutorSay.innerHTML = `Open a doc, an agent, or an inbox and I'll explain where we are and what to try first.`;
               renderRail(null);
               nextUp.querySelector('.next-up__title').textContent = 'Open the home page';
-              nextUp.querySelector('.next-up__sub').textContent = 'It\'s the 14-arc map; pick wherever interests you.';
+              nextUp.querySelector('.next-up__sub').textContent = 'It\'s the 13-arc map; pick wherever interests you.';
             } else {
               why.innerHTML = typeof s.why === 'function' ? s.why(ctx) : s.why;
               tutorSay.innerHTML = typeof s.say === 'function' ? s.say(ctx) : s.say;

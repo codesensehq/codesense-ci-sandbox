@@ -628,18 +628,22 @@ export function scanScript(text, surface) {
   return findings;
 }
 
-const JS_TYPES = /^(?:|module|text\/javascript|application\/javascript|text\/babel)$/i;
+const JS_TYPES = /^(?:|module|(?:text|application)\/(?:java|ecma)script|text\/babel)$/i;
 
 // Inline <script> blocks of an HTML file, with the line each starts on.
 export function htmlScripts(html) {
   const out = [];
   for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
     const attrs = m[1];
-    if (/\bsrc\s*=/i.test(attrs)) continue;
-    const type = /\btype\s*=\s*["']?([^"'\s>]*)/i.exec(attrs)?.[1] ?? "";
+    // `(?<![\w-])` keeps data-src and data-type from counting as src and type.
+    if (/(?<![\w-])src\s*=/i.test(attrs)) continue;
+    const type = (/(?<![\w-])type\s*=\s*["']?([^"'\s>]*)/i.exec(attrs)?.[1] ?? "")
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
     if (!JS_TYPES.test(type)) continue;
     const start = m.index + m[0].indexOf(">") + 1;
-    out.push({ text: m[2], line: html.slice(0, start).split("\n").length, offset: start });
+    out.push({ text: m[2], line: html.slice(0, start).split("\n").length, offset: start, type });
   }
   return out;
 }

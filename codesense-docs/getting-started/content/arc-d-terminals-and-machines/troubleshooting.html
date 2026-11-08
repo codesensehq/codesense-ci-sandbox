@@ -68,12 +68,13 @@
           </li>
           <li>
             <strong>Unexpected cause</strong> — <em>stop</em>. Someone has rotated
-            that machine's identity without telling you. Don't blindly re-pin.
+            that machine's identity without telling you. Leave it blocked and tell your team.
           </li>
           <li>
-            <strong>Fix (expected case)</strong> — in Machines, <em>Replace host key
-            pin</em>, confirm the new fingerprint matches the admin's. CodeSense pins
-            the new key.
+            <strong>Fix (expected case)</strong> — in Machines, <em>Review key…</em>
+            shows the pinned key and the presented key. Once the admin confirms it was rebuilt,
+            whoever manages it removes the machine and adds it again. Adding it shows the
+            new fingerprint; check it against the rebuilt machine before you confirm.
           </li>
         </ul>
       </section>
@@ -177,13 +178,15 @@
             to an always-on machine if the schedule must fire.
           </li>
           <li>
-            <strong>Remote-owned routine, terminal server was down.</strong> Check
-            <em>Machines → &lt;host&gt; → Terminal server</em>. If it bounced during
-            your window, the fire was skipped.
+            <strong>Remote-owned routine, terminal server was down.</strong> Check the
+            machine's status line in <em>Machines</em>, or call
+            <code>terminal_server_status</code> or <code>list_machines</code>. If it
+            bounced during your window, the fire was skipped.
           </li>
           <li>
-            <strong>Routine disabled.</strong> <em>Routines console → &lt;routine&gt;</em>.
-            A failed run can disable itself; re-enable after you've fixed the cause.
+            <strong>Routine disabled.</strong> Open <em>Schedule</em> from the identity menu and pick the routine.
+            A failed run can disable itself; turn it back on there (or call
+            <code>routine_set_enabled</code>) after you've fixed the cause.
           </li>
         </ul>
       </section>

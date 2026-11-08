@@ -9,9 +9,10 @@ they just use it. Make it Private (Only me) only when it's just for you.
 
 ## Start here
 
-- [Add the CodeSense MCP to your own agents](add-codesense-mcp.md): connect Claude Code, Codex
-  or another MCP client you run yourself outside CodeSense. Agents launched from CodeSense
-  already have it, and so does a `claude` or `codex` you type in any CodeSense tab.
+- [Add the CodeSense MCP to your own agents](add-codesense-mcp.md): connect Claude Code, Codex,
+  OpenCode or another MCP client you run yourself outside CodeSense. Agents launched from
+  CodeSense already have it, and so does a `claude` or `codex` you type in any CodeSense tab,
+  or an `opencode` you type in a tab on this Mac.
 - [Granting MCP servers per agent](mcp-access-per-agent.md): MCP access is per-agent opt-in.
   Starters carry only the bridge; copy a starter and check the servers your agent needs.
 
