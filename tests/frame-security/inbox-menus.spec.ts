@@ -58,7 +58,7 @@ test("inbox context menu: conversation", async ({ page }) => {
     .click({ button: "right" });
   await expect(menu(page, "Open")).toBeVisible();
   await expect(menu(page, "Reply")).toBeVisible();
-  await expect(menu(page, "Archive conversation")).toBeVisible();
+  await expect(menu(page, "Archive")).toBeVisible();
   await menu(page, "Reply").click();
   await expect(frame.locator("#draft")).toBeFocused();
 });
@@ -107,7 +107,7 @@ test("inbox context menu: role queue", async ({ page }) => {
     .filter({ hasText: "#docs" })
     .locator(".prev")
     .click({ button: "right" });
-  for (const name of ["Open queue", "Edit role…", "Archive conversation"])
+  for (const name of ["Open queue", "Edit role…", "Archive"])
     await expect(menu(page, name)).toBeVisible();
   await menu(page, "Open queue").click();
   await expect(frame.locator("#thread-name")).toHaveText("#docs");
@@ -166,7 +166,7 @@ test("inbox context menu: header conversation and composer reset", async ({ page
   await openMia();
   await frame.locator("#thread-name").click({ button: "right" });
   await expect(menu(page, "Reply")).toBeVisible();
-  await expect(menu(page, "Archive conversation")).toBeVisible();
+  await expect(menu(page, "Archive")).toBeVisible();
   await page.keyboard.press("Escape");
   await frame.locator("#new-message").click();
   await expect(frame.locator("#thread-head")).not.toHaveAttribute("data-codesense-row");
@@ -174,7 +174,7 @@ test("inbox context menu: header conversation and composer reset", async ({ page
   await frame.locator("#thread-head").click({ position: { x: 300, y: 4 } });
   await frame.locator("#thread-head").click({ button: "right", position: { x: 300, y: 4 } });
   await expect(menu(page, "New message")).toBeVisible();
-  await expect(menu(page, "Archive conversation")).toHaveCount(0);
+  await expect(menu(page, "Archive")).toHaveCount(0);
 });
 
 test("inbox context menu: terminal chip has the agent menu", async ({ page }) => {
@@ -254,7 +254,7 @@ test("inbox context menu: cross-team avatars and filter restore", async ({ page 
   await expect(menu(page, "Show")).toBeVisible();
   await page.keyboard.press("Escape");
   await frame.locator("#thread-name").click({ button: "right" });
-  await menu(page, "Mark as unread").click();
+  await menu(page, "Mark unread").click();
   await frame.locator("#team-filter").click();
   await frame.locator("#filter-menu button").filter({ hasText: "web" }).click();
   await expect(frame.locator("#latest-count")).toHaveText("Marked unread");

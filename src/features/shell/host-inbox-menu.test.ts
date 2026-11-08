@@ -53,9 +53,9 @@ it("conversation resolves stored mail and establishes its unread hold before wri
   expect(menu?.items.filter((i) => !i.separator).map((i) => i.label)).toEqual([
     "Open",
     "Reply",
-    "Mark as unread",
-    "Go to Mia’s terminal",
-    "Archive conversation",
+    "Mark unread",
+    "Go to session",
+    "Archive",
   ]);
   await menu?.choose("mark-unread");
   expect(notify).toHaveBeenCalledWith("mark-unread", req.row, true);
@@ -110,6 +110,7 @@ it("attachment retains its team and reads no clipboard until activated", async (
 it("role queue reuses opening actions and omits page-only actions without a listener", async () => {
   const menu = await buildInboxMenu(request({ kind: "role-queue", role: "docs" }));
   expect(menu?.items.slice(0, 2).map((i) => i.label)).toEqual(["Open queue", "Edit role…"]);
+  expect(menu?.items.at(-1)?.label).toBe("Archive");
   const noPage = await buildInboxMenu(request({ kind: "role-queue", role: "docs" }, false));
   expect(noPage?.items.map((i) => i.id)).not.toContain("open-queue");
   const noReply = await buildInboxMenu(request({ kind: "message", messageId: 10 }, false));

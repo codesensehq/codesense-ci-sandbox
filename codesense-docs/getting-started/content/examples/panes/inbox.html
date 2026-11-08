@@ -22,7 +22,8 @@
         {"id":"back-to-list","label":"Back to list","icon":"arrow-left","scope":"slot-focused"},
         {"id":"reply","label":"Reply","icon":"reply","scope":"slot-focused"},
         {"id":"go-to-session","label":"Go to session","icon":"square-terminal","scope":"slot-focused"},
-        {"id":"archive-conversation","label":"Archive conversation","icon":"archive","scope":"slot-focused"},
+        {"id":"archive-conversation","label":"Archive","icon":"archive","scope":"slot-focused"},
+        {"id":"mark-all-read","label":"Mark all read","icon":"check-check","scope":"slot-focused"},
         {"id":"new-message","label":"New message","icon":"square-pen","scope":"slot-focused"},
         {"id":"filter-by-team","label":"Filter by team","icon":"layers","scope":"slot-focused"},
         {"id":"toggle-list","label":"Toggle conversation list","icon":"panel-left","defaultChord":"CmdOrCtrl+B","scope":"slot-focused"}
@@ -410,8 +411,15 @@
         border-radius: var(--cs-radius);
         box-shadow: 0 0 0 1px var(--cs-border);
       }
-      .ib-row:hover .rowact {
+      .ib-row:hover .rowact,
+      .ib-rows:focus-visible .ib-row.kbd-active .rowact {
         display: flex;
+      }
+      #mark-all-read[disabled] {
+        color: var(--cs-muted-fg);
+        background: none;
+        opacity: 0.55;
+        cursor: default;
       }
       .ib-row .sub {
         font-weight: 400;
@@ -547,6 +555,43 @@
       }
       .ib-notice button.link:hover {
         text-decoration: underline;
+      }
+      /* One undo toast at a time, floating above the list's foot. */
+      .ib-toast {
+        position: absolute;
+        z-index: 6;
+        left: 0;
+        right: 0;
+        bottom: var(--cs-space-3);
+        width: fit-content;
+        margin-inline: auto;
+        display: flex;
+        align-items: center;
+        gap: var(--cs-space-3);
+        max-width: calc(100% - 2 * var(--cs-space-3));
+        padding: 6px 6px 6px 12px;
+        border-radius: var(--cs-radius-lg);
+        background: var(--cs-bg);
+        box-shadow:
+          0 0 0 1px var(--cs-border),
+          var(--cs-shadow);
+        font-size: var(--cs-text-sm);
+      }
+      .ib-toast:empty {
+        display: none;
+      }
+      .ib:has(.ib-toast:not(:empty)) .ib-rows {
+        padding-bottom: 64px;
+      }
+      .ib-toast button.link {
+        height: 26px;
+        padding: 0 8px;
+        border-radius: var(--cs-radius);
+        color: var(--cs-link);
+        font-weight: 500;
+      }
+      .ib-toast button.link:hover {
+        background: var(--cs-hover);
       }
 
       /* thread */
@@ -2368,6 +2413,11 @@
         <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
         <path d="M10 12h4" />
       </symbol>
+      <symbol id="i-more" viewBox="0 0 24 24">
+        <circle cx="5" cy="12" r="1" />
+        <circle cx="12" cy="12" r="1" />
+        <circle cx="19" cy="12" r="1" />
+      </symbol>
       <symbol id="i-back" viewBox="0 0 24 24">
         <path d="m12 19-7-7 7-7" />
         <path d="M19 12H5" />
@@ -2466,6 +2516,10 @@
         >
           All teams
         </button>
+        <button type="button" class="ib-btn" id="mark-all-read" title="Mark all read" disabled>
+          Mark all read
+        </button>
+        <span class="vh" id="mark-all-scope"></span>
         <span id="filter-status" class="ib-status" role="status" aria-live="polite"></span>
         <div
           class="ib-menu"
@@ -2502,6 +2556,7 @@
             id="conversations"
             role="listbox"
             aria-label="Conversations"
+            aria-keyshortcuts="U Shift+F10"
             tabindex="0"
           ></ul>
         </section>
@@ -2592,6 +2647,7 @@
           </form>
         </section>
       </div>
+      <div class="ib-toast" id="toast" role="status" aria-live="polite"></div>
     </main>
     <script>
       (() => {
@@ -2613,7 +2669,43 @@
           skinTone = 0,
           agentDefinitions = [];
         let listHidden = false;
+        // A read or an Undo holds a conversation's unread count until the server agrees, so a
+        // refresh that started before the write landed cannot flash the badge.
         const readHolds = new Map();
+        const holdUnread = (c, unread) =>
+          readHolds.set(historyKey(c.with, c.team), { last: c.lastMessageId, unread });
+        // A read can trail the write it follows, so a landed hold still waits for the server to
+        // agree; it lets go a few seconds after landing, so a count the server never reaches
+        // cannot pin the badge.
+        const HOLD_SETTLE_MS = 5000;
+        function holdLanded(c) {
+          const hold = readHolds.get(historyKey(c.with, c.team));
+          if (!hold) return;
+          hold.landedAt = Date.now();
+          setTimeout(scheduleRefresh, HOLD_SETTLE_MS + 50);
+        }
+        // Newer mail always wins: the server's count then stands.
+        function applyHold(c) {
+          const key = historyKey(c.with, c.team);
+          const hold = readHolds.get(key);
+          if (hold === undefined) return;
+          const agrees = hold.unread ? c.unread >= hold.unread : !c.unread;
+          const settled =
+            hold.landedAt !== undefined && Date.now() - hold.landedAt > HOLD_SETTLE_MS;
+          if (c.lastMessageId > hold.last || agrees || settled) readHolds.delete(key);
+          else c.unread = hold.unread;
+        }
+        const releaseHold = (c) => readHolds.delete(historyKey(c.with, c.team));
+        // An unread-only change must not read as new history on the next refresh.
+        const signSummary = (c) =>
+          conversations.includes(c) &&
+          summarySignatures.set(historyKey(c.with, c.team), summarySignature(c));
+        // Rows and summaries of one conversation share this key.
+        const convKey = (name, team) => (crossTeam ? historyKey(name, team) : name);
+        function setUnread(rows, flag) {
+          const keys = new Set(rows.map(messageKey));
+          for (const m of messages) if (keys.has(messageKey(m))) m.unread = flag;
+        }
         let conversations = [];
         const history = new Map();
         let summarySignatures = new Map();
@@ -2797,6 +2889,8 @@
         }
         const isRole = (key) => key.startsWith("#");
         const session = (key) => sessions.find((s) => s.handle === participant(key));
+        const conversationName = (key) =>
+          key === human ? "your notes" : "conversation with " + label(key);
         function label(key) {
           key = participant(key);
           if (key === human) return "You";
@@ -3174,6 +3268,15 @@
             const actions = h("span", "rowact");
             actions.append(
               button(
+                "Actions for " + conversationName(t.key),
+                "ib-btn icon",
+                (e) => {
+                  e.stopPropagation();
+                  openRowMenu(e.currentTarget);
+                },
+                "more",
+              ),
+              button(
                 "Archive " + label(t.key),
                 "ib-btn icon",
                 (e) => {
@@ -3205,6 +3308,30 @@
           $("load-state").hidden = loaded && threads.length > 0;
           if (loaded && !threads.length)
             $("load-state").textContent = "No conversations yet. Start a new message.";
+          const markAll = $("mark-all-read");
+          markAll.disabled = !threads.some((t) => t.unread);
+          // The name stays the visible text; a team filter describes its scope.
+          const scoped = crossTeam && filterTeam;
+          $("mark-all-scope").textContent = scoped
+            ? "Marks the conversations in " + teamLabel(filterTeam)
+            : "";
+          if (scoped) markAll.setAttribute("aria-describedby", "mark-all-scope");
+          else markAll.removeAttribute("aria-describedby");
+        }
+        // The row's "…" button opens the host's conversation menu, the one right-click opens,
+        // just below the anchor. Its box is read now: a hover-only button can lose its box
+        // before the host measures it. An anchor with no box (it is not laid out) is focused
+        // instead, so the host targets the focused row; one that takes no focus keeps a point.
+        function openRowMenu(anchor) {
+          const box = anchor.getBoundingClientRect();
+          let at = { clientX: box.left || 1, clientY: box.bottom || 1 };
+          if (!box.width) {
+            anchor.focus({ preventScroll: true });
+            if (document.activeElement === anchor) at = {};
+          }
+          anchor.dispatchEvent(
+            new MouseEvent("contextmenu", { bubbles: true, cancelable: true, ...at }),
+          );
         }
         function deliveryLabel(d) {
           return cap(d.state) + (d.instance ? " · " + label(d.instance) : "");
@@ -5631,22 +5758,22 @@
               const holds = t.summaries.filter(
                 (c) => c.unread > 0 && batch.filter((m) => inConversation(m, c)).length >= c.unread,
               );
-              for (const c of holds) readHolds.set(historyKey(c.with, c.team), c.lastMessageId);
+              for (const c of holds) holdUnread(c, 0);
               try {
                 await cs.act("markRead", batchArgs(batch));
+                holds.forEach(holdLanded);
                 for (const c of t.summaries) {
                   c.unread = Math.max(
                     0,
                     c.unread - batch.filter((m) => inConversation(m, c)).length,
                   );
-                  if (conversations.includes(c))
-                    summarySignatures.set(historyKey(c.with, c.team), summarySignature(c));
+                  signSummary(c);
                 }
                 batch.forEach((m) => (m.unread = false));
                 drawList();
                 scheduleRefresh();
               } catch (e) {
-                for (const c of holds) readHolds.delete(historyKey(c.with, c.team));
+                holds.forEach(releaseHold);
                 composerError("Could not mark read: " + e.message);
                 scheduleRefresh();
               }
@@ -5658,62 +5785,212 @@
         // any older unread ones the summaries count but no page has loaded yet. The badge
         // clears at once; a failed write says so and the next refresh restores the truth.
         async function readConversation(t) {
-          if (!visible || explicitlyUnread.has(t.key)) return;
-          readDone = true;
-          const loaded = t.messages.filter(unread);
+          if (explicitlyUnread.has(t.key)) return;
+          await readThreads([t]).catch((e) => composerError("Could not mark read: " + e.message));
+        }
+        // Pages of one conversation's mail to you, newest first, each row tagged with its team.
+        async function* toYouPages(c) {
+          let before;
+          for (;;) {
+            const result = await cs.inbox({
+              ...writeTeam(c.team),
+              scope: "to-human",
+              conversation: c.with,
+              ...(before ? { before } : {}),
+              limit: 200,
+            });
+            yield result.messages.map((m) => ({ ...m, ...(crossTeam ? { team: c.team } : {}) }));
+            before = result.messages.at(-1)?.messageId;
+            if (!result.hasMore || !before) return;
+          }
+        }
+        // Reads every listed conversation through the bulk verb (one write per team) and
+        // resolves to the rows it marked, so Undo can mark exactly those unread again.
+        async function readThreads(list) {
+          if (!visible || !list.length) return [];
+          if (list.some((t) => t.key === selected)) readDone = true;
           // Snapshot the counts: the optimistic zeroing below must not end the paging early.
-          const unreadSummaries = t.summaries.filter((c) => c.unread > 0).map((c) => ({ ...c }));
-          for (const c of unreadSummaries)
-            readHolds.set(historyKey(c.with, c.team), c.lastMessageId);
-          for (const c of t.summaries) c.unread = 0;
-          loaded.forEach((m) => (m.unread = false));
+          const work = list.map((t) => ({
+            t,
+            loaded: t.messages.filter(unread),
+            summaries: t.summaries.filter((c) => c.unread > 0).map((c) => ({ ...c })),
+          }));
+          const holds = work.flatMap((w) => w.summaries);
+          for (const c of holds) holdUnread(c, 0);
+          for (const { t, loaded } of work) {
+            for (const c of t.summaries) c.unread = 0;
+            loaded.forEach((m) => (m.unread = false));
+          }
           drawList();
           try {
-            const extra = [];
-            for (const c of unreadSummaries) {
-              const have = loaded.filter((m) => inConversation(m, c)).length;
-              let before,
-                found = 0;
-              while (found < c.unread - have) {
-                const result = await cs.inbox({
-                  ...writeTeam(c.team),
-                  scope: "to-human",
-                  conversation: c.with,
-                  ...(before ? { before } : {}),
-                  limit: 200,
-                });
-                for (const m of result.messages) {
-                  if (
-                    !unread(m) ||
-                    loaded.some((x) => x.messageId === m.messageId && inConversation(x, c))
-                  )
-                    continue;
-                  extra.push({ ...m, ...(crossTeam ? { team: c.team } : {}) });
-                  found++;
+            const rows = [];
+            for (const { t, loaded, summaries } of work) {
+              const extra = [];
+              for (const c of summaries) {
+                const need = c.unread - loaded.filter((m) => inConversation(m, c)).length;
+                if (need <= 0) continue;
+                let found = 0;
+                for await (const page of toYouPages(c)) {
+                  for (const m of page)
+                    if (
+                      unread(m) &&
+                      !loaded.some((x) => x.messageId === m.messageId && inConversation(x, c))
+                    ) {
+                      extra.push(m);
+                      found++;
+                    }
+                  if (found >= need) break;
                 }
-                before = result.messages.at(-1)?.messageId;
-                if (!result.hasMore || !before) break;
               }
+              // A Mark unread made while older pages loaded wins over this scan.
+              if (!explicitlyUnread.has(t.key)) rows.push(...loaded, ...extra);
             }
-            // A Mark unread made while older pages loaded wins over this scan.
-            if (explicitlyUnread.has(t.key)) return;
             await Promise.all(
-              teamBatches([...loaded, ...extra]).map((batch) =>
-                cs.act("markRead", batchArgs(batch)),
-              ),
+              teamBatches(rows).map((batch) => cs.act("markRead", batchArgs(batch))),
             );
-            // An unread-only change must not read as new history on the next refresh.
-            for (const c of t.summaries)
-              if (conversations.includes(c))
-                summarySignatures.set(historyKey(c.with, c.team), summarySignature(c));
-            for (const m of messages)
-              if (extra.some((x) => messageKey(x) === messageKey(m))) m.unread = false;
+            holds.forEach(holdLanded);
+            for (const { t } of work) t.summaries.forEach(signSummary);
+            setUnread(rows, false);
+            return rows;
           } catch (e) {
-            for (const c of unreadSummaries) readHolds.delete(historyKey(c.with, c.team));
-            composerError("Could not mark read: " + e.message);
+            holds.forEach(releaseHold);
+            throw e;
+          } finally {
+            scheduleRefresh();
           }
-          scheduleRefresh();
         }
+        // Undo of a read: the exact rows go back to unread, and each conversation holds its
+        // restored count so a refresh that started before the write cannot clear the badge.
+        async function unreadRows(rows) {
+          const counts = new Map();
+          for (const m of rows) {
+            const key = convKey(m.conversation, m.team);
+            counts.set(key, (counts.get(key) || 0) + 1);
+          }
+          const touched = conversations.filter((c) => counts.has(convKey(c.with, c.team)));
+          for (const c of touched) {
+            c.unread += counts.get(convKey(c.with, c.team));
+            holdUnread(c, c.unread);
+          }
+          setUnread(rows, true);
+          drawList();
+          try {
+            await Promise.all(
+              teamBatches(rows).map((batch) => cs.act("markUnread", batchArgs(batch))),
+            );
+            touched.forEach(holdLanded);
+            touched.forEach(signSummary);
+          } catch (e) {
+            touched.forEach(releaseHold);
+            throw e;
+          } finally {
+            scheduleRefresh();
+          }
+        }
+        // Mark all read acts on the conversations the team filter shows.
+        async function markAllRead() {
+          const list = threads.filter((t) => t.unread);
+          if (!list.length) return;
+          const explicit = list.filter((t) => explicitlyUnread.delete(t.key)).map((t) => t.key);
+          const restoreExplicit = () => explicit.forEach((key) => explicitlyUnread.add(key));
+          let rows = null;
+          try {
+            rows = await readThreads(list);
+          } catch {}
+          if (!rows?.length) {
+            restoreExplicit();
+            if (!rows) showToast("Couldn't mark read. Try again.");
+            return;
+          }
+          const read = new Set(rows.map((m) => convKey(m.conversation, m.team)));
+          const n = list.filter((t) =>
+            t.summaries.some((c) => read.has(convKey(c.with, c.team))),
+          ).length;
+          showToast(`Marked ${n} conversation${n === 1 ? "" : "s"} read.`, async () => {
+            try {
+              await unreadRows(rows);
+              restoreExplicit();
+              drawLatest();
+            } catch {
+              showToast("Couldn't mark unread. Try again.");
+            }
+          });
+        }
+        // The row menu's Mark unread, from the keyboard: every read message to you in the
+        // conversation, as the host menu marks it.
+        const unreading = new Set();
+        async function unreadThread(t) {
+          if (unreading.has(t.key)) return;
+          unreading.add(t.key);
+          t.summaries.forEach(releaseHold);
+          explicitlyUnread.add(t.key);
+          if (t.key === selected) readDone = false;
+          drawLatest();
+          try {
+            const rows = [];
+            for (const c of t.summaries)
+              for await (const page of toYouPages(c))
+                rows.push(...page.filter((m) => unread({ ...m, unread: true }) && !m.unread));
+            if (rows.length) await unreadRows(rows);
+            else {
+              explicitlyUnread.delete(t.key);
+              drawLatest();
+            }
+          } catch {
+            explicitlyUnread.delete(t.key);
+            drawLatest();
+            showToast("Couldn't mark unread. Try again.");
+          } finally {
+            unreading.delete(t.key);
+          }
+        }
+        // U on a row: read it if anything is unread, else mark it unread.
+        function toggleRead(t) {
+          if (!t.unread) return void unreadThread(t);
+          explicitlyUnread.delete(t.key);
+          readThreads([t]).catch(() => showToast("Couldn't mark read. Try again."));
+        }
+        // One toast at a time: 6 seconds, with an optional Undo. A new toast commits the one
+        // before it, and hiding the pane commits it too; committing only drops the Undo.
+        let toastTimer;
+        function showToast(text, undo) {
+          dismissToast();
+          const box = $("toast");
+          box.append(h("span", "", text));
+          if (undo)
+            box.append(
+              button("Undo", "link", () => {
+                dismissToast();
+                undo();
+              }),
+            );
+          armToast();
+        }
+        function armToast() {
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(dismissToast, 6000);
+        }
+        {
+          const box = $("toast");
+          box.onpointerenter = box.onfocusin = () => clearTimeout(toastTimer);
+          box.onpointerleave = () => box.contains(document.activeElement) || armToast();
+          box.onfocusout = (e) =>
+            box.contains(e.relatedTarget) || box.matches(":hover") || armToast();
+          box.onkeydown = (e) => {
+            if (e.key !== "Escape") return;
+            e.preventDefault();
+            e.stopPropagation();
+            dismissToast();
+          };
+        }
+        function dismissToast() {
+          clearTimeout(toastTimer);
+          const box = $("toast");
+          const hadFocus = box.contains(document.activeElement);
+          box.replaceChildren();
+          if (hadFocus) $("conversations").focus({ preventScroll: true });
+        }
+        $("mark-all-read").onclick = () => void markAllRead();
         function composerError(text) {
           $("composer-error").textContent = text;
           $("composer-error").hidden = false;
@@ -5856,6 +6133,7 @@
             pane.dataset.view = "thread";
           }
           ids.forEach((id) => pendingArchive.delete(id));
+          if (!archiveError) showToast(`Archived ${conversationName(t.key)}.`);
           drawList();
           if (archiveError && wasSelected && navigation === startedAt)
             openThread(t.key, { focusComposer: false });
@@ -6115,13 +6393,8 @@
               [...history].map(([key, page]) => [key, { ...page, loading: false }]),
             );
             conversations = inbox.conversations || [];
-            // A refresh that started before a read landed must not bring the badge back.
-            for (const c of conversations) {
-              const hold = readHolds.get(historyKey(c.with, c.team));
-              if (hold === undefined) continue;
-              if (c.lastMessageId > hold || !c.unread) readHolds.delete(historyKey(c.with, c.team));
-              else c.unread = 0;
-            }
+            // A read that trails a mark or an Undo keeps the held count.
+            conversations.forEach(applyHold);
             let refreshRows;
             if (crossTeam) {
               refreshRows = inbox.messages.map((m) => ({
@@ -6318,6 +6591,7 @@
               dirty = true;
               return;
             }
+            (inbox.conversations || []).forEach(applyHold);
             const unread = new Set(
               (inbox.conversations || [])
                 .filter(
@@ -6482,6 +6756,7 @@
           reply,
           "go-to-session": goToSession,
           "archive-conversation": () => selected && archive(currentThread()),
+          "mark-all-read": () => void markAllRead(),
           "new-message": () => $("new-message").disabled || openThread("__new__"),
           "filter-by-team": () => $("team-filter").hidden || $("team-filter").click(),
           "toggle-list": toggleList,
@@ -6508,7 +6783,7 @@
           const key = row.key || (m && conversationKey(m.conversation, m.team || activeTeam));
           const t = threads.find((t) => t.key === key);
           if (itemId === "mark-unread" && key) {
-            for (const c of t?.summaries || []) readHolds.delete(historyKey(c.with, c.team));
+            (t?.summaries || []).forEach(releaseHold);
             explicitlyUnread.add(key);
             readDone = false;
             drawLatest();
@@ -6609,7 +6884,7 @@
           commands[id]();
         });
         $("conversations").onkeydown = (e) => {
-          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          if (e.target !== e.currentTarget || e.metaKey || e.ctrlKey || e.altKey) return;
           const index = threads.findIndex((t) => t.key === active);
           if (e.key === "ArrowDown" || e.key === "ArrowUp") {
             e.preventDefault();
@@ -6632,6 +6907,15 @@
           } else if ((e.key === "Enter" || e.key === " ") && active) {
             e.preventDefault();
             openThread(active, { read: true });
+          } else if ((e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) && active) {
+            e.preventDefault();
+            const row = $("conversation-" + encodeURIComponent(active));
+            if (row) openRowMenu(row.querySelector(".who") || row);
+          } else if (e.key === "u" && !e.shiftKey && !e.isComposing && active) {
+            // U toggles the focused row read and unread.
+            e.preventDefault();
+            const t = threads[index];
+            if (t) toggleRead(t);
           }
         };
         // Keep the pane aligned with shared/lib/scroll-keys.ts and
@@ -6805,6 +7089,7 @@
           visible = shown;
           if (!shown) {
             closeReactions();
+            dismissToast();
             readDone = false;
             clearTimeout(refreshTimer);
             refreshTimer = null;

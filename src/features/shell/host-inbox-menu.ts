@@ -76,13 +76,16 @@ async function writeBatch(request: HostMenuRequest, verb: string, rows: StoredMe
       messageIds: batch.map((m) => m.messageId),
     });
 }
-async function terminalItem(request: HostMenuRequest, handle: string | undefined) {
+async function terminalItem(request: HostMenuRequest, handle: string | undefined, label?: string) {
   if (!handle || handle === "human" || handle.startsWith("#") || handle.startsWith("role:"))
     return undefined;
   const sessions = (await runOf(request)("sessions", {}).catch(() => [])) as SessionListRow[];
   const session = sessions.find((s) => s.handle === handle && s.state !== "exited");
   return (
-    session && { id: "go-to-terminal", label: `Go to ${session.displayName || handle}’s terminal` }
+    session && {
+      id: "go-to-terminal",
+      label: label ?? `Go to ${session.displayName || handle}’s terminal`,
+    }
   );
 }
 function commonChoose(request: HostMenuRequest, rows: StoredMessage[], handle?: string) {
@@ -118,7 +121,7 @@ async function conversationMenu(request: HostMenuRequest): Promise<InboxMenu | n
   const handle =
     rows.find((m) => m.toHuman && m.from !== "human")?.from ??
     rows.find((m) => m.to !== "human")?.to;
-  const terminal = await terminalItem(request, handle);
+  const terminal = await terminalItem(request, handle, "Go to session");
   const self = rows.every((m) => m.from === "human" && m.to === "human");
   const readable = rows.filter((m) => m.toHuman && m.from !== "human");
   const items: HostMenuItem[] = pageItems(request, [
@@ -129,12 +132,12 @@ async function conversationMenu(request: HostMenuRequest): Promise<InboxMenu | n
   if (readable.length)
     items.push(
       readable.some((m) => m.unread)
-        ? { id: "mark-read", label: "Mark as read" }
-        : { id: "mark-unread", label: "Mark as unread" },
+        ? { id: "mark-read", label: "Mark read" }
+        : { id: "mark-unread", label: "Mark unread" },
     );
   if (terminal) items.push(terminal);
   if (items.length) items.push(separator);
-  items.push({ id: "archive", label: "Archive conversation" });
+  items.push({ id: "archive", label: "Archive" });
   return { items, choose: commonChoose(request, rows, handle) };
 }
 // Architecture: Copy text extracts readable HTML content without executable or styling source.
@@ -234,8 +237,8 @@ async function roleQueueMenu(request: HostMenuRequest): Promise<InboxMenu | null
     (item) => item.id !== "open-queue" || request.page?.enabled(),
   ).map((item) => ({ ...item }));
   if (rows.some((m) => m.toHuman && m.unread))
-    items.push(separator, { id: "mark-read", label: "Mark as read" });
-  items.push(separator, { id: "archive", label: "Archive conversation" });
+    items.push(separator, { id: "mark-read", label: "Mark read" });
+  items.push(separator, { id: "archive", label: "Archive" });
   const choose = commonChoose(request, rows);
   return {
     items,
