@@ -123,7 +123,7 @@
     "src-tauri/src/mcp/socket_server.rs": "43e07c103e86b57ccf4a58acaf639cdf4c865a6e96a368d3e1192fcd2e83872f",
     "src-tauri/src/mcp/socket_server/hermes_readiness_tests.rs": "7bf8489384e5384be5a12d214c8dff5195fa88f4c03b99b35bfc6ac4fdef59d2",
     "src-tauri/src/mcp/state.rs": "7f568399fd374e32baf246ee225f7553d17fcec71314795ec5b632c82a47144f",
-    "src-tauri/src/mcp/story_authoring.rs": "5f24b494ae76a2b9ab067432e9d5dc6348e15cfc5bfde73f200222d39d1f3b2e",
+    "src-tauri/src/mcp/story_authoring.rs": "c96c467b75a8145ce43ad01a74499d94e9e5514fe56cdf5cfe2ed54cc1ec9745",
     "src-tauri/src/mcp/task_tools.rs": "fb83895a8aa5dba5d5c966dc3317bf63b5af599775c2488772fb30101fae2cfe",
     "src-tauri/src/mcp/task_tools/tests.rs": "eae197bf88da487e385cbe4135daf2c5d78740236884407a597a9df45cdc29c2",
     "src-tauri/src/mcp/team_file_edits.rs": "926cc1299bd7f183432fe26ffdf019958d2d8db5cad1e04bbde25b3f9214203c",

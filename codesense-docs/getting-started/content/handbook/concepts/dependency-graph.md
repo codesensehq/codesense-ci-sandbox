@@ -42,8 +42,6 @@ Each epic row in the left nav counts its done stories out of the total, includin
 
 To list dependencies, query them. The `depends` key in a csquery block lists the stories that depend on one story. An agent can answer "what blocks LL-233?" with the `query_context` MCP tool. See [Query your context](../guides/query-your-context.md).
 
-> **Coming: a tested cross-repo dependency**
->
-> Dependencies across repos, such as an `api` story blocking a `web` story, confirmed end to end in readiness. Dependencies aren't filtered by repo, but that path isn't covered by a test yet.
+Dependencies aren't filtered by repo, so an `api` story can block a `web` story.
 
 The full guide ships in the app's docs: **Pipelines → Phase 5 · Story graph**.

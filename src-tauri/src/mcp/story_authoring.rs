@@ -153,6 +153,12 @@ const MISSING_REQUIRED_FIELD: &str = "MISSING_REQUIRED_FIELD";
 // (`pipeline_format::STORY_FIELDS`) nor declared in the team's field schema. A
 // dashboard can only rely on registered fields; this never blocks.
 const UNREGISTERED_FIELD: &str = "UNREGISTERED_FIELD";
+// Advisory — `blocked_reason` is set but the status is not one the team's taxonomy
+// marks blocked, so the board shows a reason on a card that is not blocked.
+const BLOCKED_REASON_NOT_BLOCKED: &str = "BLOCKED_REASON_NOT_BLOCKED";
+// Advisory — `wave` is set but is not a positive whole number; the board ignores it
+// and computes the wave from `depends_on`.
+const INVALID_WAVE: &str = "INVALID_WAVE";
 
 // ----- Configured (dynamic) inputs -------------------------------------------
 
@@ -236,6 +242,9 @@ pub struct ValidatorConfig<'a> {
     /// flagged. Never empty (the loader falls back to the shipped
     /// defaults, giving zero-config parity).
     pub valid_statuses: &'a [String],
+    /// The status ids the team's taxonomy gives the blocked role. Drives the
+    /// `BLOCKED_REASON_NOT_BLOCKED` advisory.
+    pub blocked_statuses: &'a [String],
     /// The `story_id → paths` point-lookup seam that drives
     /// the `DUPLICATE_STORY_ID` blocking finding. The handler backs it with the org-wide
     /// frontmatter cache's `O(1)` aux index (from a lock-free snapshot); the candidate's
@@ -727,7 +736,10 @@ pub(crate) fn validate_candidate_for(
         Some(_) => {}
     }
 
-    if let Some(work) = Option::filter(Option::map(Option::as_deref(&fields.work_repo), str::trim), |w| !str::is_empty(w)) {
+    if let Some(work) = Option::filter(
+        Option::map(Option::as_deref(&fields.work_repo), str::trim),
+        |w| !str::is_empty(w),
+    ) {
         if crate::domain::SourceRepoSlug::parse_owner_repo(work).is_none() {
             findings.push(Finding {
                 code: INVALID_WORK_REPO,
@@ -791,15 +803,85 @@ pub(crate) fn validate_candidate_for(
         .iter()
         .filter(|name| cfg.tag_schema.tag(name).is_none())
     {
+        let label = field_label(format, name);
+        // A Markdown key spelled with hyphens (`depends-on`) is a taught field in the
+        // wrong spelling, not a new one. Retired rows are never suggested.
+        let underscored = name.replace('-', "_");
+        let suggestion = pipeline_format::contract_fields().find(|f| f.yaml == underscored);
+        // field-schema.yml and tag_schema declare the Markdown key, whatever the format.
+        let hint = match suggestion {
+            Some(field) => {
+                format!("did you mean `{}`? Registered fields use underscores", field.yaml)
+            }
+            None => format!(
+                "get_story_format lists the registered fields; if your team uses `{label}`, declare `{name}` in the team's content/field-schema.yml (or the org's tag_schema)"
+            ),
+        };
         findings.push(Finding {
             code: UNREGISTERED_FIELD,
             field: "frontmatter",
             severity: Severity::Advisory,
-            message: format!("`{name}` is not a registered story field"),
-            hint: format!(
-                "get_story_format lists the registered fields; if your team uses `{name}`, declare it in the team's content/field-schema.yml (or the org's tag_schema)"
-            ),
+            message: format!("`{label}` is not a registered story field"),
+            hint,
         });
+    }
+
+    // The board fields with a value rule. They are open tags (where a board reads
+    // them), so their values come from the open-tag walker the scanner uses.
+    let has_rule_field = present_keys
+        .iter()
+        .any(|k| k == "blocked_reason" || k == "wave");
+    let open_tags = if has_rule_field {
+        crate::commands::frontmatter_editor::open_tag_values(format, text)
+    } else {
+        Vec::new()
+    };
+    let open_value = |key: &str| {
+        open_tags
+            .iter()
+            .find(|(k, _)| k == key)
+            .map(|(_, items)| items.join(", ").trim().to_string())
+            .filter(|value| !value.is_empty())
+    };
+    if open_value("blocked_reason").is_some() {
+        let status = fields.status.as_deref().map(str::trim).unwrap_or("");
+        if !cfg
+            .blocked_statuses
+            .iter()
+            .any(|b| b.eq_ignore_ascii_case(status))
+        {
+            let label = field_label(format, "blocked_reason");
+            findings.push(Finding {
+                code: BLOCKED_REASON_NOT_BLOCKED,
+                field: "blocked_reason",
+                severity: Severity::Advisory,
+                message: if status.is_empty() {
+                    format!("`{label}` is set but the story has no status")
+                } else {
+                    format!("`{label}` is set but the status `{status}` is not a blocked status")
+                },
+                hint: if cfg.blocked_statuses.is_empty() {
+                    format!("remove `{label}` once the story is unblocked")
+                } else {
+                    format!(
+                        "remove `{label}` once the story is unblocked, or set the status to {}",
+                        comma_list(cfg.blocked_statuses)
+                    )
+                },
+            });
+        }
+    }
+    if let Some(wave) = open_value("wave") {
+        if !wave.parse::<u32>().is_ok_and(|n| n > 0) {
+            let label = field_label(format, "wave");
+            findings.push(Finding {
+                code: INVALID_WAVE,
+                field: "wave",
+                severity: Severity::Advisory,
+                message: format!("`{label}: {wave}` is not a positive whole number, so a board ignores it"),
+                hint: format!("use 1, 2, 3 and so on, or remove `{label}` to let a board compute the wave from depends_on"),
+            });
+        }
     }
 
     // story_id: advisory
@@ -1001,6 +1083,19 @@ pub(crate) fn validate_candidate_for(
         None,
         cfg.summary_headings,
     )
+}
+
+/// A field as the candidate's own format spells it: the Markdown key, or the HTML
+/// `cs:*` meta name (registered rows use theirs; any other key takes the `cs:`
+/// convention of hyphens for underscores).
+fn field_label(format: PipelineFileFormat, yaml: &str) -> String {
+    match format {
+        PipelineFileFormat::Markdown => yaml.to_string(),
+        PipelineFileFormat::Html => pipeline_format::fields::story_field(yaml).map_or_else(
+            || format!("cs:{}", yaml.replace('_', "-")),
+            |field| field.cs_meta.to_string(),
+        ),
+    }
 }
 
 /// Build the `MISSING_SUMMARY_HEADING` advisory, naming the effective
@@ -1458,6 +1553,16 @@ fn finding_codes() -> Value {
             UNREGISTERED_FIELD,
             "advisory",
             "A metadata key is neither a registered story field nor declared in the team's `content/field-schema.yml` or the org's `tag_schema`."
+        ),
+        code_entry(
+            BLOCKED_REASON_NOT_BLOCKED,
+            "advisory",
+            "`blocked_reason` is set but the status is not a blocked status."
+        ),
+        code_entry(
+            INVALID_WAVE,
+            "advisory",
+            "`wave` is set but is not a positive whole number."
         )
     ])
 }
@@ -1605,6 +1710,18 @@ mod tests {
             .as_slice()
     }
 
+    /// The shipped default taxonomy's blocked status ids, for `blocked_statuses`.
+    fn default_test_blocked() -> &'static [String] {
+        static S: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+        S.get_or_init(|| {
+            crate::commands::status_taxonomy::default_taxonomy()
+                .states_for_role(crate::commands::status_taxonomy::StatusRole::Blocked)
+                .map(|s| s.id.clone())
+                .collect()
+        })
+        .as_slice()
+    }
+
     /// The shipped default status ids (== `VALID_STATUSES`, the zero-config
     /// taxonomy) as a `'static` slice, so the `cfg*()` helpers hand `valid_statuses`
     /// out without a per-call temporary. Tests exercising custom states pass their
@@ -1645,6 +1762,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: default_test_headings(),
             valid_statuses: default_test_statuses(),
+            blocked_statuses: default_test_blocked(),
             story_id_index: &NoStoryIdIndex,
             assignee_resolver: &NoAssigneeResolver,
             schema: default_test_schema(),
@@ -1702,6 +1820,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: default_test_headings(),
             valid_statuses: default_test_statuses(),
+            blocked_statuses: default_test_blocked(),
             story_id_index: &NoStoryIdIndex,
             assignee_resolver: roster,
             schema: default_test_schema(),
@@ -1723,6 +1842,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: headings,
             valid_statuses: default_test_statuses(),
+            blocked_statuses: default_test_blocked(),
             story_id_index: &NoStoryIdIndex,
             assignee_resolver: &NoAssigneeResolver,
             schema: default_test_schema(),
@@ -1744,6 +1864,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: default_test_headings(),
             valid_statuses: default_test_statuses(),
+            blocked_statuses: default_test_blocked(),
             story_id_index: index,
             assignee_resolver: &NoAssigneeResolver,
             schema: default_test_schema(),
@@ -1767,6 +1888,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: default_test_headings(),
             valid_statuses: statuses,
+            blocked_statuses: default_test_blocked(),
             story_id_index: &NoStoryIdIndex,
             assignee_resolver: &NoAssigneeResolver,
             schema: default_test_schema(),
@@ -1789,6 +1911,7 @@ mod tests {
             epic_repos: &[],
             summary_headings: default_test_headings(),
             valid_statuses: default_test_statuses(),
+            blocked_statuses: default_test_blocked(),
             story_id_index: &NoStoryIdIndex,
             assignee_resolver: &NoAssigneeResolver,
             schema,
@@ -2020,7 +2143,11 @@ mod tests {
     #[test]
     fn work_repo_is_a_contract_field_and_only_a_malformed_slug_is_flagged() {
         let fields = story_format_payload(&[])["pipeline_story_format"]["fields"].clone();
-        assert!(fields.as_array().unwrap().iter().any(|f| f["name"] == "work_repo" && f["cs_meta"] == "cs:work-repo"));
+        assert!(fields
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|f| f["name"] == "work_repo" && f["cs_meta"] == "cs:work-repo"));
         let repos = vec!["owner/repo".to_string()];
         let teams = vec!["default".to_string()];
         let story = |work: &str| {
@@ -2406,12 +2533,7 @@ mod tests {
     }
 
     fn unregistered_findings(v: &Value) -> Vec<&Value> {
-        v["findings"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .filter(|f| f["code"] == UNREGISTERED_FIELD)
-            .collect()
+        findings_with(v, UNREGISTERED_FIELD)
     }
 
     /// A key that is neither registered nor declared is advisory, never blocking;
@@ -2443,7 +2565,7 @@ mod tests {
             .iter()
             .map(|f| f["message"].as_str().unwrap())
             .collect();
-        assert_eq!(names, ["`foo` is not a registered story field"], "{v}");
+        assert_eq!(names, ["`cs:foo` is not a registered story field"], "{v}");
     }
 
     /// A field the team declares in its field schema is exempt.
@@ -2480,6 +2602,217 @@ mod tests {
         let text = "---\ntype: story\nstatus: todo\nsource_repo: owner/repo\nrisk_tier: high\n---\n\n# S\n";
         let v = validate_candidate(text, None, &cfg);
         assert!(unregistered_findings(&v).is_empty(), "{v}");
+    }
+
+    fn findings_with<'v>(v: &'v Value, code: &str) -> Vec<&'v Value> {
+        v["findings"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|f| f["code"] == code)
+            .collect()
+    }
+
+    fn md_story(extra: &str) -> String {
+        format!("---\ntype: story\nstory_id: S-1\nsource_repo: owner/repo\n{extra}\n---\n\n# S\n\n## Purpose\n\nx\n")
+    }
+
+    /// An HTML todo story with one extra `cs:*` meta.
+    fn html_story(name: &str, content: &str) -> String {
+        format!(
+            "<meta name=\"cs:type\" content=\"story\">\n<meta name=\"cs:status\" content=\"todo\">\n\
+             <meta name=\"cs:story-id\" content=\"S-1\">\n<meta name=\"cs:source-repo\" content=\"owner/repo\">\n\
+             <meta name=\"{name}\" content=\"{content}\">\n<title>S</title>\n<section data-cs=\"Purpose\">x</section>\n"
+        )
+    }
+
+    /// A Markdown key spelled with hyphens is pointed at its registered name.
+    #[test]
+    fn hyphenated_registered_key_gets_a_did_you_mean() {
+        let repos = vec!["owner/repo".to_string()];
+        let teams = vec!["default".to_string()];
+        let v = validate_candidate(
+            &md_story("status: todo\ndepends-on: [S-2]"),
+            None,
+            &cfg(&repos, &teams),
+        );
+        let found = unregistered_findings(&v);
+        assert_eq!(found.len(), 1, "{v}");
+        assert_eq!(
+            found[0]["message"],
+            "`depends-on` is not a registered story field"
+        );
+        assert!(
+            found[0]["hint"]
+                .as_str()
+                .unwrap()
+                .contains("did you mean `depends_on`?"),
+            "{v}"
+        );
+    }
+
+    /// A hyphenated retired key gets no did-you-mean, and an HTML story's hint
+    /// names the Markdown key to declare.
+    #[test]
+    fn unregistered_hints_skip_retired_rows_and_name_the_key_to_declare() {
+        let repos = vec!["owner/repo".to_string()];
+        let teams = vec!["default".to_string()];
+        let v = validate_candidate(
+            &md_story("status: todo\nscope-context: [a]"),
+            None,
+            &cfg(&repos, &teams),
+        );
+        let found = unregistered_findings(&v);
+        assert_eq!(found.len(), 1, "{v}");
+        assert!(
+            !found[0]["hint"].as_str().unwrap().contains("did you mean"),
+            "{v}"
+        );
+
+        let html = html_story("cs:risk-tier", "high");
+        let v = validate_candidate(&html, None, &cfg(&repos, &teams));
+        let found = unregistered_findings(&v);
+        assert_eq!(
+            found[0]["message"],
+            "`cs:risk-tier` is not a registered story field"
+        );
+        assert!(
+            found[0]["hint"]
+                .as_str()
+                .unwrap()
+                .contains("declare `risk_tier` in the team's content/field-schema.yml"),
+            "{v}"
+        );
+    }
+
+    /// `blocked_reason` is quiet on a blocked story and advisory on any other,
+    /// with the team's own blocked statuses counting as blocked.
+    #[test]
+    fn blocked_reason_is_advisory_unless_the_status_is_blocked() {
+        let repos = vec!["owner/repo".to_string()];
+        let teams = vec!["default".to_string()];
+        let reason = "blocked_reason: \"Waiting on a key\"";
+        let blocked = validate_candidate(
+            &md_story(&format!("status: blocked\n{reason}")),
+            None,
+            &cfg(&repos, &teams),
+        );
+        assert!(
+            findings_with(&blocked, BLOCKED_REASON_NOT_BLOCKED).is_empty(),
+            "{blocked}"
+        );
+        assert!(unregistered_findings(&blocked).is_empty(), "{blocked}");
+
+        let todo = validate_candidate(
+            &md_story(&format!("status: todo\n{reason}")),
+            None,
+            &cfg(&repos, &teams),
+        );
+        assert_eq!(todo["valid"], true, "{todo}");
+        let found = findings_with(&todo, BLOCKED_REASON_NOT_BLOCKED);
+        assert_eq!(found.len(), 1, "{todo}");
+        assert_eq!(found[0]["severity"], "advisory");
+        assert_eq!(
+            found[0]["message"],
+            "`blocked_reason` is set but the status `todo` is not a blocked status"
+        );
+
+        let v = validate_candidate(
+            &md_story(&format!("status: Blocked\n{reason}")),
+            None,
+            &cfg(&repos, &teams),
+        );
+        assert!(
+            findings_with(&v, BLOCKED_REASON_NOT_BLOCKED).is_empty(),
+            "{v}"
+        );
+        let v = validate_candidate(&md_story(reason), None, &cfg(&repos, &teams));
+        assert_eq!(
+            findings_with(&v, BLOCKED_REASON_NOT_BLOCKED)[0]["message"],
+            "`blocked_reason` is set but the story has no status"
+        );
+
+        let on_hold = vec!["on-hold".to_string()];
+        let statuses = vec!["todo".to_string(), "on-hold".to_string()];
+        let custom = ValidatorConfig {
+            blocked_statuses: &on_hold,
+            ..cfg_status(&repos, &teams, &statuses)
+        };
+        let v = validate_candidate(
+            &md_story(&format!("status: on-hold\n{reason}")),
+            None,
+            &custom,
+        );
+        assert!(
+            findings_with(&v, BLOCKED_REASON_NOT_BLOCKED).is_empty(),
+            "{v}"
+        );
+
+        let html = html_story("cs:blocked-reason", "Waiting");
+        let v = validate_candidate(&html, None, &cfg(&repos, &teams));
+        let found = findings_with(&v, BLOCKED_REASON_NOT_BLOCKED);
+        assert_eq!(found.len(), 1, "{v}");
+        assert!(
+            found[0]["message"]
+                .as_str()
+                .unwrap()
+                .starts_with("`cs:blocked-reason`"),
+            "{v}"
+        );
+        assert!(unregistered_findings(&v).is_empty(), "{v}");
+    }
+
+    /// `wave` must be a positive whole number; anything else is advisory.
+    #[test]
+    fn wave_must_be_a_positive_whole_number() {
+        let repos = vec!["owner/repo".to_string()];
+        let teams = vec!["default".to_string()];
+        for ok in ["1", "3", "\"2\""] {
+            let v = validate_candidate(
+                &md_story(&format!("status: todo\nwave: {ok}")),
+                None,
+                &cfg(&repos, &teams),
+            );
+            assert!(findings_with(&v, INVALID_WAVE).is_empty(), "{ok}: {v}");
+            assert!(unregistered_findings(&v).is_empty(), "{ok}: {v}");
+        }
+        for bad in ["0", "-1", "1.5", "two"] {
+            let v = validate_candidate(
+                &md_story(&format!("status: todo\nwave: {bad}")),
+                None,
+                &cfg(&repos, &teams),
+            );
+            assert_eq!(v["valid"], true, "{bad}: {v}");
+            let found = findings_with(&v, INVALID_WAVE);
+            assert_eq!(found.len(), 1, "{bad}: {v}");
+            assert_eq!(found[0]["severity"], "advisory");
+        }
+    }
+
+    /// The shipped DEMO stories use only registered fields and pass every field
+    /// rule, so a new user's board reads them with no setup.
+    #[test]
+    fn shipped_demo_stories_use_registered_fields_cleanly() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../codesense-docs/getting-started/content/examples/sample-epic");
+        let repos = vec!["acme/sample-source-repo".to_string()];
+        let teams = vec!["getting-started".to_string()];
+        let mut seen = 0;
+        for entry in std::fs::read_dir(&dir).unwrap() {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            if !name.starts_with("DEMO-") {
+                continue;
+            }
+            seen += 1;
+            let text = std::fs::read_to_string(&path).unwrap();
+            let v = validate_candidate(&text, None, &cfg(&repos, &teams));
+            assert_eq!(v["detectedKind"], "pipeline_story", "{name}: {v}");
+            for code in [UNREGISTERED_FIELD, BLOCKED_REASON_NOT_BLOCKED, INVALID_WAVE] {
+                assert!(findings_with(&v, code).is_empty(), "{name}: {v}");
+            }
+        }
+        assert_eq!(seen, 5);
     }
 
     /// `get_story_format` prints each field straight from its registry row.

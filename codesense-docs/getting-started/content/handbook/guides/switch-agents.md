@@ -50,11 +50,3 @@ A story's status doesn't care which agent worked on it either: it's a field in t
 > **Two instruction files**
 >
 > CodeSense copies your context files as you wrote them. It doesn't turn `CLAUDE.md` into `AGENTS.md`. If your team uses both agents, keep both files, or have one point to the other.
-
-> **Coming: one instructions source per team**
->
-> Writing your team's instructions once and having CodeSense render them into each agent's expected file.
-
-> **Coming: an attention signal for other agents**
->
-> The "needs you" status for every agent CLI, not only Claude Code, Codex and OpenCode.

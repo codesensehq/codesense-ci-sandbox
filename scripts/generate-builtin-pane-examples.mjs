@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BUILTIN_PANE_EXAMPLES } from "./lib/builtin-panes.mjs";
+import { isMain } from "./lib/is-main.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -32,7 +33,7 @@ export function generate(root = ROOT, { check = false } = {}) {
   return outputs;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   const rootAt = process.argv.indexOf("--root");
   generate(rootAt < 0 ? ROOT : process.argv[rootAt + 1], {
     check: process.argv.includes("--check"),

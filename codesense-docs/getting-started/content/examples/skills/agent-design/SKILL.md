@@ -90,8 +90,10 @@ Follow **Build in small steps**, in this order:
    explicit `register_role` in the saved prompt.
 4. Panes: only if needed, use `pane_write` with the agreed capabilities and grants.
 5. Inheritance: only if needed and approved, use `set_team_parent`. Only content
-   follows the parent chain today. Parent config does not become child config.
-   Explicit sharing of inherited content is planned. Preview from the child team.
+   follows the parent chain. Parent config does not become child config.
+   A child receives only the content paths its ancestors declare in `config/sharing.yml`;
+   each team in between must share them onward.
+   Preview from the child team.
 
 Name every resource clearly. Add only startup/context paths that exist for this
 user. Never assume a workflow skill or external MCP server is installed. Use the

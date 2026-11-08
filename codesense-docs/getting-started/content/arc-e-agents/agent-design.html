@@ -148,8 +148,8 @@
       <section data-search="Permissions inheritance private team scope shared content" id="permissions">
         <h2>7. Permissions and inheritance</h2>
         <p>Keep private work in personal scope. Team agents are shared; any teammate can edit them. <code>created_by</code> is attribution. The CLI enforces native agent permissions. Pane capabilities and grants govern pane actions; they do not replace CLI permissions. See <a href="./agent-yaml.html">agent.yaml</a> and <a href="../arc-i-dashboard-primitives/calling-codesense.html">calling CodeSense from a pane</a>.</p>
-        <p>Today only <strong>content</strong> follows the parent-team chain. Setting a parent does not inherit its saved agents, roles, routines or other config. Put shared teaching and skills in content, then select the needed paths in each agent's startup/context. Verify with <code>agent_preview</code> in the destination team.</p>
-        <p><strong>Planned:</strong> inherited content will narrow to only what the parent explicitly shares. Do not rely on a parent relationship as a privacy boundary today. Use private content for personal and finance memory. Changing a parent with <code>set_team_parent</code> is optional and needs the user's approval.</p>
+        <p>Only <strong>content</strong> follows the parent-team chain. Setting a parent does not inherit its saved agents, roles, routines or other config. Put shared teaching and skills in content, then select the needed paths in each agent's startup/context. Verify with <code>agent_preview</code> in the destination team.</p>
+        <p>A child receives only the content its ancestors declare in their <code>config/sharing.yml</code>; each team in between must share it onward. A parent relationship is not a privacy boundary: everyone with the context repo can read every team's files. Keep personal and finance memory in private content, not team content. Changing a parent with <code>set_team_parent</code> is optional and needs the user's approval.</p>
       </section>
 
       <section data-search="Write down design note team-design.yaml record of intent planned" id="record">

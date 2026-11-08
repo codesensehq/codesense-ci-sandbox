@@ -17,7 +17,8 @@ jobs:
   rust-macos:
     name: Rust (macOS arm64)
     runs-on: macos-15
-    timeout-minutes: 75
+    # A cold-cache compile of the full set takes about 50 minutes before tests start.
+    timeout-minutes: 120
     permissions:
       contents: read
     defaults:
@@ -53,10 +54,23 @@ jobs:
       - name: Set up Rust
         # Matches ci.yml; rustup's proxies read the channel in rust-toolchain.toml.
         run: rustup toolchain install stable --profile minimal 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/rustup.log"
+      - name: Restore scanner archives
+        # Archives named by their sha256; install-scanners verifies each against the lock before use.
+        id: scanner-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: scanner-archives-nextest-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('release/scanners.lock') }}
       - name: Install pinned nextest
         run: |
-          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --tool cargo-nextest
+          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --cache "$RUNNER_TEMP/scanner-archives" --tool cargo-nextest
           echo "$RUNNER_TEMP/rust-ci-tools" >> "$GITHUB_PATH"
+      - name: Save scanner archives
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.scanner-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
@@ -71,6 +85,7 @@ jobs:
         # Docker is only used for uninstalled cross targets, which are not requested.
         run: bash scripts/build-session-server.sh 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/build-session-server.log"
       - name: Compile macOS tests
+        id: compile
         run: |
           read -r -a packages <<< "$RUST_PACKAGES"
           cargo nextest run --profile ci "${packages[@]}" --no-run \
@@ -83,7 +98,9 @@ jobs:
           2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-test.log"
       - name: Test macOS doctests
         timeout-minutes: 15
-        if: success() || failure()
+        # Runs after failed tests, but not when the test build never ran; on macOS the build script
+        # then fails on sidecars an earlier failed step never built, hiding the real failure.
+        if: (success() || failure()) && steps.compile.outcome == 'success'
         run: |
           read -r -a packages <<< "$RUST_PACKAGES"
           cargo test --doc "${packages[@]}" --no-fail-fast \
@@ -140,10 +157,23 @@ jobs:
       - name: Set up Rust
         # Matches ci.yml; rustup's proxies read the channel in rust-toolchain.toml.
         run: rustup toolchain install stable --profile minimal 2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/rustup.log"
+      - name: Restore scanner archives
+        # Archives named by their sha256; install-scanners verifies each against the lock before use.
+        id: scanner-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: scanner-archives-nextest-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('release/scanners.lock') }}
       - name: Install pinned nextest
         run: |
-          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --tool cargo-nextest
+          bash scripts/install-scanners.sh "$RUNNER_TEMP/rust-ci-tools" --cache "$RUNNER_TEMP/scanner-archives" --tool cargo-nextest
           echo "$RUNNER_TEMP/rust-ci-tools" >> "$GITHUB_PATH"
+      - name: Save scanner archives
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.scanner-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
@@ -151,6 +181,7 @@ jobs:
           save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           cache-on-failure: true
       - name: Compile Linux tests
+        id: compile
         run: |
           read -r -a packages <<< "$RUST_PACKAGES"
           cargo nextest run --profile ci "${packages[@]}" --no-run \
@@ -162,7 +193,9 @@ jobs:
           2>&1 | tee "$RUNNER_TEMP/rust-ci-logs/cargo-test.log"
       - name: Test Linux doctests
         timeout-minutes: 15
-        if: success() || failure()
+        # Runs after failed tests, but not when the test build never ran, so an earlier failure
+        # is reported as itself.
+        if: (success() || failure()) && steps.compile.outcome == 'success'
         run: |
           read -r -a packages <<< "$RUST_PACKAGES"
           cargo test --doc "${packages[@]}" --no-fail-fast \

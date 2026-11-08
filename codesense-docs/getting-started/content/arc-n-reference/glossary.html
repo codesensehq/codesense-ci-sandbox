@@ -764,8 +764,9 @@
               </dt>
               <dd>
                 A reusable, named capability an agent can invoke by slash command, at
-                <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Skills are written once in a team's content
-                and inherited down the team chain. Examples: <code>bmad-build</code>,
+                <code>.claude/skills/&lt;name&gt;/SKILL.md</code>. Skills are written once in a team's content,
+                and a parent team shares them down the chain when its
+                <code>config/sharing.yml</code> lists them. Examples: <code>bmad-build</code>,
                 <code>update-codesense-docs</code>.
               </dd>
             </div>

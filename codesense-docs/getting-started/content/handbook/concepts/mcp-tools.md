@@ -158,7 +158,7 @@ Nothing runs between these calls: there's no watcher in either direction.
 
 ## Repository ownership
 
-CodeSense never commits, pushes or merges. Agents (or you) do the git: clone, fetch, commit, push and open pull requests with your own tools. `remote_workspace_fetch` is the one exception in the other direction: it brings a machine's commits into your local clone. `get_publish_set` returns the context repo's local changes for an agent to review before it commits.
+CodeSense never commits, pushes or merges. Agents (or you) do the git: clone, fetch, commit, push and open pull requests with your own tools. CodeSense's own git is limited to worktrees, fetches that read history or check a workspace before `move_workspace` moves it, and `remote_workspace_fetch`, which brings a machine's commits into your local clone. `get_publish_set` returns the context repo's local changes for an agent to review before it commits.
 
 ## Guardrails
 

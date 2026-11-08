@@ -18,17 +18,11 @@
 //                 (only rewritten when it changes).
 
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  renameSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, gzipSync } from "node:zlib";
+import { writeBuildOutput } from "./lib/build-output.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATE = join(ROOT, "codesense-docs", "sample-source-repo");
@@ -203,7 +197,7 @@ export function tarGz(entries, mtime) {
 
 /** Every input the archive is built from, for `cargo:rerun-if-changed`. */
 export function buildInputs() {
-  return [fileURLToPath(import.meta.url), TEMPLATE];
+  return [fileURLToPath(import.meta.url), join(ROOT, "scripts/lib/build-output.mjs"), TEMPLATE];
 }
 
 function main() {
@@ -224,9 +218,7 @@ function main() {
     return;
   }
   mkdirSync(dirname(output), { recursive: true });
-  const temp = `${output}.${process.pid}.${Date.now()}.tmp`;
-  writeFileSync(temp, archive);
-  renameSync(temp, output);
+  writeBuildOutput(output, archive, buildInputs());
   console.log(`sample-source-repo: ${commit} → ${output} (${archive.length} bytes)`);
 }
 

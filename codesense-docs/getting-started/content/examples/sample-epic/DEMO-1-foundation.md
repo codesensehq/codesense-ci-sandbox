@@ -3,6 +3,7 @@ title: "Host kill ladder + MCP wrapper"
 type: story
 story_id: DEMO-1
 status: done
+priority: p1
 sub_epic: per-agent-kill-switch
 parent_epic: DEMO
 stream: fullstack
@@ -10,7 +11,6 @@ depends_on: []
 source_repo: acme/sample-source-repo
 sprint: FAKE-S1
 points: 3
-author: "Seeded demo. The foundation every other DEMO story depends on."
 ---
 
 ## Purpose

@@ -74,6 +74,27 @@ Each change writes `sprint:` into the story file.
 
 `points` is a story field. Use 1, 2, 3, 5, 8 or 13. The agent tool `validate_story` flags other values as `OFF_FIBONACCI_POINTS`.
 
+## Fields for boards
+
+A board reads the same frontmatter. A story's pipeline stage is its `status`; there's no separate stage field. These fields are registered for boards and other dashboards to read, so a pane you build can rely on them:
+
+```yaml
+story_id: LL-241
+status: blocked
+priority: p1
+blocked_reason: "Waiting on the tax provider's sandbox key"
+stream: backend
+sub_epic: refunds
+wave: 2
+```
+
+- **`priority`** is `p0` (highest) to `p4`. The example board shows it as a badge and sorts by it.
+- **`blocked_reason`** says why a blocked story is blocked, for a board to show on its card. Set it while the status is blocked. With any other status, `validate_story` flags it as `BLOCKED_REASON_NOT_BLOCKED`.
+- **`wave`** is for boards that lay a sprint out in waves. Such a board works the waves out from `depends_on`: a story with no dependencies in the sprint is in wave 1, and a story waiting on wave 1 is in wave 2. `wave` is a number for the board to use instead. Use a positive whole number; `validate_story` flags anything else as `INVALID_WAVE`.
+- **`stream`** and **`sub_epic`** are free text, such as `frontend` or `refunds`, for a board to group its lanes by.
+
+The sample epic in the CodeSense docs uses every one of them: DEMO-5 is blocked with a reason, DEMO-4 sets `wave: 3`, and each story has a priority, a stream and a sub-epic. [Story and epic fields](../../generated/story-fields.md) lists every registered field.
+
 ## Build a board pane
 
 A board is a view over these fields, so you build the one you want. A custom right pane is an HTML file in your team's `panes/` folder (or the `panes/` folder of your private space, just for you), and it can query your stories by their metadata through `codesense.queryContext` (or `codesense.subscribeContext`, to stay live). Group by `status` for one column per status, and filter by epic, `sprint` or `assigned_to`:

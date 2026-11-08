@@ -94,14 +94,10 @@ Your git keys stay on your Mac. CodeSense seeds each clone over SSH, and commits
 
 Remote agents pull more context through MCP and preview changes before they send them back. Their commits come back to your Mac with `remote_workspace_fetch`, and you push them yourself.
 
-Cost from remote sessions already counts like local ones.
-
-> **Coming: attribution on remote machines**
->
-> Lines traced on your Linux boxes the way they are on your Mac: the session, the model and the cost behind each one.
+Cost from remote sessions already counts like local ones. Line attribution covers Claude Code and Codex agents on your Mac.
 
 ## Update every server
 
-Update every terminal server at once, with tabs reopened.
+Update every terminal server at once.
 
-When a terminal server is out of date, the Machines tab says so. `update_terminal_servers` updates them all, and the tabs that were open come back.
+When a terminal server is out of date, the Machines tab says so. `update_terminal_servers` updates them all. That ends every terminal and agent on them; the tabs that were open come back as fresh shells, and an Agent with `resumeAfterRestart` relaunches.

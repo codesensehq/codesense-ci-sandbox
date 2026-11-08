@@ -85,7 +85,7 @@ function sandbox(t, { inventory = true } = {}) {
     if (key.startsWith("GIT_") || key.startsWith("CODESENSE_PRIVACY")) delete env[key];
   Object.assign(env, {
     HOME: home,
-    GIT_CONFIG_GLOBAL: os.devNull,
+    GIT_CONFIG_GLOBAL: path.join(home, ".gitconfig"),
     GIT_CONFIG_NOSYSTEM: "1",
     GIT_TERMINAL_PROMPT: "0",
     CODESENSE_PRIVACY_PUBLIC_REMOTES: bare,
@@ -98,6 +98,10 @@ function sandbox(t, { inventory = true } = {}) {
     if (result.status !== 0) throw new Error(`git ${args.join(" ")}: ${result.stderr}`);
     return result.stdout;
   };
+  // Pushes and commits start a detached `git maintenance run --auto` that can
+  // outlive the test and write into the sandbox while it is removed.
+  execFileSync("git", ["config", "--global", "maintenance.auto", "false"], { env });
+  execFileSync("git", ["config", "--global", "gc.auto", "0"], { env });
   for (const dir of [bare, other]) execFileSync("git", ["init", "--bare", "-q", dir], { env });
   execFileSync("git", ["init", "-q", "--initial-branch=main", work], { env });
   git("config", "user.name", "Fixture");

@@ -83,18 +83,11 @@ teammates, commit and push it from the context repo folder, or ask your
 agent to: CodeSense never commits or pushes for you. Teammates get it on
 their next pull. See [Sharing through git](../concepts/sharing.md).
 
-> **Coming: agent-managed sharing**
->
->   An agent handles the git for your team's context: it commits
->   your change, or opens it for review, as your workspace's policy says, and
->   teammates' CodeSense pulls it automatically while it's running. Today you,
->   or an agent you ask, commit and push.
-
 ## Things to know
 
 - **The nearest copy of each file wins.** Skills resolve one file at a time
-  across the team chain: a parent team's `release-notes` reaches your agents
-  unless your team has its own copy. Editing an inherited skill from your
+  across the team chain: a parent team's shared `release-notes` reaches your
+  agents unless your team has its own copy. Editing an inherited skill from your
   team edits the parent's; **Copy into ‹team›** gives your team its own copy.
   See [Teams and inheritance](../concepts/teams-and-inheritance.md).
 - **Any agent's files work the same way.** `AGENTS.md`, `.codex/` files, or

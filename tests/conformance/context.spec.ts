@@ -31,40 +31,44 @@ for (const [file, explanation] of [
   });
 }
 
-test("the glossary preserves a typed lookup across maximize and focus context pushes", async ({
+test("the docs pane keeps its rendered view across maximize and focus context pushes", async ({
   mountPane,
 }) => {
-  const pane = await mountPane("codesense-docs/getting-started/panes/glossary-lookup.html", {
-    activeTab: { "fixture:dev": "/fixture/worktree.html" },
+  const pane = await mountPane(PANE, {
+    activeTab: { "fixture:dev": "/fixture/notes.md" },
   });
   await pane.frame.waitForLoadState("load");
-  await pane.page.waitForTimeout(1_200);
-  const term = pane.frame.locator(".defn__term h3");
-  const search = pane.frame.locator("#glossary-search");
-  await expect(term).toHaveText("worktree");
-  // Enter the pane first, letting the host's focus-in choose its initial control.
-  await pane.page.locator("iframe").focus();
-  await expect(pane.frame.locator(".pane__collapse")).toBeFocused();
-  await search.fill("hydration");
-  await expect(term).toHaveText("hydration");
+  const why = pane.frame.locator(".pane__why");
+  const kept = pane.frame.locator("#pane-body [data-kept]");
+  await expect(why).toContainText("notes.md");
+  // A marker inside the rendered body disappears if the pane re-renders.
+  await pane.frame.evaluate(() => {
+    const marker = document.createElement("span");
+    marker.dataset.kept = "";
+    document.querySelector("#pane-body")!.append(marker);
+  });
+  // Count the host's focus pushes inside the pane, then focus a control in it.
+  await pane.frame.evaluate(() => {
+    (window as any).focusIns = 0;
+    window.addEventListener("message", (e) => {
+      if (e.data?.type === "codesense:focus-in") (window as any).focusIns += 1;
+    });
+  });
+  await pane.frame.locator(".pane__collapse").focus();
+  await expect.poll(() => pane.frame.evaluate(() => (window as any).focusIns)).toBeGreaterThan(0);
   await pane.maximize(true);
   await expect(pane.page.getByTestId("overlay-strip")).toBeVisible();
   // Allow the host's slot-context push and the pane's animation frames to render.
   await pane.page.waitForTimeout(600);
-  await expect(term).toHaveText("hydration");
+  await expect(kept).toHaveCount(1);
   await pane.maximize(false);
-  await search.focus();
+  // Move focus to a different control so the host sends a focus context push.
+  await pane.frame.locator(".pane__ctas button").first().focus();
   await pane.page.waitForTimeout(600);
-  await expect(term).toHaveText("hydration");
+  await expect(kept).toHaveCount(1);
   // A different selected document with the same basename still reapplies context.
   await pane.page.evaluate(() => {
-    (window as any).viewer.setState({
-      activeTab: { "fixture:dev": "/fixture/other/worktree.html" },
-    });
+    (window as any).viewer.setState({ activeTab: { "fixture:dev": "/fixture/other/notes.md" } });
   });
-  await expect(term).toHaveText("worktree");
-  await pane.page.evaluate(() => {
-    (window as any).viewer.setState({ activeTab: { "fixture:dev": "/fixture/story.html" } });
-  });
-  await expect(term).toHaveText("story");
+  await expect(kept).toHaveCount(0);
 });

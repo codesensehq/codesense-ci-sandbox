@@ -123,34 +123,37 @@
         </ol>
       </section>
 
-      <!-- =============== Problem — worktree creation stuck on fetch =============== -->
-      <section data-search="Worktree creation stuck on fetching" id="stuck-fetch">
+      <!-- =============== Problem — stale worktree or remote fetch stuck =============== -->
+      <section data-search="Worktree starts from an old commit or a remote fetch is stuck" id="stuck-fetch">
         <h2>Common issues</h2>
 
         <div class="arcC-problem">
           <span class="arcC-problem__eyebrow">Problem 1</span>
-          <h3>Creation stuck while fetching</h3>
+          <h3>The worktree starts from an old commit, or a remote fetch is stuck</h3>
           <p>
-            <code>git fetch origin</code> isn't returning. Usually a network, auth, or disk-space
-            issue — same symptoms you'd get at the command line.
+            On this Mac CodeSense adds the worktree from local refs and never fetches, so a new
+            story branch starts from whatever your clone last fetched. A remote machine gets
+            its copy from that clone, so it needs the same fetch (see
+            <a href="./git-is-yours.html">git is yours</a>).
           </p>
           <ul>
             <li>
-              <strong>Expected cause</strong> — your SSH key isn't loaded, or you're on a new Mac
-              without the credential helper configured. The host-agent runs as you; if
-              <code>ssh -o BatchMode=yes git@github.com</code> fails in your terminal, the
-              host-agent will too.
+              <strong>Expected cause</strong> — on this Mac, nobody has fetched lately. Fetch with
+              your agent or in a terminal (<code>git fetch origin</code>) before you open the story.
+              If the story's branch exists only on <code>origin</code> and was never fetched,
+              CodeSense starts a new local branch from the start point instead; to recover, remove
+              that worktree and its new local branch, fetch, then open the story again.
             </li>
             <li>
-              <strong>Expected cause</strong> — the source repo clone under
-              <code>~/.codesense/users/&lt;you&gt;/&lt;org&gt;/&lt;repo&gt;/</code> has a broken
-              remote. Run <code>git remote -v</code> there and reset the origin URL.
+              <strong>Expected cause</strong> — on a remote machine, the copy never arrived. The
+              progress line names the step that stopped, usually the connection or the machine's
+              free disk.
             </li>
           </ul>
           <div class="arcC-problem__fix">
-            <strong>Fix</strong> — resolve the git-side problem first (test with a plain
-            <code>git fetch</code> in the terminal tab), then open the story again. Creation starts
-            over from the first step.
+            <strong>Fix</strong> — fetch first, or fix the connection or disk the progress line
+            names, then open the story again.
+            Creation starts over from the first step.
           </div>
         </div>
 
@@ -210,7 +213,7 @@
           <ul>
             <li>
               <strong>Expected cause</strong> — a missing tool (<code>pnpm</code> isn't on
-              <code>PATH</code> for the host-agent's shell). The <code>env.PATH</code> in
+              <code>PATH</code> for the setup shell). The <code>env.PATH</code> in
               <code>worktree.yaml</code> may need the tool's install dir added.
             </li>
             <li>
@@ -263,8 +266,8 @@
             the <code>&lt;repo&gt;-wt/</code> folder beside the clone).
           </p>
           <div class="arcC-problem__fix">
-            <strong>Fix</strong> — open the story again: CodeSense fetches and
-            re-runs <code>git worktree add</code> in place. Context comes back at the next agent launch,
+            <strong>Fix</strong> — open the story again: CodeSense re-runs
+            <code>git worktree add</code> in place, from local refs. Context comes back at the next agent launch,
             or when an agent calls <code>hydrate_story</code>. Local uncommitted work
             in that worktree is gone (there isn't anything to recover — it's not on disk), but the
             branch and its pushed commits are untouched.
@@ -301,7 +304,7 @@ list_hydrated {
   target: { kind: 'local', codeRepoPath: '../sample-source-repo-wt/feat-DEMO-1-foundation', sessionId: '&lt;your session id&gt;' }
 }
 
-# The resolved worktree.yaml the host-agent will run
+# The resolved worktree.yaml the setup step will run
 read_worktree_config {
   repoPath: '~/code/sample-source-repo'
 }

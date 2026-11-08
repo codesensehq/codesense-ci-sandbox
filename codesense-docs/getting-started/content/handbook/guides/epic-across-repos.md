@@ -75,12 +75,6 @@ Open LL-231's workspace (right-click it in the left nav and choose **Open CLI**)
 
 If one of the repos isn't attached on your machine, you'll see **No local clone attached**. Choose **Attach local clone**, and the open continues.
 
-> **Coming: a tested cross-repo dependency**
->
-> Readiness honouring a cross-repo edge such as LL-231 (web) → LL-204 (api), confirmed by a test. The ids resolve through one team-wide index today, but that path isn't covered by a test yet.
-
-> **Coming: a verified epic workspace**
->
-> Opening the whole epic as one workspace, with a worktree per listed repo on one integration branch, so one agent can change `api` and `web` together. In that workspace, **Configure epic repos** edits the epic's repo list.
+A dependency can cross repos, such as LL-231 (web) → LL-204 (api): story ids resolve through one org-wide index, whatever repo a story targets.
 
 The full guide ships in the app's docs: **The model → Source repos**.

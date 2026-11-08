@@ -45,3 +45,9 @@ rerender — all siblings that depend on DEMO-1 only, so they ship in parallel.
 
 See `SPRINT.md`. Status is deliberately spread across the full taxonomy so every
 dashboard renders non-empty on first launch.
+
+Every story also carries the other fields a board can read: a `priority`, a `stream`
+and a `sub_epic`, and each one not yet done has an `assigned_to` (`planner`,
+`builder` or `reviewer`). DEMO-5 is blocked and says why in `blocked_reason`. DEMO-4
+sets `wave: 3`, asking a board that lays the sprint out in waves to put it after the
+other DEMO-1 dependents, instead of in the wave it would compute from `depends_on`.

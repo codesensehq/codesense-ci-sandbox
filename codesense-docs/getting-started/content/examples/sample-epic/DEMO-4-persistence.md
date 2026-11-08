@@ -3,20 +3,22 @@ title: "Remember a killed agent across relaunches"
 type: story
 story_id: DEMO-4
 status: todo
+priority: p3
 sub_epic: per-agent-kill-switch
 parent_epic: DEMO
 stream: backend
 depends_on: [DEMO-1]
+wave: 3
 source_repo: acme/sample-source-repo
 sprint: FAKE-S1
 points: 2
-author: "Seeded demo."
+assigned_to: planner
 ---
 
 ## Purpose
 
-A killed agent must not be auto-restarted by a routine's `each_mac` or `inbox_idle`
-trigger until a human acknowledges the kill. Add a `killed_until_ack` flag to the
+A killed agent must not be auto-restarted by an `each_mac` routine or an `inbox_idle` trigger
+until a human acknowledges the kill. Add a `killed_until_ack` flag to the
 agent's session record. The dashboard shows a small banner on the node ("Killed,
 click to clear").
 

@@ -5624,6 +5624,13 @@
           drawLog();
           await Promise.all(
             teamBatches(unreadMessages).map(async (batch) => {
+              // Like readConversation: a refresh that read before this mark landed keeps the
+              // badge clear. Only a batch that reads all of a conversation's unread rows holds
+              // it; held or unloaded unread rows keep it unread.
+              const holds = t.summaries.filter(
+                (c) => c.unread > 0 && batch.filter((m) => inConversation(m, c)).length >= c.unread,
+              );
+              for (const c of holds) readHolds.set(historyKey(c.with, c.team), c.lastMessageId);
               try {
                 await cs.act("markRead", batchArgs(batch));
                 for (const c of t.summaries) {
@@ -5638,7 +5645,9 @@
                 drawList();
                 scheduleRefresh();
               } catch (e) {
+                for (const c of holds) readHolds.delete(historyKey(c.with, c.team));
                 composerError("Could not mark read: " + e.message);
+                scheduleRefresh();
               }
             }),
           );

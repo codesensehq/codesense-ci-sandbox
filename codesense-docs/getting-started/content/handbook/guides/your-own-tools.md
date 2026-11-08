@@ -65,11 +65,8 @@ Headless runs, pre-commit hooks and CI-style scripts you start here read the
 same context files, because they're plain files in the folder. No
 special integration is involved.
 
-> **Coming: the terminal waiting for context to land**
->
->   A command typed in the first second or two can run before `.claude/` is
->   written. Until the terminal waits for the context write, check with `ls`
->   first, as in step 2.
+A command typed in the first second or two can run before `.claude/` is
+written, so check with `ls` first, as in step 2.
 
 ## When the window closes, and when you quit
 

@@ -29,7 +29,7 @@ instead, so add `.claude/skills` to its `context` or keep a copy there.
 An agent that's already running picks it up only when it calls
 `hydrate_worktree`; nothing is pushed into a running worktree on its own.
 
-Child teams inherit it. Inheritance works per file: a child team that writes
+Child teams inherit it when your team shares it in `config/sharing.yml`. Inheritance works per file: a child team that writes
 its own `.claude/skills/write-migration/SKILL.md` replaces that one file, and
 every other skill in the folder still comes from the parent (see
 [Teams and inheritance](teams-and-inheritance.md)).

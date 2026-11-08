@@ -3,14 +3,17 @@
 # Install pinned scanners from release/scanners.lock into <dest-dir>.
 # Every asset is downloaded to a scratch dir and checked against its sha256 before anything is
 # installed; one wrong checksum aborts the whole install and leaves <dest-dir> untouched.
-# Usage: scripts/install-scanners.sh <dest-dir> [--lock <file>] [--workflows-only] [--tool <name>]...
+# Usage: scripts/install-scanners.sh <dest-dir> [--lock <file>] [--cache <dir>] [--workflows-only] [--tool <name>]...
 # Without selectors, install gitleaks, trufflehog, actionlint and zizmor. cargo-deny and cargo-nextest are opt-in.
 # The platform is darwin-arm64 or linux-amd64, from uname; SCANNER_PLATFORM overrides it.
+# --cache <dir> keeps each verified archive as <dir>/<sha256>.tar.gz and reuses it on later runs.
+# A cached archive is checked against the lock exactly like a download; a mismatch is discarded and downloaded again.
 set -euo pipefail
 umask 022
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 LOCK="$REPO/release/scanners.lock"
 DEST=""
+CACHE=""
 SELECTED=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -21,12 +24,13 @@ while [ $# -gt 0 ]; do
         *) echo "install-scanners: unknown tool selector ${2:-<missing>}" >&2; exit 2 ;;
       esac ;;
     --lock) LOCK=${2:?--lock needs a file}; shift 2 ;;
+    --cache) CACHE=${2:?--cache needs a directory}; shift 2 ;;
     -*) echo "install-scanners: unknown option $1" >&2; exit 2 ;;
-    *) [ -z "$DEST" ] || { echo "usage: install-scanners.sh <dest-dir> [--lock <file>] [--workflows-only] [--tool <name>]..." >&2; exit 2; }
+    *) [ -z "$DEST" ] || { echo "usage: install-scanners.sh <dest-dir> [--lock <file>] [--cache <dir>] [--workflows-only] [--tool <name>]..." >&2; exit 2; }
        DEST=$1; shift ;;
   esac
 done
-[ -n "$DEST" ] || { echo "usage: install-scanners.sh <dest-dir> [--lock <file>] [--workflows-only] [--tool <name>]..." >&2; exit 2; }
+[ -n "$DEST" ] || { echo "usage: install-scanners.sh <dest-dir> [--lock <file>] [--cache <dir>] [--workflows-only] [--tool <name>]..." >&2; exit 2; }
 [ ${#SELECTED[@]} -gt 0 ] || SELECTED=(gitleaks trufflehog actionlint zizmor)
 [ -f "$LOCK" ] || { echo "install-scanners: no lock file at $LOCK" >&2; exit 1; }
 
@@ -44,6 +48,14 @@ sha256() {
   else shasum -a 256 "$1" | cut -d' ' -f1; fi
 }
 
+# Downloads retry transient failures (scripts/lib/download-retry.sh). The whole run shares one 360s
+# budget, so all its downloads end within 8 minutes, well inside the shortest calling job's 15-minute
+# timeout; a job installs all its tools in one run so they share it. No download is used until its
+# sha256 matches the lock.
+# shellcheck source=lib/download-retry.sh
+. "$REPO/scripts/lib/download-retry.sh"
+DOWNLOAD_DEADLINE=$((SECONDS + DOWNLOAD_RETRY_BUDGET))
+
 STAGE=$(mktemp -d "${TMPDIR:-/tmp}/install-scanners.XXXXXX")
 trap 'rm -rf "$STAGE"' EXIT
 TOOLS=()
@@ -58,12 +70,32 @@ while read -r tool version platform sum url; do
   [ "$selected" = 1 ] || continue
   [[ "$sum" =~ ^[0-9a-f]{64}$ ]] || { echo "install-scanners: bad sha256 for $tool in $LOCK" >&2; exit 1; }
   echo "install-scanners: $tool $version ($PLATFORM)"
-  curl -fsSL --proto '=https,file' -o "$STAGE/$tool.tar.gz" "$url" ||
-    { echo "install-scanners: download failed for $tool $version; nothing installed" >&2; exit 1; }
-  got=$(sha256 "$STAGE/$tool.tar.gz")
+  got=""
+  cached=0
+  if [ -n "$CACHE" ] && [ -f "$CACHE/$sum.tar.gz" ] && cp "$CACHE/$sum.tar.gz" "$STAGE/$tool.tar.gz"; then
+    got=$(sha256 "$STAGE/$tool.tar.gz")
+    if [ "$got" = "$sum" ]; then
+      echo "install-scanners: $tool archive from cache"
+      cached=1
+    else
+      echo "install-scanners: cached $tool archive does not match the lock; downloading it again" >&2
+      rm -f "$CACHE/$sum.tar.gz"
+      got=""
+    fi
+  fi
+  if [ -z "$got" ]; then
+    download_with_retry "$STAGE/$tool.tar.gz" "$url" --proto '=https,file' --proto-redir '=https' ||
+      { echo "install-scanners: download failed for $tool $version; nothing installed" >&2; exit 1; }
+    got=$(sha256 "$STAGE/$tool.tar.gz")
+  fi
   if [ "$got" != "$sum" ]; then
     echo "install-scanners: CHECKSUM MISMATCH for $tool $version ($PLATFORM): expected $sum, got $got; nothing installed" >&2
     exit 1
+  fi
+  if [ -n "$CACHE" ] && [ "$cached" = 0 ]; then
+    # best effort: a cache that cannot be written only means the next run downloads again
+    { mkdir -p "$CACHE" && cp "$STAGE/$tool.tar.gz" "$CACHE/.$sum.tar.gz.$$" && mv -f "$CACHE/.$sum.tar.gz.$$" "$CACHE/$sum.tar.gz"; } 2>/dev/null ||
+      { rm -f "$CACHE/.$sum.tar.gz.$$"; echo "install-scanners: could not cache the $tool archive in $CACHE" >&2; }
   fi
   mkdir "$STAGE/$tool"
   # only the binary itself is taken from the archive

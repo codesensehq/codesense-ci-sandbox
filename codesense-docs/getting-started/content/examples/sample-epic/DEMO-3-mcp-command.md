@@ -3,6 +3,7 @@ title: "Public MCP tool: kill_agent"
 type: story
 story_id: DEMO-3
 status: in-progress
+priority: p1
 sub_epic: per-agent-kill-switch
 parent_epic: DEMO
 stream: backend
@@ -10,7 +11,7 @@ depends_on: [DEMO-1]
 source_repo: acme/sample-source-repo
 sprint: FAKE-S1
 points: 2
-author: "Seeded demo."
+assigned_to: builder
 ---
 
 ## Purpose

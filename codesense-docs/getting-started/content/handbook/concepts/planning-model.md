@@ -89,9 +89,7 @@ Agents can check their own work. The CodeSense MCP tools `get_story_format` and 
 
 You can also create a story from **New story…** on an epic's right-click menu in the left nav. The form asks for a title, epic, story id, repo, status and dependencies, checks for problems as you type, and writes the file into the epic.
 
-> **Coming: configurable work-item types**
->
-> Declaring your own work-item types per team. Today the types are fixed to story, bug and spike. Your folders, statuses, phases and metadata are already yours to shape.
+The work-item types are story, bug and spike. Your folders, statuses, phases and metadata are yours to shape.
 
 The full guide ships in the app's docs: **Pipelines → Phase 5 · Story graph**.
 

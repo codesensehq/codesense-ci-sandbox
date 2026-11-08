@@ -220,7 +220,11 @@
           The split is deliberate: <code>~/.codesense/</code> is CodeSense's — delete it and
           the app rebuilds it from scratch on next launch. <code>~/CodeSense/</code> and
           anywhere else you choose to Connect from is yours — delete it and you lose your
-          work. CodeSense never writes into one of your source repos, and it never puts a
+          work. In your source repos CodeSense adds worktrees when you open a story (with your
+          team's context in them when an agent launches there or asks) and writes a marked block
+          in the repo's <code>.git/info/exclude</code>; it never commits or pushes, and
+          <a href="../arc-c-workspaces-and-worktrees/git-is-yours.html">git is yours</a> lists
+          every git command it runs. It never puts a
           user-facing file under <code>~/.codesense/</code> except these docs.
         </p>
       </section>

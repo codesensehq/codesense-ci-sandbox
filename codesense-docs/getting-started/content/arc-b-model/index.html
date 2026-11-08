@@ -145,7 +145,8 @@
         <p style="color: var(--cs-muted-fg); max-width: 68ch">
           One <strong>org</strong> is one context repo. A repo holds <strong>teams</strong>,
           and a team can name one <code>parent_team</code>. A team's context is its own
-          content plus everything its parents hold, resolved <strong>per file</strong>:
+          content plus the files its parents share (their <code>config/sharing.yml</code>),
+          resolved <strong>per file</strong>:
           the closest team wins. Nothing copies itself anywhere. Content reaches a
           worktree only when the worktree is created, when an agent launches there (it
           gets what its <code>context</code> asks for), or when an agent explicitly asks
@@ -249,7 +250,7 @@
           <li>
             <a href="./teams.html"><strong>Teams</strong></a> — <code>teams.yml</code>, the
             single-parent chain (depth cap 64), and how a child team inherits its parents'
-            files one file at a time.
+            shared files one file at a time.
           </li>
           <li>
             <a href="./content-layers.html"><strong>Content layers</strong></a> — the places

@@ -5,6 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isMain } from "./lib/is-main.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const MANIFEST_PATH = join(
@@ -151,7 +152,7 @@ export function checkMirror(check = true) {
   } else writeFileSync(path, fresh);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   checkMirror(process.argv.includes("--check"));
   import("./build-codesense-docs.mjs").then(({ buildTree }) => {
     console.log(

@@ -88,16 +88,16 @@
         </p>
         <ul>
           <li>
-            <strong>Fix</strong> — <em>Machines → Replace terminal server</em>. It
-            prepares the new binary alongside the live one, then swaps. Existing
-            tabs survive (they live under the old server; new tabs under the new).
-            Close and re-open any tabs that need the new verb.
+            <strong>Fix</strong> — <em>Machines → Update terminal server…</em>. It
+            ends every terminal and agent on that server. Tabs reopen as fresh shells,
+            and Agents with <code>resumeAfterRestart</code> relaunch; other agents stay
+            stopped. Save what you need first.
           </li>
           <li>
-            <strong>If replace won't start</strong> — likely a stale
+            <strong>If the update won't start</strong> — likely a stale
             <code>pinned_server_id</code>. The declaration pins the server identity;
             if it was retired manually on the machine, re-run
-            <code>test_machine_connection</code> to re-verify, then replace.
+            <code>test_machine_connection</code> to re-verify, then update again.
           </li>
         </ul>
       </section>
@@ -153,9 +153,9 @@
         <p>You wake your Mac; most remote tabs are back, one is missing.</p>
         <ul>
           <li>
-            <strong>First suspect — the terminal server was replaced.</strong> Tabs
-            under the old server don't migrate; they stop when the old server stops.
-            Check <em>Machines → &lt;host&gt; → History</em>.
+            <strong>First suspect — the terminal server was updated or restarted.</strong>
+            Either ends every terminal on that server and reopens the open tabs as fresh shells.
+            A tab that couldn't reopen after an update is listed in the update's inbox report.
           </li>
           <li>
             <strong>Second suspect — the remote machine rebooted.</strong> Confirm
@@ -173,15 +173,16 @@
         <h2>7 · Scheduled routine didn't fire</h2>
         <ul>
           <li>
-            <strong>Local-owned routine, Mac was asleep.</strong> Standard macOS
-            behavior — scheduled fires skip when the Mac is asleep. Move ownership
-            to an always-on machine if the schedule must fire.
+            <strong>Routine armed on this Mac, Mac was asleep.</strong> Fires missed while the Mac was asleep or the app was closed are recorded as one skipped run; with <code>policy.missed: run_once</code>, one of them also runs as a catch-up.
+            Arm it on an always-on machine with <code>routine_arm_on</code> if the
+            schedule must fire (schedule triggers only, <code>one_mac</code>, no <code>budget_usd</code>).
           </li>
           <li>
-            <strong>Remote-owned routine, terminal server was down.</strong> Check the
-            machine's status line in <em>Machines</em>, or call
+            <strong>Routine armed on a machine, terminal server was down.</strong> Check
+            the machine's status line in <em>Machines</em>, or call
             <code>terminal_server_status</code> or <code>list_machines</code>. If it
-            bounced during your window, the fire was skipped.
+            bounced during your window, the missed fires follow the same
+            <code>policy.missed</code> rule: one skipped run, plus one catch-up run with <code>run_once</code>.
           </li>
           <li>
             <strong>Routine disabled.</strong> Open <em>Schedule</em> from the identity menu and pick the routine.
@@ -191,22 +192,21 @@
         </ul>
       </section>
 
-      <section data-search="Host-agent on this Mac is wedged" id="host-agent">
-        <h2>8 · Host-agent on this Mac is wedged</h2>
+      <section data-search="The app on this Mac is wedged" id="host-agent">
+        <h2>8 · The app on this Mac is wedged</h2>
         <ul>
           <li>
             <strong>Symptom</strong> — local tabs don't accept input; file watchers
             stop reporting.
           </li>
           <li>
-            <strong>Fix</strong> — quit CodeSense and relaunch it; the host-agent is launched by
-            the app on boot. If that doesn't help, choose <em>Restart terminal server</em> (or call
+            <strong>Fix</strong> — quit CodeSense and relaunch it. If that doesn't help, choose <em>Restart terminal server</em> (or call
             <code>restart_terminal_server</code>). That ends every terminal and agent running on
             it, so save what you need first.
           </li>
           <li>
             <strong>Remote tabs are unaffected.</strong> They live under the remote
-            terminal server; a wedged local host-agent doesn't touch them.
+            terminal server; a wedged local app doesn't touch them.
           </li>
         </ul>
       </section>

@@ -3246,8 +3246,14 @@ it.each(["incoming", "outgoing"])(
     );
     inboxChanged();
     await waitFor(() => expect(el(p, "thread-meta").textContent).toBe("601 messages"));
-    if (direction === "incoming")
+    if (direction === "incoming") {
+      await waitFor(() =>
+        expect([
+          ...new Set(calls("mark_inbox_messages_read").flatMap(([, args]) => args.messageIds)),
+        ]).toEqual([601]),
+      );
       await waitFor(() => expect(usePaneStore.getState().badges[PANEL]).toBeUndefined());
+    }
     const ids = () =>
       [...el(p, "log").querySelectorAll<HTMLElement>(".ib-msg")].map((m) =>
         Number(m.dataset.messageId),
@@ -3265,6 +3271,80 @@ it.each(["incoming", "outgoing"])(
     ).toEqual([undefined, 101]);
   },
 );
+
+it("keeps the badge clear when a refresh read before the open reader's mark landed", async () => {
+  messages = [row(1, "Mia", "human", { unread: false }), row(2, "human", "Mia", { unread: false })];
+  const p = await openInbox(false);
+  await waitFor(() => expect(p.doc.querySelectorAll(".ib-row")).toHaveLength(1));
+  await openThread(p);
+  await waitFor(() => expect(el(p, "log").querySelectorAll(".ib-msg")).toHaveLength(2));
+  let releaseMark!: () => void;
+  let releaseReads!: () => void;
+  const markGate = new Promise<void>((resolve) => (releaseMark = resolve));
+  const readGate = new Promise<void>((resolve) => (releaseReads = resolve));
+  let holdReads = false;
+  let heldReads = 0;
+  tauriInvoke.mockImplementation(async (cmd: string, args?: Record<string, any>) => {
+    if (cmd === "mark_inbox_messages_read") await markGate;
+    // Answer from the store as it is now, before the mark lands, and hold the answer.
+    const result = stubTauri(cmd, args);
+    if (cmd === "agent_read_inbox" && holdReads && !args?.query?.conversation) {
+      heldReads++;
+      await readGate;
+    }
+    return result;
+  });
+  messages.push(row(3, "Mia", "human"));
+  inboxChanged();
+  await waitFor(() => expect(calls("mark_inbox_messages_read")).toHaveLength(1));
+  holdReads = true;
+  inboxChanged();
+  // Both inbox reads of the refresh this starts answered while the mark was pending.
+  await waitFor(() => expect(heldReads).toBe(2));
+  holdReads = false;
+  await act(async () => releaseMark());
+  await waitFor(() => expect(usePaneStore.getState().badges[PANEL]).toBeUndefined());
+  const topLevelReads = () =>
+    calls("agent_read_inbox").filter(([, args]) => !args.query?.conversation).length;
+  const before = topLevelReads();
+  const badges: unknown[] = [];
+  const unsubscribe = usePaneStore.subscribe((state) => badges.push(state.badges[PANEL]));
+  try {
+    await act(async () => releaseReads());
+    // The next refresh starts only after the held one has drawn.
+    await waitFor(() => expect(topLevelReads()).toBeGreaterThan(before));
+  } finally {
+    unsubscribe();
+  }
+  expect(badges.filter((badge) => badge !== undefined)).toEqual([]);
+  expect(calls("mark_inbox_messages_read").map(([, args]) => args.messageIds)).toEqual([[3]]);
+});
+
+it("shows the badge again when the open reader's held mark fails", async () => {
+  messages = [row(1, "Mia", "human", { unread: false }), row(2, "human", "Mia", { unread: false })];
+  const p = await openInbox(false);
+  await waitFor(() => expect(p.doc.querySelectorAll(".ib-row")).toHaveLength(1));
+  await openThread(p);
+  await waitFor(() => expect(el(p, "log").querySelectorAll(".ib-msg")).toHaveLength(2));
+  let failMark!: () => void;
+  const markGate = new Promise<void>(
+    (_, reject) => (failMark = () => reject(new Error("Store unavailable"))),
+  );
+  tauriInvoke.mockImplementation(async (cmd: string, args?: Record<string, unknown>) => {
+    if (cmd === "mark_inbox_messages_read") await markGate;
+    return stubTauri(cmd, args);
+  });
+  messages.push(row(3, "Mia", "human"));
+  inboxChanged();
+  await waitFor(() => expect(calls("mark_inbox_messages_read")).toHaveLength(1));
+  // A refresh while the mark is pending keeps the badge clear under the read hold.
+  inboxChanged();
+  await waitFor(() => expect(usePaneStore.getState().badges[PANEL]).toBeUndefined());
+  await act(async () => failMark());
+  await waitFor(() => expect(usePaneStore.getState().badges[PANEL]?.count).toBe(1));
+  expect(el(p, "composer-error").textContent).toContain("Could not mark read");
+  expect(messages[2].unread).toBe(true);
+});
 
 it("replaces open history when archive and growth together are not a verified append", async () => {
   messages = [row(1, "Mia", "human", { unread: false }), row(2, "human", "Mia", { unread: false })];
@@ -4089,15 +4169,17 @@ it("applies the shipped Inbox recipe: fixed team, needs-you summaries, replies a
   await waitFor(() => expect(el(p, "log").textContent).toContain("Use the first plan"));
 });
 
-it("pages the Inbox recipe through more than 500 updates to recover a reply outside both initial windows", async () => {
+it("pages the Inbox recipe through 500 newer sent messages to recover a reply outside both initial windows", async () => {
   messages = [
     row(1, "Mia", "human", { kind: "needs-you", text: "Original decision" }),
     row(2, "human", "Mia", { kind: "update", text: "Older retained reply", unread: false }),
-    ...Array.from({ length: 500 }, (_, index) =>
+    // 100 updates put the reply past the first history page; 500 newer sent rows put it
+    // past the 500-row inbox window.
+    ...Array.from({ length: 100 }, (_, index) =>
       row(index + 3, "Mia", "human", { kind: "update", unread: false }),
     ),
     ...Array.from({ length: 500 }, (_, index) =>
-      row(index + 503, "human", "Other", { kind: "update", unread: false }),
+      row(index + 103, "human", "Other", { kind: "update", unread: false }),
     ),
   ];
   const p = await openInbox(false, recipePane("inbox"));
@@ -4110,10 +4192,10 @@ it("pages the Inbox recipe through more than 500 updates to recover a reply outs
   const control = () => el(p, "log").querySelector<HTMLButtonElement>(".ib-older button")!;
   await waitFor(() => expect(reads()).toHaveLength(1));
   await waitFor(() => expect(control().getAttribute("aria-disabled")).toBe("false"));
-  for (let page = 2; page <= 11; page++) {
+  for (let page = 2; page <= 3; page++) {
     await act(async () => control().click());
     await waitFor(() => expect(reads()).toHaveLength(page));
-    if (page < 11)
+    if (page < 3)
       await waitFor(() => expect(control().getAttribute("aria-disabled")).toBe("false"));
   }
   expect(reads()[0][1].query.before).toBeUndefined();
@@ -4121,9 +4203,9 @@ it("pages the Inbox recipe through more than 500 updates to recover a reply outs
     reads()
       .slice(1)
       .map(([, args]) => args.query.before),
-  ).toEqual([453, 403, 353, 303, 253, 203, 153, 103, 53, 3]);
+  ).toEqual([53, 3]);
   await waitFor(() => expect(el(p, "log").textContent).toContain("Older retained reply"));
-  expect(el(p, "log").querySelectorAll(".ib-msg")).toHaveLength(502);
+  expect(el(p, "log").querySelectorAll(".ib-msg")).toHaveLength(102);
   expect(el(p, "log").textContent).toContain("Start of conversation");
   expect(p.doc.querySelectorAll(".ib-row")).toHaveLength(1);
 });

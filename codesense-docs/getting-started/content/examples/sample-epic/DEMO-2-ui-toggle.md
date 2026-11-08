@@ -3,6 +3,7 @@ title: "DAG node kill button + confirmation modal"
 type: story
 story_id: DEMO-2
 status: review
+priority: p2
 sub_epic: per-agent-kill-switch
 parent_epic: DEMO
 stream: frontend
@@ -10,7 +11,7 @@ depends_on: [DEMO-1]
 source_repo: acme/sample-source-repo
 sprint: FAKE-S1
 points: 2
-author: "Seeded demo."
+assigned_to: reviewer
 ---
 
 ## Purpose

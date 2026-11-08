@@ -85,8 +85,10 @@
             box, or you reset the installation), CodeSense refuses until you re-verify.
           </li>
           <li>
-            <strong>Upgrades under control</strong> — <em>Machines → Update terminal
-            server</em> prepares the new binary alongside the live one, then swaps.
+            <strong>Updates you start</strong> — <em>Machines → Update terminal
+            server…</em> installs the new build. It ends every terminal and agent on
+            that server; tabs reopen as fresh shells, and Agents with
+            <code>resumeAfterRestart</code> relaunch.
             Older servers get a "terminalServerOutdated" refusal for new verbs so
             you know to upgrade.
           </li>
@@ -102,7 +104,6 @@
         <ul>
           <li>Your Mac sleeping or losing Wi-Fi.</li>
           <li>Quitting and re-opening CodeSense.</li>
-          <li>Restarting the host-agent on your Mac.</li>
         </ul>
         <p>
           On reconnect, CodeSense re-attaches, snaps the latest scrollback, and the

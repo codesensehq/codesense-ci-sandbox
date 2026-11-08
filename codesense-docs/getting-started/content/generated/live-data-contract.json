@@ -1623,14 +1623,14 @@
     "fields": [
       {
         "cs_meta": "cs:status",
-        "description": "Pipeline column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
+        "description": "The story's pipeline stage, which is also its board column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
         "kind": "text",
         "name": "status",
         "required": false
       },
       {
         "cs_meta": "cs:type",
-        "description": "Document type. story, bug and spike make the file a pipeline story; any other value, or none, keeps it a plain document.",
+        "description": "Document type. One of the listed values makes the file a pipeline story; any other value, or none, keeps it a plain document.",
         "kind": "text",
         "name": "type",
         "required": true,
@@ -1726,14 +1726,14 @@
       },
       {
         "cs_meta": "cs:points",
-        "description": "Estimate in points. A non-numeric value is ignored; a value off the scale 1, 2, 3, 5, 8, 13 is advisory.",
+        "description": "Estimate in points, on the Fibonacci scale up to 13. A non-numeric value is ignored; an off-scale value is advisory.",
         "kind": "number",
         "name": "points",
         "required": false
       },
       {
         "cs_meta": "cs:assigned-to",
-        "description": "Who the story is assigned to (a username). A login missing from the org roster is advisory.",
+        "description": "Who the story is assigned to: a person's login or an agent id. A login missing from the org roster is advisory.",
         "kind": "text",
         "name": "assigned_to",
         "required": false
@@ -1775,7 +1775,7 @@
       },
       {
         "cs_meta": "cs:priority",
-        "description": "Priority, p0 (highest) to p4. Sorting also ranks words such as critical, high, medium and low.",
+        "description": "Priority, where p0 is the highest. Sorting also ranks words such as critical, high, medium and low.",
         "kind": "text",
         "name": "priority",
         "required": false,
@@ -1786,6 +1786,34 @@
           "p3",
           "p4"
         ]
+      },
+      {
+        "cs_meta": "cs:blocked-reason",
+        "description": "Why the story is blocked, for a board to show on its card. Set it while the status is a blocked one; with any other status, it is advisory.",
+        "kind": "text",
+        "name": "blocked_reason",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:wave",
+        "description": "Optional. The story's board wave, for a board to use instead of the wave it would compute from depends_on. A value that is not a positive whole number is advisory.",
+        "kind": "number",
+        "name": "wave",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:stream",
+        "description": "The work stream the story is in, for example frontend or backend, for a board to group by.",
+        "kind": "text",
+        "name": "stream",
+        "required": false
+      },
+      {
+        "cs_meta": "cs:sub-epic",
+        "description": "The sub-epic the story belongs to within its parent epic, for a board to group by.",
+        "kind": "text",
+        "name": "sub_epic",
+        "required": false
       }
     ],
     "what": "Story fields a dashboard can read. Use the Markdown name in codesense.queryContext filters, sort, groupBy and select, and as a row's fields key; HTML stories carry the same field as the cs_meta tag. A team's own fields, declared in content/field-schema.yml or the org's tag_schema, read the same way. Rely only on these and declared fields: validate_story flags any other key with the UNREGISTERED_FIELD advisory."

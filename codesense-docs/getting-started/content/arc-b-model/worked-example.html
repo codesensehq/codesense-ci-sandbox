@@ -197,14 +197,16 @@ teams:
               platform/content/.claude/skills/deploy/SKILL.md<br />platform/content/.claude/skills/review/SKILL.md
             </p>
             <p>
-              Skills shared across every product team. <code>default</code> holds no
+              Skills <code>platform</code> shares with every product team through its
+              <code>config/sharing.yml</code>, which also shares the root's <code>content/CLAUDE.md</code>
+              onward. <code>default</code> holds no
               <code>deploy</code> skill, so it inherits <code>platform</code>'s. It does hold
               its own <code>review</code>, so <code>platform</code>'s review is hidden for
               <code>default</code> only.
             </p>
             <p class="who">
               <b>Who sees it:</b> everyone on <code>platform</code>, and every child team for
-              each file the child doesn't hold itself. <b>Pushed:</b> yes.
+              each shared file the child doesn't hold itself. <b>Pushed:</b> yes.
             </p>
           </div>
 
@@ -214,12 +216,14 @@ teams:
               root/content/CLAUDE.md
             </p>
             <p>
-              The top of the chain holds the instructions every team honors. Neither
+              The top of the chain holds the instructions every team honors, and shares
+              <code>content/CLAUDE.md</code> in its <code>config/sharing.yml</code>. Neither
               <code>default</code> nor <code>platform</code> has a <code>CLAUDE.md</code>,
               so both inherit this one.
             </p>
             <p class="who">
-              <b>Who sees it:</b> every team in the org. <b>Pushed:</b> yes.
+              <b>Who sees it:</b> every team in the org, as long as each team in between shares it
+              onward. <b>Pushed:</b> yes.
             </p>
           </div>
 

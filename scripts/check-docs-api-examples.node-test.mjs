@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
@@ -254,4 +256,50 @@ test("the real truth: verbs, twins, and aliases from inside and outside src-taur
   assert.deepEqual(messages("schedule_wakeup { session_id: 'x' }"), [
     "schedule_wakeup: `session_id` is an alias; use `sessionId`",
   ]);
+});
+
+test("corpus: CODESENSE_SITE_ROOT supplies the handbook to a checkout without site/", (t) => {
+  const base = mkdtempSync(join(tmpdir(), "docs-api-site-"));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const root = join(base, "checkout");
+  mkdirSync(join(root, "codesense-docs/getting-started/content"), { recursive: true });
+  writeFileSync(join(root, "codesense-docs/getting-started/content/page.md"), "# Page\n");
+  const site = join(base, "site");
+  mkdirSync(join(site, "src/content/handbook/guides"), { recursive: true });
+  writeFileSync(join(site, "src/content/handbook/guides/x.mdx"), "# X\n");
+  const before = process.env.CODESENSE_SITE_ROOT;
+  t.after(() =>
+    before === undefined
+      ? delete process.env.CODESENSE_SITE_ROOT
+      : (process.env.CODESENSE_SITE_ROOT = before),
+  );
+  delete process.env.CODESENSE_SITE_ROOT;
+  assert.deepEqual(corpus(root), [join(root, "codesense-docs/getting-started/content/page.md")]);
+  process.env.CODESENSE_SITE_ROOT = site;
+  assert.deepEqual(corpus(root), [
+    join(root, "codesense-docs/getting-started/content/page.md"),
+    join(site, "src/content/handbook/guides/x.mdx"),
+  ]);
+  // An explicit root brings its own site: main passes no env with --root, and so does this.
+  assert.deepEqual(corpus(root, {}), [
+    join(root, "codesense-docs/getting-started/content/page.md"),
+  ]);
+  process.env.CODESENSE_SITE_ROOT = "relative/site";
+  assert.throws(() => corpus(root), /must be an absolute path/);
+});
+
+test("siteInside: by real path, and `..x` is a name, not a parent", async (t) => {
+  const { siteInside } = await import("./lib/site-root.mjs");
+  const { symlinkSync, realpathSync } = await import("node:fs");
+  const base = realpathSync(mkdtempSync(join(tmpdir(), "site-inside-")));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const root = join(base, "checkout");
+  mkdirSync(join(root, "site"), { recursive: true });
+  mkdirSync(join(root, "..x"), { recursive: true });
+  mkdirSync(join(base, "elsewhere"));
+  assert.equal(siteInside(root, join(root, "site")), true);
+  assert.equal(siteInside(root, join(root, "..x")), true);
+  assert.equal(siteInside(root, join(base, "elsewhere")), false);
+  symlinkSync(root, join(base, "alias"));
+  assert.equal(siteInside(join(base, "alias"), join(root, "site")), true);
 });

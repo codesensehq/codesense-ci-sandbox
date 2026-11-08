@@ -54,23 +54,6 @@ panes:
     collapsedByDefault: false
     reactsTo: [surface, filepath, agentId, messageId]
 
-  # MCP tools relevant to the current surface, with inline Try-it that opens the explorer.
-  - id: related-mcp
-    title: "Related MCP tools"
-    html: related-mcp.html
-    icon: hammer
-    showsOn:
-      - viewer:markdown
-      - viewer:html
-      - agents:detail
-      - inbox:thread
-      - pipeline:story
-      - pipeline:epic
-      - routines:detail
-    priority: 20
-    collapsedByDefault: false
-    reactsTo: [surface, filepath, agentId, arc]
-
   # Contextual next-move list, tied to the SDLC phase.
   - id: try-these-next
     title: "Try these next"
@@ -80,47 +63,3 @@ panes:
     priority: 30
     collapsedByDefault: false
     reactsTo: [surface, sdlcPhase, storyStatus]
-
-  # Click-a-term definition pane. Low priority — stays out of the way until invoked.
-  - id: glossary-lookup
-    title: "Glossary"
-    html: glossary-lookup.html
-    icon: book-open-text
-    showsOn:
-      - viewer:markdown
-      - viewer:html
-      - viewer:excalidraw
-      - pane:*
-    priority: 40
-    collapsedByDefault: true
-    reactsTo: [glossaryClick, selection]
-
-  # Local ⇄ Remote parity panel. Only interesting when a parity dimension exists.
-  - id: parity-check
-    title: "Local ⇄ Remote parity"
-    html: parity-check.html
-    icon: scale
-    showsOn:
-      - viewer:html
-      - agents:detail
-      - pipeline:story
-      - terminals:detail
-      - worktrees:detail
-    priority: 50
-    collapsedByDefault: true
-    reactsTo: [surface, machine, agentId, workspaceId]
-
-  # Recipe matcher. Picks the best recipe for the current intent and offers it in one click.
-  - id: recipe-for-this
-    title: "Recipe for this"
-    html: recipe-for-this.html
-    icon: book-marked
-    showsOn:
-      - viewer:html
-      - viewer:markdown
-      - agents:detail
-      - pipeline:story
-      - pipeline:epic
-    priority: 60
-    collapsedByDefault: true
-    reactsTo: [surface, filepath, agentId, sdlcPhase]

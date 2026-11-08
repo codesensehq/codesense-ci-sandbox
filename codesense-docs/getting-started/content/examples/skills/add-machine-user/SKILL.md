@@ -30,7 +30,8 @@ Ask for:
 Recommend their **own account**. In CodeSense each person connects with a private account:
 their own Unix login, their own files and their own agent logins. A **shared account** means
 everyone works as the same Unix user and can see and change each other's files. Use it only
-if the team already works that way.
+if the team already works that way: CodeSense itself needs each person's own account, and
+opens no terminal tabs on a shared one.
 
 Check the machine answers: `ssh -o BatchMode=yes <host> 'uname -s'`.
 

@@ -96,16 +96,17 @@
         <h1>Start every session here.</h1>
         <p class="lede">
           <code>codesense_overview</code> is the one call every agent should make first. One
-          request, no arguments, nothing writes. The reply names every org, team, source repo,
-          machine, open session, routine, and the active one of each. Most tasks are answered from
-          this reply alone.
+          request, no arguments needed (<code>{guide: true}</code> returns the concepts guide
+          instead), nothing writes. The reply summarizes the active org and
+          team, machines, sessions, saved Agents, routines, the inbox, role queues, open workspaces
+          and the placed docs, and each section names the tools that return its full data.
         </p>
         <figure class="arcj-hero">
           <svg
             viewBox="0 0 640 360"
             preserveAspectRatio="xMidYMid meet"
             role="img"
-            aria-label="A single call on the left expands into a block of structured context on the right: orgs, teams, machines, source repos, sessions, routines, inboxes."
+            aria-label="A single call on the left expands into a block of structured context on the right: context, machines, sessions, agents, routines, inbox, role queues, workspaces and docs."
           >
             <defs>
               <marker
@@ -185,98 +186,98 @@
                 y="46"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                user: you@example.com
+                generatedAt: 2026-11-08T09:30Z
               </text>
               <text
                 x="14"
                 y="66"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                machine: dev-mbp
+                context: acme/team-context · dev
               </text>
               <text
                 x="14"
                 y="90"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                orgs:
+                machines:
               </text>
               <text
                 x="26"
                 y="106"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                acme · codesense-docs
+                2 · connected 1, disconnected 1
               </text>
               <text
                 x="14"
                 y="128"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                teams[active]:
+                sessions:
               </text>
               <text
                 x="26"
                 y="144"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                acme / default
+                3 not exited · 1 needs you
               </text>
               <text
                 x="14"
                 y="166"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                source_repos:
+                agents · routines:
               </text>
               <text
                 x="26"
                 y="182"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                acme/codesense (bound)
+                2 saved · 3 routines, 2 enabled
               </text>
               <text
                 x="14"
                 y="204"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                sessions:
+                inbox:
               </text>
               <text
                 x="26"
                 y="220"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                3 open · 2 headless · 1 tab
+                humanUnread 2 · 1 agent unread
               </text>
               <text
                 x="14"
                 y="242"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                routines:
+                roleQueues:
               </text>
               <text
                 x="26"
                 y="258"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                6 defined · 2 running
+                builder 7 pending · reviewer 1
               </text>
               <text
                 x="14"
                 y="280"
                 style="fill: var(--cs-fg); font-size: 12px; font-family: var(--cs-font-mono)"
               >
-                inboxes:
+                workspaces · docs:
               </text>
               <text
                 x="26"
                 y="296"
                 style="fill: var(--cs-muted-fg); font-size: 11px; font-family: var(--cs-font-mono)"
               >
-                builder:7 reviewer:1 resolver:0
+                1 open · docs placed
               </text>
             </g>
           </svg>
@@ -287,11 +288,11 @@
         <h2>Why it's the universal starting point</h2>
         <p>
           Every other CodeSense tool is parameterised by things like
-          <em>org</em>, <em>team</em>, <em>source repo path</em>, <em>session id</em>.
-          <code>codesense_overview</code> is the one call that tells the agent all of those at once,
-          in one shot. Skip it and the agent has to probe — <code>list_orgs_teams</code>,
-          <code>describe_setup</code>, <code>list_sessions</code>, <code>routine_list</code> — four
-          calls to get what overview returns in one.
+          <em>org</em>, <em>team</em>, <em>machine id</em>, <em>session handle</em>.
+          <code>codesense_overview</code> is the one call that tells the agent where to start, in one
+          shot. Skip it and the agent has to probe — <code>list_machines</code>,
+          <code>list_sessions</code>, <code>routine_list</code>, <code>role_state</code> — call after
+          call to get the summary overview returns in one.
         </p>
         <p>
           It's in <code>tools/list</code> like every tool, and the server's instructions name it
@@ -310,97 +311,143 @@
           </thead>
           <tbody>
             <tr>
-              <td>user</td>
-              <td>
-                The user handle this process is running as. Useful for self-referential queries ("my
-                teams", "my inboxes").
-              </td>
+              <td>generatedAt</td>
+              <td>When the reply was composed.</td>
             </tr>
             <tr>
-              <td>machine</td>
-              <td>
-                The machine CodeSense is on — the name you'll see in a remote-session row elsewhere.
-              </td>
+              <td>context</td>
+              <td>The active org and team (<code>org</code>, <code>team</code>), or both null with a note when no team is active.</td>
             </tr>
             <tr>
-              <td>orgs</td>
-              <td>
-                Every org the user has synced to this Mac. Each has a
-                <code>handle</code> and a list of teams.
-              </td>
-            </tr>
-            <tr>
-              <td>teams</td>
-              <td>
-                Every team across all orgs. <code>active</code> flags the one dashboards and new
-                sessions default to.
-              </td>
-            </tr>
-            <tr>
-              <td>source_repos</td>
-              <td>
-                Each team's source repos — remote key, bound local path if any, whether a worktree
-                is open.
-              </td>
+              <td>machines</td>
+              <td><code>total</code>, <code>byStatus</code>, and <code>items</code>: each machine's <code>machineId</code>, <code>label</code>, <code>kind</code>, <code>remoteMcpControl</code> and <code>status</code>.</td>
             </tr>
             <tr>
               <td>sessions</td>
-              <td>
-                Open agent sessions — tab or headless, foreground or background, with unread counts.
-              </td>
+              <td><code>total</code>, <code>byState</code>, <code>byMachine</code>, <code>needsYou</code> (who waits on you), and <code>notExited</code>: each running agent or terminal's handle, state, machine, workspace, story, role, who launched it and its unread count.</td>
+            </tr>
+            <tr>
+              <td>agents</td>
+              <td>Saved Agents: <code>total</code>, <code>byScope</code>, and <code>saved</code> (<code>id</code>, <code>name</code>, <code>runtime</code>, <code>scope</code>, <code>team</code>; the built-in ones are counted, not listed).</td>
             </tr>
             <tr>
               <td>routines</td>
-              <td>Routines the team has, which are armed, which fired recently.</td>
+              <td><code>total</code>, how many are <code>enabled</code>, how many need you, <code>lastRunByStatus</code>, and <code>items</code> with each routine's <code>runs_on</code>, <code>armed_here</code>, schedule, next and last run.</td>
             </tr>
             <tr>
-              <td>inboxes</td>
-              <td>
-                Role queue depths at a glance — <code>builder: 7</code>, <code>reviewer: 1</code>, …
-              </td>
+              <td>inbox</td>
+              <td><code>humanUnread</code> and <code>agentsWithUnread</code> (sessions with unread mail, oldest first seen) for the active team.</td>
             </tr>
             <tr>
-              <td>remote_machines</td>
-              <td>Remote Macs this account can reach — hostname, last-seen, account.</td>
+              <td>roleQueues</td>
+              <td>Each role in the active team with <code>pending</code>, <code>claimed</code>, <code>accepted</code> and <code>acknowledged</code> deliveries and <code>liveInstances</code>; <code>withUnclaimedWork</code> names the roles with pending work.</td>
+            </tr>
+            <tr>
+              <td>workspaces</td>
+              <td>Open workspaces: each one's kind, story, repo, branch, worktree path, host, and how many tabs it has and how many are live.</td>
+            </tr>
+            <tr>
+              <td>docs</td>
+              <td>Where the bundled CodeSense docs are on this Mac: the concepts guide, <code>START-HERE.md</code>, how to search them, and the placed docs' state and commits.</td>
             </tr>
           </tbody>
         </table>
         <p>
-          Fields the user doesn't have anything in come back empty — the shape is stable, you don't
-          branch on presence.
+          Every section also has <code>detail</code>: the tools that return its full data. A section
+          that could not be read has <code>error</code> instead of data, and the rest still answer.
+          Lists are capped, with <code>truncated: true</code> when cut.
         </p>
       </section>
 
       <section data-search="A reply, hand-shortened" id="example">
         <h2>A reply, hand-shortened</h2>
         <pre><code>{
-  "user": "you@example.com",
-  "machine": "dev-mbp",
-  "orgs": [
-    { "handle": "acme", "teams": ["default", "docs"] },
-    { "handle": "codesense-docs", "teams": ["getting-started"] }
-  ],
-  "teams": {
-    "active": { "org": "acme", "team": "default" },
-    "all": [
-      { "org": "acme",           "team": "default",         "role": "member" },
-      { "org": "acme",           "team": "docs",            "role": "member" },
-      { "org": "codesense-docs", "team": "getting-started", "role": "read-only" }
-    ]
+  "generatedAt": "2026-11-08T09:30:00Z",
+  "context": { "org": "acme/team-context", "team": "dev", "detail": ["describe_setup", …] },
+  "machines": {
+    "total": 2,
+    "byStatus": { "connected": 1, "disconnected": 1 },
+    "items": [
+      { "machineId": "local", "label": "This Mac", "kind": "local", "remoteMcpControl": false, "status": "connected" },
+      { "machineId": "box", "label": "build box", "kind": "ssh", "remoteMcpControl": true, "status": "disconnected" }
+    ],
+    "truncated": false,
+    "detail": ["list_machines", "open_remote_tab"]
   },
-  "source_repos": [
-    { "team": "default", "owner": "acme", "repo": "codesense",
-      "localPath": "/Users/dev/code/codesense", "worktreeOpen": true }
-  ],
-  "sessions": [
-    { "id": "s-01", "runtime": "claude", "launch": "foreground", "unread": 0 },
-    { "id": "s-02", "runtime": "claude", "launch": "headless",   "unread": 3 }
-  ],
-  "routines": [
-    { "name": "builder-wake",  "armed": true,  "lastFired": "2026-10-05T11:22Z" },
-    { "name": "reviewer-wake", "armed": true,  "lastFired": null }
-  ],
-  "inboxes":  { "builder": 7, "reviewer": 1, "resolver": 0, "analyst": 2 }
+  "sessions": {
+    "total": 3,
+    "byState": { "running": 1, "needs-you": 1, "idle": 1 },
+    "byMachine": { "This Mac": 3 },
+    "needsYou": [{ "handle": "builder-DEMO-1", "displayName": "builder", "machine": "This Mac" }],
+    "notExited": [
+      { "handle": "builder-DEMO-1", "displayName": "builder", "state": "needs-you", "machine": "This Mac",
+        "story": "DEMO-1", "role": "builder", "launchedBy": "lead", "unread": 0 },
+      …
+    ],
+    "truncated": false,
+    "detail": ["who_am_i", "list_sessions", …]
+  },
+  "agents": {
+    "total": 5,
+    "byScope": { "builtin": 3, "team": 2 },
+    "saved": [{ "id": "builder", "name": "Builder", "runtime": "claude", "scope": "team", "team": "dev" }, …],
+    "truncated": false,
+    "detail": ["agent_list", "agent_get"]
+  },
+  "routines": {
+    "total": 3,
+    "enabled": 2,
+    "needsYou": 1,
+    "lastRunByStatus": { "failed": 1 },
+    "items": [
+      { "id": "builder-wake", "name": "Wake the Builder", "team": "dev", "enabled": true,
+        "runs_on": "one_mac", "armed_here": true, "schedule_in_words": "every 30 minutes",
+        "next_run_at": "2026-11-08T10:00:00Z", "last_run": { "status": "failed", "reason": "exit 1", … },
+        "needs_you": true },
+      …
+    ],
+    "truncated": false,
+    "detail": ["routine_list", "routine_get", "routine_runs", "routine_run"]
+  },
+  "inbox": {
+    "team": "acme/team-context:dev",
+    "humanUnread": 2,
+    "agentsWithUnread": [
+      { "handle": "reviewer-DEMO-1", "displayName": "reviewer", "unread": 1,
+        "oldestUnreadAt": "2026-11-08T09:12:00Z", "state": "idle" }
+    ],
+    "note": "…",
+    "detail": ["who_am_i", "inbox_list", …]
+  },
+  "roleQueues": {
+    "team": "acme/team-context:dev",
+    "roles": [
+      { "role": "builder", "pending": 7, "claimed": 1, "accepted": 0, "acknowledged": 0, "liveInstances": 1 },
+      { "role": "reviewer", "pending": 1, "claimed": 0, "accepted": 0, "acknowledged": 0, "liveInstances": 1 }
+    ],
+    "withUnclaimedWork": ["builder", "reviewer"],
+    "detail": ["role_state", "send_role_message", "register_role"]
+  },
+  "workspaces": {
+    "total": 1,
+    "open": [
+      { "displayName": "DEMO-1", "kind": "story", "storyId": "DEMO-1", "repo": "acme/sample-source-repo",
+        "branch": "feat/DEMO-1", "worktreePath": "…", "key": "…", "host": "This Mac", "tabs": 2, "liveTabs": 2 }
+    ],
+    "truncated": false,
+    "detail": ["get_viewer_state", "list_sessions", "list_worktrees", "open_workspace"]
+  },
+  "docs": {
+    "org": "codesense/docs",
+    "team": "getting-started",
+    "conceptsGuide": "…/getting-started/content/concepts/README.md",
+    "startHere": "…/getting-started/content/START-HERE.md",
+    "howToRead": "…",
+    "bundledCommit": "…",
+    "placedCommit": "…",
+    "state": "…",
+    "detail": ["codesense_overview", "query_context", "update_codesense_docs"]
+  }
 }</code></pre>
       </section>
 
@@ -408,19 +455,22 @@
         <h2>When overview is enough on its own</h2>
         <ul>
           <li>
-            <strong>Any read of structure.</strong> "Which teams does this user have?" — right
-            there.
+            <strong>Any read of state.</strong> "Who needs me?", "Which machines are down?" —
+            right there.
           </li>
           <li>
-            <strong>Routing a message.</strong> You know the role queues exist and have depth;
+            <strong>Routing a message.</strong> <code>roleQueues</code> shows each role's pending
+            work;
             <code>send_role_message</code> takes it from there.
           </li>
-          <li><strong>Picking the active team.</strong> It's named — no second call to confirm.</li>
+          <li><strong>Knowing the active team.</strong> <code>context</code> names it — no second call to confirm.</li>
         </ul>
         <p>
           When <strong>not</strong> enough: you need per-item detail — every story in the pipeline,
           every message in an inbox, every field of one agent. Then search for the right verb
           (<code>query_context</code>, <code>inbox_list</code>, <code>agent_get</code>) and call it.
+          For other orgs, teams and bound source repos, call <code>describe_setup</code>,
+          <code>list_orgs_teams</code> or <code>list_source_repos</code>.
         </p>
       </section>
 

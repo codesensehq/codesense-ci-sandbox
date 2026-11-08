@@ -3,6 +3,8 @@ title: "DAG transitions through 'stopping' without a reload"
 type: story
 story_id: DEMO-5
 status: blocked
+priority: p2
+blocked_reason: "Waiting on a design decision: animate the stopping state, or just swap the colour?"
 sub_epic: per-agent-kill-switch
 parent_epic: DEMO
 stream: frontend
@@ -10,7 +12,7 @@ depends_on: [DEMO-1]
 source_repo: acme/sample-source-repo
 sprint: FAKE-S1
 points: 3
-author: "Seeded demo. Blocked on a design decision: do we animate the stopping state, or just swap the colour?"
+assigned_to: builder
 ---
 
 ## Purpose

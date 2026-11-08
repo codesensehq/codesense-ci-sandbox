@@ -67,11 +67,9 @@ A routine with a `role_pending` trigger fires when a message is queued for a rol
 >
 > A Claude Code session hears new mail on its own: an idle one starts a turn, and a busy one hears at its next step. It's told how many messages wait and calls `read_messages`. This works on your Mac and on a remote machine.
 
-A session that can't hear mail on its own isn't told anything. Another agent can nudge it with `send_to_session`, or a routine with an `inbox_idle` trigger can wake it.
+With Codex 0.159.3 or a newer 0.x release, Codex agents hear new mail on their own too, on your Mac and on a remote machine: an idle one starts a turn, and a working one hears it at its next tool call or prompt.
 
-> **Coming: Codex inbox delivery**
->
-> Codex agents hearing new mail on their own, the way Claude Code agents do.
+A session that can't hear mail on its own isn't told anything. Another agent can nudge it with `send_to_session`, or a routine with an `inbox_idle` trigger can wake it.
 
 The full guide ships in the app's docs: **Inboxes, triage, workers → Messages**.
 

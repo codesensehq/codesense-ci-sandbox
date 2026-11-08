@@ -30,10 +30,6 @@ For an HTML story, the same fields go in meta tags: `cs:story-id`, `cs:source-re
 >
 > Ask an agent launched from CodeSense to run `validate_story` on the file. It reports `MISSING_SOURCE_REPO`, `UNKNOWN_SOURCE_REPO`, `INVALID_TYPE`, `INVALID_STATUS`, `DUPLICATE_STORY_ID`, `UNRESOLVABLE_DEPENDS_ON` and `UNPARSEABLE_FRONTMATTER`.
 
-> **Coming: configurable work-item types**
->
-> Work-item types beyond story, bug and spike, set per team.
-
 ## A page action says `denied: write budget`
 
 A runaway guard stopped the page after a large batch or a burst of writes in one render. Reload the page to reset it. If an agent wrote the page, ask it to batch fewer writes per click.
@@ -44,11 +40,7 @@ This appears when a story's repo is listed for your team, but CodeSense doesn't 
 
 ## A CLI I typed myself doesn't see the team's context
 
-An agent you launch from CodeSense gets your team's context (`CLAUDE.md`, `.claude/`, skills) copied into its worktree before it starts. A `claude`, `codex` or `opencode` you type yourself in a terminal tab gets only what the worktree already holds. Launch the agent from CodeSense instead, or have an agent call `hydrate_worktree` to copy the context in.
-
-> **Coming: a context-landing indicator**
->
-> A terminal that shows when context is still landing, or holds the first prompt until it has.
+An agent you launch from CodeSense gets your team's context (`CLAUDE.md`, `.claude/`, skills) copied into its worktree before it starts. A `claude`, `codex` or `opencode` you type yourself in a terminal tab gets only what the worktree already holds. Launch the agent from CodeSense instead, or have an agent call `hydrate_worktree` to copy the context in. A command typed in the first second or two can run before `.claude/` is written; see [Your own tools](your-own-tools.md).
 
 ## An agent says "CodeSense is not running"
 

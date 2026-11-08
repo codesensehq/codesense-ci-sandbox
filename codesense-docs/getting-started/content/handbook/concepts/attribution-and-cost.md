@@ -22,11 +22,7 @@ Per story, you also see how much of the change agents wrote and how much people 
 
 > **Note**
 >
-> Attribution notes are local. They never leave your machine unless you choose to share them.
-
-> **Coming: attribution on remote machines**
->
-> Lines traced on your Linux boxes the way they are on your Mac: the session, the model and the cost behind each one. The same tracking comes with your agents to cloud agent platforms like Coder.
+> Attribution notes are local. They never leave your machine unless you choose to share them. Lines are traced for Claude Code and Codex agents that run on your Mac.
 
 ## The session record
 

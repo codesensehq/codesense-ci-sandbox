@@ -88,8 +88,9 @@
             <strong>Remote</strong> — PTY under the terminal server on the remote
             account. Survives CodeSense quit, your Mac sleeping, your Mac rebooting,
             and your Wi-Fi dropping out. Does <em>not</em> survive the remote machine
-            rebooting or the terminal server being replaced (after an update,
-            CodeSense reopens the machine's tabs as fresh shells).
+            rebooting or the terminal server being updated or restarted (after either,
+            CodeSense reopens the machine's tabs as fresh shells, and relaunches Agents with
+            <code>resumeAfterRestart</code>).
           </li>
         </ul>
       </section>

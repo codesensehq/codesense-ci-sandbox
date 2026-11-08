@@ -32,9 +32,13 @@ fi
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch" "$root/src-tauri/resources/.git-ai.tmp.$$"' EXIT
 # -q ignores ~/.curlrc, and no Authorization header is ever sent, so no credential follows the CDN redirect.
+# Transient failures are retried (scripts/lib/download-retry.sh); a 404 or 401 returns at once, so the
+# private-repository fallback starts without waiting. Either way the SHA-256 check below still applies.
+# shellcheck source=lib/download-retry.sh
+. "$root/scripts/lib/download-retry.sh"
 status=0
-code="$(curl -q --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --tlsv1.2 \
-  --retry 3 --write-out '%{http_code}' --output "$scratch/$asset" "$url")" || status=$?
+download_with_retry "$scratch/$asset" "$url" --proto '=https' --proto-redir '=https' --tlsv1.2 || status=$?
+code=$DOWNLOAD_HTTP_CODE
 if (( status != 0 )); then
   # Remove this gh fallback once the git-ai repository is public; the anonymous download then covers everyone.
   if [[ "$code" != 404 && "$code" != 401 ]]; then

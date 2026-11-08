@@ -65,12 +65,4 @@ repos: [ledgerline/web, ledgerline/api]
 
 In the app, **Configure epic repos** in the epic's terminal bar opens **Configure repos**, where you add or remove team repos. It opens on its own the first time you open an epic with no repos. Agents can do the same with the MCP tools `read_epic_repos` and `set_epic_repos`. Writing the list works for markdown epic docs only.
 
-> **Coming: a verified epic workspace**
->
-> One epic workspace with a writable worktree per listed repo on one integration branch, so a single agent can change `api` and `web` together.
-
-> **Coming: a tested cross-repo dependency**
->
-> Dependencies that cross repos, such as an `api` story blocking a `web` story, confirmed through readiness.
-
 The full guide ships in the app's docs: **The model → Source repos**.

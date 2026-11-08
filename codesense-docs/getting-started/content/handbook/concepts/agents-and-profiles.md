@@ -63,10 +63,6 @@ Your context and stories are files, not agent state. So you can move a story fro
 
 Whichever agent you run in a worktree terminal, your team's context is already there as plain files. It reads them the way it reads any file. One-click launch and the MCP bridge wiring are built in for the three agents above, and so is the status dot (in Beta).
 
-> **Coming: an attention signal for other agents**
->
-> The "needs you" status for agents other than the three built in.
-
 The full guide ships in the app's docs: **Agents → agent.yaml**.
 
 ## Roles and role icons

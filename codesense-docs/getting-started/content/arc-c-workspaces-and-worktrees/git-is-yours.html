@@ -118,9 +118,13 @@
         <p style="max-width: 62ch; color: var(--cs-muted-fg)">
           Every commit, every branch, every push in your source repo comes from a process
           <em>you</em> control — a Builder agent on your Mac, or your terminal, with your
-          credentials. CodeSense runs git only to set up and read your worktrees: it fetches,
-          adds and removes worktrees, reads status and history, and keeps the copies it makes
-          out of git through the clone's <code>.git/info/exclude</code>. It never authors a
+          credentials. CodeSense runs git to set up, read and refresh your worktrees. On this Mac it adds and removes worktrees from local refs, without fetching. It
+          fetches with your own credentials into remote-tracking refs to read change history and to
+          check a workspace before <code>move_workspace</code> moves it, and
+          <code>remote_workspace_fetch</code> brings a machine's commits home, creating or
+          fast-forwarding a local branch (and a clean checkout of it) when that's safe. On a remote machine the terminal server
+          clones and fetches from a copy your Mac sends, so your git keys stay on your Mac. It keeps the copies it makes out of git through
+          the clone's <code>.git/info/exclude</code>. It never authors a
           commit, pushes, merges or rewrites history; that work is yours. This is deliberate, and it changes how you reason
           about who did what.
         </p>
@@ -130,12 +134,13 @@
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 640 240"
             role="img"
-            aria-label="Two columns: left column labelled CODESENSE shows directory and index icons; right column labelled YOUR AGENT shows a terminal with git commands. An arrow from CodeSense to the agent is labelled 'invoke'; no arrow goes from CodeSense directly to the repo."
+            aria-label="Two columns: left column labelled CODESENSE lists what it owns and the git command it runs that adds files to your working tree, git worktree add; right column labelled YOUR AGENT shows a terminal with git fetch, commit and push. An arrow from CodeSense to the agent is labelled 'invoke'."
           >
-            <title>Arc C — CodeSense invokes the agent; the agent runs git</title>
+            <title>Arc C — CodeSense adds worktrees; the agent runs the rest of git</title>
             <desc>
-              CodeSense owns workspace handles, the worktree index, and the hydration set. The
-              agent, which the user owns, is the one that executes git commands against the repo.
+              CodeSense owns workspace handles, the worktree index, and the hydration set, and runs
+              git worktree add from local refs. The agent, which the user owns, fetches, commits and
+              pushes.
             </desc>
             <style>
               .arcCg-surface {
@@ -193,7 +198,7 @@
               <text class="arcCg-mono" x="12" y="78">· worktree index</text>
               <text class="arcCg-mono" x="12" y="96">· hydration set</text>
               <text class="arcCg-mono" x="12" y="114">· routines, inboxes</text>
-              <text class="arcCg-muted" x="12" y="140">never shells to git</text>
+              <text class="arcCg-mono" x="12" y="140">$ git worktree add …</text>
             </g>
 
             <!-- Invoke edge -->
@@ -227,13 +232,12 @@
               <text class="arcCg-muted" x="12" y="18">YOUR AGENT</text>
               <text class="arcCg-text" x="12" y="38">What it does</text>
               <text class="arcCg-mono" x="12" y="60">$ git fetch origin</text>
-              <text class="arcCg-mono" x="12" y="78">$ git worktree add …</text>
-              <text class="arcCg-mono" x="12" y="96">$ git commit -m …</text>
-              <text class="arcCg-mono" x="12" y="114">$ git push</text>
+              <text class="arcCg-mono" x="12" y="78">$ git commit -m …</text>
+              <text class="arcCg-mono" x="12" y="96">$ git push</text>
               <text class="arcCg-muted" x="12" y="140">your creds · your audit</text>
             </g>
           </svg>
-          <figcaption id="split-cap">CodeSense owns the index; your agent owns the git</figcaption>
+          <figcaption id="split-cap">CodeSense adds worktrees; your agent fetches, commits and pushes</figcaption>
         </figure>
       </section>
 
@@ -243,8 +247,8 @@
         <p>
           Committing and pushing from inside an app would mean borrowing your signing keys and
           your branch protections, and taking the blame when something went sideways. CodeSense
-          stays on the correct side of a bright line: for anything that changes history or
-          leaves your machine, it <em>asks</em> an agent to do the work. The agent is a process you launched, in a terminal
+          stays on the correct side of a bright line: for anything that writes history (a commit,
+          a merge, a rebase) or pushes it to a remote, it <em>asks</em> an agent to do the work. The agent is a process you launched, in a terminal
           you own, with the identity you'd use at the command line. The git operation is
           indistinguishable from what you'd have run yourself.
         </p>
@@ -285,9 +289,9 @@
             <h3>CodeSense does not</h3>
             <ul>
               <li>
-                <strong>Author a commit.</strong> It runs <code>git fetch</code>,
-                <code>git worktree add</code> and read-only commands like status, never
-                <code>git commit</code>.
+                <strong>Author a commit.</strong> It runs <code>git worktree add</code> and
+                <code>remove</code>, read-only commands, and the fetches and branch updates above;
+                never <code>git commit</code>.
               </li>
               <li>
                 <strong>Hold git credentials.</strong> Your SSH keys, your PATs, your signing keys
@@ -303,7 +307,7 @@
               </li>
               <li>
                 <strong>Touch the source repo without being invited.</strong> It only creates a
-                worktree when a workspace is opened against a story.
+                worktree when a workspace is opened against a story, and fetches only as above.
               </li>
             </ul>
           </article>
@@ -314,23 +318,21 @@
       <section data-search="Who runs the worktree creation git commands" id="who-runs">
         <h2>Then who runs <code>git worktree add</code>?</h2>
         <p>
-          CodeSense does, and it is the one place it runs git that changes anything on disk. The
-          commands worktree creation needs (<code>git fetch</code> when the remote is reachable,
-          then <code>git worktree add</code>) run on your Mac as you, with your shell, your
-          credentials and your git config, through the <strong>host-agent</strong> CodeSense
-          installs under your user account (on a remote machine, its terminal server). Setup
-          commands from <code>worktree.yaml</code> run the same way. None of them commits or
+          CodeSense does, and it is how a worktree's files first land on your disk. The
+          app runs <code>git worktree add</code> on your Mac as you, with your git config, from
+          local refs. Fetch first with your agent. On a remote machine the terminal server adds the
+          worktree from the copy your Mac sends. Setup commands from <code>worktree.yaml</code> run on
+          the machine that holds the worktree. None of them commits or
           pushes.
         </p>
         <pre><code># What CodeSense invokes
 open_workspace { target: 'story', story_id: 'DEMO-1' }
 
 # What then runs on your Mac, as you
-git -C ~/code/sample-source-repo fetch origin
 git -C ~/code/sample-source-repo \
     worktree add ../sample-source-repo-wt/feat-DEMO-1 feat/DEMO-1</code></pre>
         <p style="color: var(--cs-muted-fg); font-size: var(--cs-docs-text-sm)">
-          The host-agent is documented in
+          Remote machines are documented in
           <a href="../arc-d-terminals-and-machines/index.html">Arc D</a>; sync is covered in
           <a href="../arc-k-sync/index.html">Arc K</a>, which walks the parts of the loop where
           an agent you ask pulls and pushes the context repo with <code>git</code>.
@@ -341,12 +343,13 @@ git -C ~/code/sample-source-repo \
       <section data-search="Audit trail — who committed what" id="audit">
         <h2>Your audit trail stays yours</h2>
         <p>
-          Every commit in your source repo is authored by the identity whose agent made it: your git
-          config (for interactive sessions in a terminal tab), or the agent's configured
-          <code>git.user</code> block in its <code>agent.yaml</code> (for routine-driven builds).
-          The CodeSense app never appears as an author anywhere in your history. If you want "Amelia
-          built this" to literally mean Amelia, you set Amelia's git identity in
-          <code>agents/amelia/agent.yaml</code> and the commits say so.
+          Every commit in your source repo is authored by whatever git identity the agent's
+          environment has (your git config, or <code>GIT_AUTHOR_*</code> in the agent's
+          <code>env</code>). The CodeSense app never appears as an author anywhere in your history.
+          If you want "Amelia built this" to literally mean Amelia, set
+          <code>GIT_AUTHOR_NAME</code> and <code>GIT_AUTHOR_EMAIL</code> (and
+          <code>GIT_COMMITTER_NAME</code> and <code>GIT_COMMITTER_EMAIL</code>) in the
+          <code>env</code> of <code>agents/amelia/agent.yaml</code> and the commits say so.
         </p>
         <div class="arcC-callout">
           <h3>Signing keys</h3>
@@ -372,8 +375,9 @@ git -C ~/code/sample-source-repo \
             run against the agent's shell session the way they would yours.
           </li>
           <li>
-            <strong>GitHub Actions attribute to the agent.</strong> Build artefacts and PR comments
-            show the identity in <code>agent.yaml</code>, not a generic "CodeSense bot".
+            <strong>Your host attributes the work to you or your agent.</strong> Commits show the
+            identity the agent committed with; pushes, PR comments and Actions runs show the account
+            whose credentials the agent used. Never a generic "CodeSense bot".
           </li>
           <li>
             <strong>Repo kill switch.</strong> If you want an agent to stop touching a repo, revoke
@@ -395,8 +399,8 @@ git -C ~/code/sample-source-repo \
       >
         <h2>Try this now</h2>
         <p style="color: var(--cs-muted-fg); max-width: 62ch">
-          List the worktrees CodeSense manages. Each one's fetch and <code>worktree add</code> ran
-          in your name; no commit or push happened. The branch and author are both yours.
+          List the worktrees CodeSense manages. Each one's <code>worktree add</code> ran in your
+          name; no commit or push happened. The branch and author are both yours.
         </p>
         <cs-try-this
           verb="worktrees"
@@ -413,8 +417,8 @@ git -C ~/code/sample-source-repo \
           <summary><strong>Agent-side equivalent</strong></summary>
           <p style="color: var(--cs-muted-fg); margin: 8px 0 0">
             CodeSense surfaces the result of git operations through its own tools so agents and
-            dashboards don't shell out either. The underlying git is still yours — it ran under the
-            host-agent — but the summary is a plain JSON response.
+            dashboards don't shell out either. The underlying git ran as you, but the summary is a
+            plain JSON response.
           </p>
           <pre><code>// Agents inspect the fleet without touching git
 list_worktrees {}
@@ -442,7 +446,7 @@ open_terminal_tab { workspaceId: 'story:DEMO-1' }</code></pre>
       >
         Edge cases &amp; reference →
         <a href="../mcp-explorer.html#tool/list_worktrees">list_worktrees</a> ·
-        <a href="../arc-d-terminals-and-machines/index.html">Arc D · the host-agent</a> ·
+        <a href="../arc-d-terminals-and-machines/index.html">Arc D · machines</a> ·
         <a href="./troubleshooting.html">troubleshooting →</a>
       </p>
     </main>

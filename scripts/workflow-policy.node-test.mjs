@@ -111,6 +111,33 @@ for (const [name, fixture, error] of badFixtures) {
 }
 
 test("accept the valid fixture", () => assert.deepEqual(workflowPolicy(good), []));
+
+const afterFailure = (condition, run = "cargo test --doc") => `      - id: compile
+        run: cargo test --no-run
+      - name: Doctests
+        if: ${condition}
+        run: ${run}
+`;
+test("accept a cargo step after a failure once an earlier step must have succeeded", () => {
+  for (const gate of [
+    "steps.compile.outcome == 'success'",
+    "steps.compile.conclusion == 'success'",
+    "steps.compile.outcome=='success'",
+  ])
+    assert.deepEqual(
+      workflowPolicy(good + afterFailure(`(success() || failure()) && ${gate}`)),
+      [],
+    );
+  for (const condition of [
+    "${{ always() && steps.compile.outcome == 'success' }}",
+    "(always() && steps.compile.outcome == 'success')",
+  ])
+    assert.deepEqual(workflowPolicy(good + afterFailure(condition)), []);
+});
+test("a step that only mentions cargo in a tool or path name is not a cargo step", () => {
+  for (const run of ["cargo-nextest --version", "ls ~/.cargo/bin"])
+    assert.deepEqual(workflowPolicy(good + afterFailure("always()", run)), []);
+});
 for (const [name, fixture, error] of [
   ["bracket secret reference", good + `      - run: echo "\${{ secrets['TOKEN'] }}"\n`, /secrets/],
   ["whole secret context", good + '      - run: echo "${{ toJSON(secrets) }}"\n', /secrets/],
@@ -150,6 +177,34 @@ for (const [name, fixture, error] of [
     "no cancellation",
     good.replace("cancel-in-progress: true", "cancel-in-progress: false"),
     /concurrency/,
+  ],
+  // A failed setup step once let doctests compile without the sidecars, hiding the real failure.
+  ["cargo after a failure", good + afterFailure("success() || failure()"), /runs cargo after/],
+  ["cargo under always()", good + afterFailure("always()"), /runs cargo after/],
+  [
+    "cargo gated on a later step",
+    good + afterFailure("always() && steps.later.outcome == 'success'") + "      - id: later\n",
+    /runs cargo after/,
+  ],
+  [
+    "cargo gated only on one side of ||",
+    good + afterFailure("always() || steps.compile.outcome == 'success'"),
+    /runs cargo after/,
+  ],
+  [
+    "cargo gated under a top-level ||",
+    good + afterFailure("always() || x && steps.compile.outcome == 'success'"),
+    /runs cargo after/,
+  ],
+  [
+    "cargo gated on a negated success",
+    good + afterFailure("always() && !(steps.compile.outcome == 'success')"),
+    /runs cargo after/,
+  ],
+  [
+    "cargo after a shell separator",
+    good + afterFailure("always()", "cd src-tauri && cargo test --doc"),
+    /runs cargo after/,
   ],
 ]) {
   test(`reject ${name}`, () => assert.match(workflowPolicy(fixture).join("\n"), error));
@@ -417,7 +472,9 @@ test("Rust jobs preserve package coverage for nextest and doctests and always up
     assert.match(docs.run, /\$RUST_PACKAGES/);
     assert.deepEqual(packages(docs.run), []);
     assert.equal(docs["timeout-minutes"], 15);
-    assert.equal(docs.if, "success() || failure()");
+    // Doctests run after failed tests, but only once the test build ran and succeeded.
+    assert.equal(docs.if, "(success() || failure()) && steps.compile.outcome == 'success'");
+    assert.ok(runs.some((step) => step.id === "compile" && step.run.includes("--no-run")));
     assert.ok(steps.some((step) => step.run?.includes("--tool cargo-nextest")));
     const junit = steps.find((step) => step.with?.path === "target/nextest/ci/junit.xml");
     assert.equal(junit.if, "always()");

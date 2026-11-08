@@ -182,6 +182,7 @@ fn report_has_blocking(report: &Value) -> bool {
 struct TeamValidatorInputs {
     org: Option<crate::domain::Org>,
     valid_statuses: Vec<String>,
+    blocked_statuses: Vec<String>,
     field_schema: crate::commands::field_schema::FieldSchema,
     epic_repos: Vec<String>,
 }
@@ -203,12 +204,13 @@ fn load_team_validator_inputs_for(
 ) -> TeamValidatorInputs {
     let org = crate::domain::load_org(org_slug, org_root, None).org;
     let content_dir = crate::context_repo::path_to_team_content_dir(org_root, team);
-    let valid_statuses =
-        crate::commands::status_taxonomy::load_status_taxonomy_from_for(&content_dir, scope)
-            .states
-            .into_iter()
-            .map(|s| s.id)
-            .collect();
+    let taxonomy =
+        crate::commands::status_taxonomy::load_status_taxonomy_from_for(&content_dir, scope);
+    let blocked_statuses = taxonomy
+        .states_for_role(crate::commands::status_taxonomy::StatusRole::Blocked)
+        .map(|s| s.id.clone())
+        .collect();
+    let valid_statuses = taxonomy.states.into_iter().map(|s| s.id).collect();
     let field_schema =
         crate::commands::field_schema::load_field_schema_from_for(&content_dir, scope);
     let epic_repos = story_path
@@ -217,6 +219,7 @@ fn load_team_validator_inputs_for(
     TeamValidatorInputs {
         org,
         valid_statuses,
+        blocked_statuses,
         field_schema,
         epic_repos,
     }
@@ -265,6 +268,7 @@ pub(crate) async fn validate_story_in_context_for<R: tauri::Runtime>(
     let TeamValidatorInputs {
         org,
         valid_statuses,
+        blocked_statuses,
         field_schema,
         epic_repos,
     } = {
@@ -333,6 +337,7 @@ pub(crate) async fn validate_story_in_context_for<R: tauri::Runtime>(
         epic_repos: &epic_repos,
         summary_headings: &summary_headings,
         valid_statuses: &valid_statuses,
+        blocked_statuses: &blocked_statuses,
         story_id_index,
         assignee_resolver,
         schema: &field_schema,
@@ -591,6 +596,7 @@ mod tests {
     fn validator_cfg<'a>(repos: &'a [String]) -> story_authoring::ValidatorConfig<'a> {
         static HEADINGS: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
         static STATUSES: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+        static BLOCKED: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
         static SCHEMA: std::sync::OnceLock<crate::commands::field_schema::FieldSchema> =
             std::sync::OnceLock::new();
         story_authoring::ValidatorConfig {
@@ -603,6 +609,12 @@ mod tests {
                 crate::commands::pipeline_scanner::VALID_STATUSES
                     .iter()
                     .map(|s| s.to_string())
+                    .collect()
+            }),
+            blocked_statuses: BLOCKED.get_or_init(|| {
+                crate::commands::status_taxonomy::default_taxonomy()
+                    .states_for_role(crate::commands::status_taxonomy::StatusRole::Blocked)
+                    .map(|s| s.id.clone())
                     .collect()
             }),
             story_id_index: &story_authoring::NoStoryIdIndex,
@@ -730,6 +742,28 @@ mod tests {
             Some(path),
             &validator_cfg_with_epic(repos, &epic_repos),
         )
+    }
+
+    /// `blocked_statuses` are the ids the team's taxonomy gives the blocked role.
+    #[test]
+    fn blocked_statuses_come_from_the_team_taxonomy() {
+        let org = tempfile::tempdir().unwrap();
+        let content = crate::context_repo::path_to_team_content_dir(org.path(), "core");
+        std::fs::create_dir_all(&content).unwrap();
+        std::fs::write(
+            content.join("status-taxonomy.yml"),
+            "states:\n\
+             \x20 - id: shipped\n    role: done\n\
+             \x20 - id: parked\n    role: blocked\n",
+        )
+        .unwrap();
+        let inputs = load_team_validator_inputs("acme".into(), org.path(), "core", None);
+        assert_eq!(inputs.blocked_statuses, ["parked"]);
+        assert!(inputs.valid_statuses.iter().any(|s| s == "parked"));
+
+        let defaults =
+            load_team_validator_inputs("acme".into(), Path::new("/nonexistent-org"), "core", None);
+        assert_eq!(defaults.blocked_statuses, ["blocked"]);
     }
 
     fn scanned_story<'t>(

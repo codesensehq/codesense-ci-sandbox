@@ -75,8 +75,8 @@
         <h1>One parent, many children, resolved nearest-first.</h1>
         <p style="color: var(--cs-muted-fg); max-width: 68ch">
           Teams in CodeSense form a tree, not a web. A team can declare one
-          <code>parent_team</code>, and its context becomes its own content plus everything
-          its parents hold: agents, routines, skills, docs. Inheritance is decided
+          <code>parent_team</code>, and its context becomes its own content plus the files its
+          parents choose to share (their <code>config/sharing.yml</code>). Inheritance is decided
           <strong>per file</strong>. Folders are shared and merged, never owned by one team;
           for each file the closest team wins, so your team's file beats a parent's at the
           same path. Chain depth caps at 64.
@@ -195,7 +195,7 @@
           <li>
             <strong>Resolve each file, closest first.</strong> For every file path, the
             team's own content is checked first, then each parent in order. The first team
-            that has the file supplies it.
+            that has the file, and shares it down to you, supplies it.
           </li>
           <li>
             <strong>Merge folders, never own them.</strong> If <code>default</code> has

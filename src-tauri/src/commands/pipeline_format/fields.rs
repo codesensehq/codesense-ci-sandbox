@@ -94,7 +94,7 @@ pub const STORY_FIELDS: &[StoryField] = &[
         yaml: "status",
         cs_meta: "cs:status",
         kind: FieldKind::Text,
-        description: "Pipeline column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
+        description: "The story's pipeline stage, which is also its board column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
         enum_values: &[],
         required: false,
         role: FieldRole::Typed,
@@ -103,7 +103,7 @@ pub const STORY_FIELDS: &[StoryField] = &[
         yaml: "type",
         cs_meta: "cs:type",
         kind: FieldKind::Text,
-        description: "Document type. story, bug and spike make the file a pipeline story; any other value, or none, keeps it a plain document.",
+        description: "Document type. One of the listed values makes the file a pipeline story; any other value, or none, keeps it a plain document.",
         enum_values: super::PIPELINE_DOCUMENT_TYPES,
         required: true,
         role: FieldRole::Typed,
@@ -238,7 +238,7 @@ pub const STORY_FIELDS: &[StoryField] = &[
         yaml: "points",
         cs_meta: "cs:points",
         kind: FieldKind::Number,
-        description: "Estimate in points. A non-numeric value is ignored; a value off the scale 1, 2, 3, 5, 8, 13 is advisory.",
+        description: "Estimate in points, on the Fibonacci scale up to 13. A non-numeric value is ignored; an off-scale value is advisory.",
         enum_values: &[],
         required: false,
         role: FieldRole::Typed,
@@ -247,7 +247,7 @@ pub const STORY_FIELDS: &[StoryField] = &[
         yaml: "assigned_to",
         cs_meta: "cs:assigned-to",
         kind: FieldKind::Text,
-        description: "Who the story is assigned to (a username). A login missing from the org roster is advisory.",
+        description: "Who the story is assigned to: a person's login or an agent id. A login missing from the org roster is advisory.",
         enum_values: &[],
         required: false,
         role: FieldRole::Typed,
@@ -301,8 +301,44 @@ pub const STORY_FIELDS: &[StoryField] = &[
         yaml: "priority",
         cs_meta: "cs:priority",
         kind: FieldKind::Text,
-        description: "Priority, p0 (highest) to p4. Sorting also ranks words such as critical, high, medium and low.",
+        description: "Priority, where p0 is the highest. Sorting also ranks words such as critical, high, medium and low.",
         enum_values: &["p0", "p1", "p2", "p3", "p4"],
+        required: false,
+        role: FieldRole::Open,
+    },
+    StoryField {
+        yaml: "blocked_reason",
+        cs_meta: "cs:blocked-reason",
+        kind: FieldKind::Text,
+        description: "Why the story is blocked, for a board to show on its card. Set it while the status is a blocked one; with any other status, it is advisory.",
+        enum_values: &[],
+        required: false,
+        role: FieldRole::Open,
+    },
+    StoryField {
+        yaml: "wave",
+        cs_meta: "cs:wave",
+        kind: FieldKind::Number,
+        description: "Optional. The story's board wave, for a board to use instead of the wave it would compute from depends_on. A value that is not a positive whole number is advisory.",
+        enum_values: &[],
+        required: false,
+        role: FieldRole::Open,
+    },
+    StoryField {
+        yaml: "stream",
+        cs_meta: "cs:stream",
+        kind: FieldKind::Text,
+        description: "The work stream the story is in, for example frontend or backend, for a board to group by.",
+        enum_values: &[],
+        required: false,
+        role: FieldRole::Open,
+    },
+    StoryField {
+        yaml: "sub_epic",
+        cs_meta: "cs:sub-epic",
+        kind: FieldKind::Text,
+        description: "The sub-epic the story belongs to within its parent epic, for a board to group by.",
+        enum_values: &[],
         required: false,
         role: FieldRole::Open,
     },
@@ -416,7 +452,8 @@ mod tests {
     };
 
     /// The lists this table replaced, verbatim, so deriving them changed nothing
-    /// (except `subject_id` joining the known keys, matching HTML).
+    /// (except `subject_id` joining the known keys, matching HTML). The contract
+    /// also carries the open rows registered since.
     #[test]
     fn derived_lists_match_the_hand_kept_lists_they_replaced() {
         let old_name_map = [
@@ -452,7 +489,16 @@ mod tests {
             .copied()
             .filter(|n| !matches!(*n, "scope_context" | "scope_install"))
             .collect();
-        old_contract.extend(["title", "parent_epic", "epic", "priority"]);
+        old_contract.extend([
+            "title",
+            "parent_epic",
+            "epic",
+            "priority",
+            "blocked_reason",
+            "wave",
+            "stream",
+            "sub_epic",
+        ]);
         assert_eq!(METADATA_CONTRACT_FIELDS, old_contract.as_slice());
 
         let mut old_known: Vec<&str> = old_name_map.to_vec();
@@ -547,7 +593,7 @@ mod tests {
         }
     }
 
-    /// Open rows (`priority`, `parent_epic`, `epic`, `title`) yield the same key
+    /// Open rows (`priority`, `parent_epic`, `wave` and the rest) yield the same key
     /// from both formats and stay open tags, which is where the board reads them.
     #[test]
     fn open_rows_are_the_same_key_in_both_formats_and_stay_open_tags() {

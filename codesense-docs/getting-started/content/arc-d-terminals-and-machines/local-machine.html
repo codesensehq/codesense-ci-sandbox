@@ -13,7 +13,7 @@
   <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/local-machine">
     <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
     <main class="cs-main">
-      <section data-hero data-search="Local machine — this Mac — terminal and host-agent" id="hero">
+      <section data-hero data-search="Local machine — this Mac — terminal and the app process" id="hero">
         <p>
           <span class="cs-docs-chip" data-arc="D">Arc D · Local</span>
         </p>
@@ -58,10 +58,10 @@
         </ol>
       </section>
 
-      <section data-search="The host-agent — only runs locally" id="host-agent">
-        <h2>The host-agent</h2>
+      <section data-search="The app process — only runs locally" id="host-agent">
+        <h2>The app process</h2>
         <p>
-          The host-agent is a background process that runs on the Mac you run
+          The CodeSense app's own process runs on the Mac you run
           CodeSense on. It brokers resources no other process can — notably,
           exposing CodeSense's MCP server to agent CLIs you launch yourself in your own
           Terminal.app, and holding the file watchers for your context repos.
@@ -73,13 +73,13 @@
           <li>
             <strong>There is exactly one.</strong> It lives alongside your profile
             directory. It never runs on a remote machine — remote work gets its
-            parity from the terminal server (next page), not from a second host-agent.
+            parity from the terminal server (next page), not from a second copy of the app.
           </li>
           <li>
             <strong>If it's wedged,</strong> quit CodeSense and relaunch it first. If that
             doesn't help, <em>Restart terminal server</em> (or
-            <code>restart_terminal_server</code>) starts it fresh, and it ends every terminal
-            and agent running on it.
+            <code>restart_terminal_server</code>) starts the terminal server fresh, and that ends
+            every terminal and agent running on it.
           </li>
         </ul>
       </section>

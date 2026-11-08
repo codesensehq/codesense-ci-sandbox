@@ -378,5 +378,5 @@ for the result schema, collect the data, publish `{sessionId, payload}` with
 only on success; failure keeps the last good one. Never put credentials in a result.
 Limits: schema 32 KiB, payload 1 MiB.
 
-Coming later: routines armed on a machine's own server, so they fire while the desktop is
-closed.
+To fire while the desktop is closed, arm the routine on a machine with
+`routine_arm_on { id, machine: <machineId> }`: schedule triggers only, `one_mac`, no `budget_usd`.

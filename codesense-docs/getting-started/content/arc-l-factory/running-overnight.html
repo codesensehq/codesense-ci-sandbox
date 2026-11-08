@@ -208,9 +208,9 @@
         <h2>What makes overnight safe</h2>
         <ol>
           <li>
-            <strong>Routines don't need a human.</strong> <code>inbox_idle</code> triggers wake
-            agents from the running daemon; no interactive host-agent needed for the build + review
-            loop.
+            <strong>Routines don't need a human.</strong> <code>inbox_idle</code> and
+            <code>role_pending</code> triggers wake agents from the app while it's open (keep that
+            Mac awake); the build + review loop needs no interactive session.
           </li>
           <li>
             <strong>Escalations don't block the loop.</strong> If a Builder hits a frozen-spec
@@ -222,8 +222,9 @@
             and the next wake reclaims it.
           </li>
           <li>
-            <strong>Caps.</strong> Every routine honors a <code>maxConcurrent</code> and a per-hour
-            quota — the loop can't melt the Mac even if the inbox is deep.
+            <strong>Caps.</strong> Each routine has a <code>max_runtime</code> and an
+            <code>overlap</code> policy (coalesce, skip or queue a fire while one runs), and can set
+            <code>min_gap</code> and <code>max_wakes_per_day</code>. At most 25 routines are enabled on a Mac.
           </li>
         </ol>
       </section>

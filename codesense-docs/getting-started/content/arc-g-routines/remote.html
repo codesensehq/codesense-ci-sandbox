@@ -153,7 +153,7 @@
             viewBox="0 0 640 360"
             preserveAspectRatio="xMidYMid meet"
             role="img"
-            aria-label="One team routine. Each Mac decides whether to run it. each_mac fires on every Mac that armed it; one_mac fires on exactly one."
+            aria-label="One team routine. Each Mac decides whether to run it. each_mac fires on every Mac that turned it on; one_mac fires on exactly one."
           >
             <defs>
               <marker
@@ -202,14 +202,14 @@
               <text x="80" y="22" text-anchor="middle">Sam's MacBook</text>
               <text x="80" y="38" text-anchor="middle" class="sub">armed · fires at 09:00</text>
               <text x="80" y="56" text-anchor="middle" class="sub">his inbox, his context</text>
-              <text x="80" y="72" text-anchor="middle" class="sub">Mac asleep → skipped</text>
+              <text x="80" y="72" text-anchor="middle" class="sub">asleep → missed:N</text>
             </g>
             <g class="arcg-node" data-k="eachmac" transform="translate(240 190)">
               <rect width="160" height="90" rx="10" />
-              <text x="80" y="22" text-anchor="middle">Build box (remote)</text>
-              <text x="80" y="38" text-anchor="middle" class="sub">armed · always on</text>
-              <text x="80" y="56" text-anchor="middle" class="sub">remote-owned context</text>
-              <text x="80" y="72" text-anchor="middle" class="sub">never skips</text>
+              <text x="80" y="22" text-anchor="middle">Jo's Mac mini</text>
+              <text x="80" y="38" text-anchor="middle" class="sub">on · fires at 09:00</text>
+              <text x="80" y="56" text-anchor="middle" class="sub">own inbox, own context</text>
+              <text x="80" y="72" text-anchor="middle" class="sub">always awake</text>
             </g>
             <g class="arcg-node" data-k="mac" transform="translate(440 190)">
               <rect width="160" height="90" rx="10" />
@@ -238,13 +238,14 @@
         <p>
           A routine's YAML sits in the context repo and syncs with every teammate. The
           <strong>firing</strong>, though, is per Mac — because a Mac is where the wall clock ticks,
-          where the inbox lives, and where the agent spawns. Remote routines (ones that run on a
-          build box or a teammate's always-on machine) use the same YAML as local routines; the only
-          knobs that change are <code>runs_on</code> (the mode) and <code>armed_here</code> (this
-          Mac's local switch). The
+          where the inbox lives, and where the agent spawns. A shared job can also be armed on a
+          machine with <code>routine_arm_on</code>: that machine's terminal server fires it on its
+          own clock, whether or not any Mac is open. It uses the same YAML; it takes schedule
+          triggers only, runs <code>one_mac</code>, and has no <code>budget_usd</code>; arming one
+          with event triggers, <code>each_mac</code> or a budget is refused. The
           <a href="../arc-d-terminals-and-machines/parity-matrix.html">Arc-D parity matrix</a>
-          treats routine schedules as the main caveat row — remote scheduling is strictly better
-          than local for anything "always on".
+          treats routine schedules as the main caveat row — a machine-armed schedule keeps firing
+          while the desktop is closed, so use it for anything "always on".
         </p>
       </section>
 
@@ -254,28 +255,31 @@
           <div class="mode-card" data-m="each_mac">
             <h3><code>runs_on: each_mac</code></h3>
             <p>
-              A recipe each teammate turns on for their own Mac. Fires per Mac that armed it, each
+              A recipe each teammate turns on for their own Mac. Fires on each Mac that turned it on, each
               with its own schedule, its own history, and its own <code>{{last_run_summary}}</code>.
-              Starts <strong>off</strong> on every Mac — including the author's — unless the routine
-              ships with <code>enabled: true</code>.
+              Starts <strong>off</strong> on every Mac, the author's included, until that Mac's user
+              turns it on. A shared job converted to <code>each_mac</code> stays on for the Mac that
+              ran it.
             </p>
             <ul>
               <li>Use for per-person work: "my morning digest", "PRs waiting on me".</li>
               <li>Use for <code>inbox_idle</code> wakes (sessions are per Mac).</li>
-              <li>Use for sweeping remote fleets — one definition, N independent fires.</li>
             </ul>
           </div>
           <div class="mode-card" data-m="one_mac">
             <h3><code>runs_on: one_mac</code> (the default)</h3>
             <p>
-              A shared job that runs once for the team, from exactly one Mac — the one it was armed
-              on. Perfect for anything that must happen once (a Slack digest, a release-cut check),
-              and the thing that should move to the always-on remote box when you want "never
-              skipped".
+              A shared job that runs once for the team, from exactly one Mac or machine — the one it
+              was armed on. Perfect for anything that must happen once (a Slack digest, a release-cut check),
+              and the one to arm on an always-on machine when you want it to fire while the desktop
+              is closed.
             </p>
             <ul>
               <li>Use for team-wide must-fire schedules.</li>
-              <li>Arm it on the remote account for always-on behavior.</li>
+              <li>
+                Arm it on a machine with <code>routine_arm_on {id, machine: &lt;machineId&gt;}</code>
+                for always-on behavior.
+              </li>
               <li>
                 Switching the arming Mac is a
                 <code>routine_arm_on {id, machine: 'this_mac'}</code> from the target Mac.
@@ -359,17 +363,17 @@ revision: 1</code></pre>
       <section data-search="The per-Mac switch — routine_set_enabled" id="switch">
         <h2>The per-Mac switch</h2>
         <p>
-          <code>enabled</code> on a routine is a <strong>per-Mac</strong> field: it names whether
-          this Mac fires the routine. Flipping it is <code>routine_set_enabled</code>, which is a
-          local edit to the Mac's state (never a git change, never shared).
+          Whether this Mac fires a routine is a <strong>per-Mac</strong> setting, not a field in
+          <code>routine.yml</code>. <code>routine_set_enabled</code> pauses or resumes the routine on
+          this Mac only: a local edit to the Mac's state (never a git change, never shared).
         </p>
-        <pre><code>// Turn the routine on for THIS Mac
+        <pre><code>// Resume the routine on THIS Mac (for an each_mac recipe: Run on my Mac)
 routine_set_enabled { id: 'builder-wake', enabled: true }
 
-// Turn it off for THIS Mac — other Macs that armed it are unaffected
+// Pause it on THIS Mac — other Macs are unaffected
 routine_set_enabled { id: 'builder-wake', enabled: false }
 
-// Which Macs is it armed on? routine_get on each; each Mac answers for itself.
+// Where does it fire? routine_get on each Mac; each Mac answers for itself.
 routine_get { id: 'builder-wake' }
 //   → { ..., armed_here: true, next_run_at: "2026-10-06T19:05:00Z" }</code></pre>
         <p>
@@ -388,14 +392,14 @@ routine_get { id: 'builder-wake' }
         </p>
         <ul>
           <li>
-            <strong>Run a routine</strong> — ✓ local, ⚠ remote. Caveat: a routine fires in the
-            account that <em>owns</em> the triggering workspace. If you want "always on", own the
-            routine on the always-on machine.
+            <strong>Run a routine</strong> — ✓ local, ⚠ remote. Caveat: a routine fires where it is
+            armed: a Mac, or a machine's terminal server through <code>routine_arm_on</code>. If you
+            want "always on", arm the routine on the always-on machine.
           </li>
           <li>
-            <strong>Routine schedule (cron)</strong> — ✓ local, ⚠ remote. Local Macs skip fires
-            while asleep (standard Mac behavior); remote always-on boxes never skip. Workaround: own
-            must-fire schedules on the remote.
+            <strong>Routine schedule (cron)</strong> — ✓ local, ⚠ remote. Fires missed while the Mac was asleep or the app was closed are recorded as one skipped run; with <code>policy.missed: run_once</code>, one of them also runs as a catch-up.
+            A machine-armed routine applies the same policy. Workaround: arm must-fire schedules on
+            an always-on machine.
           </li>
           <li>
             <strong>Wake and timers</strong> — ✓ both. A remote session is woken, and its timers

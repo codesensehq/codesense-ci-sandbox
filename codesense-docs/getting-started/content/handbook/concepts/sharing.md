@@ -66,13 +66,6 @@ An agent that does the git can call `report_context_sync` to say how it
 went, so the status button shows it. Teammates then see the change as
 incoming, and it reaches their worktrees once they pull.
 
-> **Coming: agent-managed sharing**
->
->   Agents do the git, not you. An agent picks up your change and
->   commits it, or opens it for review, as your team's policy says, and
->   asks you when no policy covers it. Every teammate's CodeSense then pulls
->   the update automatically while it's running.
-
 The full guide ships in the app's docs: **Sync → Agent-driven git**.
 
 ## Invite a coworker
@@ -123,7 +116,3 @@ Both teams get platform’s rules. Each adds or overrides its own, and an epic c
 Publish a dashboard to share.codesense.ai and invite viewers by email; you can see and end every device that opened it. [Dashboards](dashboards.md#author-and-share) shows how.
 
 share.codesense.ai is for invited viewers only: there is no open sign-up.
-
-> **Coming: the engine on your own servers**
->
-> The engine on your own servers: the same sharing from your own server, reached through your own private network, so company data stays on company machines.

@@ -16,8 +16,9 @@ creates its worktree:
    your team has configured.
 2. Works out the branch: the story's `branch` field if set, otherwise the
    repo's branch prefix plus the story id (`feat/LL-214`).
-3. Fetches from the remote when it can, then runs `git worktree add` for that
-   branch. A new branch starts from the branch of the story's first
+3. Runs `git worktree add` for that branch from local refs. On your Mac it never
+   fetches, so fetch first if the branch or its base is new on the remote. A
+   remote machine gets its copy from your Mac's clone, so the same applies. A new branch starts from the branch of the story's first
    `depends_on` story, or else from the repo's start point (`main` unless you
    set one).
 4. Links the worktree to the story and opens its terminal.

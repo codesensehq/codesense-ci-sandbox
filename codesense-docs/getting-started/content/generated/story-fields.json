@@ -4,7 +4,7 @@
       "yaml": "status",
       "csMeta": "cs:status",
       "kind": "text",
-      "description": "Pipeline column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
+      "description": "The story's pipeline stage, which is also its board column: one of the team's statuses (status-taxonomy.yml). Free text; an unusual value is advisory.",
       "enumValues": [],
       "required": false
     },
@@ -12,7 +12,7 @@
       "yaml": "type",
       "csMeta": "cs:type",
       "kind": "text",
-      "description": "Document type. story, bug and spike make the file a pipeline story; any other value, or none, keeps it a plain document.",
+      "description": "Document type. One of the listed values makes the file a pipeline story; any other value, or none, keeps it a plain document.",
       "enumValues": [
         "story",
         "bug",
@@ -120,7 +120,7 @@
       "yaml": "points",
       "csMeta": "cs:points",
       "kind": "number",
-      "description": "Estimate in points. A non-numeric value is ignored; a value off the scale 1, 2, 3, 5, 8, 13 is advisory.",
+      "description": "Estimate in points, on the Fibonacci scale up to 13. A non-numeric value is ignored; an off-scale value is advisory.",
       "enumValues": [],
       "required": false
     },
@@ -128,7 +128,7 @@
       "yaml": "assigned_to",
       "csMeta": "cs:assigned-to",
       "kind": "text",
-      "description": "Who the story is assigned to (a username). A login missing from the org roster is advisory.",
+      "description": "Who the story is assigned to: a person's login or an agent id. A login missing from the org roster is advisory.",
       "enumValues": [],
       "required": false
     },
@@ -176,7 +176,7 @@
       "yaml": "priority",
       "csMeta": "cs:priority",
       "kind": "text",
-      "description": "Priority, p0 (highest) to p4. Sorting also ranks words such as critical, high, medium and low.",
+      "description": "Priority, where p0 is the highest. Sorting also ranks words such as critical, high, medium and low.",
       "enumValues": [
         "p0",
         "p1",
@@ -184,6 +184,38 @@
         "p3",
         "p4"
       ],
+      "required": false
+    },
+    {
+      "yaml": "blocked_reason",
+      "csMeta": "cs:blocked-reason",
+      "kind": "text",
+      "description": "Why the story is blocked, for a board to show on its card. Set it while the status is a blocked one; with any other status, it is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "wave",
+      "csMeta": "cs:wave",
+      "kind": "number",
+      "description": "Optional. The story's board wave, for a board to use instead of the wave it would compute from depends_on. A value that is not a positive whole number is advisory.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "stream",
+      "csMeta": "cs:stream",
+      "kind": "text",
+      "description": "The work stream the story is in, for example frontend or backend, for a board to group by.",
+      "enumValues": [],
+      "required": false
+    },
+    {
+      "yaml": "sub_epic",
+      "csMeta": "cs:sub-epic",
+      "kind": "text",
+      "description": "The sub-epic the story belongs to within its parent epic, for a board to group by.",
+      "enumValues": [],
       "required": false
     }
   ]

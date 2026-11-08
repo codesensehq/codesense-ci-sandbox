@@ -27,13 +27,14 @@ doesn't exist, a cycle, or a chain deeper than 64 teams, and points you at
 
 ## Nearest wins, per file
 
-A team's context is its own `content/` plus everything its parent teams
-hold. CodeSense resolves it **one file at a time**, walking the chain nearest
+A team's context is its own `content/` plus the files its parent teams
+share: each parent declares them in its `config/sharing.yml`, and a middle
+team must share them onward. CodeSense resolves it **one file at a time**, walking the chain nearest
 first: the team itself, then its parent, then the parent's parent. For each
 file path, the nearest team that has that file wins. Folders aren't owned by
 any team: they're shared, and their contents merge across the chain.
 
-With Ledgerline:
+With Ledgerline, where `platform`'s `config/sharing.yml` shares `content/CLAUDE.md` and `content/.claude/skills/**`:
 
 | File | `platform` has it | `billing` has it | `billing`'s context gets |
 |---|---|---|---|
@@ -43,9 +44,9 @@ With Ledgerline:
 | `.claude/skills/add-endpoint/SKILL.md` | no | yes | `billing`'s |
 | `AGENTS.md` | no | yes | `billing`'s |
 
-A team that doesn't have a file gets its parent's. So a new team `payments`
-with `parent_team: billing` and an empty `content/` gets everything
-`billing` resolves to.
+A team that doesn't have a file gets its parent's, when the parent shares it.
+So a new team `payments` with `parent_team: billing` and an empty `content/`
+gets everything `billing` shares.
 
 ## Editing inherited files
 

@@ -61,7 +61,7 @@ routine_create({
 
 ## Where a routine fires
 
-A routine's clock runs in the CodeSense app on your Mac. A shared job (`runsOn: one_mac`, the default) runs once for the team, from one Mac. A recipe (`each_mac`) is off everywhere until each teammate turns it on for their own Mac with **Run on my Mac**. Turning a routine on or off is a setting on your Mac, never a git change.
+A routine's clock runs in the CodeSense app on your Mac, or on a machine's terminal server when `routine_arm_on` arms it there (schedule triggers only, `one_mac`, no `budget_usd`). A shared job (`runsOn: one_mac`, the default) runs once for the team, from one Mac or machine. A recipe (`each_mac`) runs on Macs only, and is off everywhere until each teammate turns it on for their own Mac with **Run on my Mac**. The one exception: a shared job converted to a recipe stays on for the Mac that ran it. Turning a routine on or off is a setting on your Mac, never a git change.
 
 `machine` says where a wake looks for its agent: `local` (this Mac), a machine id, or `any`.
 

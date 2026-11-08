@@ -591,13 +591,13 @@ open_workspace {
               holding it, so the overnight escalation that arrived at 2am is waiting intact. This is
               what makes "my laptop closed, nothing is lost" a true statement.
             </p>
-            <pre><code># routine.yml — one wake routine deployed on each machine
+            <pre><code># routine.yml — one wake routine, turned on with Run on my Mac on each Mac
 runs_on: each_mac
 triggers:
   - schedule: { cron: "*/5 * * * *", tz: UTC }  # health check
-  - event:    { kind: inbox_idle }
+  - event:    { kind: role_pending }
 # the task does role_state first; if nobody holds the role AND work is pending,
-# this machine takes it.</code></pre>
+# this Mac takes it.</code></pre>
           </div>
         </div>
       </section>
@@ -606,10 +606,10 @@ triggers:
         <h2>Parity gaps</h2>
         <div class="parity-callout">
           <div>
-            <strong>⚠ Parity gap.</strong> The host-agent runs only on the Mac you run
-            CodeSense on. Everything else — launching sessions, inbox state, routines on
-            <code>inbox_idle</code>, role queues — is machine-agnostic. If a flow depends on
-            host-agent-only verbs (e.g. deep OS automation), those shards must stay on the
+            <strong>⚠ Parity gap.</strong> The app itself runs only on the Mac you run
+            CodeSense on. Everything else — launching sessions, inbox state, role queues — is
+            machine-agnostic; <code>inbox_idle</code> routines fire from the app on a Mac. If a flow depends on
+            tools that work only on this Mac (e.g. deep OS automation), those shards must stay on the
             Mac you run CodeSense on. The <a href="../factory-playbook.html">factory-playbook</a>
             marks these with a per-phase callout.
           </div>
@@ -635,18 +635,18 @@ triggers:
           <summary><strong>How to do this via MCP</strong></summary>
           <pre><code>// Where could I run a session?
 list_machines { orgSlug: 'acme/team-context' }
-// → [{ id: 'mac-A', local: true, awake: true },
-//    { id: 'mac-B', local: false, awake: true, kind: 'private-account' },
-//    { id: 'remote-1', local: false, awake: false, kind: 'private-account' }]
+// → [{ machineId: 'local', kind: 'local', label: 'This Mac', scope: null, status: { state: 'connected' } },
+//    { machineId: 'box', kind: 'ssh', label: 'build box', … }]
 
 // Launch a shard on a specific machine
 open_workspace {
   target: 'story', story_id: storyId, name: `builder-${storyId}`,
   agent: 'builder',
-  machine_id: 'mac-B',
+  machine_id: 'box',
 }
 
-// A routine with runs_on: each_mac deploys to every machine automatically.</code></pre>
+// A routine with runs_on: each_mac runs on each teammate's Mac where its user turned it
+// on (Run on my Mac). It fires only on Macs, never on a remote machine's clock.</code></pre>
         </details>
       </section>
 

@@ -79,14 +79,4 @@ A page can show a live agent terminal, and you can type into it. On a shared pag
 
 That makes a review station possible: a page with the story, its diff and the agent’s live terminal side by side, so you can answer it without switching tabs. Buttons on a page can open worktrees, message sessions or type into an agent, and delete or move files. Dashboards are your own files, so open only ones you trust.
 
-## On your own servers
-
-> **Coming: the engine on your own servers**
->
-> The engine on your own servers: publish your dashboards to your own server instead of share.codesense.ai. Teammates reach them through your own private network layer, such as Tailscale or whatever you already use, from a laptop or a phone, and company data stays on company machines.
-
-> **Coming: CodeSense on your phone, from your own servers**
->
-> All of CodeSense on your phone, from your own servers: review plans, chat with your agents, Notes, the pipeline and more. It runs on the CodeSense engine on your own servers, with no CodeSense cloud, and only you can get in.
-
 See the [Roadmap](https://codesense.ai/roadmap) for what’s next and what’s planned.

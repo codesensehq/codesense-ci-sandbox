@@ -317,18 +317,20 @@
             </p>
             <ol>
               <li>
-                <strong>Mac was asleep.</strong> Local Macs skip fires while asleep (standard Mac
-                behavior). The routines console shows the skipped fire with reason
-                <code>mac_asleep</code>. Move must-fire routines to the always-on remote account (<a
-                  href="./remote.html"
-                  >remote</a
-                >, <code>runs_on: one_mac</code> armed there).
+                <strong>Mac was asleep.</strong> Fires missed while the Mac was asleep or the app
+                was closed are recorded as one skipped run (reason <code>missed:N</code>); with
+                <code>policy.missed: run_once</code>, one of them also runs as a catch-up. To fire while the desktop is
+                closed, arm the routine on a machine (<a href="./remote.html">remote</a>):
+                <code>routine_arm_on { id, machine: &lt;machineId&gt; }</code>.
               </li>
               <li>
                 <strong><code>armed_here</code> is false.</strong>
-                <code>routine_get</code> says who's armed; flip with
-                <code>routine_set_enabled { enabled: true }</code> on this Mac if that's where you
-                want it to fire.
+                <code>routine_get</code> says who's armed; move it here with
+                <code>routine_arm_on { id, machine: "this_mac" }</code> (<em>Run on this Mac</em>)
+                if that's where you want it to fire. An <code>each_mac</code> routine is turned on
+                per Mac instead: <code>routine_set_enabled { id, enabled: true }</code>
+                (<em>Run on my Mac</em>). If <code>routine_get</code> shows it armed on a machine, it
+                fires there on purpose; moving it here ends that always-on firing.
               </li>
               <li>
                 <strong>Overlap.</strong> A previous run is still going and the new fire coalesced.

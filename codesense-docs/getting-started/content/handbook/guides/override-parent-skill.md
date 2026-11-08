@@ -2,8 +2,8 @@
 
 _Give your team its own version of a skill a parent team ships._
 
-Ledgerline's `platform` team ships a `review-pr` skill that every product
-team inherits from `platform/content/.claude/skills/`. The `billing` team wants
+Ledgerline's `platform` team ships a `review-pr` skill and shares
+`content/.claude/skills/**` in its `config/sharing.yml`, so every product team inherits it. The `billing` team wants
 the same review plus money and idempotency checks, so it gives itself its
 own copy. Every skill is plain git content, so you maintain that copy.
 
@@ -11,7 +11,7 @@ own copy. Every skill is plain git content, so you maintain that copy.
 
 Inheritance works per file: for each path, the nearest team that has the
 file supplies it. So `billing` replaces just `review-pr/SKILL.md`, and keeps
-every other skill `platform` has.
+every other skill `platform` shares.
 
 Editing `platform`'s `review-pr` from `billing`'s file tree edits
 `platform`'s file, for every team below it. To change it for `billing` only,

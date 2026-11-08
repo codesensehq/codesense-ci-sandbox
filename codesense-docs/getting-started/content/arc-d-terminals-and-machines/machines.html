@@ -13,7 +13,7 @@
   <body class="cs-page cs-docs" data-page="arc-d-terminals-and-machines/machines">
     <nav class="cs-topnav" aria-label="CodeSense docs navigation"></nav>
     <main class="cs-main">
-      <section data-hero data-search="Machine kinds and modes" id="hero">
+      <section data-hero data-search="Machine kinds and records" id="hero">
         <p>
           <span class="cs-docs-chip" data-arc="D">Arc D · Machines</span>
         </p>
@@ -92,7 +92,7 @@ for (const machine of machines) {
           <li>
             <strong>This Mac</strong> — the machine CodeSense is running on. It owns
             your profile directory (<code>~/.codesense/users/&lt;principal&gt;/</code>)
-            and runs the host-agent. You never add it; it's
+            and runs the app. You never add it; it's
             always present.
           </li>
           <li>
@@ -103,9 +103,9 @@ for (const machine of machines) {
         </ol>
       </section>
 
-      <section data-search="Two modes — private-account and read-only" id="modes">
-        <h2>Two modes</h2>
-        <p>Every remote machine runs in one of two modes:</p>
+      <section data-search="Two kinds of machine record — private account and legacy shared account" id="modes">
+        <h2>Two kinds of machine record</h2>
+        <p>Every remote machine is saved as one of two kinds of record:</p>
         <ul>
           <li>
             <strong>Private-account</strong>
@@ -117,13 +117,11 @@ for (const machine of machines) {
             <a href="./remote-private-account.html">Remote (private account)</a>.
           </li>
           <li>
-            <strong>Read-only (shared account)</strong>
-            <span class="cs-docs-chip cs-docs-chip--warn">narrow use</span>
-            — multiple teammates work as the same Unix user. Everyone can see and
-            change each other's files. Fine for a CI box or a classroom demo;
-            not what you want for day-to-day work. CodeSense still works, but
-            per-user state (agent logins, keychain handles) is a shared concern on
-            that account.
+            <strong>Legacy (shared account)</strong>
+            <span class="cs-docs-chip cs-docs-chip--warn">older records</span>
+            — an older machine record where everyone signs in as the same Unix user.
+            CodeSense opens no terminal tabs on it. Save it as a private account (<code>save_machine</code>) to
+            use it; the id and host key stay the same.
           </li>
         </ul>
         <p>
@@ -163,7 +161,7 @@ for (const machine of machines) {
       <section data-search="Try this now — list machines" id="try-this-now">
         <h2>Try this now</h2>
         <p>
-          List every machine you (or your team) have declared, with mode and setup state.
+          List every machine you (or your team) have declared, with its status and setup state.
         </p>
         <cs-try-this
           verb="machines"

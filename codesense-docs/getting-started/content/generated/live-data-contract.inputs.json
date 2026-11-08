@@ -6,7 +6,7 @@
   "inputs": {
     "Cargo.lock": "277250b960f407aa883c761dc8cb4b5a4bb80572b1111f6c250cff38a022ec99",
     "src-tauri/Cargo.toml": "76fc35d76b7f8c5ed4fbe3a45d2dd4b837dec40ca6284a9f28e4fa39f21e6786",
-    "src-tauri/src/commands/pipeline_format/fields.rs": "59cb019422fce2000e89aa0de904b88587c4b99503fcc8342ade3e5728926e4f",
+    "src-tauri/src/commands/pipeline_format/fields.rs": "a2216ba2c979a15aa15901593c48bf73dcb5fcc884de6091745f25f0533c732b",
     "src-tauri/src/commands/pipeline_format/mod.rs": "52ca5e1c30d80a82355723fce0c11bbd8481c575d009cfe96547f479458ba864",
     "src-tauri/src/context_query/model.rs": "4e81c3eaa7ed4ea0dc93fe5017c7defe77655b124f0d5bc447557b646f42d345",
     "src-tauri/src/dashboard_publish/agents.rs": "d23099cc81e529efe61fb42bb86ac70ff6c0040d715fdf3db83c439cc045d65b",
@@ -32,5 +32,5 @@
     "src-tauri/src/verbs/schema.rs": "5628b1381c41665fd0b9a698a55ccefb8bb0922d1c133020f38f9f168aeebfc5",
     "src-tauri/src/verbs/tests.rs": "9c33d1d493484128463e4dbc6992abd86bd44173b357c46106a85c20d37394fe"
   },
-  "outputSha256": "748fdb1a37fee5ec83fbac7ba414dc971ac68c9bcf0281878a1d42f4d05f50f9"
+  "outputSha256": "b440f2eaf0e49b21f82ef0a15fde555f81f41bf88fd6d41d68955b0e214d6491"
 }

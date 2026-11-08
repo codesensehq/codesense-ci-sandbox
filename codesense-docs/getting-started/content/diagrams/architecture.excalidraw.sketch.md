@@ -58,7 +58,7 @@ Coordinates are canvas-absolute (not relative to the frame).
 | `dashboards` | `layout-dashboard` | 100 | 180 | 180 | 70 | "Dashboards" | "HTML docs, this page" | surface | ink 1px (nested in `webview`) |
 | `agent-cli` | `terminal-square` | 300 | 180 | 180 | 70 | "Agent CLI" | "Claude Code · Codex" | surface | arc-agent 1.5px (nested in `webview`) |
 | `http-server` | `server` | 540 | 120 | 240 | 240 | "Local HTTP server" | "Axum · localhost:port · injects window.codesense" | surface | arc-signal 1.5px |
-| `host-agent` | `bot` | 80 | 420 | 700 | 160 | "Host-agent" | "Per-Mac daemon · terminals · routines · context IO" | surface | arc-agent 1.5px |
+| `host-agent` | `bot` | 80 | 420 | 700 | 160 | "App backend" | "The app's Rust backend · MCP · routines · context IO" | surface | arc-agent 1.5px |
 | `mcp` | `plug-zap` | 300 | 640 | 480 | 100 | "CodeSense MCP" | "every tool · the agent bridge" | surface | arc-agent 1.5px heavy (2px) |
 | `source-code-note` | text | 80 | 780 | 700 | 150 | "Local machine ·  macOS filesystem · ~/.codesense/… + user repos" | — | none | muted caption only |
 
@@ -77,7 +77,7 @@ Nested shape rule: `dashboards` and `agent-cli` are drawn **inside** the `webvie
 | id | icon | x | y | w | h | label | caption | fill | stroke |
 |---|---|---|---|---|---|---|---|---|---|
 | `inbox` | `inbox` | 1040 | 600 | 500 | 150 | "Inbox" | "per-team threads · messages · role queues" | surface | arc-agent 1.5px |
-| `routines` | `clock-9` | 1040 | 770 | 500 | 170 | "Routine engine" | "triggers: each_mac · inbox_idle · cron · manual" | surface | arc-agent 1.5px |
+| `routines` | `clock-9` | 1040 | 770 | 500 | 170 | "Routine engine" | "triggers: cron · manual · events" | surface | arc-agent 1.5px |
 
 ### 1.5 Edges (local variant)
 
@@ -150,7 +150,7 @@ Teal-tinted copies of three shapes. Smaller, dashed-stroke to indicate they're m
 
 | id | icon | x | y | w | h | label | caption | stroke |
 |---|---|---|---|---|---|---|---|---|
-| `host-agent-remote` | `bot` | 1140 | 420 | 420 | 160 | "Host-agent (remote)" | "same daemon · behind sshd" | arc-remote 1.5px dashed |
+| `host-agent-remote` | `bot` | 1140 | 420 | 420 | 160 | "Terminal server (remote)" | "terminal server · behind sshd" | arc-remote 1.5px dashed |
 | `worktree-remote` | `trees` | 1140 | 270 | 420 | 110 | "Worktree (remote)" | "same worktree rules" | arc-remote 1.5px dashed |
 | `source-repo-remote` | `folder-git` | 1140 | 400 | 420 | 100 | "Bound source repo (remote)" | — | arc-remote 1.5px dashed |
 | `agent-cli-remote` | `terminal-square` | 1300 | 180 | 220 | 70 | "Remote agent CLI" | "launched via remote tab" | arc-remote 1.5px dashed |

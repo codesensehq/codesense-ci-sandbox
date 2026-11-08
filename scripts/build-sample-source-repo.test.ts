@@ -1,5 +1,20 @@
 // SPDX-License-Identifier: MIT
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+
+// @ts-expect-error -- plain Node ESM helper without type declarations.
+import { newestMtime, writeBuildOutput } from "./lib/build-output.mjs";
 
 // @ts-expect-error -- plain Node ESM build script without type declarations.
 import {
@@ -62,6 +77,7 @@ describe("sample-source-repo build (SW-ODC-11)", () => {
       p.replace(`${process.cwd()}/`, ""),
     );
     expect(inputs).toContain("scripts/build-sample-source-repo.mjs");
+    expect(inputs).toContain("scripts/lib/build-output.mjs");
     expect(inputs).toContain("codesense-docs/sample-source-repo");
     // The two tarballs are built independently; sample-source-repo must NOT
     // pull in the whole codesense-docs/ tree as a rerun input.
@@ -82,5 +98,47 @@ describe("sample-source-repo build (SW-ODC-11)", () => {
   it("rejects a commit manifest with no files object", () => {
     const bad = [{ name: "01.json", data: { message: "x" } }];
     expect(() => buildCommitTrees(bad)).toThrow(/'files' object/);
+  });
+});
+
+describe("build output dating (cargo rerun-if-changed)", () => {
+  it("dates a written archive to its newest input, walking directories", () => {
+    const dir = mkdtempSync(join(tmpdir(), "build-output-"));
+    try {
+      const inputs = join(dir, "inputs");
+      mkdirSync(join(inputs, "nested"), { recursive: true });
+      const older = new Date("2026-01-01T00:00:00Z");
+      const newest = new Date("2026-02-01T00:00:00Z");
+      writeFileSync(join(inputs, "a.txt"), "a");
+      writeFileSync(join(inputs, "nested", "b.txt"), "b");
+      utimesSync(join(inputs, "a.txt"), older, older);
+      utimesSync(join(inputs, "nested", "b.txt"), newest, newest);
+      utimesSync(join(inputs, "nested"), older, older);
+      utimesSync(inputs, older, older);
+      expect(newestMtime([inputs, join(dir, "missing")])).toBe(newest.getTime());
+
+      const output = join(dir, "out.tar.gz");
+      const started = Date.now();
+      writeBuildOutput(output, Buffer.from("archive"), [inputs]);
+      expect(readFileSync(output, "utf8")).toBe("archive");
+      // Older than the build that wrote it, so Cargo sees no change on its next run.
+      expect(statSync(output).mtimeMs).toBe(newest.getTime());
+      expect(statSync(output).mtimeMs).toBeLessThan(started);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("leaves no temp file behind when the write fails", () => {
+    const dir = mkdtempSync(join(tmpdir(), "build-output-"));
+    try {
+      // A directory at the output path makes the final rename fail after the temp is written.
+      const output = join(dir, "out.tar.gz");
+      mkdirSync(join(output, "occupied"), { recursive: true });
+      expect(() => writeBuildOutput(output, Buffer.from("archive"), [])).toThrow();
+      expect(readdirSync(dir)).toEqual(["out.tar.gz"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

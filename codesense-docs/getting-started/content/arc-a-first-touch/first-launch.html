@@ -150,7 +150,10 @@
             <p>
               The app creates <code>~/.codesense/</code> if it doesn't exist. That's where it
               keeps everything of its own: managed binaries, the MCP socket, state files, caches.
-              It never writes into one of your git repos. (The full tree is on
+              In your source repos it adds worktrees when you open a story and writes a marked block
+              in the repo's <code>.git/info/exclude</code>; it never commits or pushes, and
+              <a href="../arc-c-workspaces-and-worktrees/git-is-yours.html">git is yours</a> lists
+              every git command it runs. (The full tree is on
               <a href="./files-on-disk.html">files on disk</a>.)
             </p>
           </div>

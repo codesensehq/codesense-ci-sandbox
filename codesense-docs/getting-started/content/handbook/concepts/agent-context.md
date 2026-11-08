@@ -77,8 +77,8 @@ For Ledgerline's `billing` team, an agent with the Claude Code default gets:
 | `billing/content/.claude/skills/review-pr/SKILL.md` | `.claude/skills/review-pr/SKILL.md` |
 | `platform/content/.claude/skills/triage/SKILL.md` (inherited) | `.claude/skills/triage/SKILL.md` |
 
-CodeSense writes only into worktrees it creates and clones it manages. It
-never writes into a checkout you attached from your own folder.
+CodeSense copies context only into worktrees it creates and clones it manages,
+never into a checkout you attached from your own folder.
 
 ## Hidden from git
 

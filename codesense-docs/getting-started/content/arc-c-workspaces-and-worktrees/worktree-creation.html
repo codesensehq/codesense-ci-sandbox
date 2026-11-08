@@ -212,7 +212,7 @@
         <p style="max-width: 62ch; color: var(--cs-muted-fg)">
           You choose <strong>Open CLI</strong> on a story, or an agent calls <code>open_workspace</code>. If the worktree
           already exists, you land in it immediately. If it doesn't, CodeSense
-          <em>creates</em> one: it resolves the branch (fetching from the remote when it can),
+          <em>creates</em> one: it resolves the branch from local refs,
           lays the directory, links it to the story, and runs the <code>worktree.yaml</code> setup.
           Four steps; how long depends on the repo and its setup. Creating a worktree copies no context into it: context arrives when
           an agent launches there (its <code>context</code>) or when an agent asks for more with
@@ -223,7 +223,7 @@
           <svg
             viewBox="0 0 1280 720"
             role="img"
-            aria-label="Four-column timeline — BEFORE the call there is only a story card; the open_workspace MCP call triggers four DURING steps (fetch, worktree add, link the story, run setup) and the AFTER column shows the new worktree frame with source repo, story link, and setup chips."
+            aria-label="Four-column timeline — BEFORE the call there is only a story card; the open_workspace MCP call triggers four DURING steps (resolve the branch, worktree add, link the story, run setup) and the AFTER column shows the new worktree frame with source repo, story link, and setup chips."
           >
             <title>Create a story worktree · timeline</title>
 
@@ -271,7 +271,7 @@
             <!-- d-fetch -->
             <rect class="node n-repo" x="680" y="140" width="240" height="46" rx="8" />
             <text class="sub" x="698" y="156">STEP 1</text>
-            <text class="lbl" x="900" y="170" text-anchor="end">git fetch (if reachable)</text>
+            <text class="lbl" x="900" y="170" text-anchor="end">resolve branch (local refs)</text>
             <!-- d-add -->
             <rect class="node n-repo" x="680" y="200" width="240" height="46" rx="8" />
             <text class="sub" x="698" y="216">STEP 2</text>
@@ -345,9 +345,9 @@
         <h2>What you see in the UI</h2>
         <p style="color: var(--cs-muted-fg); max-width: 62ch">
           The workspace shows <strong>Setting up worktree…</strong> until the worktree is ready,
-          with a line that names each step as it runs (<em>Fetching &lt;repo&gt;</em>,
-          <em>Creating worktree</em>, <em>Running setup</em>) and a checklist of the setup
-          commands. On a remote machine the repo is copied there first:
+          with a line that names each step as it runs (<em>Creating worktree</em>,
+          <em>Running setup</em>) and a checklist of the setup commands. On a remote machine the
+          repo is copied there first:
         </p>
         <div class="arcC-status">
           <div class="arcC-status__cell">
@@ -405,11 +405,11 @@ worktree path: ../api-wt/feat-DEMO-1/</code></pre>
         <div class="arcC-step">
           <span class="arcC-step-n">2</span>
           <div>
-            <h3>Fetch and add the worktree</h3>
+            <h3>Add the worktree</h3>
             <p>
-              CodeSense fetches from <code>origin</code> when the remote is reachable (it falls back to
-              local refs when it isn't), then runs <code>git worktree add</code> at the resolved path
-              on the branch. A branch that doesn't exist yet starts from the branch of the story's
+              CodeSense runs <code>git worktree add</code> at the resolved path on the branch, from
+              local refs. It never fetches on this Mac, so fetch first with your agent if the branch
+              or its base is new on <code>origin</code>. A branch that doesn't exist yet starts from the branch of the story's
               first <code>depends_on</code> story, or else from <code>default_start_point</code>
               (default <code>main</code>).
             </p>

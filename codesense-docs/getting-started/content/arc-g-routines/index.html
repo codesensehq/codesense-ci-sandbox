@@ -379,8 +379,8 @@ routine_run {"runId":"&lt;the same run_id&gt;"}</code></pre>
             <h3><span class="dot"></span>each_mac</h3>
             <p>
               Not a trigger by itself — a <code>runs_on</code> scope that pairs with any of the
-              above. The routine fires once per trusted Mac on each tick, so remote fleets stay
-              independent.
+              above. The routine fires once on each Mac whose user turned it on. It fires only on Macs,
+              never on a remote machine's clock.
             </p>
           </div>
         </div>

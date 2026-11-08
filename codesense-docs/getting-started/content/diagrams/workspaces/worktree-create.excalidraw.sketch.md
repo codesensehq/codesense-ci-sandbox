@@ -116,7 +116,7 @@ own icon and `step N` tag on the left in `--muted` 11px caps:
 
 | id        | step | y   | icon          | label                        | stroke             |
 | --------- | ---- | --- | ------------- | ---------------------------- | ------------------ |
-| `d-fetch` | 1    | 140 | `cloud-download` | `git fetch (if reachable)` | `--arc-repo` 1.2px |
+| `d-fetch` | 1    | 140 | `cloud-download` | `resolve branch (local refs)` | `--arc-repo` 1.2px |
 | `d-add`   | 2    | 200 | `git-branch` | `git worktree add`           | `--arc-repo` 1.2px |
 | `d-link`  | 3    | 260 | `link`       | `link the story`             | `--arc-signal` 1.2px|
 | `d-setup` | 4    | 320 | `terminal`   | `run worktree.yaml · setup`  | `--arc-agent` 1.2px|

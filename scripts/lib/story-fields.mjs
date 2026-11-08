@@ -9,6 +9,7 @@ export const STORY_FIELDS_SOURCE = "src-tauri/src/commands/pipeline_format/field
 export const PIPELINE_FORMAT_SOURCE = "src-tauri/src/commands/pipeline_format/mod.rs";
 
 const ROLES = new Set(["Typed", "Open", "Retired", "Tolerated"]);
+const ROW_KEYS = ["yaml", "cs_meta", "kind", "description", "enum_values", "required", "role"];
 const KINDS = { Text: "text", List: "list", Number: "number" };
 
 function variant(raw, prefix, allowed) {
@@ -30,16 +31,17 @@ export function readStoryFields(app) {
   const rows = structTableConst(productionPart(app.file(STORY_FIELDS_SOURCE)), "STORY_FIELDS");
   if (!rows.length) throw new Error("story-fields: STORY_FIELDS is empty");
   return rows.map((row) => {
-    for (const key of [
-      "yaml",
-      "cs_meta",
-      "kind",
-      "description",
-      "enum_values",
-      "required",
-      "role",
-    ]) {
+    for (const key of ROW_KEYS) {
       if (row[key] === undefined) throw new Error(`story-fields: row ${row.yaml} has no ${key}`);
+    }
+    const extra = Object.keys(row).filter((key) => !ROW_KEYS.includes(key));
+    if (extra.length)
+      throw new Error(`story-fields: row ${row.yaml} has unknown ${extra.join(", ")}`);
+    if (row.cs_meta !== `cs:${row.yaml.replaceAll("_", "-")}`) {
+      throw new Error(`story-fields: row ${row.yaml} has cs_meta \`${row.cs_meta}\``);
+    }
+    if (row.required !== "true" && row.required !== "false") {
+      throw new Error(`story-fields: row ${row.yaml} has required \`${row.required}\``);
     }
     return {
       yaml: row.yaml,

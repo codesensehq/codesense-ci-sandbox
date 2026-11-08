@@ -39,10 +39,24 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Check workflow policy
         run: node --test scripts/workflow-policy.node-test.mjs
+      - name: Restore scanner archives
+        # Archives named by their sha256; install-scanners verifies each against the lock before use.
+        id: scanner-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: scanner-archives-static-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('release/scanners.lock') }}
+      - name: Install pinned scanners
+        # One run, so actionlint, zizmor and cargo-deny share the script's download budget.
+        run: bash scripts/install-scanners.sh .cache/scanners --cache "$RUNNER_TEMP/scanner-archives" --workflows-only --tool cargo-deny
+      - name: Save scanner archives
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.scanner-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/scanner-archives
+          key: ${{ steps.scanner-cache.outputs.cache-primary-key }}
       - name: Lint workflows
-        run: |
-          bash scripts/install-scanners.sh .cache/scanners --workflows-only
-          PATH="$PWD/.cache/scanners:$PATH" bash scripts/lint-workflows.sh .github/workflows
+        run: PATH="$PWD/.cache/scanners:$PATH" bash scripts/lint-workflows.sh .github/workflows
       - name: Set up Rust
         run: rustup toolchain install stable --profile minimal
       - name: Read Rust version
@@ -58,8 +72,6 @@ jobs:
             ~/.cargo/git/db
             target/
           key: cargo-${{ runner.os }}-${{ steps.rustc.outputs.version }}-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install cargo-deny
-        run: bash scripts/install-scanners.sh .cache/scanners --tool cargo-deny
       - name: Fetch Rust dependencies
         run: cargo fetch --locked
       - name: Lint source

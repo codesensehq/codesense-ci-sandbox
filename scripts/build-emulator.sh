@@ -37,6 +37,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=lib/download-retry.sh
+. "$SCRIPT_DIR/lib/download-retry.sh"
 BINARIES_DIR="$PROJECT_ROOT/src-tauri/binaries"
 BUNDLE="$PROJECT_ROOT/target/emulator/codesense-emulator.cjs"
 BIN_NAME="codesense-emulator"
@@ -127,8 +129,11 @@ fetch_bun() {
     expected="$(bun_sha256 "$asset")"
     mkdir -p "$BUN_CACHE"
     zip="$(mktemp "$BUN_CACHE/.$asset.XXXXXX")"
-    curl -fsSL --retry 3 -o "$zip" \
-        "https://github.com/oven-sh/bun/releases/download/bun-v$BUN_VERSION/$asset.zip"
+    # retries transient failures (scripts/lib/download-retry.sh); the checksum below applies either way
+    download_with_retry "$zip" \
+        "https://github.com/oven-sh/bun/releases/download/bun-v$BUN_VERSION/$asset.zip" \
+        --proto '=https' --proto-redir '=https' ||
+        { rm -f "$zip"; echo "Error: could not download $asset.zip" >&2; exit 1; }
     actual="$(sha256_hex "$zip")"
     if [[ "$actual" != "$expected" ]]; then
         rm -f "$zip"

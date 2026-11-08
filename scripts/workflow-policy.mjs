@@ -33,6 +33,39 @@ const SCORECARD_ACTIONS = new Set([
   "github/codeql-action/upload-sarif",
 ]);
 
+// The terms joined by && outside parentheses and quotes, after unwrapping ${{ }} and redundant outer
+// parentheses. A top-level || keeps the expression whole, so `a || b` or `!(b)` never counts as b.
+function topLevelConjuncts(expression) {
+  let e = expression
+    .trim()
+    .replace(/^\$\{\{([\s\S]*)\}\}$/, "$1")
+    .trim();
+  for (;;) {
+    const terms = [];
+    let depth = 0;
+    let quoted = false;
+    let start = 0;
+    let or = false;
+    let wrapped = e.startsWith("(");
+    for (let i = 0; i < e.length; i++) {
+      const c = e[i];
+      if (c === "'") quoted = !quoted;
+      else if (quoted) continue;
+      else if (c === "(") depth++;
+      else if (c === ")") {
+        if (--depth === 0 && i < e.length - 1) wrapped = false;
+      } else if (depth > 0) continue;
+      else if (e.startsWith("||", i)) or = true;
+      else if (e.startsWith("&&", i)) {
+        terms.push(e.slice(start, i));
+        start = ++i + 1;
+      }
+    }
+    if (wrapped) e = e.slice(1, -1).trim();
+    else return or ? [e] : [...terms, e.slice(start)].map((term) => term.trim());
+  }
+}
+
 export function workflowPolicy(text, file = "") {
   const errors = [];
   const doc = parseDocument(text, { uniqueKeys: true });
@@ -95,6 +128,26 @@ export function workflowPolicy(text, file = "") {
       checkImage(container, `service ${service}`);
     if (!Number.isFinite(job["timeout-minutes"]) || job["timeout-minutes"] <= 0)
       errors.push(`${name}: missing positive timeout-minutes`);
+    // A cargo step that also runs after a failure needs an earlier step's success; without it a
+    // failed setup step skips the sidecar builds and the build script fails on missing resources.
+    const earlierIds = new Set();
+    for (const step of Array.isArray(job.steps) ? job.steps : []) {
+      if (!mapping(step)) continue;
+      const condition = String(step.if ?? "");
+      const gated = topLevelConjuncts(condition).some((term) => {
+        const m = /^steps\.([\w-]+)\.(?:outcome|conclusion)\s*==\s*'success'$/.exec(term);
+        return m && earlierIds.has(m[1]);
+      });
+      if (
+        /(?:^|[\s;&|(])cargo(?=\s|$)/m.test(String(step.run ?? "")) &&
+        /\b(?:failure|always|cancelled)\(\)/.test(condition) &&
+        !gated
+      )
+        errors.push(
+          `${name}: step "${step.name ?? step.run}" runs cargo after a failure; also require an earlier step's steps.<id>.outcome == 'success'`,
+        );
+      if (typeof step.id === "string") earlierIds.add(step.id);
+    }
     const scorecard = scorecardWorkflow && name === SCORECARD.job;
     const requiredPermissions = JOB_PERMISSIONS.get(`${file}:${name}`) ?? { contents: "read" };
     if (

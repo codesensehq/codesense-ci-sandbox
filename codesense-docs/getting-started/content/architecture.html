@@ -471,7 +471,7 @@
             <h1>Architecture</h1>
             <p class="sub">
               One picture of how CodeSense is wired. The <strong>Tauri webview</strong>
-              calls the app's backend, the <strong>host-agent</strong>, through Tauri
+              calls the app's <strong>backend</strong> through Tauri
               commands; it owns your files, routines, and inboxes, and a
               <strong>local HTTP server</strong> serves the HTML docs and dashboards.
               Agents reach the same backend through the <strong>CodeSense MCP</strong>.
@@ -547,13 +547,13 @@
                   <text class="cap" x="556" y="208">injects window.codesense</text>
                   <text class="cap" x="556" y="330" style="font-style:italic">serves /kit + docs</text>
 
-                  <!-- host-agent -->
+                  <!-- app backend -->
                   <rect class="shape ag" x="80" y="420" width="700" height="160"/>
                   <use href="#i-bot" x="96" y="438" width="22" height="22" style="color: var(--arc-agent)"/>
-                  <text class="lbl" x="124" y="455">Host-agent</text>
+                  <text class="lbl" x="124" y="455">App backend</text>
                   <text class="cap" x="96" y="478">The app's Rust backend · Tauri commands, MCP, context IO, routines.</text>
                   <text class="cap" x="96" y="498">Only runs on the Mac you run CodeSense on.</text>
-                  <text class="cap" x="96" y="542" style="font-style:italic">the one place writes to disk originate</text>
+                  <text class="cap" x="96" y="542" style="font-style:italic">where CodeSense's own writes on this Mac originate</text>
 
                   <!-- mcp -->
                   <rect class="shape ag" x="300" y="640" width="480" height="100" style="stroke-width: 2"/>
@@ -596,7 +596,7 @@
                   <rect class="shape ag" x="1040" y="770" width="500" height="170"/>
                   <use href="#i-clock" x="1056" y="788" width="22" height="22" style="color: var(--arc-agent)"/>
                   <text class="lbl" x="1084" y="805">Routine engine</text>
-                  <text class="cap" x="1056" y="828">triggers:  each_mac  ·  inbox_idle  ·  cron  ·  manual</text>
+                  <text class="cap" x="1056" y="828">triggers:  cron  ·  manual  ·  events</text>
                   <text class="cap" x="1056" y="848">wakes agents, posts messages, moves pipeline status</text>
                   <text class="cap" x="1056" y="900" style="font-style:italic">routine-owned storage</text>
 
@@ -675,7 +675,7 @@
 
                   <rect class="shape ag" x="40" y="420" width="580" height="160"/>
                   <use href="#i-bot" x="56" y="438" width="22" height="22" style="color: var(--arc-agent)"/>
-                  <text class="lbl" x="84" y="455">Host-agent (local)</text>
+                  <text class="lbl" x="84" y="455">App backend (local)</text>
                   <text class="cap" x="56" y="478">app backend · terminals in the terminal server</text>
 
                   <rect class="shape ag" x="220" y="640" width="400" height="100" style="stroke-width: 2"/>
@@ -707,7 +707,7 @@
                   <rect class="shape ag" x="780" y="770" width="300" height="170"/>
                   <use href="#i-clock" x="796" y="788" width="22" height="22" style="color: var(--arc-agent)"/>
                   <text class="lbl" x="824" y="805">Routine engine</text>
-                  <text class="cap" x="796" y="828">each_mac fires on every participating machine</text>
+                  <text class="cap" x="796" y="828">each_mac: every Mac that turned it on</text>
 
                   <!-- Remote mirror -->
                   <rect class="shape remote" x="1140" y="120" width="420" height="240"/>
@@ -718,9 +718,9 @@
 
                   <rect class="shape remote" x="1140" y="420" width="420" height="160"/>
                   <use href="#i-bot" x="1156" y="438" width="22" height="22" style="color: var(--arc-remote)"/>
-                  <text class="lbl" x="1184" y="455" style="fill: var(--arc-remote)">Host-agent (remote)</text>
+                  <text class="lbl" x="1184" y="455" style="fill: var(--arc-remote)">Terminal server (remote)</text>
                   <text class="cap" x="1156" y="478">terminal server · owns remote terminals</text>
-                  <text class="cap" x="1156" y="498">reaches shared git over ssh</text>
+                  <text class="cap" x="1156" y="498">gets its git copy from your Mac</text>
 
                   <rect class="shape remote" x="1140" y="640" width="420" height="100" style="stroke-width:2"/>
                   <use href="#i-plug" x="1156" y="658" width="22" height="22" style="color: var(--arc-remote)"/>
@@ -766,7 +766,7 @@
                   <g data-shape="dashboards"    data-family="signal" tabindex="0" role="button" aria-label="Dashboards"><rect x="100"  y="200" width="180" height="140"/></g>
                   <g data-shape="agent-cli"     data-family="agent"  tabindex="0" role="button" aria-label="Agent CLI"><rect x="300"  y="200" width="180" height="140"/></g>
                   <g data-shape="http-server"   data-family="signal" tabindex="0" role="button" aria-label="Local HTTP server"><rect x="540"  y="120" width="240" height="240"/></g>
-                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="Host-agent"><rect x="80"   y="420" width="700" height="160"/></g>
+                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="App backend"><rect x="80"   y="420" width="700" height="160"/></g>
                   <g data-shape="mcp"           data-family="agent"  tabindex="0" role="button" aria-label="CodeSense MCP"><rect x="300"  y="640" width="480" height="100"/></g>
                   <g data-shape="context-repo"  data-family="repo"   tabindex="0" role="button" aria-label="Context repo"><rect x="1040" y="100" width="500" height="140"/></g>
                   <g data-shape="worktree"      data-family="repo"   tabindex="0" role="button" aria-label="Worktree"><rect x="1040" y="270" width="500" height="110"/></g>
@@ -780,7 +780,7 @@
                   <g data-shape="dashboards"    data-family="signal" tabindex="0" role="button" aria-label="Dashboards"><rect x="56"   y="200" width="140" height="140"/></g>
                   <g data-shape="agent-cli"     data-family="agent"  tabindex="0" role="button" aria-label="Agent CLI"><rect x="212"  y="200" width="140" height="140"/></g>
                   <g data-shape="http-server"   data-family="signal" tabindex="0" role="button" aria-label="Local HTTP server"><rect x="380"  y="120" width="240" height="240"/></g>
-                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="Host-agent (local)"><rect x="40"   y="420" width="580" height="160"/></g>
+                  <g data-shape="host-agent"    data-family="agent"  tabindex="0" role="button" aria-label="App backend (local)"><rect x="40"   y="420" width="580" height="160"/></g>
                   <g data-shape="mcp"           data-family="agent"  tabindex="0" role="button" aria-label="CodeSense MCP"><rect x="220"  y="640" width="400" height="100"/></g>
                   <g data-shape="context-repo"  data-family="repo"   tabindex="0" role="button" aria-label="Context repo (shared)"><rect x="780"  y="100" width="300" height="140"/></g>
                   <g data-shape="worktree"      data-family="repo"   tabindex="0" role="button" aria-label="Worktree (local)"><rect x="780"  y="270" width="300" height="110"/></g>
@@ -791,7 +791,7 @@
 
                   <g data-shape="machine-remote"    data-family="remote" tabindex="0" role="button" aria-label="Remote machine · private account"><rect x="1120" y="60"  width="460" height="900"/></g>
                   <g data-shape="agent-cli-remote"  data-family="remote" tabindex="0" role="button" aria-label="Remote agent CLI"><rect x="1140" y="120" width="420" height="240"/></g>
-                  <g data-shape="host-agent-remote" data-family="remote" tabindex="0" role="button" aria-label="Host-agent (remote)"><rect x="1140" y="420" width="420" height="160"/></g>
+                  <g data-shape="host-agent-remote" data-family="remote" tabindex="0" role="button" aria-label="Terminal server (remote)"><rect x="1140" y="420" width="420" height="160"/></g>
                   <g data-shape="mcp-remote"        data-family="remote" tabindex="0" role="button" aria-label="CodeSense MCP (remote)"><rect x="1140" y="640" width="420" height="100"/></g>
                   <g data-shape="worktree-remote"   data-family="remote" tabindex="0" role="button" aria-label="Worktree + source (remote)"><rect x="1140" y="770" width="420" height="170"/></g>
                   <g data-shape="ssh"               data-family="remote" tabindex="0" role="button" aria-label="SSH boundary"><rect x="1095" y="100" width="30"  height="820"/></g>
@@ -808,7 +808,7 @@
               <div class="toc" aria-label="Quick jump">
                 <button type="button" data-jump="webview">webview</button>
                 <button type="button" data-jump="http-server">http</button>
-                <button type="button" data-jump="host-agent">host-agent</button>
+                <button type="button" data-jump="host-agent">app backend</button>
                 <button type="button" data-jump="mcp">MCP</button>
                 <button type="button" data-jump="context-repo">context</button>
                 <button type="button" data-jump="worktree">worktree</button>
@@ -934,8 +934,8 @@
       "host-agent": {
         "icon": "bot",
         "tint": "agent",
-        "title": "Host-agent",
-        "role": "The app's backend — the only place writes originate.",
+        "title": "App backend",
+        "role": "The app's backend — where CodeSense's own writes on this Mac originate.",
         "description": "The CodeSense app's own backend on this Mac: the Rust side of the Tauri app. Its Tauri commands do the work behind the UI: context-repo reads and writes, worktrees, inboxes, routines and pipeline status. Every MCP tool call runs here too. Terminals are kept by a separate process, the terminal server (codesense-session-server), so a terminal and the agent in it keep running when the app quits. A remote machine runs only a terminal server, not a second app backend.",
         "tools": [
           { "name": "open_terminal_tab",      "what": "start a terminal" },
@@ -1023,7 +1023,7 @@
         "tint": "agent",
         "title": "Inbox",
         "role": "Per-team threads + messages + role queues.",
-        "description": "The async spine of the factory. Threads carry messages with role labels (builder, resolver, reviewer, analyst, …). Any participant — human or agent — can post or read. Inboxes are the thing routines watch: an inbox_idle trigger fires a worker when a role queue has pending work and nobody is on it.",
+        "description": "The async spine of the factory. Threads carry messages with role labels (builder, resolver, reviewer, analyst, …). Any participant — human or agent — can post or read. Inboxes are the thing routines watch: a role_pending trigger fires a worker when a role queue gets work, and an inbox_idle trigger fires when a session idles with unread mail.",
         "tools": [
           { "name": "inbox_list",          "what": "list messages without marking them read" },
           { "name": "send_message",        "what": "message an agent or the human" },
@@ -1037,8 +1037,8 @@
         "icon": "clock",
         "tint": "agent",
         "title": "Routine engine",
-        "role": "each_mac · inbox_idle · cron · manual.",
-        "description": "A scheduler that fires routines on four trigger shapes. each_mac runs on every participating machine. inbox_idle fires when a role queue has work and no worker. cron runs on a wall-clock schedule. manual runs on button or MCP call. Routines own their own storage, can wake agents, post messages, and write dashboards.",
+        "role": "cron · manual · events.",
+        "description": "A scheduler that fires routines. Triggers are cron, manual and events (metadata_change, agent_done, inbox_idle, role_pending). each_mac is a runs_on value, not a trigger: an each_mac routine fires on every Mac that turned it on. inbox_idle fires when a session idles with unread mail; role queues use role_pending. A routine runs on the Mac it's armed on, or on a machine's terminal server with routine_arm_on. Routines own their own storage, can wake agents, post messages, and write dashboards.",
         "tools": [
           { "name": "routine_list",    "what": "enumerate routines you can see" },
           { "name": "routine_run_now", "what": "fire a routine by hand" },
@@ -1106,9 +1106,9 @@
       "host-agent-remote": {
         "icon": "bot",
         "tint": "remote",
-        "title": "Host-agent (remote)",
+        "title": "Terminal server (remote)",
         "role": "The terminal server, remote side.",
-        "description": "On a remote machine there is no second app backend. The terminal server (codesense-session-server) owns the remote terminals and the agents in them, and the desktop app reaches it over SSH (codesense-session-server attach --stdio). codesense-bridge beside it carries remote agents' MCP calls back to this Mac. Context-repo IO and routine scheduling stay in the desktop app.",
+        "description": "On a remote machine there is no second app backend. The terminal server (codesense-session-server) owns the remote terminals and the agents in them, and the desktop app reaches it over SSH (codesense-session-server attach --stdio). codesense-bridge beside it carries remote agents' MCP calls back to this Mac. Context-repo IO stays in the desktop app. Routines armed here with routine_arm_on fire on its clock.",
         "tools": [
           { "name": "install_terminal_server",         "what": "install the terminal server there" },
           { "name": "restart_machine_terminal_server", "what": "restart it (ends its sessions)" },

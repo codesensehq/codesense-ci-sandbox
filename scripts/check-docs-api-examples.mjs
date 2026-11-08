@@ -13,7 +13,8 @@
 //
 // Truth: generated/page-sdk.json (verbs, members), generated/mcp-tools.json (params) and the
 // `alias = "…"` attributes in src-tauri/src/**/*.rs. Corpus: the docs content tree
-// (.html .md .js .yml .yaml, minus generated/) and the handbook MDX when site/ is present (a
+// (.html .md .js .yml .yaml, minus generated/) and the handbook MDX when the site is present (site/,
+// or $CODESENSE_SITE_ROOT: lib/site-root.mjs) (a
 // tree without it, like the public export, checks only the handbook snapshot in the content
 // tree). Code is the text of <code> and <pre> (HTML) or fenced and inline code (Markdown). Not
 // examples, so skipped:
@@ -26,10 +27,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseItems } from "./lib/rust.mjs";
+import { isMain } from "./lib/is-main.mjs";
+import { HANDBOOK_DIR, siteRoot } from "./lib/site-root.mjs";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT = "codesense-docs/getting-started/content";
-const HANDBOOK = "site/src/content/handbook";
 const ALIAS_DIR = "src-tauri/src";
 // Page members the docs' own shared scripts define on `codesense`.
 const EXTRA_MEMBERS = ["docs"];
@@ -378,13 +380,15 @@ function walk(dir, out = []) {
   return out;
 }
 
-export function corpus(root = DEFAULT_ROOT) {
+/** `env` names the site through CODESENSE_SITE_ROOT; main passes none when --root is given. */
+export function corpus(root = DEFAULT_ROOT, env = process.env) {
   const base = join(root, CONTENT);
   const content = walk(base).filter(
     (p) => /\.(html|md|js|ya?ml)$/.test(p) && !relative(base, p).startsWith("generated/"),
   );
-  const handbook = existsSync(join(root, "site"))
-    ? walk(join(root, HANDBOOK)).filter((p) => p.endsWith(".mdx"))
+  const site = siteRoot(root, env);
+  const handbook = existsSync(site)
+    ? walk(join(site, HANDBOOK_DIR)).filter((p) => p.endsWith(".mdx"))
     : [];
   return [...content, ...handbook].sort();
 }
@@ -399,7 +403,8 @@ function main(argv) {
   const root = dir ? resolve(dir) : DEFAULT_ROOT;
   const truth = loadTruth(root);
   let count = 0;
-  for (const path of corpus(root)) {
+  // An explicit --root wins over CODESENSE_SITE_ROOT: the checkout it names brings its own site.
+  for (const path of corpus(root, dir ? {} : process.env)) {
     for (const f of checkFile(path, readFileSync(path, "utf8"), truth)) {
       console.error(`${relative(root, path)}:${f.line}: ${f.rule} ${f.message}`);
       count++;
@@ -415,4 +420,4 @@ function main(argv) {
   console.log("check-docs-api-examples: ok");
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) main(process.argv.slice(2));
+if (isMain(import.meta.url)) main(process.argv.slice(2));

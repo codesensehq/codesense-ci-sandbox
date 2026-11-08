@@ -14,7 +14,7 @@ An **org** (a workspace, in the app) is one context repo. Inside it:
 
 - **Teams** each have their own folder, their own context, and their own
   list of source repos. Ledgerline has `platform` and `billing`.
-- A team can name a **parent team** and inherit its context. See
+- A team can name a **parent team** and inherit the context that parent shares. See
   [Teams and inheritance](teams-and-inheritance.md).
 
 You can create, archive and restore teams in the **Teams** tab (**Go → Teams**, ⌘⌥T).
